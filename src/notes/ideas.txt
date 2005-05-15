@@ -1,0 +1,150 @@
+
+; transforms
+(translate x y z  . groups)
+(rotate x y z r . groups)
+(scale x y z . groups)
+
+; poly primitives
+(triangles  . vertex|color)
+(quads  . vertex|color)
+(lines . vertex|color)
+
+; basic primitives
+(vertex x y z)
+(color r g b a)
+
+; hotspots
+(hotspot-radius x y radis func-on func-out)
+(hotspot-rect x1 y1 x2 y2 func-on func-out)
+
+; drawing grouping, can be flattened
+;   may not be needed if all drawing is actually kept in draw lists
+;   draw lists do the "flattening"
+(block . primitives)
+
+; dynamic drawing
+(dynamic-block func)
+
+; group creation
+(group . contents)
+
+; gateway functions
+(add-group . groups)
+(change-group group-id group)
+(insert-group group-id pos . groups)
+
+
+- drawlist can be made between every dynamic code, auto-generated drawlists
+    would be nice.
+- hotspot locations can calculated from keeping track of enclosing transforms
+- hotspots within dynamics need to be removed on every frame
+
+
+- internal structures
+    - model
+        - root group id
+        - group hashtable
+        - hotspot quadtree
+
+list --> [gateway] --> structures
+
+class Group {
+    List elements = { groupid, drawlist, dynamic-code };
+    List hotspots;
+}
+
+
+convert list to structures
+
+Element *Convert(SCM lst) {
+    Element *element;
+    
+    switch (item.first) {
+        case "group":
+            element = new Group();
+            
+            for item in list: {
+                elm = Convert(item);
+                
+                switch (elm.type) {
+                    case dynamic:
+                        startNewDrawList;
+                    case hotspot:
+                        element.hotspots.add(elm);
+                }
+                
+                element.elements.add(elm);
+            }
+
+        case "dynamic":
+            element = new DynamicDraw(lst.second); // pointer to lambda
+        case "hotspot":
+            element = new Hotspot(lst.second ...); // populate with lst fields
+        case "triangles":
+            glBegin(GL_TRIANGLES);
+            
+            for item in list: {
+                elm = Convert(item);
+                
+                switch (elm.type) {
+                    case dynamic:
+                        startNewDrawList;
+                    case hotspot:
+                        element.hotspots.add(elm);
+                }
+                
+                element.elements.add(elm);
+            }
+            
+            glEnd();
+            element = NULL; // nothing to return for pure drawing
+    }
+    
+    return element;
+}
+
+
+
+- Window Controllers
+   - Inputs are a fixed vocabularly
+      - click
+         - (button, x, y)
+      - drag
+         - (button, vx, vy)
+      - wheel
+         - (direction)         
+      - key
+         - (key, modifiers)
+
+   - Inputs are mapped by Binding to Commands
+      - Commands are then sent to either View or Model
+   - each Window Controller owns a binding
+
+- Window Views
+   - implement Window Commands
+      - needs ability to inherit Command Set from other classes
+      - needs ability to register new Commands
+
+- Models
+   - implement Model Commands
+      - needs ability to inherit Command Set from other classes
+      - needs ability to register new Commands
+
+- Command Registry
+
+
+(bind mouse-left-drag translate)
+
+input --[binding]--> command --[command router]--> action
+
+controller {
+    cmd = binding.GetDragCommand(button, vx, vy)
+    ExecCommand(cmd)
+    
+    ...
+    ExecCommand(cmd) {
+        switch cmd.GetId():
+            case CMD_TRANSLATE: view.ExecCommand(cmd)
+            case CMD_EDIT_MATRIX: mat.ExecCommand(cmd)
+    }
+}

@@ -1,0 +1,72 @@
+#
+# Scripting engine selection
+#
+VISTOOLS_SCHEME = 1
+VISTOOLS_PYTHON = 2
+
+VISTOOLS_SCRIPT = $(VISTOOLS_PYTHON)
+
+
+CC = g++
+AR = ar
+PREFIX = ..
+
+INCLUDE = \
+    -I$(PREFIX)/Common \
+    -I$(PREFIX)/GlutMVC \
+    -I$(PREFIX)/MVC 
+
+MY_LIBS = \
+        $(PREFIX)/Common/libCommon.a \
+        $(PREFIX)/GlutMVC/libGlutMVC.a \
+        $(PREFIX)/MVC/libMVC.a 
+
+COMPILE = -c -g $(INCLUDE) \
+          -DVISTOOLS_SCRIPT=$(VISTOOLS_SCRIPT) \
+          -DVISTOOLS_SCHEME=$(VISTOOLS_SCHEME) \
+          -DVISTOOLS_PYTHON=$(VISTOOLS_PYTHON)
+
+#
+# Conditional compile flags based scripting engine
+#
+ifeq ($(VISTOOLS_SCRIPT),$(VISTOOLS_SCHEME))
+	COMPILE := $(COMPILE) `guile-config compile`
+endif
+ifeq ($(VISTOOLS_SCRIPT),$(VISTOOLS_PYTHON))
+    COMPILE := $(COMPILE) -I/usr/include/python2.3
+endif
+
+
+
+# rules for subsystems
+../Common/libCommon.a:
+	make -C $(PREFIX)/Common
+    
+../GlutMVC/libGlutMVC.a:
+	make -C $(PREFIX)/GlutMVC
+
+../MVC/libMVC.a:
+	make -C $(PREFIX)/MVC
+
+test:
+	echo $(COMPILE)
+
+
+# basic compile rule
+$(OBJS): %.o: %.cpp
+	$(CC) $(COMPILE) -o $@ $<
+
+# basic library building
+$(LIB): $(OBJS)
+	$(AR) -r $(LIB) $(OBJS)
+
+# basic clean rule
+clean:
+	rm -rf $(OBJS) $(LIB) $(PROG)
+
+cleanall:
+	make clean -C $(PREFIX)/Common
+	make clean -C $(PREFIX)/GlutMVC
+	make clean -C $(PREFIX)/MVC
+	make clean -C $(PREFIX)/Summon
+
