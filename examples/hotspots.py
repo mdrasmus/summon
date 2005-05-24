@@ -18,17 +18,17 @@ def makeBox(string, x, y, width, boxColor):
         print "HOTSPOT '%s' was clicked!" % string
 
     return group(
-        quads(boxColor, vertices(
+        quads(boxColor, 
             x, y ,
             x + width, y,
             x + width, y + width,
-            x, y + width)),
-        line_strip(color(1,1,1), vertices(
+            x, y + width),
+        line_strip(color(1,1,1), 
             x, y ,
             x + width, y,
             x + width, y + width,
             x, y + width,
-            x, y)),
+            x, y),
         text_scale(string,
             x + width*.1, y + width*.1,
             x + width*.9, y + width*.9,

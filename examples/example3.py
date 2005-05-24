@@ -16,15 +16,15 @@ def arrow():
     blue = color(0,0,1)
     
     return group(
-        quads(white, vertices(0, 0),        # right fin
-              red,   vertices(40, -40),
-              red,   vertices(40, -80),
-              white, vertices(0, -40),
+        quads(white, 0, 0,        # right fin
+              red,   40, -40,
+              red,   40, -80,
+              white, 0, -40,
               
-              white, vertices(0,0),         # left fin
-              blue,  vertices(-40, -40),
-              blue,  vertices(-40, -80),
-              white, vertices(0, -40)),
+              white, 0,0,         # left fin
+              blue,  -40, -40,
+              blue,  -40, -80,
+              white, 0, -40),
               
               lines(white, vertices(0,0, 0, 100))) # shaft
 

@@ -47,7 +47,7 @@ def drawTree(tree, height):
     width = tree.width
 
     # draw vertical line
-    vis.append(lines(vertices(0, 0, 0, -height)))
+    vis.append(lines(0, 0, 0, -height))
     
     
     
@@ -57,7 +57,7 @@ def drawTree(tree, height):
         right = width/2.0 - tree.children[1].width/2.0
     
         # draw horizontal line
-        vis.append(lines(vertices(left, -height, right, -height)))
+        vis.append(lines(left, -height, right, -height))
         
         # left child
         vis.append(

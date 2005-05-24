@@ -42,7 +42,7 @@ public:
     
 protected:    
     
-    enum { TABLE_SIZE = 50 };
+    enum { TABLE_SIZE = 2003 };
     
     int m_root;
     HashTable<int, Group*, HashInt> m_table;

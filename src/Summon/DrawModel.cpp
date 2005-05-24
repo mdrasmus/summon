@@ -391,6 +391,43 @@ bool DrawModel::PopulateGraphic(BuildEnv &env, Graphic *graphic, Scm code)
         // get code for child
         Scm child = ScmCar(children);
         
+        // if integer then it is an implied vertices primitive
+        if (ScmFloatp(child)) {
+            int len = 0;
+            Scm ptr = children;
+            
+            // determine size of vertices primitive
+            do {
+                len++;
+                ptr = ScmCdr(ptr);
+            } while (ScmConsp(ptr) && ScmFloatp(ScmCar(ptr)));
+            
+            // parse vertices
+            if (len % 2 == 0) {
+                VerticesPrimitive *vertices = new VerticesPrimitive();
+
+                vertices->len = len;
+                vertices->data = new float [len];
+                
+                for (int i=0; i<len; i++) {
+                    vertices->data[i] = Scm2Float(ScmCar(children));
+                    children = ScmCdr(children);
+                }
+                
+                graphic->AddPrimitive(vertices);
+            } else {
+                Error("Odd number of coordinates given for vertices");
+                return false;
+            }
+            
+            // determine if loop should continue
+            if (!ScmConsp(children))
+                break;
+            else
+                // repair the child pointer
+                child = ScmCar(children);
+        }
+        
         // build primitive and add to graphic
         Primitive *prim = BuildPrimitive(env, child);
         if (prim) {
@@ -399,6 +436,7 @@ bool DrawModel::PopulateGraphic(BuildEnv &env, Graphic *graphic, Scm code)
             Error("Bad primitive in graphic");
             return false;
         }
+
     }
     
     return true;
@@ -437,7 +475,7 @@ Primitive *DrawModel::BuildPrimitive(BuildEnv &env, Scm code)
                 if (ScmFloatp(node)) {
                     vertices->data[i] = Scm2Float(node);
                 } else {
-                    Error("bad vertex coordinate");
+                    Error("Bad vertex coordinate");
                     delete prim;
                     return NULL;
                 }
@@ -457,7 +495,7 @@ Primitive *DrawModel::BuildPrimitive(BuildEnv &env, Scm code)
                 if (ScmFloatp(node)) {
                     color->data[i] = Scm2Float(node);
                 } else {
-                    Error("bad color value");
+                    Error("Bad color value");
                     delete prim;
                     return NULL;
                 }
@@ -468,7 +506,7 @@ Primitive *DrawModel::BuildPrimitive(BuildEnv &env, Scm code)
             } break;
             
         default:
-            Error("unknown primitive %d", Scm2Int(ScmCar(code)));
+            Error("Unknown primitive %d", Scm2Int(ScmCar(code)));
             return NULL;
     }
     
@@ -484,7 +522,7 @@ Element *DrawModel::BuildHotspot(BuildEnv &env, Scm code)
     Scm procCode;
     
     // parse the scm code for a hotspot
-    if (!ParseScm("bad format for Hotspot", code,
+    if (!ParseScm("Bad format for Hotspot", code,
                   "sffffp", &kind, &x1, &y1, &x2, &y2, &procCode))
         return NULL;
 
@@ -492,7 +530,7 @@ Element *DrawModel::BuildHotspot(BuildEnv &env, Scm code)
     if (kind == "click") {
         kindid = Hotspot::CLICK;
     } else {
-        Error("unknown hotspot type '%s'", kind.c_str());
+        Error("Unknown hotspot type '%s'", kind.c_str());
         return NULL;
     }
     
@@ -526,7 +564,7 @@ Element *DrawModel::BuildText(BuildEnv &env, Scm code, int kind)
 {
     string text;
     float x1, y1, x2, y2;
-    if (!ParseScm("bad format for text construct", code,
+    if (!ParseScm("Bad format for text construct", code,
                   "sffff", &text, &x1, &y1, &x2, &y2))
         return NULL;
     

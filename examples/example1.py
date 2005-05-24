@@ -18,17 +18,17 @@ from summon import *
 clear_groups()
 
 # add a line
-add_group(group(lines(vertices(0,0, 30,40))))
+add_group(group(lines(0,0, 30,40)))
 
 # add a quad
-add_group(group(quads(vertices(50,0, 50,70, 60,70, 60,0))))
+add_group(group(quads(50,0, 50,70, 60,70, 60,0)))
 
 # add a multi-colored quad
 add_group(group(quads(
-    color(1,0,0), vertices(100, 0),
-    color(0,1,0), vertices(100, 70),
-    color(0,0,1), vertices(140, 60),
-    color(1,1,1), vertices(140, 0))))
+    color(1,0,0), 100, 0,
+    color(0,1,0), 100, 70,
+    color(0,0,1), 140, 60,
+    color(1,1,1), 140, 0)))
 
 
 # add some text below everything else

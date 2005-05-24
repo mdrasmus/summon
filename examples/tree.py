@@ -15,12 +15,12 @@ def drawTree(depth, width, height):
     vis = []
 
     # draw vertical line
-    vis.append(lines(vertices(0, 0, 0, -height)))
+    vis.append(lines(0, 0, 0, -height))
     
     # draw two children by recursing
     if depth > 0:
         # draw horizontal line
-        vis.append(lines(vertices(-width/2.0, -height, width/2.0, -height)))
+        vis.append(lines(-width/2.0, -height, width/2.0, -height))
     
         # left child
         vis.append(

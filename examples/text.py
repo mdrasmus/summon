@@ -16,12 +16,12 @@ b = width * (1/3.0)
 c = width * (2/3.0)
 d = width
 
-add_group(group(line_strip(color(1,1,1), vertices(
+add_group(group(line_strip(color(1,1,1), 
     x, y,
     x + width, y,
     x + width, y + width,
     x, y + width,
-    x, y))))
+    x, y)))
 
 
 add_group(group(
@@ -45,12 +45,12 @@ b = x + width * (1/3.0)
 c = x + width * (2/3.0)
 d = x + width
 
-add_group(group(line_strip(color(1,1,1), vertices(
+add_group(group(line_strip(color(1,1,1), 
     x, y,
     x + width, y,
     x + width, y + width,
     x, y + width,
-    x, y))))
+    x, y)))
 
 add_group(group(
     translate(x, y,

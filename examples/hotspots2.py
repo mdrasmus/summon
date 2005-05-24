@@ -16,11 +16,11 @@ clear_groups()
 def makeBox(string, x, y, width, boxColor):
     
     # create color quad separately
-    g = group(quads(boxColor, vertices(
+    g = group(quads(boxColor, 
             x, y ,
             x + width, y,
             x + width, y + width,
-            x, y + width)))
+            x, y + width))
     
     # get the groupid of the color quad so we can manipulate it in callback()
     # use myVars to keep track of the visibility of the color quad
@@ -37,12 +37,12 @@ def makeBox(string, x, y, width, boxColor):
     
     return  group(
         g,
-        line_strip(color(1,1,1), vertices(
+        line_strip(color(1,1,1), 
             x, y ,
             x + width, y,
             x + width, y + width,
             x, y + width,
-            x, y)),
+            x, y),
         text_scale(string,
             x + width*.1, y + width*.1,
             x + width*.9, y + width*.9,
