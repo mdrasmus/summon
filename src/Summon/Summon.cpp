@@ -346,16 +346,9 @@ def __new_groupid(): \n\
             {
                 Construct *cmd = (Construct*) *i;
                 string str;
-
+                
                 string name = string(cmd->GetName());
                 string id = int2string(cmd->GetId());
-
-                // ensure command name does not have dashes
-                for (int j=0; j<name.size(); j++) {
-                    if (name[j] == '-')
-                        name[j] = '_';
-                }
-
                 
                 if (cmd->GetId() == GROUP_CONSTRUCT) {
                     str = string("") + "\

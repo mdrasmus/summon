@@ -178,48 +178,16 @@ void ScriptEngine::Init()
     g_terminalCmds = m_commands;
     g_vistoolsMethods = new PyMethodDef [m_commands.size() + 1];
     
-    string pyCommands = "import " + m_moduleName + "\n";
+    
 
-    // install commands
+    // install main command
     int table = 0;
-    for (int i=0; i<m_commands.size(); i++) {
-        // get command id
-        string idstr = int2string(m_commands[i]->GetId());
-        
-        // create scheme name for command
-        string name = m_commands[i]->GetName();
-        string help = string(m_commands[i]->GetUsage()) + " " +
-                      m_commands[i]->GetDescription();
-        
-        // ensure command name does not have dashes
-        for (int j=0; j<name.size(); j++) {
-            if (name[j] == '-')
-                name[j] = '_';
-        }
-        
-        string func = string("__") + name;
-        
-        g_vistoolsMethods[table].ml_name  = strdup(func.c_str());
-        g_vistoolsMethods[table].ml_meth  = Exec;
-        g_vistoolsMethods[table].ml_flags = METH_VARARGS;
-        g_vistoolsMethods[table].ml_doc   = strdup(help.c_str());
-        table++;        
-        
-        // populate method table with command
-        if (IsScriptCommand(m_commands[i]->GetId())) {
-            pyCommands = pyCommands + "def __helper_" + name + 
-                "(* args): return " + m_moduleName + "." + func +
-                         "(" + idstr + ", args)\n"  +
-                m_moduleName + "." + name + " = __helper_" + name + "\n";
-        } else {
-            pyCommands = pyCommands + "def __helper_" + name + 
-                "(* args): return " + m_moduleName + "." + func +
-                         "(\"" + m_commands[i]->GetName() + "\", args)\n"  +
-                m_moduleName + "." + name + " = __helper_" + name + "\n";
-        }
-
-    }
-
+    char *mainFunc = "__gatewayFunc";
+    g_vistoolsMethods[table].ml_name  = mainFunc;
+    g_vistoolsMethods[table].ml_meth  = Exec;
+    g_vistoolsMethods[table].ml_flags = METH_VARARGS;
+    g_vistoolsMethods[table].ml_doc   = "";
+    table++;
     
     // cap the methods table with ending method
     g_vistoolsMethods[table].ml_name  = NULL;
@@ -231,7 +199,29 @@ void ScriptEngine::Init()
     PyObject *module = Py_InitModule(strdup(m_moduleName.c_str()), 
                                      g_vistoolsMethods);
     PyImport_AddModule(strdup(m_moduleName.c_str()));    
-    ScmEvalStr(pyCommands.c_str());
+    
+    for (int i=0; i<m_commands.size(); i++) {
+        // get command id
+        string idstr = int2string(m_commands[i]->GetId());
+        
+        // create python name for command
+        string name = m_commands[i]->GetName();
+        string help = string(m_commands[i]->GetUsage()) + " " +
+                      m_commands[i]->GetDescription();
+        
+        // create wrapper function
+        string pyCommands =  "import " + m_moduleName + "\n" +
+            "def __helper_" + name +  "(* args): " +
+            "  return " + m_moduleName + "." + mainFunc + "(" + 
+                (m_commands[i]->HasAttr(&g_scriptAttr) ?
+                    idstr :  string("'") + m_commands[i]->GetName() + "'") +
+            ", args)\n" + 
+            m_moduleName + "." + name + " = __helper_" + name + "\n" + 
+            "__helper_" + name + ".func_name = \"" + name + "\"\n" +
+            "__helper_" + name + ".func_doc = \"" + help + "\"\n";
+        ScmEvalStr(pyCommands.c_str());
+        printf(pyCommands.c_str());
+    }
 }
 
 }

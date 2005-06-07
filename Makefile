@@ -1,4 +1,4 @@
-all: src/Summon/summon
+all:
 	make -C src/Summon summon
 
 clean:

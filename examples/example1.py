@@ -4,7 +4,7 @@
 # make summon commands available
 from summon import *
 
-# syntax of used visdraw functions
+# syntax of used summon functions
 # add_group( <group> )   : adds a group of graphics to the screen
 # group( <elements> )    : creates a group from several graphical elements
 # lines( <primitives> )  : an element that draws one or more lines
@@ -17,10 +17,10 @@ from summon import *
 # clear the screen of all drawing
 clear_groups()
 
-# add a line
+# add a line from (0,0) to (30,40)
 add_group(group(lines(0,0, 30,40)))
 
-# add a quad
+# add a quadrilateral
 add_group(group(quads(50,0, 50,70, 60,70, 60,0)))
 
 # add a multi-colored quad
@@ -34,7 +34,7 @@ add_group(group(quads(
 # add some text below everything else
 add_group(group(
     text("this is my text",    # text to appear
-         30, -10, 110, -50,    # bounding box of text
+         0, -10, 140, -100,    # bounding box of text
          "center", "top")))    # justification of text in bounding box
 
 # center the "camera" so that all shapes are in view

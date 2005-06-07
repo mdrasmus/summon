@@ -181,8 +181,15 @@ inline void ScmUngaurd(Scm scm)
 
 inline Scm ScmEvalStr(const char *str)
 {
-    return Py2ScmTake(PyRun_String(str, Py_file_input, 
-                                   python_globals, python_globals));
+    PyObject *result = PyRun_String(str, Py_file_input, 
+                                    python_globals, python_globals);
+    if (result) {
+        return Py2ScmTake(result);
+    } else {
+        PyErr_Print();
+        PyErr_Clear();
+        return Scm_EOL;
+    }
 }
 
 inline bool ScmEvalFile(const char *file) 

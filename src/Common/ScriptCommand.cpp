@@ -12,13 +12,7 @@
 namespace Vistools
 {
 
-set<int> g_scriptCommands;
-
-
-bool IsScriptCommand(int cmdId)
-{
-    return g_scriptCommands.find(cmdId) != g_scriptCommands.end();
-}
+CommandAttr g_scriptAttr;
 
 
 }

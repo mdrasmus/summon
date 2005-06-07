@@ -9,6 +9,16 @@ import random
 # clear the screen of all drawing
 clear_groups()
 
+# size of node toggle buttons
+button_size = .25
+
+# class for node in tree
+class Node:
+    def __init__(self, gid):
+        self.shown = True
+        self.groupid = gid
+
+
 # a class for a tree
 class Tree:
     children = []
@@ -36,42 +46,51 @@ def MakeRandomTree(depth, chance, mult):
         tree.width = 1
 
     return tree        
-    
 
-# draw a tree recursively
-def drawTree(tree, height):
-    # start a list of drawing elements that we will add to
-    vis = []
 
-    # let width be determined by node
+# draw tree recursively
+def drawTree(tree, height):  
     width = tree.width
 
-    # draw vertical line
-    vis.append(lines(0, 0, 0, -height))
-    
-    
-    
     # draw two children by recursing
     if len(tree.children) > 0:
         left  = -width/2.0 + tree.children[0].width/2.0
         right = width/2.0 - tree.children[1].width/2.0
+           
+        grp = group(
+            # draw horizontal line
+            lines(left, -height, right, -height),
     
-        # draw horizontal line
-        vis.append(lines(left, -height, right, -height))
-        
-        # left child
-        vis.append(
-            translate(left, -height   ,
-                drawTree(tree.children[0], height)))
+            # left child
+            translate(left, -height,
+                drawTree(tree.children[0], height)),
 
-
-        # right child
-        vis.append(
+            # right child
             translate(right, -height,
                 drawTree(tree.children[1], height)))
-    
-    # convert draw list, vis, into a group and return
-    return list2group(vis)
+        
+        node = Node(get_group_id(grp))   
+        def func():
+            node.shown = not node.shown
+            show_group(node.groupid, node.shown)
+        
+        return group(
+            color(0,0,0),
+            lines(0, 0, 0, -height), grp,
+            
+            # draw toggle button
+            color(1, 0, 0),
+            translate(0, -height, 
+                quads(-button_size, -button_size,
+                      -button_size, button_size,
+                      button_size, button_size,
+                      button_size, -button_size),
+                hotspot("click", 
+                    -button_size, -button_size,
+                    button_size, button_size,
+                    func)))
+    else:
+        return group(color(0,0,0), lines(0, 0, 0, -height))    
 
 
 

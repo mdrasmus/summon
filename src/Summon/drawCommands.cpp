@@ -205,11 +205,12 @@ bool ParseCommand(Scm procScm, Command **command)
 {        
     if (ScmStringp(procScm)) {
         string name = Scm2String(procScm);
-        vector<StringCommand*> stringCmds = GetAllStringCommands();
-
-        for (int i=0; i<stringCmds.size(); i++) {
-            if (name == stringCmds[i]->GetName()) {
-                *command = stringCmds[i]->Create();
+        
+        for (CommandAttr::Iterator i=g_stringAttr.Begin();
+             i != g_stringAttr.End(); i++)
+        {
+            if (name == ((StringCommand*) *i)->GetName()) {
+                *command = (*i)->Create();
                 return true;
             }
         }

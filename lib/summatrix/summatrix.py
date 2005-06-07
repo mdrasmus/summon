@@ -1,10 +1,8 @@
-#!/home/raz/bin/visdraw
-
 import random
 import sys
 
-from visdraw import *
-from Visdraw import shapes
+from summon import *
+from summonlib import shapes
 
 class Param:
     def __init__(self):
@@ -35,9 +33,7 @@ def openadj(filename):
     
     dots = []
     row = 0
-    prog = util.ProgressBar(nrows, title="Reading Matrix")
     for line in infile:
-        #prog.update()
         fields = line.split()
 
         if param.sample and random.random() > param.sampleLevel:

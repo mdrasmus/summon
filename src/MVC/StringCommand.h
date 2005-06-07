@@ -60,16 +60,16 @@ public:
 };
 
 
-extern set<int> g_stringCommands;
-extern vector<StringCommand*> g_usageList;
 
-bool IsStringCommand(int cmdId);
+extern CommandAttr g_stringAttr;
 vector<StringCommand*> GetAllStringCommands();
+
+extern vector<StringCommand*> g_usageList;
 inline vector<StringCommand*> GetUsageList() { return g_usageList; }
 
 #define RegisterStringCommand(cmd) \
     RegisterCommand(cmd) \
-    g_stringCommands.insert(cmd ## _c.GetId()); \
+    AddAttr(g_stringAttr) \
     g_usageList.push_back(&cmd ## _c);
 
 #define RegisterComment(var, str) \

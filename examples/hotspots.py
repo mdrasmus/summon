@@ -1,8 +1,8 @@
 # SUMMON examples
 # hotspots.py - example of hotspots
 
-# The default binding for hotspot clicking is 'control + left click'
-# Left click on each box with the control key pressed to activate the hotspots
+# The default binding for hotspot clicking is 'middle click'
+# Middle click inside each box to activate the hotspots
 # Notice that when two hotspots overlap that both are activated when clicked
 
 # make summon commands available
@@ -33,7 +33,6 @@ def makeBox(string, x, y, width, boxColor):
             x + width*.1, y + width*.1,
             x + width*.9, y + width*.9,
             "center", "middle"),
-        color(1,1,1),
         hotspot("click",
             x, y,
             x + width, y + width,

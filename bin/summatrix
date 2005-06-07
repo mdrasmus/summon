@@ -2,7 +2,7 @@
 
 PROG=`readlink $0`
 DIR=`dirname $PROG`
-visdraw $DIR/../lib/summatrix.py $*
+summon $DIR/../lib/summatrix/summatrix.py $*
 
 
 

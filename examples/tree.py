@@ -10,31 +10,25 @@ clear_groups()
 
 
 # draw tree recursively
-def drawTree(depth, width, height):
-    # start a list of drawing elements that we will add to
-    vis = []
-
-    # draw vertical line
-    vis.append(lines(0, 0, 0, -height))
-    
+def drawTree(depth, width, height):  
     # draw two children by recursing
-    if depth > 0:
-        # draw horizontal line
-        vis.append(lines(-width/2.0, -height, width/2.0, -height))
+    if depth > 0:        
+        grp = group(
+            # draw horizontal line
+            lines(-width/2.0, -height, width/2.0, -height),
     
-        # left child
-        vis.append(
+            # left child
             translate(-width/2.0, -height   ,
-                drawTree(depth-1, width/2.0, height)))
+                drawTree(depth-1, width/2.0, height)),
 
-
-        # right child
-        vis.append(
+            # right child
             translate(width/2.0, -height,
                 drawTree(depth-1, width/2.0, height)))
+        
+        return group(lines(0, 0, 0, -height), grp)
+    else:
+        return group(lines(0, 0, 0, -height))
     
-    # convert draw list, vis, into a group and return
-    return list2group(vis)
 
 # set background to white
 set_bgcolor(1,1,1)
