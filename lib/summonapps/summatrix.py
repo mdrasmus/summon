@@ -9,6 +9,9 @@ from summonlib import shapes
 # global info
 mat = {}
 
+nrows = 0
+ncols = 0
+nnz = 0
 rperm = []
 cperm = []
 rinv  = []
@@ -16,7 +19,7 @@ cinv  = []
 
 
 def usage():
-    print "usage: summatrix [-adj <file>] [-smat <file>] [-keep]"
+    print "usage: summatrix (-adj|-smat|-dense) <file> [-keep]"
 
 class Param:
     def __init__(self):
@@ -24,21 +27,72 @@ class Param:
         self.sample = False
         self.sampleLevel = 1
         self.matfile = ""
-        self.mattype = ""
+        self.mattype = "undefined"
 
 param = Param()
 
-def setupPerm(nrows):
+def parseArgs(argv):
+    i = 0
+    while i < len(argv):
+        # matrix types
+        if argv[i] == "-adj":
+            param.mattype = "adj"
+            param.matfile = argv[i+1]
+            i += 2
+        elif argv[i] == "-smat":
+            param.mattype = "smat"
+            param.matfile = argv[i+1]
+            i += 2
+        elif argv[i] == "-dense":
+            param.mattype = "dense"
+            param.matfile = argv[i+1]
+            i += 2
+        
+        # permutations
+        elif argv[i] == "-rp":
+            rperm[:] = util.readInts(argv[i+1])
+            i += 2
+        elif argv[i] == "-cp":
+            cperm[:] = util.readInts(argv[i+1])
+            i += 2
+        elif argv[i] == "-rcp":
+            rperm[:] = util.readInts(argv[i+1])        
+            cperm[:] = util.readInts(argv[i+1])
+            i += 2
+        
+        # other options
+        elif argv[i] == "-keep":
+            param.keep = True
+            i += 1
+        elif argv[i] == "-sample":
+            param.sample = True
+            param.sampleLevel = float(argv[i+1])
+            i += 2
+        else:
+            raise "unknown argument '%s'" % argv[i]
+
+
+
+
+#############################################################################
+# Matrix Reading
+#
+
+def setup(nrows, ncols, nnz):
+    globals()["nrows"] = nrows
+    globals()["ncols"] = ncols
+    globals()["nnz"] = nnz        
+
     if rperm == []:
         rperm[:] = range(nrows)
     if cperm == []:
-        cperm[:] = range(nrows)
+        cperm[:] = range(ncols)
     
     rinv[:] = util.invPerm(rperm)
     cinv[:] = util.invPerm(cperm)
 
 
-def openadj(filename):
+def openAdj(filename):
     infile = file(filename)
     
     # read header
@@ -54,9 +108,9 @@ def openadj(filename):
     
     print "%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz)        
     
-    setupPerm(nrows)
+    setup(nrows, ncols, nnz)
     
-    dots = []
+    dots  = []
     row = 0
     for line in infile:
         fields = line.split()
@@ -70,40 +124,26 @@ def openadj(filename):
             val = float(fields[i])
             dots.append(cinv[col])
             dots.append(rinv[row])
-            
-            if param.keep:
-                mat[row][col] = val
+        row += 1
         
-        # draw 10000 points at a time
-        if len(dots) > 10000:
+        if len(dots) > 100000:
             add_group(group(color(1,0,0), points(apply(vertices, dots))))
             dots = []
-        row += 1
-    
-    # draw remaining points
     add_group(group(color(1,0,0), points(apply(vertices, dots))))
-
-    # draw boundary 
-    add_group(group(color(1,1,1), 
-              shapes.boxStroke(-.5,-.5,ncols-.5, nrows-.5)))
-
     
-    set_antialias(False)
-    home()
 
 
-def opensmat(filename):
+def openSmat(filename):
     infile = file(filename)
     
     # read header
     (nrows, ncols, nnz) = map(int, infile.next().split())
     print "%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz)        
     
-    setupPerm(nrows)
+    setup(nrows, ncols, nnz)
     
     dots = []
     mat.clear()
-    keys = {}
     for line in infile:
         if param.sample and random.random() > param.sampleLevel:
             continue
@@ -116,68 +156,104 @@ def opensmat(filename):
         keys[r] = 1
     
     # build matrix
-    for key in keys:
-        mat[key] = {}
-    for i in range(0, len(dots), 2):
-        mat[dots[i]][dots[i+1]] = 1
+    if param.keep:
+       for i in xrange(nrows):
+           mat[i] = {}
+       for i in range(0, len(dots), 2):
+           mat[dots[i]][dots[i+1]] = 1
     
     # draw remaining points
     add_group(group(color(1,0,0), points(apply(vertices, dots))))
+    
 
-    # draw boundary 
-    add_group(group(color(1,1,1), 
-              shapes.boxStroke(-.5,-.5,nrows-.5, nrows-.5)))
+def openDense(filename):
+    infile = file(filename)
+    
+    # read header
+    (nrows, ncols) = map(int, infile.next().split())
+    nnz = nrows * ncols
+    print "%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz)        
+    
+    setup(nrows, ncols, nnz)
+    
+    mat.clear()
+    maxval = -1e1000
+    minval = 1e1000
+    r = 0
+    for line in infile:
+        vals = map(float, line.split())
+        mat[r] = {}
+        for c in xrange(len(vals)):
+            mat[r][c] = vals[c]
+            if vals[c] > maxval:
+                maxval = vals[c]
+            if vals[c] < minval:
+                minval = vals[c]
+            
+        r += 1
+    
+    # draw remaining points
+    vis = []
+    for i in xrange(nrows):
+        for j in xrange(ncols):
+            if mat[i][j] >= 0:
+                vis.append(color(mat[i][j] / maxval, 0, 0))
+            else:
+                vis.append(color(0, mat[i][j] / minval, 0))
+            vis.append(vertices(j, i))
+        if len(vis) > 10000:
+            add_group(group(apply(points, vis)))
+            vis = []
+    add_group(group(apply(points, vis)))
+    
 
     
-    set_antialias(False)
-    home()
+    
 
-def openmat(matfile, mattype):        
+def openmat(matfile, mattype):  
     util.tic("read matrix")
-    if mattype == "adj":
-        openadj(matfile)
-    elif mattype == "smat":
-        opensmat(matfile)
+    
+    if True:
+        if mattype == "adj":
+            openAdj(matfile)
+        elif mattype == "smat":
+            openSmat(matfile)
+        elif mattype == "dense":
+            openDense(matfile)
+        else:
+            raise "unknown matrix type %s" % mattype
+    #except:
+    #    print "error reading matrix file"
     util.toc()
 
+#######################################################################
+# Drawing
+#
 
-def parseArgs(argv):
-    i = 0
-    while i < len(argv):
-        if argv[i] == "-adj":
-            param.mattype = "adj"
-            param.matfile = argv[i+1]
-            i += 2
-        elif argv[i] == "-smat":
-            param.mattype = "smat"
-            param.matfile = argv[i+1]
-            i += 2
-        elif argv[i] == "-rp":
-            rperm[:] = util.readInts(argv[i+1])
-            i += 2
-        elif argv[i] == "-cp":
-            cperm[:] = util.readInts(argv[i+1])
-            i += 2
-        elif argv[i] == "-keep":
-            param.keep = True
-            i += 1
-        elif argv[i] == "-sample":
-            param.sample = True
-            param.sampleLevel = float(argv[i+1])
-            i += 2
-        else:
-            raise "unknown argument '%s'" % argv[i]
+def drawBorder(nrows, ncols):
+    # draw boundary 
+    add_group(group(color(1,1,1), 
+              shapes.boxStroke(-.5,-.5,ncols-.5, nrows-.5)))
+    home()
 
+
+#######################################################################
+# Main Execution
+#
 
 print "SUMMATRIX (SUMMON Matrix Visualizer)"
 print "Matt Rasmussen 2005"
 print
 
 
+set_antialias(False)
+
+
 if len(sys.argv) > 2:
     parseArgs(sys.argv[2:])
     if param.mattype != "":
         openmat(param.matfile, param.mattype)
+        drawBorder(nrows, ncols)
     else:
         usage()
 else:
