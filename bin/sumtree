@@ -6,7 +6,7 @@ else
     PROG="$0"
 fi
 DIR=`dirname $PROG`
-summon $DIR/../lib/summonapps/summatrix.py $*
+summon $DIR/../lib/summonapps/sumtree.py $*
 
 
 

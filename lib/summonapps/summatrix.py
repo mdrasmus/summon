@@ -1,17 +1,41 @@
 import random
 import sys
+import util
 
 from summon import *
 from summonlib import shapes
+
+
+# global info
+mat = {}
+
+rperm = []
+cperm = []
+rinv  = []
+cinv  = []
+
+
+def usage():
+    print "usage: summatrix [-adj <file>] [-smat <file>] [-keep]"
 
 class Param:
     def __init__(self):
         self.keep = False
         self.sample = False
         self.sampleLevel = 1
+        self.matfile = ""
+        self.mattype = ""
 
-mat = {}
 param = Param()
+
+def setupPerm(nrows):
+    if rperm == []:
+        rperm[:] = range(nrows)
+    if cperm == []:
+        cperm[:] = range(nrows)
+    
+    rinv[:] = util.invPerm(rperm)
+    cinv[:] = util.invPerm(cperm)
 
 
 def openadj(filename):
@@ -30,6 +54,7 @@ def openadj(filename):
     
     print "%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz)        
     
+    setupPerm(nrows)
     
     dots = []
     row = 0
@@ -43,8 +68,8 @@ def openadj(filename):
         for i in xrange(0, len(fields), 2):
             col = int(fields[i]) - 1
             val = float(fields[i])
-            dots.append(row)
-            dots.append(col)
+            dots.append(cinv[col])
+            dots.append(rinv[row])
             
             if param.keep:
                 mat[row][col] = val
@@ -73,7 +98,8 @@ def opensmat(filename):
     # read header
     (nrows, ncols, nnz) = map(int, infile.next().split())
     print "%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz)        
-        
+    
+    setupPerm(nrows)
     
     dots = []
     mat.clear()
@@ -84,8 +110,9 @@ def opensmat(filename):
         (row, col, val) = line.split()
         r = int(row)
         c = int(col)
-        dots.append(r)
-        dots.append(c)
+        dots.append(cinv[c])        
+        dots.append(rinv[r])
+        
         keys[r] = 1
     
     # build matrix
@@ -105,16 +132,31 @@ def opensmat(filename):
     set_antialias(False)
     home()
 
+def openmat(matfile, mattype):        
+    util.tic("read matrix")
+    if mattype == "adj":
+        openadj(matfile)
+    elif mattype == "smat":
+        opensmat(matfile)
+    util.toc()
 
 
 def parseArgs(argv):
     i = 0
     while i < len(argv):
         if argv[i] == "-adj":
-            openadj(argv[i+1])
+            param.mattype = "adj"
+            param.matfile = argv[i+1]
             i += 2
         elif argv[i] == "-smat":
-            opensmat(argv[i+1])
+            param.mattype = "smat"
+            param.matfile = argv[i+1]
+            i += 2
+        elif argv[i] == "-rp":
+            rperm[:] = util.readInts(argv[i+1])
+            i += 2
+        elif argv[i] == "-cp":
+            cperm[:] = util.readInts(argv[i+1])
             i += 2
         elif argv[i] == "-keep":
             param.keep = True
@@ -126,9 +168,20 @@ def parseArgs(argv):
         else:
             raise "unknown argument '%s'" % argv[i]
 
+
+print "SUMMATRIX (SUMMON Matrix Visualizer)"
+print "Matt Rasmussen 2005"
+print
+
+
 if len(sys.argv) > 2:
     parseArgs(sys.argv[2:])
+    if param.mattype != "":
+        openmat(param.matfile, param.mattype)
+    else:
+        usage()
 else:
-    print "usage: summatrix [-adj <file>] [-smat <file>] [-keep]"
+    usage()
+
 
 

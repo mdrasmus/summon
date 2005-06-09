@@ -216,11 +216,11 @@ void ScriptEngine::Init()
                 (m_commands[i]->HasAttr(&g_scriptAttr) ?
                     idstr :  string("'") + m_commands[i]->GetName() + "'") +
             ", args)\n" + 
-            m_moduleName + "." + name + " = __helper_" + name + "\n" + 
-            "__helper_" + name + ".func_name = \"" + name + "\"\n" +
-            "__helper_" + name + ".func_doc = \"" + help + "\"\n";
+            m_moduleName + "." + name + " = __helper_" + name + "\n";
+            //"__helper_" + name + ".func_name = \"" + name + "\"\n" +
+            //"__helper_" + name + ".func_doc = \"" + help + "\"\n";
         ScmEvalStr(pyCommands.c_str());
-        printf(pyCommands.c_str());
+        //printf(pyCommands.c_str());
     }
 }
 
