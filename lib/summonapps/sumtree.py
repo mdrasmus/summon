@@ -131,10 +131,10 @@ if len(sys.argv) < 4:
 i = 2
 while i < len(sys.argv):
     if sys.argv[i] == "-ptree":
-        (mode, treeFile, labelFile) = sys.argv[2:2+3]
+        (param.mode, param.treeFile, param.labelFile) = sys.argv[2:2+3]
         i += 3
     elif sys.argv[i] == "-newick":
-        mode, treeFile = sys.argv[2:2+2]
+        param.mode, param.treeFile = sys.argv[2:2+2]
         i += 2
     elif sys.argv[i] == "-usedist":
         param.distfactor = float(sys.argv[i+1])
@@ -150,10 +150,10 @@ print
 # read
 util.tic("reading input")
 tree = algorithms.Tree()
-if mode == "-ptree":
-    tree.readParentTree(treeFile, labelFile)
-elif mode == "-newick":
-    tree.readNewick(treeFile)
+if param.mode == "-ptree":
+    tree.readParentTree(param.treeFile, param.labelFile)
+elif param.mode == "-newick":
+    tree.readNewick(param.treeFile)
 tree.setSizes()
 setupTree(tree.root)
 setColors(tree.root)
@@ -170,7 +170,6 @@ add_group(group(
 home()
 util.toc()
 
-print tree.nodes.values()[-1].name
 
 #########################################################################
 # Functions to manipulate the Tree
