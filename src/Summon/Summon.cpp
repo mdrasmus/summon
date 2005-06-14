@@ -387,7 +387,7 @@ def __" + name + "_contents(obj): return obj[1:]\n\
 #       if (VISTOOLS_SCRIPT == VISTOOLS_SCHEME)
 #       endif
 #       if (VISTOOLS_SCRIPT == VISTOOLS_PYTHON)
-            ScmEvalStr("import "MODULELIB_NAME".summon_config");
+            ScmEvalStr("import summon_config");
 #       endif
         return true;
     }
