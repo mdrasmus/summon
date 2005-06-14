@@ -125,7 +125,7 @@ class TreeNode:
     
     def isLeaf(self):
         return len(self.children) == 0
-    
+        
 class Tree:
     def __init__(self):
         self.nodes = {}
@@ -147,7 +147,13 @@ class Tree:
     def remove(self, node):
         node.parent.children.remove(node)
         del self.nodes[node.name]
-
+    
+    def rename(self, oldname, newname):
+        node = self.nodes[oldname]
+        del self.nodes[oldname]
+        self.nodes[newname] = node
+        node.name = newname
+    
     def addChildTree(self, parent, childTree):
         # merge nodes
         for name in childTree.nodes:
@@ -185,6 +191,25 @@ class Tree:
         
         return len(path1) + len(path2) - 2 * i + 1
 
+    def leaves(self, node = None):
+        if node == None:
+            node = self.root
+
+        leaves = []
+
+        def walk(node):
+            if node.isLeaf():
+                return leaves.append(node)
+            else:
+                for child in node.children:
+                    walk(child)
+        walk(node)
+                    
+        return leaves
+
+    def leaveNames(self, node = None):
+        return map(lambda x: x.name, self.leaves())
+
     def setSizes(self, node = None):
         if node == None:
             node = self.root
@@ -195,11 +220,24 @@ class Tree:
         else:
             node.size = 1
         return node.size
-    
+
+    def subtree(self, node):
+        tree = Tree()
+        tree.root = node
+        
+        def walk(node):
+            tree.add(node)
+            for child in node.children:
+                walk(child)
+
+        walk(node)
+        return tree
 
     def writeNewick(self, out = sys.stdout):
         self.writeNewickNode(self.root, out)
-    
+
+    def write(self, out = sys.stdout):
+        self.writeNewick(out)    
 
     def writeNewickNode(self, node, out = sys.stdout, depth = 0):
         print >>out, (" " * depth),
@@ -228,6 +266,7 @@ class Tree:
                 print >>out, ":0",
 
 
+
     def readNewick(self, filename):
         infile = file(filename)    
         closure = {"nodeid" : 1, "opens": 0}
@@ -239,7 +278,15 @@ class Tree:
             if char == "(": closure["opens"] += 1
             if char == ")": closure["opens"] -= 1
             return char
-
+        
+        def readUntil(chars):
+            token = ""
+            while True:
+                char = readchar()
+                if char in chars or char == "":
+                    return [token, char]
+                token += char
+        
         def readDist():
             word = ""
             while True:
@@ -250,26 +297,21 @@ class Tree:
                     word += char
 
         def readItem():
-            char = readchar()
-            if char == "(":
+            char1 = readchar()
+            
+            if char1 == "(":
                 node = readParen()
-
-                while readchar() != ":": pass
-                node.dist = readDist()
-
+                token, char = readUntil("):,")
+                if char == ":":
+                    node.dist = readDist()
                 return node
-            else:
-                word = char
-                while True:
-                    char = infile.read(1)                
-                    if char == ":":
-                        dist = readDist()
-                        word = word.rstrip()                        
-                        node = TreeNode(word)
-                        node.dist = dist
-                        return node
-                    else:
-                        word += char
+            else:                   
+                word, char = readUntil(":),")
+                word = char1 + word.rstrip()
+                node = TreeNode(word)
+                if char == ":":
+                    node.dist = readDist()
+                return node
 
         def readParen():
             node = TreeNode(closure["nodeid"])
@@ -277,6 +319,7 @@ class Tree:
             depth = closure["opens"]
             while closure["opens"] == depth:
                 self.addChild(node, readItem())
+            
             return node
 
         def readRoot():
@@ -287,6 +330,7 @@ class Tree:
 
         self.root = readRoot()
         self.add(self.root)
+    
 
     def readParentTree(self, treeFile, labelFile):
         labels = util.readStrings(labelFile)
@@ -322,4 +366,25 @@ class Tree:
             i += 1
 
 
+def smallSubtrees(tree, maxsize):
+    trees = []
+    tree.setSizes()
+    
+    def walk(node):
+        if node.size <= maxsize:
+            trees.append(tree.subtree(node))
+        else:
+            # if too big keep digging
+            for child in node.children:
+                walk(child)
+    walk(tree.root)
+    
+    return trees
+    
+    
+
+if __name__ == "__main__":
+    tree = Tree()
+    tree.readNewick("test/small.tree")    
+    trees = smallSubtrees(tree, 30)
 
