@@ -1,5 +1,8 @@
 import sys
 import util
+import random, math
+
+
         
 class Rect:
     x1 = 0
@@ -130,6 +133,7 @@ class Tree:
     def __init__(self):
         self.nodes = {}
         self.root = None
+        self.nextname = 1
 
     def makeRoot(self, name = "ROOT"):
         self.root = TreeNode(name)
@@ -148,19 +152,47 @@ class Tree:
         node.parent.children.remove(node)
         del self.nodes[node.name]
     
+    def removeTree(self, node):
+        def walk(node):
+            if node.name in self.nodes:
+                del self.nodes[node.name]
+            for child in node.children:
+                walk(child)
+        walk(node)
+        
+        if node.parent:
+            node.parent.children.remove(node)
+    
+    
     def rename(self, oldname, newname):
         node = self.nodes[oldname]
         del self.nodes[oldname]
         self.nodes[newname] = node
         node.name = newname
     
+    def newName(self):
+        name = self.nextname
+        self.nextname += 1
+        return name
+    
     def addChildTree(self, parent, childTree):
-        # merge nodes
-        for name in childTree.nodes:
-            self.nodes[name] = childTree.nodes[name]
-
+        self.addTree(parent, childTree)
+    
+    def addTree(self, parent, childTree):
+        # merge nodes and change the names of childTree names if they conflict
+        # with existing names
+        names = childTree.nodes.keys()
+        for name in names:
+            if name in self.nodes:
+                name2 = self.newName()
+                self.nodes[name2] = childTree.nodes[name]
+                self.nodes[name2].name = name2
+            else:
+                self.nodes[name] = childTree.nodes[name]
+        
         self.addChild(parent, childTree.root)
-
+        
+    
     def clear(self):
         self.nodes = {}
         self.root = None
@@ -208,7 +240,7 @@ class Tree:
         return leaves
 
     def leaveNames(self, node = None):
-        return map(lambda x: x.name, self.leaves())
+        return map(lambda x: x.name, self.leaves(node))
 
     def setSizes(self, node = None):
         if node == None:
@@ -220,7 +252,39 @@ class Tree:
         else:
             node.size = 1
         return node.size
+    
+    def findDepths(self, node = None):
+        if not node:
+            node = self.root
+        
+        depths = {}
 
+        def walk(node, d):
+            depths[node.name] = d
+            for child in node.children:
+                walk(child, d+1)
+        walk(node, 0)
+        return depths
+
+
+    def lca(self, names, depths = None):
+        if not depths:
+            depths = findDepths(self.root)
+
+        markers = util.list2dict(names)
+
+        while len(markers) > 1:
+            names = markers.keys()
+            ind = util.argmaxfunc(lambda x: depths[x], names)
+            deepest = names[ind]
+
+            del markers[deepest]
+            markers[self.nodes[deepest].parent.name] = 1
+
+        return self.nodes[markers.keys()[0]]
+
+
+    
     def subtree(self, node):
         tree = Tree()
         tree.root = node
@@ -269,12 +333,12 @@ class Tree:
 
     def readNewick(self, filename):
         infile = file(filename)    
-        closure = {"nodeid" : 1, "opens": 0}
+        closure = {"opens": 0}
 
         def readchar():
             while True:
                 char = infile.read(1)
-                if char != " " and char != "\n" and char != "": break
+                if char != " " and char != "\n": break
             if char == "(": closure["opens"] += 1
             if char == ")": closure["opens"] -= 1
             return char
@@ -291,41 +355,46 @@ class Tree:
             word = ""
             while True:
                 char = readchar()
-                if not char in "-0123456789.":
+                if not char in "-0123456789.e":
                     return float(word)
                 else:
                     word += char
 
         def readItem():
-            char1 = readchar()
-            
-            if char1 == "(":
-                node = readParen()
-                token, char = readUntil("):,")
-                if char == ":":
-                    node.dist = readDist()
-                return node
-            else:                   
-                word, char = readUntil(":),")
-                word = char1 + word.rstrip()
-                node = TreeNode(word)
-                if char == ":":
-                    node.dist = readDist()
-                return node
+            try:
+                char1 = readchar()
 
-        def readParen():
-            node = TreeNode(closure["nodeid"])
-            closure["nodeid"] += 1
+                if char1 == "(":
+                    node = TreeNode(self.newName())
+                    depth = closure["opens"]
+                    while closure["opens"] == depth:
+                        self.addChild(node, readItem())
+                    
+                    token, char = readUntil("):,")
+                    if char == ":":
+                        node.dist = readDist()
+                    return node
+                else:                   
+                    word, char = readUntil(":),")
+                    word = char1 + word.rstrip()
+                    node = TreeNode(word)
+                    if char == ":":
+                        node.dist = readDist()
+                    return node
+            except:
+                print sys.exc_type, ": Tree too deep to read"
+                return TreeNode("TOO_DEEP")
+        
+
+        def readRoot():
+            word, char = readUntil("(")
+            
+            assert char == "("
+            
+            node = TreeNode(self.newName())
             depth = closure["opens"]
             while closure["opens"] == depth:
                 self.addChild(node, readItem())
-            
-            return node
-
-        def readRoot():
-            while readchar() != "(": pass
-
-            node = readParen()
             return node
 
         self.root = readRoot()
@@ -380,7 +449,8 @@ def smallSubtrees(tree, maxsize):
     walk(tree.root)
     
     return trees
-    
+
+
     
 
 if __name__ == "__main__":
@@ -388,3 +458,5 @@ if __name__ == "__main__":
     tree.readNewick("test/small.tree")    
     trees = smallSubtrees(tree, 30)
 
+    
+    

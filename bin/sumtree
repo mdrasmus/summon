@@ -1,12 +1,40 @@
-#!/bin/sh
+#!/usr/bin/env summon
 
-if [ -L $0 ]; then
-    PROG=`readlink $0`
-else
-    PROG="$0"
-fi
-DIR=`dirname $PROG`
-summon $DIR/../lib/summonapps/sumtree.py $*
+import sys
+import summonlib.tree
+from summon import *
+
+sumtree = summonlib.tree
 
 
+def nodeClick(node):
+    globals()["selnode"] = sumtree.selnode
+    print "-------------"
+    sumtree.printNode(node)
+sumtree.nodeClick = nodeClick 
 
+
+
+# usage
+if len(sys.argv) < 4:
+    sumtree.usage()
+    sys.exit(1)
+
+# parse args
+param = sumtree.Param(sys.argv[2:])
+
+# title
+print "SUMTREE (SUMMON Tree Visualizer)"
+print "Matt Rasmussen 2005"
+print
+
+# read
+tree = sumtree.readTree(param)
+
+# draw
+sumtree.display(param, tree)
+home()
+
+
+def find(name):
+    return sumtree.find(tree, name)
