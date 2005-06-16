@@ -8,7 +8,7 @@
 
 from summon import *
 from summonlib import *
-import svg
+import summonlib.svg
 
 # scrolling
 set_binding(input_key("right"), trans_camera(20, 0))

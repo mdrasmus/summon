@@ -80,6 +80,8 @@ def printScreen(filename = None):
     
     writeSvg(outfile, get_group(get_root_id()))
     outfile.close()
+    print "wrote '%s'" % filename
+    
     return filename
 
 def printScreenPng(pngFilename = None):
@@ -88,6 +90,8 @@ def printScreenPng(pngFilename = None):
         pngFilename = filename.replace(".svg", ".png")
     os.system("convert " +filename+ " " +pngFilename)
     os.system("rm " + filename)
+    
+    print "wrote '%s'" % pngFilename
     
     return pngFilename
 

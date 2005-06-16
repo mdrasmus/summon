@@ -204,6 +204,8 @@ def readTree(param):
     elif param.mode == "-newick":
         tree.readNewick(param.treeFile)
     
+    print "%s: %d nodes, %d leaves\n" % \
+        (param.treeFile, len(tree.nodes), len(tree.leaves()))
     
     # setup
     setupTree(param, tree)
