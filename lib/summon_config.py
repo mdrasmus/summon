@@ -11,6 +11,7 @@ from summonlib import *
 import summonlib.svg
 
 # scrolling
+set_binding(input_motion("left", "down"), "trans")
 set_binding(input_key("right"), trans_camera(20, 0))
 set_binding(input_key("left"), trans_camera(-20, 0))
 set_binding(input_key("up"), trans_camera(0, 20))
@@ -21,6 +22,14 @@ set_binding(input_key("up", "shift"), trans_camera(0, 60))
 set_binding(input_key("down", "shift"), trans_camera(0, -60))
 set_binding(input_key("Z", "shift"), zoom_camera(1.2))
 set_binding(input_key("z"), zoom_camera(.8333))
+
+
+# zooming
+set_binding(input_click("right", "down"), "focus")
+set_binding(input_motion("right", "down"), "zoom")
+set_binding(input_click("right", "down", "ctrl"), "focus")
+set_binding(input_motion("right", "down", "ctrl"), "zoomx")
+
 
 # hotspot clicking
 set_binding(input_click("middle", "up"), "hotspot_click")

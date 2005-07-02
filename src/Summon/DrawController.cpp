@@ -21,6 +21,7 @@ DrawController::DrawController(CommandExecutor *global, DrawView *view,
     m_view(view),
     m_model(model)
 {
+    m_binding->Clear();
 }
 
 

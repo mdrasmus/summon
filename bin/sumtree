@@ -7,34 +7,23 @@ from summon import *
 sumtree = summonlib.tree
 
 
-def nodeClick(node):
-    globals()["selnode"] = sumtree.selnode
-    print "-------------"
-    sumtree.printNode(node)
-sumtree.nodeClick = nodeClick 
-
-
-
-# usage
-if len(sys.argv) < 4:
-    sumtree.usage()
-    sys.exit(1)
-
 # parse args
-param = sumtree.Param(sys.argv[2:])
+param, rest = sumtree.parseArgs(sys.argv[1:])
 
 # title
 print "SUMTREE (SUMMON Tree Visualizer)"
 print "Matt Rasmussen 2005"
 print
 
+vis = sumtree.SumTree()
+
 # read
-tree = sumtree.readTree(param)
+tree = vis.readTree(param)
 
 # draw
-sumtree.display(param, tree)
+vis.display(param, tree)
 home()
 
 
 def find(name):
-    return sumtree.find(tree, name)
+    return vis.find(tree, name)

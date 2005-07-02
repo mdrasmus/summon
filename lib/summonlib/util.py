@@ -16,50 +16,52 @@ def GLOBALS():
 # Timer class for timing nested sections of code
 
 class Timer:
-    def __init__(self):
+    def __init__(self, stream = sys.stderr):
         self.reset()
+        self.stream =  stream
+        self.maxdepth = 1e1000
 
 
-    def start(self, msg = "", stream = sys.stderr):
-        self.msg.append(msg)
-        self.streams.append(stream)
-        self.starts.append(time.clock())
-        if msg != "":
+    def start(self, msg = ""):
+        t = time.clock()
+        if msg != "" and self.depth() <= self.maxdepth:
             self.indent()
-            print >>self.streams[-1], "BEGIN %s: " % (self.msg[-1])
+            print >>self.stream, "BEGIN %s: " % msg
+        self.msg.append(msg)
+        self.starts.append(t)
     
     def time(self):
         return self.starts[-1] - time.clock()
     
     def stop(self):
-        duration = time.clock() - self.starts[-1]
-        if self.msg[-1] != "":
+        duration = time.clock() - self.starts.pop()
+        msg = self.msg.pop()
+        if msg != "" and self.depth() <= self.maxdepth:
             self.indent()
-            print >>self.streams[-1], "END   %s: %f s" % \
-                                      (self.msg[-1], duration)
-        self.msg.pop()
-        self.streams.pop()
-        self.starts.pop()
+            print >>self.stream, "END   %s: %f s" % (msg, duration)
         return duration
     
     def log(self, *text):
-        self.indent()
-        print >>self.streams[-1], "  ",
-        for i in text:
-            print >>self.streams[-1], i,
-        print >>self.streams[-1]
+        if self.depth() <= self.maxdepth:
+            self.indent()
+            for i in text:
+                print >>self.stream, i,
+            print >>self.stream
     
     def logExact(self, text):
-        self.streams[-1].write(text)
+        if self.depth() <= self.maxdepth:
+            self.stream.write(text)
     
     def indent(self):
-        for i in range(len(self.starts) - 2):
-            print >>self.streams[-1], "  ",
+        for i in range(self.depth()):
+            print >>self.stream, "  ",
     
     def reset(self):
-        self.msg = [""]
-        self.starts = [0]
-        self.streams = [sys.stderr]
+        self.msg = []
+        self.starts = []
+    
+    def depth(self):
+        return len(self.msg)
 
 
 def log(*text):
@@ -128,7 +130,7 @@ class ProgressBar (Progress):
         
         log("+-" + title + ("-"*(self.width-len(title)-1)) + "+")
         indent()
-        logExact("   |")
+        logExact(" |")
         self.printBar()
     
     def update(self):
@@ -143,6 +145,71 @@ class ProgressBar (Progress):
         amount = int((self.pos / self.end * self.width) - self.bar)
         logExact("*" * amount)
         self.bar += amount
+
+
+###############################################################################
+# Argument parsing
+
+def parseArgs(argv, options):
+    """ 
+    options = [["a:", "a_long=", "a_name", "[-a <arg>] [--a_long=<arg>]"], ...]
+    """
+    
+    import getopt
+    
+    short_opts = "".join([x[0] for x in options])
+    long_opts  = [x[1] for x in options]
+    lookup = {}
+    for option in options:
+        lookup["-" + option[0].replace(":", "")] = option[2]
+        lookup["--" + option[1].replace("=", "")] = option[2]
+        
+        if option[3].startswith("AUTO"):
+            word = option[3][4:]
+            option[3] = "[-%s %s] [--%s %s]" % \
+                (option[0].replace(":", ""), word,
+                 option[1].replace("=", ""), word)
+    
+    
+    if len(argv) < 2:
+        usage(sys.argv[0], options)
+        raise "no options given"
+    
+    
+    try:
+        args, rest = getopt.getopt(argv[1:], short_opts, long_opts)
+    except getopt.GetoptError, msg:
+        print "error:", msg 
+        usage(sys.argv[0], options)
+        raise Exception
+    
+    param = {}
+    for name, value in args:
+        param.setdefault(lookup[name], []).append(value)
+    
+    return param, rest
+        
+def usage(progname, options):
+    """ 
+    options = [("a:", "a_long=", "a_name", "[-a <arg>] [--a_long=<arg>]"), ...]
+    """
+    
+    print >>sys.stderr, "usage: %s " % progname,
+    for option in options:
+        print >>sys.stderr, option[3],
+    print
+    
+    
+
+def getopt(* lst):
+    import getopt
+    param = Dict(1, [])
+    
+    options, rest = getopt.getopt(* lst)
+    
+    for option in options:
+        param[option[0]].append(option[1])
+    return (param.data, rest)
         
 
 ###############################################################################
@@ -468,6 +535,12 @@ class Dict:
 ################################################################################
 # small functions that I use a lot
 
+def getkeys(dic, keys):
+    dic2 = {}
+    for key in keys:
+        if key in dic:
+            dic2[key] = dic[key]
+    return dic2
 
 def case(dic, key, default = None):
     if not key in dic:
@@ -692,6 +765,13 @@ def readDelim(filename, delim="", header=False):
     reader = DelimReader(filename, delim, header)
     data = [row for row in reader]
     return data
+
+def cutIter(myiter, cols, delim=""):
+    if delim == "":
+        return IterFunc(lambda: " ".join(grab(myiter.next().split(), cols)))
+    else:
+        return IterFunc(lambda: delim.join(
+                                       grab(myiter.next().split(delim), cols)))
     
 
 def clearFile(filename):

@@ -25,8 +25,8 @@ public:
     void SetVisible(float x, float y, float x2, float y2);   
     void TranslateBy(float x, float y);
     void TranslateTo(float x, float y);
-    void ZoomBy(float zoom);
-    void ZoomTo(float zoom);
+    void ZoomBy(float x, float y);
+    void ZoomTo(float x, float y);
     void SetFocus(float x, float y);
 
     // accessors
@@ -38,7 +38,7 @@ public:
         return ScreenToWorld(pt.x, pt.y);
     }
     inline Vertex2f GetTranslate() { return m_trans; }
-    inline float GetZoom() { return m_zoom; }
+    inline Vertex2f GetZoom() { return m_zoom; }
 
     static const float MIN_ZOOM = .01;
 
@@ -53,7 +53,7 @@ protected:
     virtual void TransformWorld();
 
     Vertex2f m_trans;
-    float    m_zoom;
+    Vertex2f m_zoom;
     Vertex2f m_focus;
 };
 

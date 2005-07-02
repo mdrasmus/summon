@@ -202,7 +202,7 @@ def openDense(filename):
                 vis.append(color(mat[i][j] / maxval, 0, 0))
             else:
                 vis.append(color(0, mat[i][j] / minval, 0))
-            vis.append(vertices(j, i))
+            vis.append(vertices(cinv[j], rinv[i]))
         if len(vis) > 10000:
             add_group(group(apply(points, vis)))
             vis = []

@@ -178,7 +178,7 @@ void DrawView::DrawWorld()
         return;
     }
     
-    glPointSize(GetZoom());
+    glPointSize(GetZoom().y);
     
     if (m_tasks.size() == 0) {
         // if no tasks, create new drawlist task
@@ -354,8 +354,8 @@ void DrawView::DrawTextElement(TextElement *elm)
         Vertex2f pos2 = elm->pos2;
 
         // find text on-screen size
-        float textWidth  = glutBitmapLength(font, text) / GetZoom();
-        float textHeight = 13.0 / GetZoom();
+        float textWidth  = glutBitmapLength(font, text) / GetZoom().x;
+        float textHeight = 13.0 / GetZoom().y;
         float boxWidth   = pos2.x - pos1.x;
         float boxHeight  = pos2.y - pos1.y;
 

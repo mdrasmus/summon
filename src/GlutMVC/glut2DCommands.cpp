@@ -18,6 +18,8 @@ void glutCommandsInit() {
     RegisterCommand(RedisplayCommand)
     RegisterStringCommand(TranslateCommand)
     RegisterStringCommand(ZoomCommand)
+    RegisterStringCommand(ZoomXCommand)
+    RegisterStringCommand(ZoomYCommand)
     RegisterStringCommand(FocusCommand)
 }
 
