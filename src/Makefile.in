@@ -33,7 +33,7 @@ ifeq ($(VISTOOLS_SCRIPT),$(VISTOOLS_SCHEME))
 	COMPILE := $(COMPILE) `guile-config compile`
 endif
 ifeq ($(VISTOOLS_SCRIPT),$(VISTOOLS_PYTHON))
-    COMPILE := $(COMPILE) -I/usr/include/python2.3
+    COMPILE := $(COMPILE) -I/usr/include/python2.4 -I/usr/include/python2.3
 endif
 
 
