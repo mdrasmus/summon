@@ -68,6 +68,8 @@ void drawCommandsInit()
 
     // controller commands    
     RegisterScriptCommand(SetBindingCommand)    c()
+    RegisterScriptCommand(ClearBindingCommand)  c()
+    RegisterScriptCommand(ClearAllBindingsCommand) c()
     RegisterScriptCommand(HotspotClickCommand)  c()
     
     // constructs

@@ -49,6 +49,16 @@ void DrawController::ExecCommand(Command &command)
                                   ((SetBindingCommand*)&command)->command);
             break;
         
+        case CLEAR_BINDING_COMMAND: {
+            Input *input = ((SetBindingCommand*)&command)->input;
+            m_binding->ClearBinding(*input);
+            delete input;
+            } break;
+        
+        case CLEAR_ALL_BINDINGS_COMMAND: {
+            m_binding->Clear();
+            } break;
+        
         case HOTSPOT_CLICK_COMMAND:
             HotspotClick(((HotspotClickCommand*) &command)->pos);
             break;

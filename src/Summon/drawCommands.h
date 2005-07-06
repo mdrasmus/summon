@@ -68,6 +68,7 @@ enum {
     // controller commands
     SET_BINDING_COMMAND,
     CLEAR_BINDING_COMMAND,
+    CLEAR_ALL_BINDINGS_COMMAND,
     HOTSPOT_CLICK_COMMAND,
     
     
@@ -357,6 +358,7 @@ public:
     float delay;
     Scm proc;
 };
+
 
 
 // -----------------------------------------------------------------------------
@@ -737,9 +739,30 @@ public:
     
     virtual bool Setup(Scm lst)
     {
+        // ensure member vars are NULL before parsing
+        input = NULL;
+        
+        // parse input and command from lst
+        if (ParseInput(ScmCar(lst), &input))
+        {
+            return true;
+        }
     }
     
     Input *input;
+};
+
+
+class ClearAllBindingsCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new ClearAllBindingsCommand(); }
+    virtual int GetId() { return CLEAR_ALL_BINDINGS_COMMAND; }
+
+    virtual const char *GetName() { return "clear_all_bindings"; }
+    virtual const char *GetUsage() { return ""; }
+    virtual const char *GetDescription() 
+    { return "clear all bindings for all input"; }    
 };
 
 
