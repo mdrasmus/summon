@@ -354,8 +354,9 @@ void DrawView::DrawTextElement(TextElement *elm)
         Vertex2f pos2 = elm->pos2;
 
         // find text on-screen size
-        float textWidth  = glutBitmapLength(font, text) / GetZoom().x;
-        float textHeight = 13.0 / GetZoom().y;
+        float textWidth  = glutBitmapLength(font, text) / GetZoom().x 
+                            / elm->scale.x;
+        float textHeight = 13.0 / GetZoom().y / elm->scale.y;
         float boxWidth   = pos2.x - pos1.x;
         float boxHeight  = pos2.y - pos1.y;
 
@@ -370,14 +371,14 @@ void DrawView::DrawTextElement(TextElement *elm)
         if (elm->justified & TextElement::LEFT)
             pos.x = pos1.x;
         else if (elm->justified & TextElement::CENTER)
-            pos.x = pos1.x + (boxWidth - textWidth) / 2;
+            pos.x = pos1.x + (boxWidth - textWidth) / 2.0;
         else if (elm->justified & TextElement::RIGHT)
             pos.x = pos2.x - textWidth;
 
         if (elm->justified & TextElement::TOP)
             pos.y = pos2.y - textHeight;
         else if (elm->justified & TextElement::MIDDLE)
-            pos.y = pos1.y + (boxHeight - textHeight) / 2;
+            pos.y = pos1.y + (boxHeight - textHeight) / 2.0;
         else if (elm->justified & TextElement::BOTTOM)
             pos.y = pos1.y;
 

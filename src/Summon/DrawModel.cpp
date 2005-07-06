@@ -28,9 +28,24 @@ void DrawModel::ExecCommand(Command &command)
         
         case INSERT_GROUP_COMMAND: {
             BuildEnv env(true);
-            int id = AddGroup(env, ((InsertGroupCommand*)(&command))->groupid, 
-                          ((InsertGroupCommand*)(&command))->code);
-            ((InsertGroupCommand*)(&command))->SetReturn(Int2Scm(id));
+            int pid = ((InsertGroupCommand*)(&command))->groupid;
+            
+            // find parent group to insert into
+            Group *group = m_table.GetGroup(pid);
+            if (group != NULL)
+            {
+                // get the environment and parent of old group
+                env = GetEnv(env, NULL, group);
+                
+                int id = AddGroup(env, pid, 
+                                  ((InsertGroupCommand*)(&command))->code);
+                
+                ((InsertGroupCommand*)(&command))->SetReturn(Int2Scm(id));
+            } else {
+                Error("unknown group %d", pid);
+                ((InsertGroupCommand*)(&command))->SetReturn(Int2Scm(-1));
+            }
+            
             Redisplay();
             } break;
         
@@ -145,14 +160,13 @@ BuildEnv DrawModel::GetEnv(BuildEnv &env, Element *start, Element *end)
     for (Element *i = end; i != start; i = i->GetParent()) {
         elms.push_front(i);
     }
+    elms.push_front(end);
+
     
     // traceback down parent pointers to calc env
     for (list<Element*>::iterator i=elms.begin(); i!=elms.end(); i++) {
         switch ((*i)->GetId()) {
-            case TRANSLATE_CONSTRUCT:
-            case SCALE_CONSTRUCT:
-            case FLIP_CONSTRUCT:
-            case ROTATE_CONSTRUCT: {
+            case TRANSFORM_CONSTRUCT: {
                 // modify environment for children elements
                 float tmp[16];
                 MultMatrix(env2.trans.mat, ((Transform*) (*i))->GetMatrix(), 
@@ -599,7 +613,11 @@ Element *DrawModel::BuildText(BuildEnv &env, Scm code, int kind)
     textElm->text = text;
     textElm->justified = justified;
     
-    // apply current transform to coordinates
+    // find scaling
+    Vertex2f orgin;
+    env.trans.VecMult(0.0, 0.0, &orgin.x, &orgin.y);
+    env.trans.VecMult(1.0, 1.0, &textElm->scale.x, &textElm->scale.y);
+    textElm->scale = textElm->scale - orgin;
     Vertex2f pos1(x1, y1), pos2(x2, y2);
     textElm->SetRect(pos1, pos2);
     
