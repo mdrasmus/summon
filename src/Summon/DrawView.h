@@ -67,6 +67,13 @@ public:
     int m_drawlist;
 };
 
+class DrawView;
+class DrawViewListener 
+{
+public:
+    virtual void Redraw(DrawView *view) {}
+};
+
 
 class DrawView : public Glut2DView 
 {
@@ -82,6 +89,8 @@ public:
     
     inline void SetWorldModel(DrawModel *model) { m_worldModel = model; }
     inline void SetScreenModel(DrawModel *model) { m_screenModel = model; }
+    inline void SetListener(DrawViewListener *listener)
+    { m_listener = listener; }
 
     inline void Redisplay() {
         RedisplayCommand cmd;
@@ -92,6 +101,8 @@ public:
     {
         ClearTasks();
     }
+    
+
 
 protected:
 
@@ -124,6 +135,7 @@ protected:
     bool m_active;
     vector<DrawTask*> m_tasks;
     bool m_executingTasks;
+    DrawViewListener *m_listener;
 };
 
 }

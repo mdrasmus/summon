@@ -78,8 +78,12 @@ void DrawModel::ExecCommand(Command &command)
                 
                 // add new group
                 PopulateElement(env, parent, replace->code);
+                replace->SetReturn(ScmCadr(ScmCar(replace->code)));
+                
+               
             } else {
                 Error("unknown group %d", replace->groupid);
+                replace->SetReturn(Int2Scm(-1));
             }
             
             Redisplay();

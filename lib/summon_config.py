@@ -10,6 +10,8 @@ from summon import *
 from summonlib import *
 import summonlib.svg
 
+clear_all_bindings()
+
 # scrolling
 set_binding(input_motion("left", "down"), "trans")
 set_binding(input_key("right"), trans_camera(20, 0))
@@ -26,9 +28,11 @@ set_binding(input_key("z"), zoom_camera(.8333))
 
 # zooming
 set_binding(input_click("right", "down"), "focus")
-set_binding(input_motion("right", "down"), "zoom")
 set_binding(input_click("right", "down", "ctrl"), "focus")
+set_binding(input_click("right", "down", "shift"), "focus")
+set_binding(input_motion("right", "down"), "zoom")
 set_binding(input_motion("right", "down", "ctrl"), "zoomx")
+set_binding(input_motion("right", "down", "shift"), "zoomy")
 
 
 # hotspot clicking
@@ -40,4 +44,3 @@ set_binding(input_key("h"), "home")
 set_binding(input_key("q"), "quit")
 set_binding(input_key("l", "ctrl"), toggle_aliasing)
 set_binding(input_key("d", "ctrl"), dupWindow)
-

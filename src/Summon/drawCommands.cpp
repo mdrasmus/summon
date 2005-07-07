@@ -45,6 +45,7 @@ void drawCommandsInit()
     RegisterScriptCommand(SetModelCommand)      g()
     RegisterScriptCommand(DelModelCommand)      g()
     RegisterScriptCommand(TimerCallCommand)     g()
+    RegisterScriptCommand(RedrawCallCommand)    g()
     
     // model commands
     RegisterScriptCommand(AddGroupCommand)      m()

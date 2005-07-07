@@ -24,7 +24,8 @@ DrawView::DrawView(DrawModel *model, int width, int height) :
     m_screenModel(NULL),
     m_active(false),
     m_bgColor(0,0,0,1),
-    m_executingTasks(false)
+    m_executingTasks(false),
+    m_listener(NULL)
 {
     SetVisible(0, 0, width, height);
     
@@ -191,6 +192,9 @@ void DrawView::DrawWorld()
     } else {
         ExecuteTasks();
     }
+    
+    if (m_listener)
+        m_listener->Redraw(this);
 }
 
 

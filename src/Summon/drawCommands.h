@@ -44,6 +44,7 @@ enum {
     ASSIGN_MODEL_COMMAND,
     DEL_MODEL_COMMAND,
     TIMER_CALL_COMMAND,
+    REDRAW_CALL_COMMAND,
     
     // model commands
     ADD_GROUP_COMMAND,
@@ -356,6 +357,27 @@ public:
     }
     
     float delay;
+    Scm proc;
+};
+
+
+class RedrawCallCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new RedrawCallCommand(); }
+    virtual int GetId() { return REDRAW_CALL_COMMAND; }
+
+    virtual const char *GetName() { return "redraw_call"; }
+    virtual const char *GetUsage() 
+    { return "func"; }
+    virtual const char *GetDescription() 
+    { return "calls function 'func' on every redraw"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "p", &proc);
+    }
+    
     Scm proc;
 };
 

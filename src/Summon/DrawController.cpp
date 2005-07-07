@@ -34,6 +34,14 @@ DrawController::~DrawController()
 
 void DrawController::ExecCommand(Command &command)
 {
+    // route view commands to connected view
+    if (command.GetId() > COMMON_COMMANDS_BEGIN &&
+        g_viewAttr.Has(&command))
+    {
+        m_view->ExecCommand(command);
+        return;
+    }
+
     // send visdraw commands that are not for controller to global
     if (command.GetId() > COMMON_COMMANDS_BEGIN &&
         !g_controllerAttr.Has(&command))

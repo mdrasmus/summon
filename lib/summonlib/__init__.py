@@ -1,5 +1,7 @@
 from summon import *
 
+
+
 #
 # state of visdraw
 #
@@ -29,6 +31,21 @@ def toggle_aliasing():
     state.antialias = not state.antialias
     set_antialias(state.antialias)
 
+
+#
+# common editing functions
+#
+
+
+def push_transform(gid, trans, * args):
+    grp = group()
+    args = list(args) + [grp]
+    insert_group(gid, group(trans(* args)))
+    return get_group_id(grp)
+
+def init_binding(input_obj, func):
+    clear_binding(input_obj)
+    set_binding(input_obj, func)
 
 
 #
@@ -131,22 +148,34 @@ def visitGraphics(elm, func):
 #
 
 class Window:
-    winid = None
-    worldid = None
-    screenid = None
+    def __init__(self, winid = None):
+        if winid == None:
+            # create new window
+            self.winid = new_window()
+            self.worldid = new_model()
+            self.screenid = new_model()
+            
+            assign_model(self.winid, "world", self.worldid)
+            assign_model(self.winid, "screen", self.screenid)
+        else:
+            # attach to existing window
+            self.winid = winid
+            self.worldid = get_model(winid, "world")
+            self.screenid = get_model(winid, "screen")
+        
 
-    def __init__(self):
-        self.winid = new_window()
-        self.worldid = new_model()
-        self.screenid = new_model()
-
-        set_model(self.winid, "world", self.worldid)
-        set_model(self.winid, "screen", self.screenid)
-
+        
+        # load default configuration
         oldid = get_window()
         set_window(self.winid)
+        
+        self.cursor = get_root_id()
+        
+        import summon_config
         reload(summon_config)
         set_window(oldid)
+        
+        
 
     def activate(self):
         set_window(self.winid)
@@ -154,12 +183,35 @@ class Window:
     def close(self):
         close_window(self.winid)
 
-    def act(self, func, *args):
-        oldid = get_window()
+    def apply(self, func, *args):
+        oldwin = get_window()
+        oldmodel = get_model(oldwin, "world")
+        
         set_window(self.winid)
+        set_model(self.worldid)
         apply(func, args)
-        set_window(oldid)
-
+        set_window(oldwin)
+        set_model(oldmodel)
+    
+    
+    def add_group(self, *args):
+        set_model(self.worldid)
+        return apply(add_group, args)
+    
+    def insert_group(self, *args):
+        set_model(self.worldid)
+        return apply(insert_group, args)
+    
+    def remove_group(self, *args):
+        set_model(self.worldid)
+        return apply(remove_group, args)
+    
+    def replace_group(self, *args):
+        set_model(self.worldid)
+        return apply(replace_group, args)
+    
+    
+    
 
 def dupWindow():
     import summon_config
@@ -171,14 +223,13 @@ def dupWindow():
 
     # create new window with same model and coords    
     win = new_window()
-    set_model(win, "world", model)
+    assign_model(win, "world", model)
     set_window(win)
     set_visible(*coords)
     reload(summon_config)
     set_window(cur)
 
-
-
-
+def defaultWindow():
+    return Window(get_window())
 
 

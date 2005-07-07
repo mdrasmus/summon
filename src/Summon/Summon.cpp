@@ -70,6 +70,13 @@ public:
                 
                 } break;
             
+            case REDRAW_CALL_COMMAND: {
+                RedrawCallCommand *cmd = (RedrawCallCommand*) &command;
+                
+                Scm proc = cmd->proc;
+                                
+                } break;
+            
             case GET_WINDOWS_COMMAND: {
                 Scm lst = Scm_EOL;
                 for (WindowIter i=m_windows.begin(); i!=m_windows.end(); i++) {
