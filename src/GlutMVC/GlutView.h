@@ -30,6 +30,7 @@ public:
         glutReshapeWindow(width, height);
         Reshape(width, height);
         m_windowSize = Vertex2i(width, height);
+        glutPostRedisplay();
     }
 
     // accessors   

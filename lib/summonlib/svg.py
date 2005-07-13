@@ -74,12 +74,23 @@ def writeSvg(outfile, group):
 
 def printScreen(filename = None):
     if filename == None:
+        import warnings
+        warnings.filterwarnings("ignore", ".*", RuntimeWarning)    
         filename = os.tempnam(".", "_") + ".svg"
+        warnings.filterwarnings("default", ".*", RuntimeWarning)        
         filename = filename.replace("./", "./visdraw")
-    outfile = file(filename, "w")
+    if filename.endswith(".svg"):
+        outfile = file(filename, "w")    
+        writeSvg(outfile, get_group(get_root_id()))
+        outfile.close()
+    else:
+        svgfile = filename + ".svg"
+        outfile = file(svgfile, "w")    
+        writeSvg(outfile, get_group(get_root_id()))
+        outfile.close()
+        os.system("convert " +svgfile+ " " +filename)
+        os.system("rm " + svgfile)
     
-    writeSvg(outfile, get_group(get_root_id()))
-    outfile.close()
     print "wrote '%s'" % filename
     
     return filename
@@ -97,6 +108,5 @@ def printScreenPng(pngFilename = None):
 
 set_binding(input_key("p"), printScreen)
 set_binding(input_key("p", "ctrl"), printScreenPng)
-
 
 

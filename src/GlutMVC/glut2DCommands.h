@@ -103,7 +103,7 @@ public:
     {
         if (argc >= 3) {
             zoom.x = atof(argv[1]);
-            zoom.x = atof(argv[2]);            
+            zoom.y = atof(argv[2]);            
             return 3;
         }
         return -1;

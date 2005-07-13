@@ -654,7 +654,7 @@ public:
     
     bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "ff", &width, &height);
+        return ParseScm(ErrorHelp(), lst, "dd", &width, &height);
     }
     
     int width;

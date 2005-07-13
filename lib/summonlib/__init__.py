@@ -24,7 +24,7 @@ def zoom_camera(factor):
     def func():
         (w, h) = get_window_size()
         focus(w/2, h/2)
-        zoom(factor)
+        zoom(factor, factor)
     return func
 
 def toggle_aliasing():
