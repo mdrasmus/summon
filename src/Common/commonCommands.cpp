@@ -22,7 +22,7 @@ void commonCommandsInit()
 {
     // global commands
     RegisterGlobalCommand(QuitCommand)
-    RegisterGlobalCommand(HelpCommand)
+    //RegisterGlobalCommand(HelpCommand) Let python do the help
     RegisterGlobalCommand(ExecFileCommand)
     RegisterScriptCommand(CallProcCommand) AddAttr(g_globalAttr)
     RegisterGlobalCommand(VersionCommand)

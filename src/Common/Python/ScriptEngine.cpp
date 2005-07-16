@@ -211,14 +211,15 @@ void ScriptEngine::Init()
         
         // create wrapper function
         string pyCommands =  "import " + m_moduleName + "\n" +
-            "def __helper_" + name +  "(* args): " +
+            "def " + name +  "(* args): " +
             "  return " + m_moduleName + "." + mainFunc + "(" + 
                 (m_commands[i]->HasAttr(&g_scriptAttr) ?
                     idstr :  string("'") + m_commands[i]->GetName() + "'") +
             ", args)\n" + 
-            m_moduleName + "." + name + " = __helper_" + name + "\n";
-            //"__helper_" + name + ".func_name = \"" + name + "\"\n" +
-            //"__helper_" + name + ".func_doc = \"" + help + "\"\n";
+            name + ".func_doc = \"" + help + "\"\n" +
+            m_moduleName + "." + name + " = " + name + "\n" +
+            "del " + name + "\n";
+            //"__helper_" + name + ".func_name = \"" + name + "\"\n";
         ScmEvalStr(pyCommands.c_str());
         //printf(pyCommands.c_str());
     }

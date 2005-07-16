@@ -2,13 +2,17 @@
 
 import sys
 import summonlib.tree
+from summonlib import util
 from summon import *
 
 sumtree = summonlib.tree
 
 
 # parse args
-param, rest = sumtree.parseArgs(sys.argv[1:])
+try:
+    param, rest = util.parseArgs(sys.argv[1:], sumtree.options)
+except:
+    sys.exit(1)
 
 # title
 print "SUMTREE (SUMMON Tree Visualizer)"

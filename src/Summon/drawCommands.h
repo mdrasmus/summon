@@ -250,7 +250,7 @@ public:
     virtual int GetId() { return GET_MODEL_COMMAND; }
 
     virtual const char *GetName() { return "get_model"; }
-    virtual const char *GetUsage() { return "windowid [\"world\"|\"screen\"]"; }
+    virtual const char *GetUsage() { return "windowid ['world'|'screen']"; }
     virtual const char *GetDescription() 
     { return "gets the model id of a window"; }
     
@@ -303,7 +303,7 @@ public:
 
     virtual const char *GetName() { return "assign_model"; }
     virtual const char *GetUsage() 
-    { return "windowid [\"world\"|\"screen\"] modelid"; }
+    { return "windowid ['world'|'screen'] modelid"; }
     virtual const char *GetDescription() 
     { return "assigns a model to a window"; }
     
@@ -852,7 +852,7 @@ public:
 
     virtual const char *GetName() { return "hotspot"; }
     virtual const char *GetUsage() 
-    { return "\"over\"|\"out\"|\"click\" x1 y1 x2 y2 proc"; }
+    { return "'over'|'out'|'click' x1 y1 x2 y2 proc"; }
     virtual const char *GetDescription() 
     { return "constructs a group of elements"; }
 };
@@ -976,8 +976,8 @@ public:
 
     virtual const char *GetName() { return "text"; }
     virtual const char *GetUsage() 
-    { return "string x1 y1 x2 y2 [\"left\"|\"center\"|\"right\"] \
-[\"top\"|\"middle\"|\"bottom\"]"; }
+    { return "string x1 y1 x2 y2 ['left'|'center'|'right'] \
+['top'|'middle'|'bottom']"; }
     virtual const char *GetDescription() 
     { return "draws text justified within a bounding box"; }
 };
@@ -1080,7 +1080,7 @@ public:
     virtual int GetId() { return INPUT_KEY_CONSTRUCT; }
 
     virtual const char *GetName() { return "input_key"; }
-    virtual const char *GetUsage() { return "key [\"shift\"] [\"ctrl\"] [\"alt\"]"; }
+    virtual const char *GetUsage() { return "key ['shift'] ['ctrl'] ['alt']"; }
     virtual const char *GetDescription() 
     { return "specifies a keyboard input"; }
 };
@@ -1093,8 +1093,8 @@ public:
 
     virtual const char *GetName() { return "input_click"; }
     virtual const char *GetUsage() 
-    { return "\"left\"|\"middle\"|\"right\" \"up\"|\"down\" \
-[\"shift\"] [\"ctrl\"] [\"alt\"]"; }
+    { return "'left'|'middle'|'right' 'up'|'down' \
+['shift'] ['ctrl'] ['alt']"; }
     virtual const char *GetDescription() 
     { return "specifies a mouse click input"; }
 };
@@ -1107,8 +1107,8 @@ public:
 
     virtual const char *GetName() { return "input_motion"; }
     virtual const char *GetUsage() 
-    { return "\"left\"|\"middle\"|\"right\" \"up\"|\"down\" \
-[\"shift\"] [\"ctrl\"] [\"alt\"]"; }
+    { return "'left'|'middle'|'right' 'up'|'down' \
+['shift'] ['ctrl'] ['alt']"; }
     virtual const char *GetDescription() 
     { return "specifies a mouse motion input"; }
 };
