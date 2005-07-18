@@ -8,7 +8,7 @@
 
 from summon import *
 from summonlib import *
-import summonlib.svg
+
 
 clear_all_bindings()
 
@@ -44,3 +44,7 @@ set_binding(input_key("h"), "home")
 set_binding(input_key("q"), "quit")
 set_binding(input_key("l", "ctrl"), toggle_aliasing)
 set_binding(input_key("d", "ctrl"), dupWindow)
+
+
+# add print screen bindings
+import summonlib.svg

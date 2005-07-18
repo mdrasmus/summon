@@ -6,9 +6,10 @@ from summon import *
 # state of visdraw
 #
 class State:
-    antialias = True
-    views = []
-    viewsPos = 0
+    def __init__(self):
+        self.antialias = True
+        self.updateFuncs = []
+        self.updateInterval = .5
 
 state = State()
 
@@ -47,6 +48,26 @@ def init_binding(input_obj, func):
     clear_binding(input_obj)
     set_binding(input_obj, func)
 
+
+#
+# Dynamic updating interface
+#
+
+def set_update_interval(secs):
+    state.updateInterval = secs
+
+def add_update_func(func):
+    state.updateFuncs.append(func)
+
+def get_update_funcs():
+    return state.updateFuncs
+
+def begin_updating():
+    for func in state.updateFuncs:
+        func()
+    timer_call(state.updateInterval, begin_updating)
+    
+    
 
 #
 # functions for iterating and inspecting graphical elements
@@ -114,6 +135,7 @@ def visitGraphics(elm, func):
 
     def beginElement(elm):
         if is_graphic(elm):
+            closure["verts"] = []
             for prim in graphic_contents(elm):
                 if is_color(prim):
                     rgb = list(color_contents(prim))
@@ -134,8 +156,8 @@ def visitGraphics(elm, func):
                          elif is_triangle_strip(elm): processGraphic(elm, 3, 2)
                          elif is_quads(elm):          processGraphic(elm, 4, 0)
                          elif is_quad_strip(elm):     processGraphic(elm, 4, 2)
-                         elif is_polygon(elm):
-                            processGraphic(len(closure['verts']), 0)
+            if is_polygon(elm):
+                processGraphic(elm, len(closure['verts']), 0)
 
     def endElement(elm):
         return None

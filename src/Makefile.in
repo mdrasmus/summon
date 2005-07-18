@@ -26,6 +26,10 @@ COMPILE = -c -g $(INCLUDE) \
           -DVISTOOLS_SCHEME=$(VISTOOLS_SCHEME) \
           -DVISTOOLS_PYTHON=$(VISTOOLS_PYTHON)
 
+ifdef PROFILE
+    COMPILE := $(COMPILE) -pg
+endif
+
 #
 # Conditional compile flags based scripting engine
 #

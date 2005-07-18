@@ -29,13 +29,19 @@ def writeSvg(outfile, group):
 
 
     def printPolygon(verts, color):
-        print >>outfile, "<polygon fill='%s' opacity='%f' points='" % \
-                (color2string(color), color[3])
+        print >>outfile, "<polygon fill='%s' stroke='%s' opacity='%f' points='" % \
+                (color2string(color), color2string(color), color[3])
         for pt in verts:
             print >>outfile, "%f,%f " % (pt[0], pt[1])
         print >>outfile, "' />"
 
     def printGraphic(elm, verts, color):
+        verts2 = []
+        for vert in verts:
+            verts2.append([(vert[0] + transx) * scalex,
+                           (vert[1] + transy) * scaley])
+        verts = verts2
+    
         if is_lines(elm) or is_line_strip(elm):
             printLine(verts[0][0], verts[0][1], verts[1][0], verts[1][1], color)
         elif is_triangles(elm) or \
@@ -52,8 +58,11 @@ def writeSvg(outfile, group):
     (x, y, x2, y2) = get_visible()  
     boxWidth  = x2 - x
     boxHeight = y2 - y
-    (width, height) = get_window_size()
-    scale = width / boxWidth
+    (width, height) = get_window_size()    
+    transx = -x
+    transy = -y
+    scalex = width / boxWidth
+    scaley = height / boxHeight
     bgcolor = get_bgcolor()
     
     print >>outfile, svgHeader
@@ -62,13 +71,13 @@ def writeSvg(outfile, group):
     print >>outfile, "<g transform='scale(1, -1)'>"
     print >>outfile, "<rect x='0' y='0' width='%d' height='%d' fill='%s'/>" % \
             (width, height, color2string(bgcolor))
-    print >>outfile, "<g transform='scale(%f, %f)'>"  % (scale, scale)
-    print >>outfile, "<g transform='translate(%d, %d)'>" % (-x, -y)
-    print >>outfile, "<g stroke-width='%f'>" % (1 / scale)
+    #print >>outfile, "<g transform='scale(%f, %f)'>"  % (scalex, scaley)
+    #print >>outfile, "<g transform='translate(%d, %d)'>" % (-x, -y)
+    #print >>outfile, "<g stroke-width='%f'>" % (1 / max(scalex, scaley))
 
     printElm(group)
 
-    print >>outfile, "</g></g></g></g></g>"
+    print >>outfile, "</g></g>"  #</g></g></g>"
     print >>outfile, svgEndTag
 
 
@@ -79,6 +88,9 @@ def printScreen(filename = None):
         filename = os.tempnam(".", "_") + ".svg"
         warnings.filterwarnings("default", ".*", RuntimeWarning)        
         filename = filename.replace("./", "./visdraw")
+    
+    print "dumping screen to '%s'..." % filename
+    
     if filename.endswith(".svg"):
         outfile = file(filename, "w")    
         writeSvg(outfile, get_group(get_root_id()))
@@ -96,6 +108,8 @@ def printScreen(filename = None):
     return filename
 
 def printScreenPng(pngFilename = None):
+    print "dumping screen to '%s'..." % pngFilename
+
     filename = printScreen()
     if pngFilename == None:
         pngFilename = filename.replace(".svg", ".png")
@@ -105,6 +119,7 @@ def printScreenPng(pngFilename = None):
     print "wrote '%s'" % pngFilename
     
     return pngFilename
+
 
 set_binding(input_key("p"), printScreen)
 set_binding(input_key("p", "ctrl"), printScreenPng)

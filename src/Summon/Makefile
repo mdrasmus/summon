@@ -12,6 +12,11 @@ OBJS = drawCommands.o \
        Transform.o \
        Summon.o 
 
+ifdef PROFILE
+    LIBS := $(LIBS) -pg
+endif
+
+
 #
 # Conditional linking
 #
@@ -28,6 +33,7 @@ OBJS = drawCommands.o \
 all: $(PROG)
 
 include ../Makefile.in
+
 
 $(PROG): $(OBJS) $(MY_LIBS)
 	$(CC) -o $(PROG) $(OBJS) $(MY_LIBS) $(LIBS)
