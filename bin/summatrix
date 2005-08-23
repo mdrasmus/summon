@@ -2,99 +2,88 @@
 
 import random
 import sys
-import util
 
 from summon import *
-from summonlib import shapes
+from summonlib import shapes, util
+
+# command line options
+options = [
+    ["a:", "adj", "adj", "AUTO<adjacency matrix file>"],
+    ["i:", "imat", "imat", "AUTO<index matrix file>"],
+    ["l:", "lmat", "lmat", "AUTO<labeled sparse matrix file>"],
+    ["o:", "order", "order", "AUTO<label order>"],
+    ["d:", "dense", "dense", "AUTO<dense matrix file>"],
+    
+    ["R:", "rperm", "rperm", "AUTO<row permutation>"],
+    ["C:", "cperm", "cperm", "AUTO<col permutation>"],
+    ["B:", "rcperm", "rcperm", "AUTO<row & col permutation>"],
+   
+    ["s:", "sample", "sample", "AUTO<sample fraction>"],
+]
+
+try:
+    param, rest = util.parseArgs(sys.argv[1:], options, "files")
+except:
+    sys.exit(1)
 
 
-# global info
-mat = {}
-
-nrows = 0
-ncols = 0
-nnz = 0
-rperm = []
-cperm = []
-rinv  = []
-cinv  = []
 
 
-def usage():
-    print "usage: summatrix (-adj|-smat|-dense) <file> [-keep]"
-
-class Param:
+class Matrix (util.Dict):
     def __init__(self):
-        self.keep = False
-        self.sample = False
-        self.sampleLevel = 1
-        self.matfile = ""
-        self.mattype = "undefined"
-
-param = Param()
-
-def parseArgs(argv):
-    i = 0
-    while i < len(argv):
-        # matrix types
-        if argv[i] == "-adj":
-            param.mattype = "adj"
-            param.matfile = argv[i+1]
-            i += 2
-        elif argv[i] == "-smat":
-            param.mattype = "smat"
-            param.matfile = argv[i+1]
-            i += 2
-        elif argv[i] == "-dense":
-            param.mattype = "dense"
-            param.matfile = argv[i+1]
-            i += 2
+        util.Dict.__init__(self, 2, 0)
+        self.nrows = 0
+        self.ncols = 0
+        self.nnz   = 0
         
-        # permutations
-        elif argv[i] == "-rp":
-            rperm[:] = util.readInts(argv[i+1])
-            i += 2
-        elif argv[i] == "-cp":
-            cperm[:] = util.readInts(argv[i+1])
-            i += 2
-        elif argv[i] == "-rcp":
-            rperm[:] = util.readInts(argv[i+1])        
-            cperm[:] = util.readInts(argv[i+1])
-            i += 2
+        self.rperm = []
+        self.cperm = []
+        self.rinv  = []
+        self.cinv  = []
         
-        # other options
-        elif argv[i] == "-keep":
-            param.keep = True
-            i += 1
-        elif argv[i] == "-sample":
-            param.sample = True
-            param.sampleLevel = float(argv[i+1])
-            i += 2
-        else:
-            raise "unknown argument '%s'" % argv[i]
+        self.colormap = [[1,0,0,0], 
+                         [1,0,0,1]] 
+        self.colormax = 1.0
+        self.colormin = 0.0
+        self.colorrange = 1.0
+        self.colorlen = 2
+    
+    def setup(self, nrows, ncols, nnz):
+        self.nrows = nrows
+        self.ncols = ncols
+        self.nnz   = nnz        
 
+        if self.rperm == []:
+            self.rperm[:] = range(nrows)
+        if self.cperm == []:
+            self.cperm[:] = range(ncols)
 
+        self.rinv[:] = util.invPerm(self.rperm)
+        self.cinv[:] = util.invPerm(self.cperm)
+
+    def setColor(colormap, low, top):
+        self.colormin = float(low)
+        self.colormax = float(top)
+        self.colorrange = float(top - low)
+        self.colormap = colormap
+        self.colorlen = colorlen
+        
+
+    def getColor(self, val):
+        i = int((val - self.colormin) / self.colorrange)
+        i = min(max(i, 0), self.colorlen)
+        return self.colormap[i]
 
 
 #############################################################################
 # Matrix Reading
 #
 
-def setup(nrows, ncols, nnz):
-    globals()["nrows"] = nrows
-    globals()["ncols"] = ncols
-    globals()["nnz"] = nnz        
-
-    if rperm == []:
-        rperm[:] = range(nrows)
-    if cperm == []:
-        cperm[:] = range(ncols)
-    
-    rinv[:] = util.invPerm(rperm)
-    cinv[:] = util.invPerm(cperm)
 
 
 def openAdj(filename):
+    util.tic("reading '%s" % filename)
+    mat = Matrix()
     infile = file(filename)
     
     # read header
@@ -108,24 +97,24 @@ def openAdj(filename):
         raise "expected (nrows, nnz) or (nrows, ncols, nnz) in first line"
     
     
-    print "%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz)        
+    util.log("%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz))
     
-    setup(nrows, ncols, nnz)
+    mat.setup(nrows, ncols, nnz)
     
     dots  = []
     row = 0
     for line in infile:
         fields = line.split()
 
-        if param.sample and random.random() > param.sampleLevel:
+        if "sample" in param and random.random() > param["sample"]:
             row += 1
             continue
 
         for i in xrange(0, len(fields), 2):
             col = int(fields[i]) - 1
             val = float(fields[i])
-            dots.append(cinv[col])
-            dots.append(rinv[row])
+            dots.append(mat.cinv[col])
+            dots.append(mat.rinv[row])
         row += 1
         
         if len(dots) > 100000:
@@ -133,6 +122,9 @@ def openAdj(filename):
             dots = []
     add_group(group(color(1,0,0), points(apply(vertices, dots))))
     
+    util.toc()
+    
+    return mat
 
 
 def openSmat(filename):
@@ -158,43 +150,94 @@ def openSmat(filename):
         keys[r] = 1
     
     # build matrix
-    if param.keep:
-       for i in xrange(nrows):
-           mat[i] = {}
-       for i in range(0, len(dots), 2):
-           mat[dots[i]][dots[i+1]] = 1
+    for i in xrange(nrows):
+        mat[i] = {}
+    for i in range(0, len(dots), 2):
+        mat[dots[i]][dots[i+1]] = 1
     
     # draw remaining points
     add_group(group(color(1,0,0), points(apply(vertices, dots))))
     
 
+
+
+
+def openLabeledMatrix(filename, order = None):
+    mat = Matrix()    
+    
+    maxval = -1e1000
+    minval = 1e1000
+    
+    # read all data
+    nnz = 0
+    for line in file(filename):
+        tokens = line.split()
+        score = float(tokens[2])
+        mat[tokens[0]][tokens[1]] = score
+        maxval = max(maxval, score)
+        minval = min(maxval, score)
+        nnz += 1
+    
+    # determine order
+    if order != None:
+        labels = util.readStrings(order)
+    else:
+        set = {}
+        for i in mat:
+            set[i] = 1
+            for j in mat[i]:
+                set[j] = 1
+        labels = util.uniq(set.keys())
+        labels.sort()
+    lookup = util.list2lookup(labels)
+    
+    mat.setup(len(labels), len(labels), nnz)
+    
+    # draw matrix
+    vis = []
+    for i in mat:
+        for j in mat[i]:
+            if mat[i][j] >= 0:
+                vis.append(color(1, 0, 0, mat[i][j] / maxval))
+            else:
+                vis.append(color(0, 1, 0, mat[i][j] / minval))
+            vis.append(vertices(lookup[j], lookup[i]))
+        if len(vis) > 10000:
+            add_group(group(apply(points, vis)))
+            vis = []
+    add_group(group(apply(points, vis)))
+    
+    return mat
+    
+
+
 def openDense(filename):
+    util.tic("reading '%s" % filename)
+    mat = Matrix()
     infile = file(filename)
     
     # read header
     (nrows, ncols) = map(int, infile.next().split())
     nnz = nrows * ncols
-    print "%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz)        
+    util.log("%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz))
     
-    setup(nrows, ncols, nnz)
+    mat.setup(nrows, ncols, nnz)
     
-    mat.clear()
+    
+    # read in whole matrix
     maxval = -1e1000
     minval = 1e1000
     r = 0
     for line in infile:
         vals = map(float, line.split())
-        mat[r] = {}
         for c in xrange(len(vals)):
             mat[r][c] = vals[c]
-            if vals[c] > maxval:
-                maxval = vals[c]
-            if vals[c] < minval:
-                minval = vals[c]
-            
+            maxval = max(maxval, vals[c])
+            minval = min(minval, vals[c])
         r += 1
     
-    # draw remaining points
+    
+    # draw matrix
     vis = []
     for i in xrange(nrows):
         for j in xrange(ncols):
@@ -202,31 +245,16 @@ def openDense(filename):
                 vis.append(color(mat[i][j] / maxval, 0, 0))
             else:
                 vis.append(color(0, mat[i][j] / minval, 0))
-            vis.append(vertices(cinv[j], rinv[i]))
+            vis.append(vertices(mat.cinv[j], mat.rinv[i]))
         if len(vis) > 10000:
             add_group(group(apply(points, vis)))
             vis = []
     add_group(group(apply(points, vis)))
     
-
-    
-    
-
-def openmat(matfile, mattype):  
-    util.tic("read matrix")
-    
-    if True:
-        if mattype == "adj":
-            openAdj(matfile)
-        elif mattype == "smat":
-            openSmat(matfile)
-        elif mattype == "dense":
-            openDense(matfile)
-        else:
-            raise "unknown matrix type %s" % mattype
-    #except:
-    #    print "error reading matrix file"
     util.toc()
+    return mat
+    
+
 
 #######################################################################
 # Drawing
@@ -236,7 +264,7 @@ def drawBorder(nrows, ncols):
     # draw boundary 
     add_group(group(color(1,1,1), 
               shapes.boxStroke(-.5,-.5,ncols-.5, nrows-.5)))
-    home()
+    
 
 
 #######################################################################
@@ -250,16 +278,33 @@ print
 
 set_antialias(False)
 
+# read permutations
+if "rperm" in param:
+    rperm[:] = util.readInts(param["rperm"][-1])
+elif "cperm" in param:
+    cperm[:] = util.readInts(param["cperm"][-1])
+elif "rcperm" in param:
+    rperm[:] = util.readInts(param["rcperm"][-1])        
+    cperm[:] = util.readInts(param["rcperm"][-1])
 
-if len(sys.argv) > 2:
-    parseArgs(sys.argv[2:])
-    if param.mattype != "":
-        openmat(param.matfile, param.mattype)
-        drawBorder(nrows, ncols)
+
+# read matrix
+if "adj" in param:
+    mat = openAdj(param["adj"][-1])
+elif "imat" in param:
+    mat = openSmat(param["smat"][-1])
+elif "lmat" in param:
+    if "order" in param:
+        mat = openLabeledMatrix(param["lmat"][-1], param["order"][-1])
     else:
-        usage()
+        mat = openLabeledMatrix(param["lmat"][-1])
+elif "dense" in param:
+    mat = openDense(param["dense"][-1])    
 else:
-    usage()
+    raise "no matrix specified"
 
+        
+drawBorder(mat.nrows, mat.ncols)
+home()
 
 

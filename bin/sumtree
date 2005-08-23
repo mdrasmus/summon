@@ -31,3 +31,9 @@ home()
 
 def find(name):
     return vis.find(tree, name)
+
+def mark(boxColor = color(1,0,0)):
+    return vis.mark(boxColor)
+
+def clear_marks():
+    vis.clearMarks()

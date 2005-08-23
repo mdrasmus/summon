@@ -92,6 +92,7 @@ enum {
     POLYGON_CONSTRUCT,
     TEXT_CONSTRUCT,
     TEXT_SCALE_CONSTRUCT,
+    TEXT_CLIP_CONSTRUCT,
     
     // primitives
     VERTICES_CONSTRUCT,
@@ -991,9 +992,25 @@ public:
 
     virtual const char *GetName() { return "text_scale"; }
     virtual const char *GetUsage() 
-    { return "string"; }
+    { return "string x1 y1 x2 y2 ['left'|'center'|'right'] \
+['top'|'middle'|'bottom']"; }
     virtual const char *GetDescription() 
-    { return "draws stroked text at (0,0) and translates"; }
+    { return "draws stroked text within a bounding box"; }
+};
+
+
+class TextClipConstruct : public Construct
+{
+public:
+    virtual Command* Create() { return new TextClipConstruct(); }
+    virtual int GetId() { return TEXT_CLIP_CONSTRUCT; }
+
+    virtual const char *GetName() { return "text_clip"; }
+    virtual const char *GetUsage() 
+    { return "string x1 y1 x2 y2 minheight maxheight ['left'|'center'|'right'] \
+['top'|'middle'|'bottom']"; }
+    virtual const char *GetDescription() 
+    { return "draws stroked text within a bounding box and height restrictions"; }
 };
 
 

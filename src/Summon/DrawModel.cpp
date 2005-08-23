@@ -298,7 +298,7 @@ Element *DrawModel::BuildElement(BuildEnv &env, Scm code)
         // process element if it is a graphic
         elm = new Graphic(header);
             
-        if (!PopulateGraphic(env, (Graphic*) elm, ScmCdr(code))) {
+        if (!((Graphic*)elm)->Build(ScmCdr(code))) {
             delete elm;
             return NULL;
         }
@@ -326,12 +326,14 @@ Element *DrawModel::BuildElement(BuildEnv &env, Scm code)
                 elm = BuildText(env, ScmCdr(code), TextElement::KIND_SCALE);
                 break;
             
+            case TEXT_CLIP_CONSTRUCT: 
+                elm = BuildText(env, ScmCdr(code), TextElement::KIND_CLIP);
+                break;
+            
             case COLOR_CONSTRUCT: {
                 // allow a color construct outside of graphics
                 Graphic *graphic = new Graphic(POINTS_CONSTRUCT);
-                Primitive *prim = BuildPrimitive(env, code);
-                if (prim) {
-                    graphic->AddPrimitive(prim);
+                if (graphic->Build(ScmCons(code, Scm_EOL))) {
                     elm = graphic;
                 } else {
                     delete graphic;
@@ -399,8 +401,8 @@ Element *DrawModel::BuildElement(BuildEnv &env, Scm code)
 }
 
 
-bool DrawModel::PopulateGraphic(BuildEnv &env, Graphic *graphic, Scm code)
-{
+
+/*
     // create children if they exist
     for (Scm children = code;
          ScmConsp(children); 
@@ -455,12 +457,9 @@ bool DrawModel::PopulateGraphic(BuildEnv &env, Graphic *graphic, Scm code)
             return false;
         }
 
-    }
-    
+    }  
     return true;
 }
-
-
 
 Primitive *DrawModel::BuildPrimitive(BuildEnv &env, Scm code)
 {
@@ -530,6 +529,7 @@ Primitive *DrawModel::BuildPrimitive(BuildEnv &env, Scm code)
     
     return prim;
 }
+*/
 
 
 Element *DrawModel::BuildHotspot(BuildEnv &env, Scm code)
@@ -581,17 +581,25 @@ Element *DrawModel::BuildHotspot(BuildEnv &env, Scm code)
 Element *DrawModel::BuildText(BuildEnv &env, Scm code, int kind)
 {
     string text;
-    float x1, y1, x2, y2;
+    float x1, y1, x2, y2, minHeight, maxHeight;
     if (!ParseScm("Bad format for text construct", code,
                   "sffff", &text, &x1, &y1, &x2, &y2))
         return NULL;
+    code = ScmCddr(ScmCdddr(code));
+    
+    // clip text takes two more arguments
+    if (kind == TextElement::KIND_CLIP) {
+        if (!ParseScm("Bad format for text construct", code,
+                  "ff", &minHeight, &maxHeight))
+            return NULL;
+        code = ScmCddr(code);
+    }
+    
+    
     
     // parse justification
     int justified = 0; 
-    for (code = ScmCddr(ScmCdddr(code));
-         ScmConsp(code) && ScmStringp(ScmCar(code)); 
-         code = ScmCdr(code))
-    {
+    for (; ScmConsp(code) && ScmStringp(ScmCar(code)); code = ScmCdr(code)) {
         string str = Scm2String(ScmCar(code));
         
         if (str == "left") justified |= TextElement::LEFT;
@@ -616,6 +624,8 @@ Element *DrawModel::BuildText(BuildEnv &env, Scm code, int kind)
     textElm->kind = kind;
     textElm->text = text;
     textElm->justified = justified;
+    textElm->minHeight = minHeight;
+    textElm->maxHeight = maxHeight;
     
     // find scaling
     Vertex2f orgin;
@@ -632,6 +642,7 @@ Element *DrawModel::BuildText(BuildEnv &env, Scm code, int kind)
 Scm DrawModel::GetGroup(BuildEnv &env, Element *elm)
 {
     Scm children = Scm_EOL;
+    
 
     if (elm->GetId() == GROUP_CONSTRUCT ||
         elm->GetId() == TRANSFORM_CONSTRUCT ||
@@ -650,7 +661,9 @@ Scm DrawModel::GetGroup(BuildEnv &env, Element *elm)
                 // transform returns multiple objects
                 children = ScmAppend(elms, children);
             } else {
-                children = ScmCons(GetGroup(env, *iter), children);
+                if ((*iter)->IsVisible()) {
+                    children = ScmCons(GetGroup(env, *iter), children);
+                }
             }
         }
         
@@ -665,44 +678,43 @@ Scm DrawModel::GetGroup(BuildEnv &env, Element *elm)
     
     
     } else if (IsGraphic(elm->GetId())) {
-        children = Scm_EOL;  // graphics don't have elements as children
-    
-        // build primitives, iterate backwards
-        Graphic::PrimitiveIterator iter = ((Graphic*) elm)->PrimitivesEnd();
-        iter--;
-        for (; iter != ((Graphic*) elm)->PrimitivesEnd(); iter--) {
+        Graphic *graphic = (Graphic*) elm;
+        Scm children = Scm_EOL;
+        
+        // build primitives
+        for (int ptr = 0; graphic->More(ptr); ptr = graphic->NextPrimitive(ptr))
+        {
             Scm child = Scm_EOL;
-            
-            if ((*iter)->GetId() == VERTICES_CONSTRUCT) {
-                VerticesPrimitive *verts = (VerticesPrimitive*) (*iter);
-                
-                for (int i = verts->len-1; i >= 0; i-=2) {
+
+            if (graphic->IsVertices(ptr)) {
+                float *data = graphic->GetVertex(graphic->VerticesStart(ptr));
+
+                for (int i = 2 * graphic->GetVerticesLen(ptr) - 1; i > 0; i-=2)
+                {
                     float x, y;
-                    env.trans.VecMult(verts->data[i-1], verts->data[i], &x, &y);
+                    env.trans.VecMult(data[i-1], data[i], &x, &y);
                     child = ScmCons(Float2Scm(x), 
                                     ScmCons(Float2Scm(y), child));
                 }
                 child = ScmCons(Int2Scm(VERTICES_CONSTRUCT), child);
-                
-            } else if ((*iter)->GetId() == COLOR_CONSTRUCT) {
-                ColorPrimitive *color = (ColorPrimitive*) (*iter);
-                
+
+            } else if (graphic->IsColor(ptr)) {
+                char *color = graphic->GetColor(ptr);
                 for (int i = 3; i >= 0; i--) {
-                    child = ScmCons(Float2Scm(color->data[i]), child);
+                    child = ScmCons(Float2Scm(color[i] / 255.0), child);
                 }
                 child = ScmCons(Int2Scm(COLOR_CONSTRUCT), child);
-                
+
             } else {
                 // unknown primitive
                 Error("unknown primitive");
                 assert(0);
             }
-        
-            children = ScmCons(child, children);
+
+            children = ScmAppend(children, ScmCons(child, Scm_EOL));
         }
     
         return ScmCons(Int2Scm(elm->GetId()), children);
-
     } else if (elm->GetId() == TEXT_CONSTRUCT) {
         TextElement *text = (TextElement*) elm;
         
@@ -725,7 +737,28 @@ Scm DrawModel::GetGroup(BuildEnv &env, Element *elm)
         env.trans.VecMult(text->pos1.x, text->pos1.y, &x1, &y1);
         env.trans.VecMult(text->pos2.x, text->pos2.y, &x2, &y2);
         
-        return ScmCons(Int2Scm(elm->GetId()),
+        int id;
+        
+        switch (text->kind) {
+            case TextElement::KIND_BITMAP:
+                id = TEXT_CONSTRUCT;
+                break;
+            case TextElement::KIND_SCALE:
+                id = TEXT_SCALE_CONSTRUCT;
+                break;
+            case TextElement::KIND_CLIP:
+                id = TEXT_CLIP_CONSTRUCT;
+                
+                // add extra height fields                
+                justified = 
+                    ScmCons(Float2Scm(text->minHeight),
+                        ScmCons(Float2Scm(text->maxHeight), justified));
+                break;
+            default:
+                assert(0);
+        }
+        
+        return ScmCons(Int2Scm(id),
                 ScmCons(String2Scm(text->text.c_str()),
                  ScmCons(Float2Scm(x1),
                   ScmCons(Float2Scm(y1),
@@ -791,15 +824,21 @@ void DrawModel::FindBounding(Element *element,
         Element *elm = (*i);
         
         if (IsGraphic(elm->GetId())) {
+            Graphic *graphic = (Graphic*) elm;            
+            
             // if child is graphic find the bounding box of its vertices
-            for (Graphic::PrimitiveIterator j = 
-                 ((Graphic*)elm)->PrimitivesBegin();
-                 j != ((Graphic*)elm)->PrimitivesEnd(); j++)
+            //for (Graphic::PrimitiveIterator j = 
+            //     ((Graphic*)elm)->PrimitivesBegin();
+            //     j != ((Graphic*)elm)->PrimitivesEnd(); j++)
+            
+            for (int ptr = 0; graphic->More(ptr); 
+                 ptr = graphic->NextPrimitive(ptr))
             {
-                if ((*j)->GetId() == VERTICES_CONSTRUCT) {
-                    float *data = ((VerticesPrimitive*) (*j))->data;
-                    int len = ((VerticesPrimitive*) (*j))->len;
-
+                if (graphic->IsVertices(ptr)) {
+                    int len = 2 * graphic->GetVerticesLen(ptr);
+                    float *data =
+                        graphic->GetVertex(graphic->VerticesStart(ptr));
+                    
                     for (int k=0; k<len-1; k+=2) {
                         float x, y;
                         matrix->VecMult(data[k], data[k+1], &x, &y);

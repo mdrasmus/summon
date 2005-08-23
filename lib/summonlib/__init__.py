@@ -84,6 +84,11 @@ def is_graphic(elm):
            is_quad_strip(elm) or \
            is_polygon(elm)
 
+def is_text_elm(elm):
+    return is_text(elm) or \
+           is_text_scale(elm) or \
+           is_text_clip(elm)
+
 def is_primitive(elm):
     return is_vertices(elm) or is_color(elm)
 
@@ -158,6 +163,11 @@ def visitGraphics(elm, func):
                          elif is_quad_strip(elm):     processGraphic(elm, 4, 2)
             if is_polygon(elm):
                 processGraphic(elm, len(closure['verts']), 0)
+        elif is_text_elm(elm):
+            verts = text_contents(elm)[1:5]
+            func(elm, [verts[:2], verts[2:]], closure['color'])
+        else:
+            func(elm, [], closure['color'])
 
     def endElement(elm):
         return None

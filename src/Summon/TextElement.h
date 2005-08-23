@@ -21,14 +21,17 @@ class TextElement : public Element
 {
 public:
     TextElement() : 
-        Element(TEXT_CONSTRUCT) 
+        Element(TEXT_CONSTRUCT),
+        minHeight(0.0),
+        maxHeight(0.0)
     {
         m_dynamic = true;
     }
     
     enum {
         KIND_BITMAP,
-        KIND_SCALE
+        KIND_SCALE,
+        KIND_CLIP
     };
     
     enum {
@@ -53,6 +56,8 @@ public:
     Vertex2f scale;
     int justified;
     int kind;
+    float minHeight;
+    float maxHeight;
 };
 
 

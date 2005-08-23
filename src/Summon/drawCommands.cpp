@@ -90,6 +90,7 @@ void drawCommandsInit()
     RegisterConstruct(PolygonConstruct)
     RegisterConstruct(TextConstruct)
     RegisterConstruct(TextScaleConstruct)    
+    RegisterConstruct(TextClipConstruct)
     
     // primitives
     RegisterConstruct(VerticesConstruct)

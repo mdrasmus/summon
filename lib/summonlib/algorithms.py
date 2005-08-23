@@ -1,8 +1,44 @@
 import sys
 import util
+import graph
 import random, math
 
+class UnionFind:
+    def __init__(self):
+        self.items = {}
+        self.parent = None
+    
+    def add(self, item):
+        self.root().items[item] = 1
+    
+    def has(self, item):
+        return item in self.members()
+    
+    def root(self):
+        node = self
+        while node.parent:
+            node = node.parent
+        if node != self:
+            self.parent = node
+        return node
+    
+    def size(self):
+        return len(self.root().items)
+    
+    def same(self, other):
+        return self.root() == other.root()
+    
+    def union(self, other):
+        root1 = self.root()
+        root2 = other.root()
+        root2.items.update(root1.items)
+        root1.items = {}
+        root1.parent = root2
+    
+    def members(self):
+        return self.root().items.keys()
 
+        
         
 class Rect:
     x1 = 0
@@ -175,23 +211,36 @@ class Tree:
         self.nextname += 1
         return name
     
-    def addChildTree(self, parent, childTree):
-        self.addTree(parent, childTree)
-    
     def addTree(self, parent, childTree):
         # merge nodes and change the names of childTree names if they conflict
         # with existing names
-        names = childTree.nodes.keys()
+        self.mergeNames(childTree)        
+        self.addChild(parent, childTree.root)
+    
+    
+    def replaceTree(self, node, childTree):
+        # merge nodes and change the names of childTree names if they conflict
+        # with existing names
+        self.mergeNames(childTree)
+        parent = node.parent
+        if parent:
+            index = parent.children.index(node)
+            parent.children[index] = childTree.root
+            childTree.root.parent = parent
+        
+    
+    
+    def mergeNames(self, tree2):
+        names = tree2.nodes.keys()
         for name in names:
             if name in self.nodes:
                 name2 = self.newName()
-                self.nodes[name2] = childTree.nodes[name]
+                self.nodes[name2] = tree2.nodes[name]
                 self.nodes[name2].name = name2
             else:
-                self.nodes[name] = childTree.nodes[name]
+                self.nodes[name] = tree2.nodes[name]
         
-        self.addChild(parent, childTree.root)
-        
+    
     
     def clear(self):
         self.nodes = {}
@@ -269,7 +318,7 @@ class Tree:
 
     def lca(self, names, depths = None):
         if not depths:
-            depths = findDepths(self.root)
+            depths = self.findDepths(self.root)
 
         markers = util.list2dict(names)
 
@@ -451,12 +500,139 @@ def smallSubtrees(tree, maxsize):
     return trees
 
 
+def tree2graph(tree):
+    mat = {}
+    
+    # init all rows of adjacency matrix to 
+    for name, node in tree.nodes.items():
+        mat[name] = {}
+    
+    for name, node in tree.nodes.items():
+        for child in node.children:
+            if "dist" in dir(child):
+                mat[name][child.name] = child.dist
+            else:
+                mat[name][child.name] = 0
+        
+        if node.parent:
+            if "dist" in dir(node):
+                mat[name][node.parent.name] = node.dist
+            else:
+                mat[name][node.parent.name] = 0
+            
+    return mat
+
+
+def reroot(tree, newroot, mat = None):
+    if mat == None:
+        mat = tree2graph(tree)
+    tree2 = Tree()
+    closedset = {newroot:1}
+    
+    tree2.makeRoot(newroot)
+    
+    def walk(node):
+        for child in mat[node]:
+            if not child in closedset:
+                childNode = TreeNode(child)
+                childNode.dist = mat[child][node]
+                tree2.addChild(tree2.nodes[node], childNode)
+                closedset[child] = 1
+                walk(child)
+    walk(newroot)
+    
+    return tree2
+
+
+def outgroupRoot(tree, outgroup, closedset = None):
+    # find root of outgroup
+    mat = tree2graph(tree)
+    neighbors = []
+    if closedset == None:
+        closedset = {}
+    roots = {}
+    
+    # remove a vertex from a graph
+    def remove(mat, v):
+        for u in mat[v]:
+            del mat[u][v]
+        del mat[v]
+    
+    # start a special bfs
+    openset = outgroup
+    while len(openset) > 0:
+        vertex = openset[0]
+        openset = openset[1:]
+        
+        # skip closed vertices
+        if vertex in closedset:
+            continue
+
+        # visit vertex
+        if len(mat[vertex]) == 1:
+            # add neighbors to openset
+            openset.extend(mat[vertex].keys())
+            
+            # close and remove this vertex
+            closedset[vertex] = 1
+            remove(mat, vertex)
+            if vertex in roots:
+                del roots[vertex]
+        else:
+            roots[vertex] = 1
+        
+    return roots.keys()
+
+
+def removeOutgroup(tree, outgroup):
+    removed = {}
+    roots = outgroupRoot(tree, outgroup, removed)
+
+    if len(roots) == 1:
+        tree2 = reroot(tree, roots[0])
+    else:
+        tree2 = tree
+        
+    for root in roots:
+        for child in tree2.nodes[root].children:
+            if child.name in removed:
+                tree2.removeTree(child)
+    
+    return (tree2, len(roots) == 1)
+    
     
 
 if __name__ == "__main__":
     tree = Tree()
-    tree.readNewick("test/small.tree")    
-    trees = smallSubtrees(tree, 30)
+    tree.readNewick("test/small3.tree")    
+    #trees = smallSubtrees(tree, 30)
+    
+    #tree2 = reroot(tree, 2)
+    tree2, good = removeOutgroup(tree, ['a','b'])
+    print good
+    tree2.writeNewick(sys.stdout)
+    
+    if False:
+        set1 = Set()
+        set2 = Set()
+        set3 = Set()
 
-    
-    
+        set1.add(1)
+        set1.add(2)
+        print set1.size()
+        set2.add(3)
+        set2.add(4)
+        set2.add(5)    
+        print set2.size()
+        set3.add(5)
+        set3.add(6)
+        set3.add(7)
+        print set3.size()    
+        print set1.same(set2)    
+        set1.union(set2)
+        print set1.same(set2)
+        set1.union(set3)
+
+        print set1.members()
+        print set1.size(), set2.size()
+

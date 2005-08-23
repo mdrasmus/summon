@@ -1,6 +1,8 @@
 import algorithms, util
 import sys
 from summon import *
+from summonlib import shapes
+
 
 sys.setrecursionlimit(1000)
 
@@ -22,12 +24,20 @@ class SumTree:
         self.selnode = None
         self.tree = None
         self.param = {}
-        
+        self.markGroup = None
+        self.labelids = []
 
+    
+    def showLabels(self, visible):
+        for label in self.labelids:
+            show_group(label, visible)
+    
+    
     def nodeClick(self, node):
         print "----------------"
         self.printNode(node)
-
+    
+    
     def printNode(self, node):
         if node.isLeaf():
             print node.name
@@ -92,6 +102,17 @@ class SumTree:
                            sx - node.size/2.0, sy,
                            sx + node.size/2.0, sy - height,
                            func))
+        
+        if False: #node.isLeaf():
+            label = group(
+                translate(sx - node.size/2.0, sy - height - 1,
+                    rotate(-90,
+                        text_clip(node.name, 0, 0, 1e1000, node.size, 5, 20,
+                            "left", "middle"))))
+
+            self.labelids.append(get_group_id(label))
+            vis.append(label)
+            
 
         # draw horizontal line
         if len(node.children) > 0:
@@ -145,6 +166,75 @@ class SumTree:
             set_visible(x-margin, y-margin, x+margin, y+margin)
         else:
             print "could not find '%s' in tree" % name
+    
+    
+    def markNodes(self, names, boxColor = color(1, 0, 0)):
+        if self.markGroup == None:
+            self.markGroup = add_group(group())
+        
+        vis = [boxColor]
+        found = 0
+        
+        for name in names:
+            if name in self.tree.nodes:
+                found += 1
+                node = self.tree.nodes[name]
+                vis.append(points(node.x, node.y))
+            else:        
+                print "could not find '%s' in tree" % name
+                
+        print "found %d of %d nodes" % (found, len(names))
+        
+        insert_group(self.markGroup, group(* vis))
+    
+    
+    def flagNodes(self, names, flagColor = color(1,0,0)):
+        if self.markGroup == None:
+            self.markGroup = add_group(group())
+        
+        vis = [flagColor]
+        found = 0
+        
+        bottom = self.tree.root.y
+        for node in self.tree.nodes.values():
+            bottom = min(bottom, node.y)
+        bottom = bottom * 2
+        
+        for name in names:
+            if name in self.tree.nodes:
+                found += 1
+                node = self.tree.nodes[name]
+                vis.append(lines(node.x, node.y, node.x, bottom))
+            else:        
+                print "could not find '%s' in tree" % name
+        
+        print "found %d of %d nodes" % (found, len(names))
+            
+        insert_group(self.markGroup, group(* vis))
+    
+    
+    def clearMarks(self):
+        if self.markGroup != None:
+            remove_group(self.markGroup)
+            self.markGroup = None
+    
+    
+    def mark(self, boxColor = color(1,0,0)):
+        names = []
+        while True:
+            line = sys.stdin.readline().rstrip()
+            if line == "": break
+            names.append(line)
+        self.markNodes(names, boxColor)
+    
+    
+    def flag(self, flagColor = color(1,0,0)):
+        names = []
+        while True:
+            line = sys.stdin.readline().rstrip()
+            if line == "": break
+            names.append(line)
+        self.flagNodes(names, flagColor)
 
 
 

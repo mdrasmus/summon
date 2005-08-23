@@ -67,6 +67,23 @@ class Timer:
 def log(*text):
     globalTimer().log(*text)
 
+def logger(*text):
+    globalTimer().log(*text)
+
+def note(*text):
+    print >>notefile(), " ".join(text)
+
+def noteflush():
+    notfile().flush()
+
+def notefile(out = None):
+    if out == None:
+        out = file("notes", "w")
+    if "notes" not in GLOBALS():
+        GLOBALS()["notes"] = out
+    return GLOBALS()["notes"]
+
+        
 def logExact(text):
     globalTimer().logExact(text)
 
@@ -150,15 +167,17 @@ class ProgressBar (Progress):
 ###############################################################################
 # Argument parsing
 
-def parseArgs(argv, options):
+def parseArgs(argv, options, resthelp = ""):
     """ 
     options = [["a:", "a_long=", "a_name", "[-a <arg>] [--a_long=<arg>]"], ...]
     """
     
     import getopt
     
-    short_opts = "".join([x[0] for x in options])
-    long_opts  = [x[1] for x in options]
+    
+    
+    short_opts = "".join(cget(options, 0))
+    long_opts  = [cget(options, 1)]
     lookup = {}
     for option in options:
         lookup["-" + option[0].replace(":", "")] = option[2]
@@ -172,7 +191,7 @@ def parseArgs(argv, options):
     
     
     if len(argv) < 2:
-        usage(sys.argv[0], options)
+        usage(os.path.basename(argv[0]), options, resthelp)
         raise "no options given"
     
     
@@ -180,7 +199,7 @@ def parseArgs(argv, options):
         args, rest = getopt.getopt(argv[1:], short_opts, long_opts)
     except getopt.GetoptError, msg:
         print "error:", msg 
-        usage(sys.argv[0], options)
+        usage(os.path.basename(argv[0]), options, resthelp)
         raise Exception
     
     param = {}
@@ -188,15 +207,16 @@ def parseArgs(argv, options):
         param.setdefault(lookup[name], []).append(value)
     
     return param, rest
-        
-def usage(progname, options):
+
+
+def usage(progname, options, resthelp = ""):
     """ 
     options = [("a:", "a_long=", "a_name", "[-a <arg>] [--a_long=<arg>]"), ...]
     """
     
-    print >>sys.stderr, "usage: %s " % progname,
+    print >>sys.stderr, "usage: %s [options] %s" % (progname, resthelp)
     for option in options:
-        print >>sys.stderr, option[3],
+        print >>sys.stderr, "   ", option[3]
     print
     
     
@@ -232,6 +252,7 @@ class Gnuplot:
         self.ystart = None
         self.yend = None
         self.margin = .1
+        self.enable = True
 
         self.options = {
             "style" : "points",
@@ -439,25 +460,33 @@ class Gnuplot:
             raise "ERROR: arrays are not same length"
         
         self.data.append(self.Plot(list1, list2, list3, copy.copy(self.options)))
-        self.stream = os.popen("gnuplot", "w")
-        self.replot()
+        
+        if self.enable:
+            self.stream = os.popen("gnuplot", "w")
+            self.replot()
     
-    def plotfunc(self, func, start, end, step):
+    def plotfunc(self, func, start, end, step, **options):
         list1 = []
         while start < end:
             list1.append(start)
             start += step    
         list2 = map(func, list1)
-        self.plot(list1, list2, style="lines")
+        self.plot(list1, list2, style="lines", ** options)
+    
+    def enableOutput(self, enable = True):
+        self.stream = os.popen("gnuplot", "w")
+        self.enable = enable
+    
+    
 
 def plot(list1, list2=[], list3=[], **options):
     g = Gnuplot()
     g.plot(list1, list2, list3, **options)
     return g
 
-def plotfunc(func, start, end, step):
+def plotfunc(func, start, end, step, **options):
     g = Gnuplot()
-    g.plotfunc(func, start, end, step)
+    g.plotfunc(func, start, end, step, ** options)
     return g
 
 
@@ -482,6 +511,9 @@ class Dict:
     def __setitem__(self, i, val):
         self.data[i] = val            
     
+    def __delitem__(self, i):
+        del self.data[i]
+    
     def __len__(self):
         if self.dim == 1:
             return len(self.data)
@@ -496,6 +528,9 @@ class Dict:
     
     def __repr__(self):
         return str(self.data)
+    
+    def clear(self):
+        return self.data.clear()
     
     def has_keys(self, *keys):
         if len(keys) == 0:
@@ -530,22 +565,65 @@ class Dict:
         print >>out, "< DictMatrix "
         walk(self, [])
         print >>out, ">"
+        
 
 
 ################################################################################
 # small functions that I use a lot
 
-def getkeys(dic, keys):
+def printcols(lst, width=75, out=sys.stdout):
+    if len(lst) == 0:
+        return
+    
+    lst = map(str,lst)    
+    lens = map(len, lst)
+    maxwidth = max(lens) + 1
+    ncols = width / maxwidth
+    nrows = int(math.ceil(len(lst) / float(ncols)))
+
+    for i in xrange(nrows):
+        for j in xrange(ncols):
+            k = i + j*nrows
+            if k < len(lst):
+                out.write(lst[k] + (" " * (maxwidth - len(lst[k]))))
+        out.write("\n")
+    
+
+def equal(* vals):
+    if len(vals) < 2:
+        return True
+    a = vals[0]
+    for b in vals[1:]:
+        if a != b:
+            return False
+    return True
+
+
+def remove(lst, val):
+    lst.remove(val)
+    return lst
+
+def cget(mat, i):
+    return [row[i] for row in mat]
+
+#def getkeys(dic, keys):
+#    dic2 = {}
+#    for key in keys:
+#        if key in dic:
+#            dic2[key] = dic[key]
+#    return dic2
+
+def subdict(dic, keys):
     dic2 = {}
     for key in keys:
         if key in dic:
             dic2[key] = dic[key]
     return dic2
 
-def case(dic, key, default = None):
-    if not key in dic:
-        dic[key] = default
-    return dic[key]
+
+def overlap(a, b, x, y):
+    return (y >= a) and (x <= b)
+
 
 def count(func, lst):
     n = 0
@@ -632,7 +710,7 @@ def ltfunc(a): return lambda x: x < a
 def gtfunc(a): return lambda x: x > a
 def lefunc(a): return lambda x: x <= a
 def gefunc(a): return lambda x: x >= a
-
+def withinfunc(a,b): return lambda x: a <= x <= b
 
 def sign(num):
     return cmp(num,0)
@@ -640,17 +718,39 @@ def sign(num):
 def lg(num):
     return math.log(num, 2)
 
-def grab(lst, ind):
+#def grab(lst, ind):
+#    util.log("util.grab is deprecated")
+#    lst2 = []
+#    for i in ind:
+#        lst2.append(lst[i])
+#    return lst2
+
+
+def concat(* lists):
+    lst = []
+    for l in lists:
+        lst.extend(l)
+    return lst
+
+
+def sublist(lst, ind):
     lst2 = []
     for i in ind:
         lst2.append(lst[i])
     return lst2
+
 
 def catchall(func):
     try:
         func()
     except:
         return None
+
+def revdict(dct):
+    dct2 = {}
+    for key, val in dct.iteritems():
+        dct2[val] = key
+    return dct2
 
 def list2lookup(lst):
     lookup = {}
@@ -667,14 +767,73 @@ def list2dict(lst, val=1):
 def uniq(lst):
     return list2dict(lst).keys()
 
-def unzip(zipped):
-    ret = []
-    for i in range(len(zipped[0])):
-        ret.append([])
-    for i in zipped:
-        for j in xrange(len(i)):
-            ret[j].append(i[j])
-    return ret
+def islands(lst):
+
+    # takes a list, or a string, and gather islands of identical elements.
+    # it returns a dictionary counting where
+    # counting = {element: [(start,end), (start,end), ...],
+    #             element: [(start,end), (start,end), ...],
+    #             ...}
+    # counting.keys() is the list of unique elements of the input list
+    # counting[element] is the list of all islands of occurence of element
+    # counting[element][i] = (start,end)
+    #  is such that list[start-1:end] only contains element
+    if not list: return {}
+
+    counting = {}
+
+    i,current_char, current_start = 0,lst[0], 0
+    
+    while i < len(lst):
+
+        if current_char == lst[i]:
+            i = i+1
+        else:
+            if not counting.has_key(current_char): counting[current_char] = []
+            counting[current_char].append((current_start, i))
+            current_char = lst[i]
+            current_start = i
+
+    if not counting.has_key(current_char): counting[current_char] = []
+    counting[current_char].append((current_start, i))
+
+    return counting
+
+
+# set operations
+def union(set1, set2):
+    set = {}
+    set.update(set1)
+    set.update(set2)
+    return set
+
+def intersect(set1, set2):
+    set = {}
+    for i in set1:
+        if i in set2:
+            set[i] = 1
+    return set
+
+def makeset(lst):
+    return list2dict(lst)
+
+
+# pretty printing
+def int2pretty(num):
+    string = str(num)
+    parts = []
+    l = len(string)
+    for i in xrange(0, l, 3):
+        t = l - i
+        s = t - 3
+        if s < 0: s = 0
+        parts.append(string[s:t])
+    parts.reverse()
+    return ",".join(parts)
+
+def pretty2int(string):
+    return int(string.replace(",", ""))
+
 
 ###############################################################################
 # common Input/Output
@@ -772,7 +931,10 @@ def cutIter(myiter, cols, delim=""):
     else:
         return IterFunc(lambda: delim.join(
                                        grab(myiter.next().split(delim), cols)))
-    
+
+def writeDelim(out, data, delim="\t"):
+    for line in data:
+        print >>out, delim.join(line)
 
 def clearFile(filename):
     out = file(filename, "w")
@@ -860,10 +1022,13 @@ def oneNorm(vals):
     s = float(sum(vals))
     return map(lambda x: x/s, vals)
 
+def bucketSize(array, ndivs = 20):
+    return abs(max(array) - min(array) + 1) / float(ndivs)
+
 def hist(array, ndivs = 20):
     h = [0] * ndivs
     x = []
-    bucket = (max(array) + 1) / float(ndivs)
+    bucket = bucketSize(array, ndivs)
     low = min(array)
     for i in array:
         h[int((i - low) / bucket)] += 1
@@ -873,15 +1038,19 @@ def hist(array, ndivs = 20):
 
 def distrib(array, ndivs = 20):
     h = hist(array, ndivs)
-    return (h[0], oneNorm(h[1]))
+    area = 0 
+    delta = bucketSize(array, ndivs)
+    for i in h[1]:
+        area += delta * i
+    return (h[0], map(lambda x: x/area, h[1]))
 
-def viewhist(array, ndivs = 20):
+def plothist(array, ndivs = 20):
     h = hist(array, ndivs)
     g = Gnuplot()    
     g.plot(h[0], h[1], style="boxes")
     return (h, g)
 
-def viewdistrib(array, ndivs = 20):
+def plotdistrib(array, ndivs = 20):
     d = distrib(array, ndivs)
     g = Gnuplot()
     g.plot(d[0], d[1], style="boxes")
@@ -915,3 +1084,42 @@ def binsave(var, filename):
 def binload(filename):
     return cPickle.load(file(filename))
 
+def varset():
+    if "varset" not in GLOBALS():
+        GLOBALS()["varset"] = {}
+    return GLOBALS()["varset"]
+
+def addvar(* varnames):
+    for name in varnames:
+        varset()[name] = 1
+
+def delvar(* varnames):
+    for name in varnames:
+        del varset()[name]
+
+def getvars(table):
+    set = subdict(table, varset())
+    return set
+
+def setvars(table, dct):
+    for name in dct:
+        table[name] = dct[name]
+
+def showvars(width=70, out=sys.stdout):
+    printcols(varset().keys(), width, out)
+
+def saveall(table, filename = "all.pickle"):
+    binsave(getvars(table), filename)
+
+def loadall(table, filename = "all.pickle"):
+    set = binload(filename)
+    setvars(table, set)
+    
+    # also add new var names to varset
+    set2 = varset()
+    for key in set.keys():
+        set2[key] = 1
+        log("%s: loaded '%s'" % (filename, key))
+        
+def clearall():
+    varset().clear()

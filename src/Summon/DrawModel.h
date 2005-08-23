@@ -52,8 +52,8 @@ public:
     Group *BuildGroup(BuildEnv &env, Scm code);
     Element *BuildElement(BuildEnv &env, Scm code);
     bool PopulateElement(BuildEnv &env, Element *elm, Scm code);
-    bool PopulateGraphic(BuildEnv &env, Graphic *graphic, Scm code);
-    Primitive *BuildPrimitive(BuildEnv &env, Scm code);
+    //bool PopulateGraphic(BuildEnv &env, Graphic *graphic, Scm code);
+    //Primitive *BuildPrimitive(BuildEnv &env, Scm code);
     Element *BuildHotspot(BuildEnv &env, Scm code);
     Element *BuildText(BuildEnv &env, Scm code, int kind);
     

@@ -251,9 +251,11 @@ void DrawView::DrawElement(GroupTable *table, Element *element)
                 case QUAD_STRIP_CONSTRUCT:     glBegin(GL_QUAD_STRIP); break;
                 case POLYGON_CONSTRUCT:        glBegin(GL_POLYGON); break;
             }
-
-            DrawPrimitives(((Graphic*)element)->PrimitivesBegin(),
-                       ((Graphic*)element)->PrimitivesEnd());
+            
+            DrawGraphic((Graphic*) element);
+            
+            //DrawPrimitives(((Graphic*)element)->PrimitivesBegin(),
+            //           ((Graphic*)element)->PrimitivesEnd());
             glEnd();
             break;
         
@@ -320,6 +322,29 @@ void DrawView::DrawElement(GroupTable *table, Element *element)
 }
 
 
+void DrawView::DrawGraphic(Graphic *graphic)
+{
+    for (int ptr = 0; graphic->More(ptr); ptr = graphic->NextPrimitive(ptr)) {
+        switch (graphic->GetTag(ptr)) {
+            case Graphic::PRIM_VERTICES: {
+                int end = graphic->VerticesEnd(ptr);
+                for (int ptr2=graphic->VerticesStart(ptr); 
+                     ptr2<end; 
+                     ptr2 = graphic->NextVertex(ptr2))
+                {
+                    glVertex2fv(graphic->GetVertex(ptr2));
+                }
+                } break;
+                
+            case Graphic::PRIM_COLOR:
+                glColor4ubv((GLubyte*) graphic->GetColor(ptr));
+                break;
+        }
+    }
+}
+
+/*
+
 void DrawView::DrawPrimitives(Graphic::PrimitiveIterator begin, 
                               Graphic::PrimitiveIterator end)
 {
@@ -346,6 +371,33 @@ void DrawView::DrawPrimitives(Graphic::PrimitiveIterator begin,
     }
 }
 
+*/
+
+Vertex2f JustifyBox(int justified, Vertex2f pos1, Vertex2f pos2, 
+                    float textWidth, float textHeight, 
+                    float boxWidth, float boxHeight)
+{
+    // find drawing point based on justification
+    Vertex2f pos = pos1;
+
+    if (justified & TextElement::LEFT)
+        pos.x = pos1.x;
+    else if (justified & TextElement::CENTER)
+        pos.x = pos1.x + (boxWidth - textWidth) / 2.0;
+    else if (justified & TextElement::RIGHT)
+        pos.x = pos2.x - textWidth;
+
+    if (justified & TextElement::TOP)
+        pos.y = pos2.y - textHeight;
+    else if (justified & TextElement::MIDDLE)
+        pos.y = pos1.y + (boxHeight - textHeight) / 2.0;
+    else if (justified & TextElement::BOTTOM)
+        pos.y = pos1.y;
+    
+    return pos;
+}
+
+
 
 void DrawView::DrawTextElement(TextElement *elm)
 {
@@ -369,23 +421,8 @@ void DrawView::DrawTextElement(TextElement *elm)
             (textHeight > boxHeight))
             return;
 
-        // find drawing point based on justification
-        Vertex2f pos = pos1;
-
-        if (elm->justified & TextElement::LEFT)
-            pos.x = pos1.x;
-        else if (elm->justified & TextElement::CENTER)
-            pos.x = pos1.x + (boxWidth - textWidth) / 2.0;
-        else if (elm->justified & TextElement::RIGHT)
-            pos.x = pos2.x - textWidth;
-
-        if (elm->justified & TextElement::TOP)
-            pos.y = pos2.y - textHeight;
-        else if (elm->justified & TextElement::MIDDLE)
-            pos.y = pos1.y + (boxHeight - textHeight) / 2.0;
-        else if (elm->justified & TextElement::BOTTOM)
-            pos.y = pos1.y;
-
+        Vertex2f pos = JustifyBox(elm->justified, pos1, pos2, 
+                                  textWidth, textHeight, boxWidth, boxHeight);
         DrawText(font, elm->text, pos.x, pos.y);
         
     } else if (elm->kind == TextElement::KIND_SCALE) {
@@ -407,27 +444,57 @@ void DrawView::DrawTextElement(TextElement *elm)
         textWidth *= scale;
         textHeight *= scale;
 
-        // find drawing point based on justification
-        Vertex2f pos = pos1;
-
-        if (elm->justified & TextElement::LEFT)
-            pos.x = pos1.x;
-        else if (elm->justified & TextElement::CENTER)
-            pos.x = pos1.x + (boxWidth - textWidth) / 2;
-        else if (elm->justified & TextElement::RIGHT)
-            pos.x = pos2.x - textWidth;
-
-        if (elm->justified & TextElement::TOP)
-            pos.y = pos2.y - textHeight;
-        else if (elm->justified & TextElement::MIDDLE)
-            pos.y = pos1.y + (boxHeight - textHeight) / 2;
-        else if (elm->justified & TextElement::BOTTOM)
-            pos.y = pos1.y;
+        Vertex2f pos = JustifyBox(elm->justified, pos1, pos2, 
+                                  textWidth, textHeight, boxWidth, boxHeight);
         
         const unsigned char *chr = text;
         glPushMatrix();
         glTranslatef(pos.x, pos.y, 0);
         glScalef(textHeight/fontSize, textHeight/fontSize, textHeight/fontSize);
+        for (; *chr; chr++)
+            glutStrokeCharacter(font, *chr);
+        glPopMatrix();
+    } else if (elm->kind == TextElement::KIND_CLIP) {
+        void *font = GLUT_STROKE_ROMAN;
+        float fontSize = 119.05;
+        
+        Vertex2f zoom = GetZoom();
+        Vertex2f pos1 = elm->pos1;
+        Vertex2f pos2 = elm->pos2;
+        pos1.x *= zoom.x;
+        pos1.y *= zoom.y;
+        pos2.x *= zoom.x;
+        pos2.y *= zoom.y;
+        
+        float textWidth  = glutStrokeLength(font, text);
+        float textHeight = fontSize;
+        float boxWidth   = pos2.x - pos1.x;
+        float boxHeight  = pos2.y - pos1.y;
+        
+        float xscale = boxWidth / textWidth;
+        float yscale = boxHeight / textHeight;
+        float scale = min(xscale, yscale);
+
+        textWidth *= scale;
+        textHeight *= scale;
+        
+        // clip text if it falls outside its height restrictions
+        if (textHeight < elm->minHeight)
+            return;
+        if (textHeight > elm->maxHeight) {
+            textWidth *= elm->maxHeight / textHeight;
+            textHeight = elm->maxHeight;
+        }
+        
+        Vertex2f pos = JustifyBox(elm->justified, pos1, pos2, 
+                                  textWidth, textHeight, boxWidth, boxHeight);
+        
+        const unsigned char *chr = text;
+        glPushMatrix();
+        glScalef(1/zoom.x, 1/zoom.y, 1);
+        glTranslatef(pos.x, pos.y, 0);
+        glScalef(textHeight/fontSize, textHeight/fontSize, 
+                 textHeight/fontSize);
         for (; *chr; chr++)
             glutStrokeCharacter(font, *chr);
         glPopMatrix();

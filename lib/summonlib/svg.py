@@ -34,6 +34,43 @@ def writeSvg(outfile, group):
         for pt in verts:
             print >>outfile, "%f,%f " % (pt[0], pt[1])
         print >>outfile, "' />"
+    
+    def printText(elm, verts, color):
+        msg = text_contents(elm)[0]
+        pos = text_contents(elm)[5:]
+        (x1, y1), (x2, y2) = verts
+        
+        col = color2string(color)
+        
+        # TODO: remove hack (why is color[3] so near 0)
+        color[3] = 1
+        
+        
+        boxheight = y2 - y1
+        boxwidth = x2 - x1
+        
+        if is_text_scale(elm) or is_text_clip(elm):
+            textheight = 20.0
+            textwidth = textheight * .75 * float(len(msg)) # TODO: approx for now
+            
+            scale = min(boxheight / textheight, boxwidth / textwidth)
+            
+            print >>outfile, \
+            """<g transform='translate(%f,%f) scale(%f,%f)'>
+                <text x='0' y='0' font-size='%s' stroke-width='%f' stroke='%s' 
+                    fill='%s' stroke-opacity='%f' fill-opacity='%f'>%s</text></g>
+            """ % (x1, y1, scale, -scale, textheight, 1/scale, col, col, 
+                    0, color[3], msg)
+        elif is_text(elm):
+            print >>outfile, \
+            """<g transform='translate(%f,%f) scale(1,-1)'>
+                <text x='0' y='0' font-size='%s' stroke-width='%f' stroke='%s' 
+                    fill='%s' stroke-opacity='%f' fill-opacity='%f'>%s</text></g>
+            """ % (x1, y1, 10, 1, col, col, 
+                    0, color[3], msg)
+        
+        
+        
 
     def printGraphic(elm, verts, color):
         verts2 = []
@@ -50,6 +87,8 @@ def writeSvg(outfile, group):
              is_quad_strip(elm) or \
              is_polygon(elm):
             printPolygon(verts, color)
+        elif is_text_elm(elm):
+            printText(elm, verts2, color)
 
     def printElm(elm):
         visitGraphics(elm, printGraphic)
@@ -87,7 +126,7 @@ def printScreen(filename = None):
         warnings.filterwarnings("ignore", ".*", RuntimeWarning)    
         filename = os.tempnam(".", "_") + ".svg"
         warnings.filterwarnings("default", ".*", RuntimeWarning)        
-        filename = filename.replace("./", "./visdraw")
+        filename = filename.replace("./", "./summon")
     
     print "dumping screen to '%s'..." % filename
     
