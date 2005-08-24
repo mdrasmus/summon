@@ -8,17 +8,18 @@ from summonlib import shapes, util
 
 # command line options
 options = [
-    ["a:", "adj", "adj", "AUTO<adjacency matrix file>"],
-    ["i:", "imat", "imat", "AUTO<index matrix file>"],
-    ["l:", "lmat", "lmat", "AUTO<labeled sparse matrix file>"],
-    ["o:", "order", "order", "AUTO<label order>"],
-    ["d:", "dense", "dense", "AUTO<dense matrix file>"],
+    ["a:", "adj=", "adj", "AUTO<adjacency matrix file>"],
+    ["i:", "imat=", "imat", "AUTO<index matrix file>"],
+    ["l:", "lmat=", "lmat", "AUTO<labeled sparse matrix file>"],
+    ["o:", "order=", "order", "AUTO<label order>"],
+    ["d:", "dense=", "dense", "AUTO<dense matrix file>"],
     
-    ["R:", "rperm", "rperm", "AUTO<row permutation>"],
-    ["C:", "cperm", "cperm", "AUTO<col permutation>"],
-    ["B:", "rcperm", "rcperm", "AUTO<row & col permutation>"],
+    ["R:", "rperm=", "rperm", "AUTO<row permutation>"],
+    ["C:", "cperm=", "cperm", "AUTO<col permutation>"],
+    ["B:", "rcperm=", "rcperm", "AUTO<row & col permutation>"],
    
-    ["s:", "sample", "sample", "AUTO<sample fraction>"],
+    ["s:", "sample=", "sample", "AUTO<sample fraction>"],
+    ["c", "color", "color", ""]
 ]
 
 try:
@@ -27,6 +28,37 @@ except:
     sys.exit(1)
 
 
+
+
+class ColorMap:
+    def __init__(self, maxv=1.0, minv=0.0):
+        self.colors = [[1,0,0,0], 
+                       [1,0,0,1]] 
+        self.max = maxv
+        self.min = minv
+        self.range = maxv - minv
+    
+    def get(self, val):
+        mix1 = (val - self.min) / self.range
+        mix2 = 1 - mix1
+        c1 = self.colors[0]
+        c2 = self.colors[1]
+        return [mix1 * c1[0] + mix2 * c2[0],
+                mix1 * c1[1] + mix2 * c2[1],
+                mix1 * c1[2] + mix2 * c2[2],
+                mix1 * c1[3] + mix2 * c2[3]]
+    
+
+class PosNegColorMap:
+    def __init__(self, minv=-1.0, maxv=1.0):
+        self.max = maxv
+        self.min = minv
+    
+    def get(self, val):
+        if val > 0:
+            return [1, 0, 0, val/self.max]
+        else:
+            return [0, 1, 0, val/self.min]
 
 
 class Matrix (util.Dict):
@@ -41,12 +73,8 @@ class Matrix (util.Dict):
         self.rinv  = []
         self.cinv  = []
         
-        self.colormap = [[1,0,0,0], 
-                         [1,0,0,1]] 
-        self.colormax = 1.0
-        self.colormin = 0.0
-        self.colorrange = 1.0
-        self.colorlen = 2
+        self.colormap = PosNegColorMap()
+        
     
     def setup(self, nrows, ncols, nnz):
         self.nrows = nrows
@@ -82,7 +110,7 @@ class Matrix (util.Dict):
 
 
 def openAdj(filename):
-    util.tic("reading '%s" % filename)
+    util.tic("reading '%s'" % filename)
     mat = Matrix()
     infile = file(filename)
     
@@ -120,49 +148,52 @@ def openAdj(filename):
         if len(dots) > 100000:
             add_group(group(color(1,0,0), points(apply(vertices, dots))))
             dots = []
-    add_group(group(color(1,0,0), points(apply(vertices, dots))))
+    add_group(group(color(1,0,0), points(* dots)))
     
     util.toc()
     
     return mat
 
 
-def openSmat(filename):
+def openImat(filename):
+    util.tic("reading '%s'" % filename)
+    mat = Matrix()
     infile = file(filename)
     
     # read header
     (nrows, ncols, nnz) = map(int, infile.next().split())
     print "%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz)        
     
-    setup(nrows, ncols, nnz)
+    mat.setup(nrows, ncols, nnz)
     
-    dots = []
+    dots = [0] * (3 * nnz)
     mat.clear()
+    getcolor = mat.colormap.get
+    cinv = mat.cinv
+    rinv = mat.rinv
+    i = 0
     for line in infile:
-        if param.sample and random.random() > param.sampleLevel:
+        if "sample" in param and random.random() > param["sample"]:
             continue
         (row, col, val) = line.split()
         r = int(row)
         c = int(col)
-        dots.append(cinv[c])        
-        dots.append(rinv[r])
-        
-        keys[r] = 1
-    
-    # build matrix
-    for i in xrange(nrows):
-        mat[i] = {}
-    for i in range(0, len(dots), 2):
-        mat[dots[i]][dots[i+1]] = 1
+        dots.append(color(* getcolor(float(val))))
+        dots.append(mat.cinv[c])
+        dots.append(mat.rinv[r])
+        i += 3
     
     # draw remaining points
-    add_group(group(color(1,0,0), points(apply(vertices, dots))))
+    add_group(group(color(1,0,0), points(* dots)))
     
-
+    util.toc()
+    
+    return mat
 
 
 
 def openLabeledMatrix(filename, order = None):
+    util.tic("reading '%s'" % filename)
     mat = Matrix()    
     
     maxval = -1e1000
@@ -207,12 +238,14 @@ def openLabeledMatrix(filename, order = None):
             vis = []
     add_group(group(apply(points, vis)))
     
+    util.toc()
+    
     return mat
     
 
 
 def openDense(filename):
-    util.tic("reading '%s" % filename)
+    util.tic("reading '%s'" % filename)
     mat = Matrix()
     infile = file(filename)
     
@@ -292,7 +325,7 @@ elif "rcperm" in param:
 if "adj" in param:
     mat = openAdj(param["adj"][-1])
 elif "imat" in param:
-    mat = openSmat(param["smat"][-1])
+    mat = openImat(param["imat"][-1])
 elif "lmat" in param:
     if "order" in param:
         mat = openLabeledMatrix(param["lmat"][-1], param["order"][-1])
