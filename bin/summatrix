@@ -1,4 +1,10 @@
 #!/usr/bin/env summon
+#
+# SUMMATRIX (SUMMON Sparse Matrix Viewer)
+#
+#
+#
+#
 
 import random
 import sys
@@ -19,7 +25,7 @@ options = [
     ["B:", "rcperm=", "rcperm", "AUTO<row & col permutation>"],
    
     ["s:", "sample=", "sample", "AUTO<sample fraction>"],
-    ["c", "color", "color", ""]
+    ["c:", "color=", "color", "AUTO(solid|posneg|rainbow)"]
 ]
 
 try:
@@ -29,24 +35,19 @@ except:
 
 
 
+#############################################################################
+# Data Structures
+#
 
-class ColorMap:
+class RainbowColorMap:
     def __init__(self, maxv=1.0, minv=0.0):
-        self.colors = [[1,0,0,0], 
-                       [1,0,0,1]] 
         self.max = maxv
         self.min = minv
         self.range = maxv - minv
     
     def get(self, val):
-        mix1 = (val - self.min) / self.range
-        mix2 = 1 - mix1
-        c1 = self.colors[0]
-        c2 = self.colors[1]
-        return [mix1 * c1[0] + mix2 * c2[0],
-                mix1 * c1[1] + mix2 * c2[1],
-                mix1 * c1[2] + mix2 * c2[2],
-                mix1 * c1[3] + mix2 * c2[3]]
+        x = (val - self.min) / self.range
+        return [-2 + 4*x, 2 - 4*abs(.5-x), 2 - 4*x]
     
 
 class PosNegColorMap:
@@ -55,7 +56,7 @@ class PosNegColorMap:
         self.min = minv
     
     def get(self, val):
-        if val > 0:
+        if val >= 0:
             return [1, 0, 0, val/self.max]
         else:
             return [0, 1, 0, val/self.min]
@@ -68,13 +69,20 @@ class Matrix (util.Dict):
         self.ncols = 0
         self.nnz   = 0
         
+        self.order = None
+        self.maxval = None
+        self.minval = None
+        
         self.rperm = []
         self.cperm = []
         self.rinv  = []
         self.cinv  = []
         
         self.colormap = PosNegColorMap()
-        
+        self.rows = []
+        self.cols = []
+        self.vals = []
+            
     
     def setup(self, nrows, ncols, nnz):
         self.nrows = nrows
@@ -108,10 +116,8 @@ class Matrix (util.Dict):
 #
 
 
-
-def openAdj(filename):
+def openAdj(filename, mat):
     util.tic("reading '%s'" % filename)
-    mat = Matrix()
     infile = file(filename)
     
     # read header
@@ -128,9 +134,11 @@ def openAdj(filename):
     util.log("%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz))
     
     mat.setup(nrows, ncols, nnz)
-    
-    dots  = []
+    rows, cols, vals = (mat.rows, mat.cols, mat.vals)
+        
     row = 0
+    maxval = -1e1000
+    minval = 1e1000
     for line in infile:
         fields = line.split()
 
@@ -140,24 +148,23 @@ def openAdj(filename):
 
         for i in xrange(0, len(fields), 2):
             col = int(fields[i]) - 1
-            val = float(fields[i])
-            dots.append(mat.cinv[col])
-            dots.append(mat.rinv[row])
+            val = float(fields[i+1])
+            rows.append(row)
+            cols.append(col)
+            vals.append(val)
+            if val > maxval: maxval = val
+            if val < minval: minval = val
         row += 1
-        
-        if len(dots) > 100000:
-            add_group(group(color(1,0,0), points(apply(vertices, dots))))
-            dots = []
-    add_group(group(color(1,0,0), points(* dots)))
-    
     util.toc()
+    
+    mat.maxval = maxval
+    mat.minval = minval
     
     return mat
 
 
-def openImat(filename):
+def openImat(filename, mat):
     util.tic("reading '%s'" % filename)
-    mat = Matrix()
     infile = file(filename)
     
     # read header
@@ -165,53 +172,51 @@ def openImat(filename):
     print "%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz)        
     
     mat.setup(nrows, ncols, nnz)
+    rows, cols, vals = (mat.rows, mat.cols, mat.vals)
     
-    dots = [0] * (3 * nnz)
-    mat.clear()
-    getcolor = mat.colormap.get
-    cinv = mat.cinv
-    rinv = mat.rinv
     i = 0
+    maxval = -1e1000
+    minval = 1e1000
     for line in infile:
         if "sample" in param and random.random() > param["sample"]:
             continue
         (row, col, val) = line.split()
-        r = int(row)
-        c = int(col)
-        dots.append(color(* getcolor(float(val))))
-        dots.append(mat.cinv[c])
-        dots.append(mat.rinv[r])
-        i += 3
-    
-    # draw remaining points
-    add_group(group(color(1,0,0), points(* dots)))
-    
+        score = float(val)
+        rows.append(int(row))
+        cols.append(int(col))
+        vals.append(score)
+        if score > maxval: maxval = score
+        if score < minval: minval = score
     util.toc()
+    
+    mat.maxval = maxval
+    mat.minval = minval
     
     return mat
 
 
 
-def openLabeledMatrix(filename, order = None):
+def openLabeledMatrix(filename, mat):
     util.tic("reading '%s'" % filename)
-    mat = Matrix()    
-    
-    maxval = -1e1000
-    minval = 1e1000
     
     # read all data
     nnz = 0
+    maxval = -1e1000
+    minval = 1e1000
     for line in file(filename):
         tokens = line.split()
         score = float(tokens[2])
         mat[tokens[0]][tokens[1]] = score
-        maxval = max(maxval, score)
-        minval = min(maxval, score)
+        if score > maxval: maxval = score
+        if score < minval: minval = score
         nnz += 1
     
+    mat.maxval = maxval
+    mat.minval = minval
+    
     # determine order
-    if order != None:
-        labels = util.readStrings(order)
+    if mat.order != None:
+        labels = util.readStrings(mat.order)
     else:
         set = {}
         for i in mat:
@@ -223,20 +228,14 @@ def openLabeledMatrix(filename, order = None):
     lookup = util.list2lookup(labels)
     
     mat.setup(len(labels), len(labels), nnz)
+    rows, cols, vals = (mat.rows, mat.cols, mat.vals)
     
-    # draw matrix
-    vis = []
+    # store data
     for i in mat:
         for j in mat[i]:
-            if mat[i][j] >= 0:
-                vis.append(color(1, 0, 0, mat[i][j] / maxval))
-            else:
-                vis.append(color(0, 1, 0, mat[i][j] / minval))
-            vis.append(vertices(lookup[j], lookup[i]))
-        if len(vis) > 10000:
-            add_group(group(apply(points, vis)))
-            vis = []
-    add_group(group(apply(points, vis)))
+            rows.append(lookup[i])
+            cols.append(lookup[j])
+            vals.append(mat[i][j])
     
     util.toc()
     
@@ -244,9 +243,8 @@ def openLabeledMatrix(filename, order = None):
     
 
 
-def openDense(filename):
+def openDense(filename, mat):
     util.tic("reading '%s'" % filename)
-    mat = Matrix()
     infile = file(filename)
     
     # read header
@@ -255,38 +253,28 @@ def openDense(filename):
     util.log("%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz))
     
     mat.setup(nrows, ncols, nnz)
-    
+    rows, cols, vals = (mat.rows, mat.cols, mat.vals)
     
     # read in whole matrix
     maxval = -1e1000
     minval = 1e1000
     r = 0
     for line in infile:
-        vals = map(float, line.split())
-        for c in xrange(len(vals)):
-            mat[r][c] = vals[c]
-            maxval = max(maxval, vals[c])
-            minval = min(minval, vals[c])
+        entries = map(float, line.split())
+        for c in xrange(len(entries)):
+            rows.append(r)
+            cols.append(c)
+            vals.append(entries[c])
+            if entries[c] > maxval: maxval = entries[c]
+            if entries[c] < minval: minval = entries[c]
         r += 1
     
-    
-    # draw matrix
-    vis = []
-    for i in xrange(nrows):
-        for j in xrange(ncols):
-            if mat[i][j] >= 0:
-                vis.append(color(mat[i][j] / maxval, 0, 0))
-            else:
-                vis.append(color(0, mat[i][j] / minval, 0))
-            vis.append(vertices(mat.cinv[j], mat.rinv[i]))
-        if len(vis) > 10000:
-            add_group(group(apply(points, vis)))
-            vis = []
-    add_group(group(apply(points, vis)))
-    
+    mat.maxval = maxval
+    mat.minval = minval
+        
     util.toc()
     return mat
-    
+
 
 
 #######################################################################
@@ -296,7 +284,32 @@ def openDense(filename):
 def drawBorder(nrows, ncols):
     # draw boundary 
     add_group(group(color(1,1,1), 
-              shapes.boxStroke(-.5,-.5,ncols-.5, nrows-.5)))
+              shapes.boxStroke(-.5,.5,ncols-.5, -nrows+.5)))
+    
+def drawMatrix(mat):
+    util.tic("drawing matrix")
+    mat.colormap.max = mat.maxval
+    mat.colormap.min = mat.minval
+    getcolor = mat.colormap.get
+    vis = []
+    chunksize = 1000
+    rows, cols, vals = (mat.rows, mat.cols, mat.vals)
+    
+    
+    for chunk in xrange(0, len(rows), chunksize):
+        if param["color"][-1] == "solid":
+            for k in xrange(chunk, min(len(rows), chunk+chunksize)):
+                vis.append(cols[k])
+                vis.append(-rows[k])
+        else:
+            for k in xrange(chunk, min(len(rows), chunk+chunksize)):
+                vis.append(color(* getcolor(vals[k])))
+                vis.append(cols[k])
+                vis.append(-rows[k])
+        add_group(group(points(* vis)))
+        vis = []
+    
+    util.toc()
     
 
 
@@ -308,35 +321,47 @@ print "SUMMATRIX (SUMMON Matrix Visualizer)"
 print "Matt Rasmussen 2005"
 print
 
-
 set_antialias(False)
+mat = Matrix()
+
 
 # read permutations
 if "rperm" in param:
-    rperm[:] = util.readInts(param["rperm"][-1])
+    mat.rperm = util.readInts(param["rperm"][-1])
 elif "cperm" in param:
-    cperm[:] = util.readInts(param["cperm"][-1])
+    mat.cperm = util.readInts(param["cperm"][-1])
 elif "rcperm" in param:
-    rperm[:] = util.readInts(param["rcperm"][-1])        
-    cperm[:] = util.readInts(param["rcperm"][-1])
+    mat.rperm = util.readInts(param["rcperm"][-1])        
+    mat.cperm = util.readInts(param["rcperm"][-1])
 
+# read color
+param.setdefault("color", ["solid"])
+if param["color"][-1] == "posneg":
+    mat.colormap = PosNegColorMap()
+elif param["color"][-1] == "rainbow":
+    mat.colormap = RainbowColorMap()
+
+
+if "order" in param:
+    mat.order = param["order"][-1]
 
 # read matrix
 if "adj" in param:
-    mat = openAdj(param["adj"][-1])
+    openAdj(param["adj"][-1], mat)
 elif "imat" in param:
-    mat = openImat(param["imat"][-1])
+    openImat(param["imat"][-1], mat)
 elif "lmat" in param:
     if "order" in param:
-        mat = openLabeledMatrix(param["lmat"][-1], param["order"][-1])
+        openLabeledMatrix(param["lmat"][-1], mat)
     else:
-        mat = openLabeledMatrix(param["lmat"][-1])
+        openLabeledMatrix(param["lmat"][-1], mat)
 elif "dense" in param:
-    mat = openDense(param["dense"][-1])    
+    openDense(param["dense"][-1], mat)
 else:
     raise "no matrix specified"
 
-        
+
+drawMatrix(mat)
 drawBorder(mat.nrows, mat.ncols)
 home()
 

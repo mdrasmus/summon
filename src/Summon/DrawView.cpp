@@ -179,7 +179,13 @@ void DrawView::DrawWorld()
         return;
     }
     
-    glPointSize(GetZoom().y);
+    // set point size to max of zooms
+    Vertex2f zoom = GetZoom();
+    if (zoom.y > zoom.x)
+        glPointSize(zoom.y);
+    else
+        glPointSize(zoom.x);
+        
     
     if (m_tasks.size() == 0) {
         // if no tasks, create new drawlist task
