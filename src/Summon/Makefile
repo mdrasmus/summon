@@ -25,8 +25,8 @@ endif
 #        CYGWIN_LIBS := $(CYGWIN_LIBS) `guile-config link`
 #endif
 #ifeq ($(VISTOOLS_SCRIPT),$(VISTOOLS_PYTHON))
-	LIBS := $(LIBS) -lpython2.3  -lutil
-        CYGWIN_LIBS := $(CYGWIN_LIBS) `python-config`
+	LIBS := $(LIBS) -lpython2.4  -lutil
+        CYGWIN_LIBS := $(CYGWIN_LIBS) -L/lib/python2.4/config -lpython2.4
 #endif
 
 
