@@ -4,6 +4,11 @@
 #
 # Example of using summon to visualize large sparse matrices.
 #
+# Example matrices are in summon/examples/summatrix/
+# Matrix file formats:
+#   *.mat   compress row (-r option)
+#   *.imat  index matrix (-i option)
+#   *.lmat  label matrix 
 #
 
 import random
@@ -14,7 +19,7 @@ from summonlib import shapes, util
 
 # command line options
 options = [
-    ["a:", "adj=", "adj", "AUTO<adjacency matrix file>"],
+    ["r:", "comprow=", "comprow", "AUTO<compressed row matrix file>"],
     ["i:", "imat=", "imat", "AUTO<index matrix file>"],
     ["l:", "lmat=", "lmat", "AUTO<labeled sparse matrix file>"],
     ["d:", "dense=", "dense", "AUTO<dense matrix file>"],
@@ -117,7 +122,7 @@ class Matrix (util.Dict):
 #
 
 
-def openAdj(filename, mat):
+def openCompRow(filename, mat):
     util.tic("reading '%s'" % filename)
     infile = file(filename)
     
@@ -348,8 +353,8 @@ if "order" in param:
     mat.order = param["order"][-1]
 
 # read matrix
-if "adj" in param:
-    openAdj(param["adj"][-1], mat)
+if "comprow" in param:
+    openCompRow(param["comprow"][-1], mat)
 elif "imat" in param:
     openImat(param["imat"][-1], mat)
 elif "lmat" in param:
