@@ -11,3 +11,5 @@ clean:
 install:
 	make -C src/Summon install
 	
+cleanobj:
+	make -C src/Summon cleanallobj

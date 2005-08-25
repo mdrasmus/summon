@@ -68,9 +68,18 @@ $(LIB): $(OBJS)
 clean:
 	rm -rf $(OBJS) $(LIB) $(PROG)
 
+cleanobj:
+	rm -rf $(OBJS) $(LIB)
+
 cleanall:
 	make clean -C $(PREFIX)/Common
 	make clean -C $(PREFIX)/GlutMVC
 	make clean -C $(PREFIX)/MVC
 	make clean -C $(PREFIX)/Summon
+
+cleanallobj:
+	make cleanobj -C $(PREFIX)/Common
+	make cleanobj -C $(PREFIX)/GlutMVC
+	make cleanobj -C $(PREFIX)/MVC
+	make cleanobj -C $(PREFIX)/Summon
 
