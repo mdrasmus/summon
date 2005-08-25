@@ -855,7 +855,7 @@ public:
     virtual const char *GetUsage() 
     { return "'over'|'out'|'click', x1, y1, x2, y2, proc"; }
     virtual const char *GetDescription() 
-    { return "constructs a group of elements"; }
+    { return "constructs hotspot for a region that activates a python procedure 'proc'"; }
 };
 
 

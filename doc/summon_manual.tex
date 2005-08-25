@@ -78,7 +78,7 @@ SUMMON is a general visualization program that uses an embedded python engine to
 allow customization through scripting.  This allows the user to rapidly
 prototype a custom visualization for their data, without the overhead of a
 designing a graphical user interface or recompiling native code.  By simplifying
-the task of designing a visualization, the user can spend more time on
+the task of designing a visualization, users can spend more time on
 understanding their data. 
 
 SUMMON was deisgned with several philosophies.  First, recompilation should
@@ -87,7 +87,7 @@ graphical user interfaces should also be avoided.  Designing a good interface
 takes planning and time to layout buttons, scrollbars, and dialog boxes.  Yet a 
 poor interface is very painful to work with. Even when one has a good interface,
 rarely can it be automated for batch mode.  Instead SUMMON relies on the
-python terminal for most interaction.  This allows the user direct access to the
+python terminal for most interaction.  This allows the users direct access to the
 underlining code, which is more expressive, and can be automated through
 scripting.  
 
@@ -95,8 +95,8 @@ Lastly, SUMMON is designed to be fast.  Libraries already exist for
 accessing OpenGL in python.  However, python is relatively slow for real-time
 interaction with large visualizations (trees with 100,000 leaves, matrices with
 a million non-zeros, etc.).  Therefore, all real-time interaction is handled
-with natively compiled C++ code.  Python is only executed in the construction 
-and occasionaly interaction with the visualization.  This arrangement provides 
+with compiled native C++ code.  Python is only executed in the construction 
+and occasional interaction with the visualization.  This arrangement provides 
 the best of both worlds.
 
 
@@ -104,12 +104,15 @@ the best of both worlds.
 
 \subsection{Features}
 
+Listed below is a short summary of the features offered in this version of
+SUMMON.
+
 \items{
     \item Embedded python engine
     \item Fast OpenGL graphics    
     \item Drawing arbitrary points, lines, polygons
     \item Binding inputs (keyboard, mouse, hotspots) to any python function 
-    \item SVG output
+    \item SVG output (also PNG with ImageMagick)
     \item cross-platform (windows, linux)
 }
 
@@ -117,7 +120,7 @@ the best of both worlds.
 \section{Installing SUMMON}
 \label{sec:installing}
 
-Before running or compiling SUMMON, following libraries are required:
+Before running or compiling SUMMON, the following libraries are required:
 \items {
     \item python 2.3 (or greater)
     \item GL/GLU    
@@ -128,30 +131,54 @@ Before running or compiling SUMMON, following libraries are required:
     \item cygwin (for windows only)
 }
 
-Precompiled versions of summon are available in summon/bin for linux
+Precompiled versions of SUMMON are available in \code{summon/bin/} for linux
 (\code{summon}) and windows (\code{summon.exe}).  To install SUMMON either add
-\code{summon/bin} to your \code{PATH} environment variable or copy all the
-programs in \code{summon/bin} to a directory on your \code{PATH}.  Windows users
-should use the CYGWIN linux environment for windows (http://www.cygwin.com/) in
-order to run SUMMON.
+\code{summon/bin/} to your \code{PATH} environment variable or copy all the
+programs in \code{summon/bin/} to a directory on your \code{PATH}.  Windows users
+will need to run SUMMON in the CYGWIN linux environment for windows 
+(http://www.cygwin.com/).
 
 \subsection{Compiling SUMMON}
 
-To compile you own version of SUMMON use the Makefile available under 
-\code{summon/}. 
+To compile your own version of SUMMON, use the Makefile available under 
+\code{summon/}.  Below several commands are given that should compile SUMMON for
+your system.
 
 To compile the linux version change into the \code{summon/} directory and
 execute the following command.
 
 \codeblock{\$ make}
 
-To copy the compiled linux version of SUMMON to \code{summon/bin}
+To copy the compiled linux version of SUMMON to \code{summon/bin/} type
 
 \codeblock{\$ make install}
 
-To compile the windows version of SUMMON and copy it to \code{summon/bin}
+To compile the windows version of SUMMON and copy it to \code{summon/bin/} type
 
 \codeblock{\$ make summon.exe}
+
+
+
+\subsection{Configuring SUMMON}
+
+SUMMON requires access to its own python package in order to operate properly.
+In addition, SUMMON expects to find a configuration file called 
+\code{summon\_config.py} somewhere in the python path.  The SUMMON package, 
+\code{summonlib}, and a default configuration file appear under 
+\code{summon/lib/}.  Therefore, before attempting to run SUMMON add 
+\code{summon/lib/} to your \code{PYTHONPATH} environment variable.  For example,
+if you use bash as a shell then add the following to your \code{.bashrc} file:
+
+\codeblock{
+    export PYTHONPATH=\$PYTHONPATH:location\_of\_your\_choice/summon/lib
+}
+
+To customize SUMMON with your own key bindings and behavior, you can write your
+own \code{summon\_config.py} file.  Just be sure it appears in your python path
+somewhere {\em before} SUMMON default configuration file.  The configuration file
+is nothing more than a python script that calls the SUMMON function 
+\code{set\_binding} in order to initialize the default keyboard and mouse 
+bindings.
 
 
 
@@ -161,7 +188,7 @@ To compile the windows version of SUMMON and copy it to \code{summon/bin}
 
 SUMMON should be run from the commandline.  I recommend Windows users to use
 CYGWIN for running SUMMON from the commandline.  SUMMON itself takes a single
-optional python script as an argument.  On execution, SUMMON opens a OpenGL
+optional python script as an argument.  On execution, SUMMON opens an OpenGL
 window and evaluates any script that it is given in the python engine. After
 evaluation, the SUMMON prompt should appear which provides direct access to the
 python engine.  Users should be familar with the python language in order to use
@@ -177,7 +204,7 @@ module.
 
 To learn how to use SUMMON, example scripts have been provided in the 
 \code{summon/examples/summon/} directory.  Examples of full fledged
-visualiztions, SUMMATRIX and SUMTREE, are also given in the \code{summon/bin/}
+visualizations, SUMMATRIX and SUMTREE, are also given in the \code{summon/bin/}
 directory.  Their example input files are given in
 \code{summon/examples/summatrix/} and \code{summon/examples/sumtree/},
 respectively.
@@ -266,13 +293,12 @@ home()
 \end{verbatim}
 }
 
-As you can see, the first line of python imports all of the SUMMON functions
+As you can see, the first line of the script imports all of the SUMMON functions
 from the \code{summon} module into the current environment.  The first of such
 functions is the \code{clear\_groups()} command.  All graphics are added and
 removed from the screen in sets called {\em groups}.  Groups provide a way to
-organize and reference graphical elements.  On construction a group receives a
-unique id number that can be used to refer to it in the future.  The
-\code{clear\_groups()} function removes all groups that may be on the screen.
+organize and reference graphical elements.  The \code{clear\_groups()} function
+removes all groups that may be on the screen.
 
 The next line of python code in the example adds a single line to the screen. 
 The line is created with the \code{lines} function, which takes a series of
@@ -281,7 +307,9 @@ two numbers specify the x and y coordinates of one end-point (0,0) and the last
 two specify the other end-point (30,40).  Next, the line is placed in a group
 using the \code{group} function which returns a group ready to be added to the
 screen.   Lastly, the \code{add\_group} function is called on the group.  This
-function finally places the line on the screen.
+function finally places the line on the screen.  Although this may seem like a
+lot to type to draw a single line, in most uses several lines and other graphics 
+are placed a group before adding them to the screen.
 
 The next line in the example adds a quadrilateral to the screen with the
 \code{quads} command.  The arguments to the \code{quads} function are similar to
@@ -298,22 +326,52 @@ OpenGL will draw a quadrilateral that blends these colors.
 
 Lastly, an example of text is shown.  Once again the text is added to the screen
 using the \code{add\_group} function.  The arguments to the text function
-specify the text to be displayed, a bounding box for the text specified by two
-opposite  coordinates, and then zero or more justifications ("center", "top",
+specify the text to be displayed, a bounding box specified by two
+opposite  vertices, and then zero or more justifications ("center", "top",
 etc.) that will affect how the text aligns in its bounding box.  There are
 currently three types of text: \code{text} (bitmap), \code{text\_scale} (stroke),
 \code{text\_clip} (stroked text that clips).  The bitmap text will clip if it
 cannot fit within its bounding box.  This is very useful in cases where the user
-zooms out very far and no more space is available for the text.
+zooms out very far and no more space is available for the text to fit.  See the
+example \code{text.py} for a better illustration of the different text
+constructs.
 
 The final function in the script is \code{home()}.  \code{home()} causes the
 SUMMON window to scroll and zoom such that all graphics are visible.  This is a
 very useful command for making sure what you have drawn is visible in the
-window.
+window.  The command can also be execute by pressing the 'h' key.  This key 
+comes in handy when you "lose sight" of the visualization.
 
 This is only a simple example.  See the remaining scripts for examples of
 SUMMON's more powerful features.
 
+\section{Example Visualizations: SUMMATRIX and SUMTREE}
+
+In the \code{summon/bin/} directory are two programs, \code{summatrix} and
+\code{sumtree} that use summon to visualize large datasets.  There programs are
+written in python and so can be easily extended.  In my own work, I have 
+extended the tree visualization program to integrate more closely with biological
+data (executing CLUSTALW and MUSCLE on subtrees, displaying GO terms, etc.).  The
+purpose of writing visualization programs in this way, is to allow others to
+easily overlay and integrate their own data.  
+
+Also in both visualizations the underling data is accessable through global python
+variables.  That means if you have a very specific question like, "How many
+genes in my subtree have a particular GO term?", you can quickly write a few
+lines of python to walk the tree and answer the question youself.  It would be
+very difficult to anticipate all such questions during the development of a
+visualization.  And yet when visualizing, it can become frustrating if you cannot
+fully interact with the  data.
+
+Example input files for both programs can be found under the 
+\code{summon/examples} directory.  Both programs will print their usage if run
+with no arguments.  Here are some recommended examples:
+
+\codeblock{\$ sumtree -n olfactory-genes.tree}
+
+\codeblock{\$ sumtree -n olfactory-genes.tree -t 10}
+
+\codeblock{\$ summatrix -i human\_mouse.imat}
 
 
 \section{SUMMON Function Reference}

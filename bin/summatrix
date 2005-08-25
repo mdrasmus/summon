@@ -301,18 +301,18 @@ def drawMatrix(mat):
     vis = []
     chunksize = 1000
     rows, cols, vals = (mat.rows, mat.cols, mat.vals)
-    
+    rinv, cinv = (mat.rinv, mat.cinv)
     
     for chunk in xrange(0, len(rows), chunksize):
         if param["color"][-1] == "solid":
             for k in xrange(chunk, min(len(rows), chunk+chunksize)):
-                vis.append(cols[k])
-                vis.append(-rows[k])
+                vis.append(cinv[cols[k]])
+                vis.append(-rinv[rows[k]])
         else:
             for k in xrange(chunk, min(len(rows), chunk+chunksize)):
                 vis.append(color(* getcolor(vals[k])))
-                vis.append(cols[k])
-                vis.append(-rows[k])
+                vis.append(cinv[cols[k]])
+                vis.append(-rinv[rows[k]])
         add_group(group(points(* vis)))
         vis = []
     
