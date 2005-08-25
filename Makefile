@@ -1,6 +1,10 @@
 all:
 	make -C src/Summon summon
 
+windows:
+	make -C src/Summon summon.exe
+	cp src/Summon/summon bin
+
 clean:
 	make -C src/Summon cleanall
 

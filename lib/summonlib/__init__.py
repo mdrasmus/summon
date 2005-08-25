@@ -1,3 +1,10 @@
+#
+# SUMMON
+# Matt Rasmussen
+# __init__.py  summonlib package, basic python extensions to SUMMON core
+#
+
+
 from summon import *
 
 

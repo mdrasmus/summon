@@ -55,7 +55,7 @@ public:
 
     virtual const char *GetOptionName() { return "-trans"; }
     virtual const char *GetName() { return "trans"; }
-    virtual const char *GetUsage() { return "<x> <y>"; }
+    virtual const char *GetUsage() { return "x, y"; }
     virtual const char *GetDescription() 
     { return "translate the view by (x,y)"; }
     
@@ -97,7 +97,7 @@ public:
     
     virtual const char *GetOptionName() { return "-zoom"; }
     virtual const char *GetName() { return "zoom"; }
-    virtual const char *GetUsage() { return "<factor x> <factor y>"; }
+    virtual const char *GetUsage() { return "factorX, factorY"; }
     virtual const char *GetDescription() { return "zoom view by a factor"; }
     virtual int Setup(int argc, const char **argv)
     {
@@ -139,7 +139,7 @@ public:
     
     virtual const char *GetOptionName() { return ""; }
     virtual const char *GetName() { return "zoomx"; }
-    virtual const char *GetUsage() { return "<factor>"; }
+    virtual const char *GetUsage() { return "factor"; }
     virtual const char *GetDescription() 
     { return "zoom x-axis by a factor"; }
     
@@ -182,7 +182,7 @@ public:
     
     virtual const char *GetOptionName() { return ""; }
     virtual const char *GetName() { return "zoomy"; }
-    virtual const char *GetUsage() { return "<factor>"; }
+    virtual const char *GetUsage() { return "factor"; }
     virtual const char *GetDescription() 
     { return "zoom y-axis by a factor"; }
 
@@ -220,7 +220,7 @@ public:
     
     virtual const char *GetOptionName() { return "-focus"; }
     virtual const char *GetName() { return "focus"; }
-    virtual const char *GetUsage() { return "<x> <y>"; }
+    virtual const char *GetUsage() { return "x, y"; }
     virtual const char *GetDescription() { return "focus the view on (x,y)"; }
     virtual int Setup(int argc, const char **argv)
     {

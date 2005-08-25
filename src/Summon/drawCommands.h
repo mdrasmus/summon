@@ -251,7 +251,7 @@ public:
     virtual int GetId() { return GET_MODEL_COMMAND; }
 
     virtual const char *GetName() { return "get_model"; }
-    virtual const char *GetUsage() { return "windowid ['world'|'screen']"; }
+    virtual const char *GetUsage() { return "windowid, ['world'|'screen']"; }
     virtual const char *GetDescription() 
     { return "gets the model id of a window"; }
     
@@ -304,7 +304,7 @@ public:
 
     virtual const char *GetName() { return "assign_model"; }
     virtual const char *GetUsage() 
-    { return "windowid ['world'|'screen'] modelid"; }
+    { return "windowid, 'world'|'screen', modelid"; }
     virtual const char *GetDescription() 
     { return "assigns a model to a window"; }
     
@@ -348,9 +348,9 @@ public:
 
     virtual const char *GetName() { return "timer_call"; }
     virtual const char *GetUsage() 
-    { return "delay func"; }
+    { return "delay, func"; }
     virtual const char *GetDescription() 
-    { return "calls a func after a delay in seconds"; }
+    { return "calls a function 'func' after a delay in seconds"; }
     
     virtual bool Setup(Scm lst)
     {
@@ -395,7 +395,7 @@ public:
     virtual int GetId() { return ADD_GROUP_COMMAND; }
 
     virtual const char *GetName() { return "add_group"; }
-    virtual const char *GetUsage() { return "groups"; }
+    virtual const char *GetUsage() { return "group"; }
     virtual const char *GetDescription() 
     { return "adds drawing groups to the current model"; }
     
@@ -414,7 +414,7 @@ public:
     virtual int GetId() { return INSERT_GROUP_COMMAND; }
 
     virtual const char *GetName() { return "insert_group"; }
-    virtual const char *GetUsage() { return "groups"; }
+    virtual const char *GetUsage() { return "groupid, group"; }
     virtual const char *GetDescription() 
     { return "inserts drawing groups under an existing group"; }
     
@@ -465,7 +465,7 @@ public:
     virtual int GetId() { return REPLACE_GROUP_COMMAND; }
 
     virtual const char *GetName() { return "replace_group"; }
-    virtual const char *GetUsage() { return "groupid group"; }
+    virtual const char *GetUsage() { return "groupid, group"; }
     virtual const char *GetDescription() 
     { return "replaces a drawing group on the current display"; }
     
@@ -504,7 +504,7 @@ public:
     virtual int GetId() { return SHOW_GROUP_COMMAND; }
 
     virtual const char *GetName() { return "show_group"; }
-    virtual const char *GetUsage() { return "groupid True|False"; }
+    virtual const char *GetUsage() { return "groupid, True|False"; }
     virtual const char *GetDescription() 
     { return "sets the visibilty of a group"; }
     
@@ -527,7 +527,7 @@ public:
     virtual const char *GetName() { return "get_group"; }
     virtual const char *GetUsage() { return "groupid"; }
     virtual const char *GetDescription() 
-    { return "creates a scheme object that represents a group"; }
+    { return "creates a tuple object that represents a group"; }
     
     virtual bool Setup(Scm lst)
     {
@@ -576,7 +576,7 @@ public:
     virtual int GetId() { return SET_BGCOLOR_COMMAND; }
 
     virtual const char *GetName() { return "set_bgcolor"; }
-    virtual const char *GetUsage() { return "red green blue"; }
+    virtual const char *GetUsage() { return "red, green, blue"; }
     virtual const char *GetDescription() 
     { return "sets background color"; }
     
@@ -615,7 +615,7 @@ public:
     virtual int GetId() { return SET_VISIBLE_COMMAND; }
 
     virtual const char *GetName() { return "set_visible"; }
-    virtual const char *GetUsage() { return "x1 y1 x2 y2"; }
+    virtual const char *GetUsage() { return "x1, y1, x2, y2"; }
     virtual const char *GetDescription() 
     { return "change display to contain region (x1,y1)-(x2,y2)"; }
     
@@ -649,7 +649,7 @@ public:
     virtual int GetId() { return SET_WINDOW_SIZE_COMMAND; }
 
     virtual const char *GetName() { return "set_window_size"; }
-    virtual const char *GetUsage() { return "x y"; }
+    virtual const char *GetUsage() { return "x, y"; }
     virtual const char *GetDescription() 
     { return "sets current window's size"; }
     
@@ -712,7 +712,7 @@ public:
     virtual int GetId() { return SET_BINDING_COMMAND; }
 
     virtual const char *GetName() { return "set_binding"; }
-    virtual const char *GetUsage() { return "input proc|command_name"; }
+    virtual const char *GetUsage() { return "input, proc|command_name"; }
     virtual const char *GetDescription() 
     { return "bind an input to a command or procedure"; }
     
@@ -827,7 +827,7 @@ public:
     virtual int GetId() { return GROUP_CONSTRUCT; }
 
     virtual const char *GetName() { return "group"; }
-    virtual const char *GetUsage() { return ". elements"; }
+    virtual const char *GetUsage() { return "* elements"; }
     virtual const char *GetDescription() 
     { return "constructs a group of elements"; }
 };
@@ -853,7 +853,7 @@ public:
 
     virtual const char *GetName() { return "hotspot"; }
     virtual const char *GetUsage() 
-    { return "'over'|'out'|'click' x1 y1 x2 y2 proc"; }
+    { return "'over'|'out'|'click', x1, y1, x2, y2, proc"; }
     virtual const char *GetDescription() 
     { return "constructs a group of elements"; }
 };
@@ -867,7 +867,7 @@ public:
     virtual int GetId() { return POINTS_CONSTRUCT; }
 
     virtual const char *GetName() { return "points"; }
-    virtual const char *GetUsage() { return ". vertices|colors"; }
+    virtual const char *GetUsage() { return "* vertices|colors"; }
     virtual const char *GetDescription() 
     { return "plots vertices as points"; }
 };
@@ -879,7 +879,7 @@ public:
     virtual int GetId() { return LINES_CONSTRUCT; }
 
     virtual const char *GetName() { return "lines"; }
-    virtual const char *GetUsage() { return ". vertices|colors"; }
+    virtual const char *GetUsage() { return "* vertices|colors"; }
     virtual const char *GetDescription() 
     { return "plots vertices as lines"; }
 };
@@ -890,7 +890,7 @@ public:
     virtual int GetId() { return LINE_STRIP_CONSTRUCT; }
 
     virtual const char *GetName() { return "line_strip"; }
-    virtual const char *GetUsage() { return ". vertices|colors"; }
+    virtual const char *GetUsage() { return "* vertices|colors"; }
     virtual const char *GetDescription() 
     { return "plots vertices as connected lines"; }
 };
@@ -903,7 +903,7 @@ public:
     virtual int GetId() { return TRIANGLES_CONSTRUCT; }
 
     virtual const char *GetName() { return "triangles"; }
-    virtual const char *GetUsage() { return ". vertices|colors"; }
+    virtual const char *GetUsage() { return "* vertices|colors"; }
     virtual const char *GetDescription() 
     { return "plots vertices as triangles"; }
 };
@@ -915,7 +915,7 @@ public:
     virtual int GetId() { return TRIANGLE_STRIP_CONSTRUCT; }
 
     virtual const char *GetName() { return "triangle_strip"; }
-    virtual const char *GetUsage() { return ". vertices|colors"; }
+    virtual const char *GetUsage() { return "* vertices|colors"; }
     virtual const char *GetDescription() 
     { return "plots vertices as connected triangles"; }
 };
@@ -927,7 +927,7 @@ public:
     virtual int GetId() { return TRIANGLE_FAN_CONSTRUCT; }
 
     virtual const char *GetName() { return "triangle_fan"; }
-    virtual const char *GetUsage() { return ". vertices|colors"; }
+    virtual const char *GetUsage() { return "* vertices|colors"; }
     virtual const char *GetDescription() 
     { return "plots vertices as triangles in a fan"; }
 };
@@ -940,7 +940,7 @@ public:
     virtual int GetId() { return QUADS_CONSTRUCT; }
 
     virtual const char *GetName() { return "quads"; }
-    virtual const char *GetUsage() { return ". vertices|colors"; }
+    virtual const char *GetUsage() { return "* vertices|colors"; }
     virtual const char *GetDescription() 
     { return "plots vertices as quads"; }
 };
@@ -952,7 +952,7 @@ public:
     virtual int GetId() { return QUAD_STRIP_CONSTRUCT; }
 
     virtual const char *GetName() { return "quad_strip"; }
-    virtual const char *GetUsage() { return ". vertices|colors"; }
+    virtual const char *GetUsage() { return "* vertices|colors"; }
     virtual const char *GetDescription() 
     { return "plots vertices as connected quads"; }
 };
@@ -964,7 +964,7 @@ public:
     virtual int GetId() { return POLYGON_CONSTRUCT; }
 
     virtual const char *GetName() { return "polygon"; }
-    virtual const char *GetUsage() { return ". vertices|colors"; }
+    virtual const char *GetUsage() { return "* vertices|colors"; }
     virtual const char *GetDescription() 
     { return "plots vertices as a convex polygon"; }
 };
@@ -977,7 +977,7 @@ public:
 
     virtual const char *GetName() { return "text"; }
     virtual const char *GetUsage() 
-    { return "string x1 y1 x2 y2 ['left'|'center'|'right'] \
+    { return "string, x1, y1, x2, y2, ['left'|'center'|'right'], \
 ['top'|'middle'|'bottom']"; }
     virtual const char *GetDescription() 
     { return "draws text justified within a bounding box"; }
@@ -992,7 +992,7 @@ public:
 
     virtual const char *GetName() { return "text_scale"; }
     virtual const char *GetUsage() 
-    { return "string x1 y1 x2 y2 ['left'|'center'|'right'] \
+    { return "string, x1, y1, x2, y2, ['left'|'center'|'right'], \
 ['top'|'middle'|'bottom']"; }
     virtual const char *GetDescription() 
     { return "draws stroked text within a bounding box"; }
@@ -1007,7 +1007,7 @@ public:
 
     virtual const char *GetName() { return "text_clip"; }
     virtual const char *GetUsage() 
-    { return "string x1 y1 x2 y2 minheight maxheight ['left'|'center'|'right'] \
+    { return "string, x1, y1, x2, y2, minheight, maxheight, ['left'|'center'|'right'], \
 ['top'|'middle'|'bottom']"; }
     virtual const char *GetDescription() 
     { return "draws stroked text within a bounding box and height restrictions"; }
@@ -1024,7 +1024,7 @@ public:
     virtual int GetId() { return VERTICES_CONSTRUCT; }
 
     virtual const char *GetName() { return "vertices"; }
-    virtual const char *GetUsage() { return "x y z ..."; }
+    virtual const char *GetUsage() { return "x, y, * more"; }
     virtual const char *GetDescription() 
     { return "creates a list of vertices"; }
 };
@@ -1036,7 +1036,7 @@ public:
     virtual int GetId() { return COLOR_CONSTRUCT; }
 
     virtual const char *GetName() { return "color"; }
-    virtual const char *GetUsage() { return "red green blue [alpha]"; }
+    virtual const char *GetUsage() { return "red, green, blue, [alpha]"; }
     virtual const char *GetDescription() 
     { return "creates a color from 3 or 4 values in [0,1]"; }
 };
@@ -1048,7 +1048,7 @@ public:
     virtual int GetId() { return TRANSLATE_CONSTRUCT; }
 
     virtual const char *GetName() { return "translate"; }
-    virtual const char *GetUsage() { return "x y . elements"; }
+    virtual const char *GetUsage() { return "x, y, * elements"; }
     virtual const char *GetDescription() 
     { return "translates the coordinate system of enclosed elements"; }
 };
@@ -1060,7 +1060,7 @@ public:
     virtual int GetId() { return ROTATE_CONSTRUCT; }
 
     virtual const char *GetName() { return "rotate"; }
-    virtual const char *GetUsage() { return "angle . elements"; }
+    virtual const char *GetUsage() { return "angle, * elements"; }
     virtual const char *GetDescription() 
     { return "rotates the coordinate system of enclosed elements"; }
 };
@@ -1072,7 +1072,7 @@ public:
     virtual int GetId() { return SCALE_CONSTRUCT; }
 
     virtual const char *GetName() { return "scale"; }
-    virtual const char *GetUsage() { return "x y . elements"; }
+    virtual const char *GetUsage() { return "x, y, * elements"; }
     virtual const char *GetDescription() 
     { return "scales the coordinate system of enclosed elements"; }
 };
@@ -1084,9 +1084,9 @@ public:
     virtual int GetId() { return FLIP_CONSTRUCT; }
 
     virtual const char *GetName() { return "flip"; }
-    virtual const char *GetUsage() { return "x y . elements"; }
+    virtual const char *GetUsage() { return "x, y, * elements"; }
     virtual const char *GetDescription() 
-    { return "flips the coordinate system of enclosed elements over <x,y>"; }
+    { return "flips the coordinate system of enclosed elements over (x,y)"; }
 };
 
 
@@ -1097,7 +1097,7 @@ public:
     virtual int GetId() { return INPUT_KEY_CONSTRUCT; }
 
     virtual const char *GetName() { return "input_key"; }
-    virtual const char *GetUsage() { return "key ['shift'] ['ctrl'] ['alt']"; }
+    virtual const char *GetUsage() { return "key, ['shift'], ['ctrl'], ['alt']"; }
     virtual const char *GetDescription() 
     { return "specifies a keyboard input"; }
 };
@@ -1110,8 +1110,8 @@ public:
 
     virtual const char *GetName() { return "input_click"; }
     virtual const char *GetUsage() 
-    { return "'left'|'middle'|'right' 'up'|'down' \
-['shift'] ['ctrl'] ['alt']"; }
+    { return "'left'|'middle'|'right', 'up'|'down', \
+['shift'], ['ctrl'], ['alt']"; }
     virtual const char *GetDescription() 
     { return "specifies a mouse click input"; }
 };
@@ -1124,8 +1124,8 @@ public:
 
     virtual const char *GetName() { return "input_motion"; }
     virtual const char *GetUsage() 
-    { return "'left'|'middle'|'right' 'up'|'down' \
-['shift'] ['ctrl'] ['alt']"; }
+    { return "'left'|'middle'|'right', 'up'|'down', \
+['shift'], ['ctrl'], ['alt']"; }
     virtual const char *GetDescription() 
     { return "specifies a mouse motion input"; }
 };

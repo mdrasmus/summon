@@ -212,7 +212,7 @@ void App::Help(HelpCommand *help)
             else
                 printf(cmd->GetName());
 
-            printf(" %s   %s\n", cmd->GetUsage(),
+            printf(" %s\n%s\n", cmd->GetUsage(),
                                  cmd->GetDescription());
         } else {
             printf("command '%s' unknown\n", help->command.c_str());

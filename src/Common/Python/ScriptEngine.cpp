@@ -206,8 +206,8 @@ void ScriptEngine::Init()
         
         // create python name for command
         string name = m_commands[i]->GetName();
-        string help = string("args: ") + string(m_commands[i]->GetUsage()) + 
-                      "\\n" + m_commands[i]->GetDescription();
+        string help = string("(") + string(m_commands[i]->GetUsage()) + 
+                      ")\\n" + m_commands[i]->GetDescription();
         
         // create wrapper function
         string pyCommands =  "import " + m_moduleName + "\n" +

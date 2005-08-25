@@ -1,0 +1,327 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+
+% page dimensions
+\textwidth=6.5in
+\oddsidemargin=-0.0in
+\evensidemargin=-0.0in
+\topmargin=-0.2in
+\footskip=0.8in
+\textheight=8.00in
+
+
+% list shortcuts
+\newcommand{\enum}[1]{\begin{enumerate} #1 \end{enumerate}}
+\newcommand{\items}[1]{\begin{itemize} #1 \end{itemize}}
+
+% formatting macros
+\newcommand{\bold}[1]{{\bf #1}}
+\newcommand{\ul}[1]{\underline{#1}}
+\newcommand{\code}[1]{{\tt #1}}
+\newcommand{\codeblock}[1]{\vspace{.1in} {\tt #1} \vspace{.1in}}
+
+% reference macros
+\newcommand{\figref}[1]{Figure~\ref{#1}}
+\newcommand{\secref}[1]{Section~\ref{#1}}
+\newcommand{\algref}[1]{Algorithm~\ref{#1}}
+
+
+
+\newcommand{\version}{1.0}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\begin{titlepage}
+
+\begin{center}
+
+\vspace*{2.5in}
+
+{\huge \bf \fontfamily{phv}\selectfont 
+SUMMON \version\ Manual
+}
+\vspace*{.5in}
+
+{\large
+Matt Rasmussen
+}
+\vspace*{.5in}
+
+Computer Science and Artificial Intelligence Lab
+
+Massachusetts Institute of Technology
+
+\vspace*{.25in}
+
+rasmus@mit.edu
+\end{center}
+
+\end{titlepage}
+
+
+\tableofcontents
+
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+\label{sec:intro}
+
+
+\subsection{What is SUMMON}
+
+SUMMON is a general visualization program that uses an embedded python engine to
+allow customization through scripting.  This allows the user to rapidly
+prototype a custom visualization for their data, without the overhead of a
+designing a graphical user interface or recompiling native code.  By simplifying
+the task of designing a visualization, the user can spend more time on
+understanding their data. 
+
+SUMMON was deisgned with several philosophies.  First, recompilation should
+be avoided in order to speed up the development process.  Second, design of
+graphical user interfaces should also be avoided.  Designing a good interface
+takes planning and time to layout buttons, scrollbars, and dialog boxes.  Yet a 
+poor interface is very painful to work with. Even when one has a good interface,
+rarely can it be automated for batch mode.  Instead SUMMON relies on the
+python terminal for most interaction.  This allows the user direct access to the
+underlining code, which is more expressive, and can be automated through
+scripting.  
+
+Lastly, SUMMON is designed to be fast.  Libraries already exist for
+accessing OpenGL in python.  However, python is relatively slow for real-time
+interaction with large visualizations (trees with 100,000 leaves, matrices with
+a million non-zeros, etc.).  Therefore, all real-time interaction is handled
+with natively compiled C++ code.  Python is only executed in the construction 
+and occasionaly interaction with the visualization.  This arrangement provides 
+the best of both worlds.
+
+
+
+
+\subsection{Features}
+
+\items{
+    \item Embedded python engine
+    \item Fast OpenGL graphics    
+    \item Drawing arbitrary points, lines, polygons
+    \item Binding inputs (keyboard, mouse, hotspots) to any python function 
+    \item SVG output
+    \item cross-platform (windows, linux)
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Installing SUMMON}
+\label{sec:installing}
+
+Before running or compiling SUMMON, following libraries are required:
+\items {
+    \item python 2.3 (or greater)
+    \item GL/GLU    
+    \item glut 
+    \item SDL (for threading)
+    \item pthread (for linux only)
+    \item readline/ncurses
+    \item cygwin (for windows only)
+}
+
+Precompiled versions of summon are available in summon/bin for linux
+(\code{summon}) and windows (\code{summon.exe}).  To install SUMMON either add
+\code{summon/bin} to your \code{PATH} environment variable or copy all the
+programs in \code{summon/bin} to a directory on your \code{PATH}.  Windows users
+should use the CYGWIN linux environment for windows (http://www.cygwin.com/) in
+order to run SUMMON.
+
+\subsection{Compiling SUMMON}
+
+To compile you own version of SUMMON use the Makefile available under 
+\code{summon/}. 
+
+To compile the linux version change into the \code{summon/} directory and
+execute the following command.
+
+\codeblock{\$ make}
+
+To copy the compiled linux version of SUMMON to \code{summon/bin}
+
+\codeblock{\$ make install}
+
+To compile the windows version of SUMMON and copy it to \code{summon/bin}
+
+\codeblock{\$ make summon.exe}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Using SUMMON}
+\label{sec:using}
+
+SUMMON should be run from the commandline.  I recommend Windows users to use
+CYGWIN for running SUMMON from the commandline.  SUMMON itself takes a single
+optional python script as an argument.  On execution, SUMMON opens a OpenGL
+window and evaluates any script that it is given in the python engine. After
+evaluation, the SUMMON prompt should appear which provides direct access to the
+python engine.  Users should be familar with the python language in order to use
+SUMMON.
+
+\codeblock{usage: summon [python script]}
+
+
+The SUMMON prompt acts exactly like the python prompt except for the OpenGL
+window and the appearence of a builtin module called \code{summon}.  All of the
+commands needed to interact with the visualization are within the \code{summon} 
+module.  
+
+To learn how to use SUMMON, example scripts have been provided in the 
+\code{summon/examples/summon/} directory.  Examples of full fledged
+visualiztions, SUMMATRIX and SUMTREE, are also given in the \code{summon/bin/}
+directory.  Their example input files are given in
+\code{summon/examples/summatrix/} and \code{summon/examples/sumtree/},
+respectively.
+
+
+
+\subsection{Example Script}
+
+For an introduction to the basic commands of SUMMON, let us walk through the
+code of the first example.  To begin, change into the
+\code{summon/examples/summon/} directory and open up \code{example1.py} in a
+text editor.  Also use SUMMON to execute the example with following command.
+
+\codeblock{\$ summon example1.py}
+
+The visualization should immediately appear in your OpenGL window.  The
+following controls are available:
+
+\vspace{.1in}
+\begin{tabular}{ll}
+    left mouse button          & scroll \\
+    right mouse button         & zoom \\
+    Ctrl + right mouse button  & zoom x-axis \\
+    Shift + right mouse button & zoom y-axis \\
+    arrow keys                 & scroll \\
+    Shift + arrow keys         & scroll faster \\
+    Z                          & zoom in \\
+    z                          & zoom out \\
+    h                          & home (make all graphics visible) \\
+    l                          & toggle anti-aliasing \\
+    p                          & output SVG of the current view \\
+    Ctrl + p                   & output PNG of the current view \\
+    q                          & quit \\
+\end{tabular}
+\vspace{.2in}
+
+
+
+In your text editor, the example \code{example1.py} should contain the 
+following python code:
+
+{\small
+\begin{verbatim}
+# SUMMON examples
+# example1.py - basic commands
+
+# make summon commands available
+from summon import *
+
+# syntax of used summon functions
+# add_group( <group> )   : adds a group of graphics to the screen
+# group( <elements> )    : creates a group from several graphical elements
+# lines( <primitives> )  : an element that draws one or more lines
+# quads( <primitives> )  : an element that draws one or more quadrilaterals
+# color( <red>, <green>, <blue>, [alpha] ) : a primitive that specifies a color
+
+
+# clear the screen of all drawing
+clear_groups()
+
+# add a line from (0,0) to (30,40)
+add_group(group(lines(0,0, 30,40)))
+
+# add a quadrilateral
+add_group(group(quads(50,0, 50,70, 60,70, 60,0)))
+
+# add a multi-colored quad
+add_group(group(quads(
+    color(1,0,0), 100, 0,
+    color(0,1,0), 100, 70,
+    color(0,0,1), 140, 60,
+    color(1,1,1), 140, 0)))
+
+
+# add some text below everything else
+add_group(group(
+    text("Hello, world!",    # text to appear
+         0, -10, 140, -100,    # bounding box of text
+         "center", "top")))    # justification of text in bounding box
+
+# center the "camera" so that all shapes are in view
+home()
+}
+
+
+\end{verbatim}
+}
+
+As you can see, the first line of python imports all of the SUMMON functions
+from the \code{summon} module into the current environment.  The first of such
+functions is the \code{clear\_groups()} command.  All graphics are added and
+removed from the screen in sets called {\em groups}.  Groups provide a way to
+organize and reference graphical elements.  On construction a group receives a
+unique id number that can be used to refer to it in the future.  The
+\code{clear\_groups()} function removes all groups that may be on the screen.
+
+The next line of python code in the example adds a single line to the screen. 
+The line is created with the \code{lines} function, which takes a series of
+numbers specifying the end-point coordinates for the line.  The first
+two numbers specify the x and y coordinates of one end-point (0,0) and the last
+two specify the other end-point (30,40).  Next, the line is placed in a group
+using the \code{group} function which returns a group ready to be added to the
+screen.   Lastly, the \code{add\_group} function is called on the group.  This
+function finally places the line on the screen.
+
+The next line in the example adds a quadrilateral to the screen with the
+\code{quads} command.  The arguments to the \code{quads} function are similar to
+the \code{lines} function, except four vertices (8 numbers) are specified.  Both
+functions can draw multiple lines and quadrilaterals (hence their plural names)
+by supplying more coordinates as arguments.
+
+The third group illustrates the use of color.  Color is stateful, as in OpenGL,
+and all vertices that appear after a color object in a group will be affected. 
+The \code{color} function creates a color object.  Color objects can appear
+within graphical elements such as \code{lines} and \code{quads} or directly
+inside a group.  Since each vertex in this example quad has a different color,
+OpenGL will draw a quadrilateral that blends these colors.
+
+Lastly, an example of text is shown.  Once again the text is added to the screen
+using the \code{add\_group} function.  The arguments to the text function
+specify the text to be displayed, a bounding box for the text specified by two
+opposite  coordinates, and then zero or more justifications ("center", "top",
+etc.) that will affect how the text aligns in its bounding box.  There are
+currently three types of text: \code{text} (bitmap), \code{text\_scale} (stroke),
+\code{text\_clip} (stroked text that clips).  The bitmap text will clip if it
+cannot fit within its bounding box.  This is very useful in cases where the user
+zooms out very far and no more space is available for the text.
+
+The final function in the script is \code{home()}.  \code{home()} causes the
+SUMMON window to scroll and zoom such that all graphics are visible.  This is a
+very useful command for making sure what you have drawn is visible in the
+window.
+
+This is only a simple example.  See the remaining scripts for examples of
+SUMMON's more powerful features.
+
+
+
+\section{SUMMON Function Reference}
+
+All help information is also available from the SUMMON prompt.  Use 
+\code{help(command)} to get required arguments and a usage description.
+
+\include{reference}
+
+
+\end{document}

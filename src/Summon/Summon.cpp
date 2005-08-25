@@ -356,10 +356,13 @@ def __new_groupid(): \n\
                 
                 string name = string(cmd->GetName());
                 string id = int2string(cmd->GetId());
+                string help = string("(") + string(cmd->GetUsage()) + 
+                      ")\\n" + cmd->GetDescription();
                 
                 if (cmd->GetId() == GROUP_CONSTRUCT) {
                     str = string("") + "\
 def __group(* args): return (" + id + ", __new_groupid()) + args\n\
+__group.func_doc = \"" + help + "\"\n\
 def __list2group(lst):\n\
     return ("+ id +", __new_groupid()) + tuple(lst)\n\
 def __is_group(obj): return (obj[0] == " + id + ")\n\
@@ -373,6 +376,7 @@ def __get_group_id(obj): return obj[1]\n\
                 } else {
                     str = string("") + "\
 def __" + name + "(* args): return (" + id + ",) + args\n\
+__" + name + ".func_doc = \"" + help + "\"\n\
 def __is_" + name + "(obj): return (obj[0] == " + id + ")\n\
 def __" + name + "_contents(obj): return obj[1:]\n\
 "MODULE_NAME"." + name + " = __" + name + "\n\
@@ -413,7 +417,7 @@ def __" + name + "_contents(obj): return obj[1:]\n\
         vector<StringCommand*> cmds = GetAllStringCommands();
         
         // remove constructs from cmds 
-        // they aren't processed by SchemeTerminal because we process them
+        // they aren't processed by ScriptTerminal because we process them
         {
             int j=0;
             for (int i=0; i<cmds.size(); i++) {

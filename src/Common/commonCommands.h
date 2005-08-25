@@ -68,8 +68,8 @@ public:
     virtual int GetId() { return HELP_COMMAND; }
 
     virtual const char *GetOptionName() { return "-help"; }
-    virtual const char *GetName() { return "help"; }
-    virtual const char *GetUsage() { return "<command>"; }
+    virtual const char *GetName() { return "get_help"; }
+    virtual const char *GetUsage() { return "command"; }
     virtual const char *GetDescription() 
     { return "gives the usage for a command"; }
     
@@ -106,7 +106,7 @@ public:
 
     virtual const char *GetOptionName() { return "-exec"; }
     virtual const char *GetName() { return ""; }
-    virtual const char *GetUsage() { return "<file>"; }
+    virtual const char *GetUsage() { return "file"; }
     virtual const char *GetDescription() 
     { return "executes commands stored in a file"; }
     
