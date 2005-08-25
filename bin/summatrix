@@ -2,7 +2,7 @@
 #
 # SUMMATRIX (SUMMON Sparse Matrix Viewer)
 #
-#
+# Example of using summon to visualize large sparse matrices.
 #
 #
 
@@ -17,8 +17,9 @@ options = [
     ["a:", "adj=", "adj", "AUTO<adjacency matrix file>"],
     ["i:", "imat=", "imat", "AUTO<index matrix file>"],
     ["l:", "lmat=", "lmat", "AUTO<labeled sparse matrix file>"],
-    ["o:", "order=", "order", "AUTO<label order>"],
     ["d:", "dense=", "dense", "AUTO<dense matrix file>"],
+    
+    ["o:", "order=", "order", "AUTO<label order>"],
     
     ["R:", "rperm=", "rperm", "AUTO<row permutation>"],
     ["C:", "cperm=", "cperm", "AUTO<col permutation>"],
@@ -180,6 +181,7 @@ def openImat(filename, mat):
     for line in infile:
         if "sample" in param and random.random() > param["sample"]:
             continue
+        
         (row, col, val) = line.split()
         score = float(val)
         rows.append(int(row))
