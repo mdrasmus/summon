@@ -164,7 +164,26 @@ class TreeNode:
     
     def isLeaf(self):
         return len(self.children) == 0
-        
+    
+    def recurse(self, func, *args):
+        for child in self.children:
+            func(child, *args)
+    
+    def leaves(self):
+        leaves = []
+
+        def walk(node):
+            if node.isLeaf():
+                leaves.append(node)
+            node.recurse(walk)
+        walk(self)
+          
+        return leaves
+
+    def leaveNames(self):
+        return map(lambda x: x.name, self.leaves())
+
+
 class Tree:
     def __init__(self):
         self.nodes = {}
@@ -246,6 +265,42 @@ class Tree:
         self.nodes = {}
         self.root = None
 
+
+
+    def leaves(self, node = None):
+        if node == None:
+            node = self.root                   
+        return node.leaves()
+
+    def leaveNames(self, node = None):
+        return map(lambda x: x.name, self.leaves(node))
+
+    def setSizes(self, node = None):
+        if node == None:
+            node = self.root
+        if len(node.children) > 0:
+            node.size = 0
+            for child in node.children:
+                node.size += self.setSizes(child)
+        else:
+            node.size = 1
+        return node.size
+    
+    
+    def findDepths(self, node = None):
+        if not node:
+            node = self.root
+        
+        depths = {}
+
+        def walk(node, d):
+            depths[node.name] = d
+            for child in node.children:
+                walk(child, d+1)
+        walk(node, 0)
+        return depths
+
+
     def findDist(self, name1, name2):
         if not name1 in self.nodes or \
            not name2 in self.nodes:
@@ -271,49 +326,6 @@ class Tree:
             i += 1
         
         return len(path1) + len(path2) - 2 * i + 1
-
-    def leaves(self, node = None):
-        if node == None:
-            node = self.root
-
-        leaves = []
-
-        def walk(node):
-            if node.isLeaf():
-                return leaves.append(node)
-            else:
-                for child in node.children:
-                    walk(child)
-        walk(node)
-                    
-        return leaves
-
-    def leaveNames(self, node = None):
-        return map(lambda x: x.name, self.leaves(node))
-
-    def setSizes(self, node = None):
-        if node == None:
-            node = self.root
-        if len(node.children) > 0:
-            node.size = 0
-            for child in node.children:
-                node.size += self.setSizes(child)
-        else:
-            node.size = 1
-        return node.size
-    
-    def findDepths(self, node = None):
-        if not node:
-            node = self.root
-        
-        depths = {}
-
-        def walk(node, d):
-            depths[node.name] = d
-            for child in node.children:
-                walk(child, d+1)
-        walk(node, 0)
-        return depths
 
 
     def lca(self, names, depths = None):
@@ -347,10 +359,10 @@ class Tree:
         return tree
 
     def writeNewick(self, out = sys.stdout):
-        self.writeNewickNode(self.root, out)
+        self.writeNewickNode(self.root, util.openStream(out, "w"))
 
     def write(self, out = sys.stdout):
-        self.writeNewick(out)    
+        self.writeNewick(util.openStream(out, "w"))
 
     def writeNewickNode(self, node, out = sys.stdout, depth = 0):
         print >>out, (" " * depth),
@@ -381,7 +393,7 @@ class Tree:
 
 
     def readNewick(self, filename):
-        infile = file(filename)    
+        infile = util.openStream(filename)
         closure = {"opens": 0}
 
         def readchar():

@@ -528,9 +528,9 @@ class Dict:
     
     def __repr__(self):
         return str(self.data)
-    
+
     def clear(self):
-        return self.data.clear()
+        return self.data.clear()    
     
     def has_keys(self, *keys):
         if len(keys) == 0:
@@ -565,7 +565,6 @@ class Dict:
         print >>out, "< DictMatrix "
         walk(self, [])
         print >>out, ">"
-        
 
 
 ################################################################################
@@ -603,8 +602,11 @@ def remove(lst, val):
     lst.remove(val)
     return lst
 
-def cget(mat, i):
-    return [row[i] for row in mat]
+def cget(mat, *i):
+    if len(i) == 1:
+        return [row[i[0]] for row in mat]
+    else:
+        return [[row[j] for j in i] for row in mat]
 
 #def getkeys(dic, keys):
 #    dic2 = {}
@@ -801,6 +803,9 @@ def islands(lst):
 
 
 # set operations
+def makeset(lst):
+    return list2dict(lst)
+
 def union(set1, set2):
     set = {}
     set.update(set1)
@@ -814,8 +819,12 @@ def intersect(set1, set2):
             set[i] = 1
     return set
 
-def makeset(lst):
-    return list2dict(lst)
+def setSubtract(set1, set2):
+    set = {}
+    for i in set1:
+        if i not in set2:
+            set[i] = 1
+    return set
 
 
 # pretty printing
@@ -863,7 +872,7 @@ def writeVector(filename, vec):
         print >>out, i
         
 def openStream(filename, mode = "r"):
-    if type(filename) == file:
+    if "read" in dir(filename):
         return filename
     elif type(filename) == str:
         return file(filename, mode)
@@ -944,6 +953,7 @@ def openZip(filename):
     (infile, outfile) = os.popen2("zcat '"+filename+"' ")
     return outfile
 
+
 class SafeReadIter:
     infile = None
     
@@ -965,8 +975,118 @@ def linecount(filename):
     for line in file(filename):
         count += 1
     return count
+
+def readWord(infile, delims = [" ", "\t", "\n"]):
+    word = ""
+    
+    while True:
+        char = infile.read(1)
+        if char == "":
+            return word
+        if char not in delims:
+            word += char
+            break
+    
+    while True:
+        char = infile.read(1)
+        if char == "" or char in delims:
+            return word
+        word += char
+
+
+########################################################
+# Table functions
+#
+
+tableTypesLookup = {
+        "string": str,
+        "int": int,
+        "float": float
+    }
+
+
+def parseTableTypes(line, delim):
+    lookup = tableTypesLookup
+    names = line.replace("#Types:", "").split(delim)
+    types = []
+    
+    for name in names:
+        if name in lookup:
+            types.append(lookup[name])
+        else:
+            types.append(eval(name))
+    return types
+
+
+def formatTableTypes(types, delim):
+    lookup = revdict(tableTypesLookup)
+    names = []
+    
+    for t in types:
+        if t in lookup:
+            names.append(lookup[t])
+        else:
+            names.append(t.__name__)
+    return delim.join(names)
     
 
+def readTable(filename, key, delim="\t"):
+    infile = openStream(filename)
+    
+    types = []
+    header = None
+    keyid = 0
+    lookup = {}
+    table = {}
+    
+    for line in infile:
+        line = line.rstrip()
+        
+        # handle comments
+        if line[0] == "#":
+            if line.startswith("#Types:"):
+                types = parseTableTypes(line, delim)
+            continue
+        
+        tokens = line.split(delim)
+        
+        
+        if not header:
+            # parse header
+            header = tokens
+            lookup = list2lookup(header)
+            keyid = lookup[key]
+        else:
+            # parse data
+            row = {}
+            for i in xrange(len(tokens)):
+                row[header[i]] = types[i](tokens[i])
+            table[tokens[lookup[key]]] = row
+    
+    return table, header
+
+
+def writeTable(filename, table, header=None, delim="\t"):
+    out = openStream(filename, "w")
+    
+    # set default header if needed
+    if not header:
+        header = table.values()[0].keys()
+    
+    # write types    
+    entry = table.values()[0]
+    types = map(lambda x: type(entry[x]), header)
+    out.write("#Types:" + formatTableTypes(types, delim) + "\n")
+    
+    # write header
+    print >>out, delim.join(header)
+    
+    # write data
+    for key,entry in table.iteritems():
+        print >>out, delim.join(map(lambda x: str(entry[x]), header))
+    
+    
+    
 ###############################################################################
 # directory stuff
 #
@@ -1078,11 +1198,11 @@ def histDict(array):
 ###############################################################################
 # pickling
 #
-def binsave(var, filename):
-    cPickle.dump(var, file(filename, "w"), 2)
+def binsave(filename, var):
+    cPickle.dump(var, openStream(filename, "w"), 2)
 
 def binload(filename):
-    return cPickle.load(file(filename))
+    return cPickle.load(openStream(filename))
 
 def varset():
     if "varset" not in GLOBALS():
@@ -1109,7 +1229,7 @@ def showvars(width=70, out=sys.stdout):
     printcols(varset().keys(), width, out)
 
 def saveall(table, filename = "all.pickle"):
-    binsave(getvars(table), filename)
+    binsave(filename, getvars(table))
 
 def loadall(table, filename = "all.pickle"):
     set = binload(filename)

@@ -246,7 +246,8 @@ following controls are available:
 In your text editor, the example \code{example1.py} should contain the 
 following python code:
 
-{\small
+\begin{minipage}{6in}
+{ \footnotesize
 \begin{verbatim}
 # SUMMON examples
 # example1.py - basic commands
@@ -287,11 +288,11 @@ add_group(group(
 
 # center the "camera" so that all shapes are in view
 home()
-}
-
-
 \end{verbatim}
 }
+\end{minipage}
+\vspace{.25in}
+
 
 As you can see, the first line of the script imports all of the SUMMON functions
 from the \code{summon} module into the current environment.  The first of such
@@ -345,7 +346,7 @@ comes in handy when you "lose sight" of the visualization.
 This is only a simple example.  See the remaining scripts for examples of
 SUMMON's more powerful features.
 
-\section{Example Visualizations: SUMMATRIX and SUMTREE}
+\subsection{Example Visualizations: SUMMATRIX and SUMTREE}
 
 In the \code{summon/bin/} directory are two programs, \code{summatrix} and
 \code{sumtree} that use summon to visualize large datasets.  There programs are

@@ -9,11 +9,11 @@ $(PDF): $(TEX) $(IMAGES) reference.tex
 	latex $(TEX)
 	dvipdf $(DVI)
 
-bib:
-	bibtex rearrange
+toc:
 	latex $(TEX)
 	latex $(TEX)
 	dvipdf $(DVI)
+        
 
 $(IMAGES) : %.pdf: %.eps
 	epstopdf $<
@@ -24,3 +24,5 @@ reference.tex:
 clean:
 	rm -rf $(PDF) $(IMAGES)
 
+cleanobj:
+	rm -rf *.log *.toc *.aux
