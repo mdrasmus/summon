@@ -40,7 +40,8 @@ public:
         RIGHT   = 4,
         TOP     = 8,
         MIDDLE  = 16,
-        BOTTOM  = 32
+        BOTTOM  = 32,
+        VERTICAL = 64
     };
     
     void SetRect(Vertex2f &p1, Vertex2f &p2) {

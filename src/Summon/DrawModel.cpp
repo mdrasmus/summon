@@ -602,12 +602,13 @@ Element *DrawModel::BuildText(BuildEnv &env, Scm code, int kind)
     for (; ScmConsp(code) && ScmStringp(ScmCar(code)); code = ScmCdr(code)) {
         string str = Scm2String(ScmCar(code));
         
-        if (str == "left") justified |= TextElement::LEFT;
-        else if (str == "center") justified |= TextElement::CENTER;
-        else if (str == "right") justified |= TextElement::RIGHT;
-        else if (str == "top") justified |= TextElement::TOP;
-        else if (str == "middle") justified |= TextElement::MIDDLE;
-        else if (str == "bottom") justified |= TextElement::BOTTOM;
+        if (str == "left")          justified |= TextElement::LEFT;
+        else if (str == "center")   justified |= TextElement::CENTER;
+        else if (str == "right")    justified |= TextElement::RIGHT;
+        else if (str == "top")      justified |= TextElement::TOP;
+        else if (str == "middle")   justified |= TextElement::MIDDLE;
+        else if (str == "bottom")   justified |= TextElement::BOTTOM;
+        else if (str == "vertical") justified |= TextElement::VERTICAL;
         else {
             Error("unknown justification '%s'", str.c_str());
             return NULL;
@@ -701,7 +702,7 @@ Scm DrawModel::GetGroup(BuildEnv &env, Element *elm)
             } else if (graphic->IsColor(ptr)) {
                 char *color = graphic->GetColor(ptr);
                 for (int i = 3; i >= 0; i--) {
-                    child = ScmCons(Float2Scm(color[i] / 255.0), child);
+                    child = ScmCons(Float2Scm(((unsigned char) color[i]) / 255.0), child);
                 }
                 child = ScmCons(Int2Scm(COLOR_CONSTRUCT), child);
 
@@ -732,6 +733,8 @@ Scm DrawModel::GetGroup(BuildEnv &env, Element *elm)
             justified = ScmCons(String2Scm("middle"), justified);
         if (text->justified & TextElement::BOTTOM)
             justified = ScmCons(String2Scm("bottom"), justified);
+        if (text->justified & TextElement::VERTICAL)
+            justified = ScmCons(String2Scm("vertical"), justified);
 
         float x1, y1, x2, y2;
         env.trans.VecMult(text->pos1.x, text->pos1.y, &x1, &y1);

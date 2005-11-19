@@ -404,16 +404,50 @@ Vertex2f JustifyBox(int justified, Vertex2f pos1, Vertex2f pos2,
 }
 
 
+bool DrawView::WithinView(const Vertex2f &pos1, const Vertex2f &pos2)
+{
+    Vertex2i size = GetWindowSize();
+    
+    GLint    viewport[4];
+    GLdouble model[16], project[16];
+    GLdouble x1, y1, x2, y2, z;
+    
+    // get openGL matrices   
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    glGetDoublev(GL_MODELVIEW_MATRIX, model);
+    glGetDoublev(GL_PROJECTION_MATRIX, project);
+
+    // perform projections
+    gluProject(pos1.x, pos1.y, 0, model, project, viewport, &x1, &y1, &z);
+    gluProject(pos2.x, pos2.y, 0, model, project, viewport, &x2, &y2, &z);
+    
+    if (x1 > x2) swap(x1, x2);
+    if (y1 > y2) swap(y1, y2);
+        
+    // find overlap
+    return (x2 >= 0 && x1 <= size.x && 
+            y2 >= 0 && y1 <= size.y);
+}
+
+
 
 void DrawView::DrawTextElement(TextElement *elm)
 {
     const unsigned char *text = (const unsigned char*) elm->text.c_str();
 
+    // get text bounding box
+    Vertex2f pos1 = elm->pos1;
+    Vertex2f pos2 = elm->pos2;
+    
+    // do not draw text that is not visible
+    // get bounding visible view
+    if (! WithinView(pos1, pos2)) {
+        return;
+    }    
+       
+    
     if (elm->kind == TextElement::KIND_BITMAP) {
         void *font = GLUT_BITMAP_8_BY_13;
-
-        Vertex2f pos1 = elm->pos1;
-        Vertex2f pos2 = elm->pos2;
 
         // find text on-screen size
         float textWidth  = glutBitmapLength(font, text) / GetZoom().x 
@@ -434,9 +468,6 @@ void DrawView::DrawTextElement(TextElement *elm)
     } else if (elm->kind == TextElement::KIND_SCALE) {
         void *font = GLUT_STROKE_ROMAN;
         float fontSize = 119.05;
-
-        Vertex2f pos1 = elm->pos1;
-        Vertex2f pos2 = elm->pos2;
         
         float textWidth  = glutStrokeLength(font, text);
         float textHeight = fontSize;
@@ -463,10 +494,14 @@ void DrawView::DrawTextElement(TextElement *elm)
     } else if (elm->kind == TextElement::KIND_CLIP) {
         void *font = GLUT_STROKE_ROMAN;
         float fontSize = 119.05;
-        
+                
         Vertex2f zoom = GetZoom();
-        Vertex2f pos1 = elm->pos1;
-        Vertex2f pos2 = elm->pos2;
+        
+        // flip zooming if text is known to be vertical
+        if (elm->justified & TextElement::VERTICAL) {
+            swap(zoom.x, zoom.y);
+        }
+        
         pos1.x *= zoom.x;
         pos1.y *= zoom.y;
         pos2.x *= zoom.x;
@@ -497,8 +532,13 @@ void DrawView::DrawTextElement(TextElement *elm)
         
         const unsigned char *chr = text;
         glPushMatrix();
+        
+        // do not let user scaling affect text scaling
         glScalef(1/zoom.x, 1/zoom.y, 1);
-        glTranslatef(pos.x, pos.y, 0);
+        
+        glTranslatef(pos.x, pos.y, 0);        
+        
+        
         glScalef(textHeight/fontSize, textHeight/fontSize, 
                  textHeight/fontSize);
         for (; *chr; chr++)

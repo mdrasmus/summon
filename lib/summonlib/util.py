@@ -11,6 +11,7 @@ def GLOBALS():
     if not "RASMUS_GLOBALS" in globals():
         globals()["RASMUS_GLOBALS"] = {}
     return globals()["RASMUS_GLOBALS"]
+
     
 ###############################################################################
 # Timer class for timing nested sections of code
@@ -18,43 +19,47 @@ def GLOBALS():
 class Timer:
     def __init__(self, stream = sys.stderr):
         self.reset()
-        self.stream =  stream
+        self.streams =  [stream]
         self.maxdepth = 1e1000
 
 
     def start(self, msg = ""):
-        t = time.clock()
+        t = time.time()
         if msg != "" and self.depth() <= self.maxdepth:
             self.indent()
-            print >>self.stream, "BEGIN %s: " % msg
+            self.write("BEGIN %s:\n" % msg)
         self.msg.append(msg)
         self.starts.append(t)
+        self.flush()
     
     def time(self):
         return self.starts[-1] - time.clock()
     
     def stop(self):
-        duration = time.clock() - self.starts.pop()
+        duration = time.time() - self.starts.pop()
         msg = self.msg.pop()
         if msg != "" and self.depth() <= self.maxdepth:
             self.indent()
-            print >>self.stream, "END   %s: %f s" % (msg, duration)
+            self.write("END   %s: %f s\n" % (msg, duration))
+        self.flush()
         return duration
     
     def log(self, *text):
         if self.depth() <= self.maxdepth:
             self.indent()
             for i in text:
-                print >>self.stream, i,
-            print >>self.stream
+                self.write("%s " % str(i))
+            self.write("\n")
+            self.flush()
     
     def logExact(self, text):
         if self.depth() <= self.maxdepth:
-            self.stream.write(text)
+            self.write(text)
+            self.flush()
     
     def indent(self):
         for i in range(self.depth()):
-            print >>self.stream, "  ",
+            self.write("  ")
     
     def reset(self):
         self.msg = []
@@ -62,30 +67,44 @@ class Timer:
     
     def depth(self):
         return len(self.msg)
+    
+    def write(self, text):
+        for stream in self.streams:
+            stream.write(text)
+    
+    def flush(self):
+        for stream in self.streams:
+            stream.flush()
+    
+    def addStream(self, stream):
+        self.streams.append(stream)
+    
+    def removeStream(self, stream):
+        self.streams.remove(stream)
 
 
 def log(*text):
-    globalTimer().log(*text)
+    return globalTimer().log(*text)
 
 def logger(*text):
-    globalTimer().log(*text)
+    return globalTimer().log(*text)
 
 def note(*text):
     print >>notefile(), " ".join(text)
 
 def noteflush():
-    notfile().flush()
+    return notfile().flush()
 
 def notefile(out = None):
     if out == None:
-        out = file("notes", "w")
+        out = file("/dev/null", "w")
     if "notes" not in GLOBALS():
         GLOBALS()["notes"] = out
     return GLOBALS()["notes"]
 
         
 def logExact(text):
-    globalTimer().logExact(text)
+    return globalTimer().logExact(text)
 
 def globalTimer():
     if not "timer" in GLOBALS():
@@ -93,13 +112,13 @@ def globalTimer():
     return GLOBALS()["timer"]
 
 def tic(msg = ""):
-    globalTimer().start(msg)
+    return globalTimer().start(msg)
 
 def toc():
-    globalTimer().stop()
+    return globalTimer().stop()
 
 def indent():
-    globalTimer().indent()
+    return globalTimer().indent()
 
 ###############################################################################
 # Progress classes
@@ -184,10 +203,14 @@ def parseArgs(argv, options, resthelp = ""):
         lookup["--" + option[1].replace("=", "")] = option[2]
         
         if option[3].startswith("AUTO"):
-            word = option[3][4:]
-            option[3] = "[-%s %s] [--%s %s]" % \
-                (option[0].replace(":", ""), word,
-                 option[1].replace("=", ""), word)
+            arg = option[3][4:]
+            if len(option) > 4:
+                helptext = option[4]
+            else:
+                helptext = ""
+            option[3] = "-%s | --%s %s \t%s" % \
+                (option[0].replace(":", ""),
+                 option[1].replace("=", ""), arg, helptext)
     
     
     if len(argv) < 2:
@@ -247,14 +270,11 @@ class Gnuplot:
         self.data = []
         self.stream = None
         
-        self.xstart = None
-        self.xend = None
-        self.ystart = None
-        self.yend = None
         self.margin = .1
         self.enable = True
 
         self.options = {
+            # plot options
             "style" : "points",
             "main"  : "",
             "xlab"  : "",
@@ -263,37 +283,62 @@ class Gnuplot:
             "plab"  : "",
             "xfunc" : float,
             "yfunc" : float,
-            "zfunc" : float
+            "zfunc" : float,
+            "eqn": None,
+            
+            # graph options
+            "xmin" : None,
+            "xmax" : None,
+            "ymin" : None,
+            "ymax" : None,
+            "xtics" : None,
+            "ytics" : None,
+            "ztics" : None,
+            "xlog": None,
+            "ylog": None,
+            "zlog": None,
+            "margin": None
             }
     
-    def setOptions(self, **options):
+
+    def set(self, **options):
         for key in options:
             self.options[key] = options[key]
         self.replot()
     
+    def gnuplot(self, text):
+        self.stream.write(text)
+    
     def xrange(self, start = None, end = None):
-        self.xstart = start
-        self.xend = end
+        self.options["xmin"] = start
+        self.options["xmax"] = end
         self.replot()
     
     def yrange(self, start = None, end = None):
-        self.ystart = start
-        self.yend = end
+        self.options["ymin"] = start
+        self.options["ymax"] = end
         self.replot()
     
     def unlog(self):
-        self.options["xfunc"] = "none"
-        self.options["yfunc"] = "none"
+        self.options["xlog"] = False
+        self.options["ylog"] = False
         self.replot()
     
-    def log(self):
-        self.options["xfunc"] = "none"
-        self.options["yfunc"] = "log"
+    def xlog(self, base=10):
+        self.options["xlog"] = base
         self.replot()
     
-    def loglog(self):
-        self.options["xfunc"] = "log"
-        self.options["yfunc"] = "log"
+    def ylog(self, base=10):
+        self.options["ylog"] = base
+        self.replot()
+        
+    def zlog(self, base=10):
+        self.options["zlog"] = base
+        self.replot()
+    
+    def loglog(self, base=10):
+        self.options["xlog"] = base
+        self.options["ylog"] = base
         self.replot()
 
     def clear(self):
@@ -328,8 +373,8 @@ class Gnuplot:
         for axis in ["xfunc", "yfunc", "zfunc"]:
             if self.options[axis] == "none":
                 funcs.append(lambda x: float(x))
-            elif self.options[axis] == "log":
-                funcs.append(mylog)
+            #elif self.options[axis] == "log":
+            #    funcs.append(mylog)
             else:
                 funcs.append(self.options[axis])
         return funcs
@@ -344,6 +389,9 @@ class Gnuplot:
     
         # find ranges for each graph that is plotted
         for graph in self.data:
+            if graph.options["eqn"]:
+                continue
+            
             list1 = graph.xlist
             list2 = graph.ylist
 
@@ -371,30 +419,74 @@ class Gnuplot:
             if left < bestLeft:     bestLeft = left
             if right > bestRight:   bestRight = right
         
+        # auto scale
+        if bestLeft >= .1e500:   bestLeft = "*"
+        if bestRight <= -1e500:  bestRight = "*"
+        if bestTop <= -1e500:     bestTop = "*"
+        if bestBottom >= 1e500: bestBottom = "*"
+        
         return (bestTop, bestBottom, bestLeft, bestRight)
-            
+    
+        
     
     def replot(self):
         if len(self.data) == 0:
-            return
-    
-        (xfunc, yfunc, zfunc) = self.getTransform()
+            return  
+        
 
         # find defualt ranges
         (maxy, miny, minx, maxx) = self.findRange()
         
         # configure 
         print >>self.stream, "set mouse"
+        print >>self.stream, "set mxtics"
+        print >>self.stream, "set mytics"
+        print >>self.stream, "set mztics"
+        
+        # margins
+        if self.options["margin"]:
+            print >>self.stream, "set tmargin %f" % self.options["margin"]
+            print >>self.stream, "set bmargin %f" % self.options["margin"]
+            print >>self.stream, "set lmargin %f" % self.options["margin"]
+            print >>self.stream, "set rmargin %f" % self.options["margin"]
+        else:
+            print >>self.stream, "set tmargin"
+            print >>self.stream, "set bmargin"
+            print >>self.stream, "set lmargin"
+            print >>self.stream, "set rmargin"
+        
+        # tics
+        if self.options["xtics"] == None:
+            print >>self.stream, "set xtics autofreq"
+        else:
+            print >>self.stream, "set xtics %f" % self.options["xtics"]
+        if self.options["ytics"] == None:
+            print >>self.stream, "set ytics autofreq"
+        else:
+            print >>self.stream, "set ytics %f" % self.options["ytics"]
+        if self.options["ztics"] == None:
+            print >>self.stream, "set ztics autofreq"
+        else:
+            print >>self.stream, "set ztics %f" % self.options["ztics"]
+
+        # log scale
+        print >>self.stream, "unset logscale xyz"
+        if self.options["xlog"]:
+            print >>self.stream, "set logscale x %d" % self.options["xlog"]
+        if self.options["ylog"]:
+            print >>self.stream, "set logscale y %d" % self.options["ylog"]
+        if self.options["zlog"]:
+            print >>self.stream, "set logscale z %d" % self.options["zlog"]
         
         # setup ranges
-        if self.xstart == None:
-            print >>self.stream, "set xrange[%f:%f]" % (minx, maxx)
-        else:
-            print >>self.stream, "set xrange[%f:%f]" % (self.xstart, self.xend)
-        if self.ystart == None:
-            print >>self.stream, "set yrange[%f:%f]" % (miny, maxy)
-        else:
-            print >>self.stream, "set yrange[%f:%f]" % (self.ystart, self.yend)
+        if self.options["xmin"] != None: minx = self.options["xmin"]
+        if self.options["xmax"] != None: maxx = self.options["xmax"]
+        if self.options["ymin"] != None: miny = self.options["ymin"]
+        if self.options["ymax"] != None: maxy = self.options["ymax"]
+        
+        print >>self.stream, "set xrange[%s:%s]" % tuple(map(str, [minx, maxx]))
+        print >>self.stream, "set yrange[%s:%s]" % tuple(map(str, [miny, maxy]))
+        
         
         # set labels
         if self.options["main"] != "":
@@ -414,8 +506,12 @@ class Gnuplot:
         for i in range(len(self.data)):
             graph = self.data[i]
             
-            # specify inline data
-            print >>self.stream, "\"-\" ",
+            if graph.options["eqn"]:
+                # specify direct equation
+                print >>self.stream, graph.options["eqn"], 
+            else:
+                # specify inline data
+                print >>self.stream, "\"-\" ",
             
             # specify style
             if graph.options["style"] != "":
@@ -435,43 +531,129 @@ class Gnuplot:
         
         # output data  
         for graph in self.data:
-            for i in range(len(graph.xlist)):
-                if graph.zlist == []:
-                    print >>self.stream, xfunc(graph.xlist[i]), \
-                                         yfunc(graph.ylist[i])
-                else:
-                    print >>self.stream, xfunc(graph.xlist[i]), \
-                                         xfunc(graph.ylist[i]), \
-                                         yfunc(graph.zlist[i])
-            print >>self.stream, "e"
+            if graph.options["eqn"]:
+                continue
+            self.outputData(graph.xlist, graph.ylist, graph.zlist)
+            
         
         # need to make sure gnuplot gets what we have written
         self.stream.flush()
     
-    
-    def plot(self, list1, list2=[], list3=[], **options):
-        self.setOptions(**options)
-        
+    def prepareData(self, list1, list2=[], list3=[]):
         if list2 == []:
             list2 = list1
             list1 = range(len(list1))
-    
+        
         if len(list1) != len(list2):
             raise "ERROR: arrays are not same length"
+        return list1, list2, list3
+    
+    
+    def outputData(self, list1, list2, list3=[]):
+        (xfunc, yfunc, zfunc) = self.getTransform()
+    
+        for i in range(len(list1)):
+            if list3 == []:
+                print >>self.stream, xfunc(list1[i]), \
+                                     yfunc(list2[i])
+            else:
+                print >>self.stream, xfunc(list1[i]), \
+                                     xfunc(list2[i]), \
+                                     yfunc(list3[i])
+        print >>self.stream, "e"
+    
+    
+    def plot(self, list1, list2=[], list3=[], **options):
+        self.set(**options)
         
+        list1, list2, list3 = self.prepareData(list1, list2, list3)
         self.data.append(self.Plot(list1, list2, list3, copy.copy(self.options)))
         
         if self.enable:
             self.stream = os.popen("gnuplot", "w")
             self.replot()
     
+    
+    # all syntax should be valid GNUPLOT syntax
+    # func - a string of the function call i.e. "f(x)"
+    # eqn  - a string of a GNUPLOT equation  "a*x**b"
+    # params - a dictionary of parameters in eqn and their initial values
+    #        ex: {"a": 1, "b": 3}
+    def gfit(self, func, eqn, params, list1, list2=[], list3=[], ** options):
+        self.set(** options)
+    
+        print len(list1), len(list2), len(list3)
+    
+        if not self.enable:
+            raise "must be output must be enabled for fitting"
+        
+        list1, list2, list3 = self.prepareData(list1, list2, list3)
+        
+        # add data to graph
+        self.data.append(self.Plot(list1, list2, list3, copy.copy(self.options)))
+        
+        
+        # perform fitting
+        self.stream = os.popen("gnuplot", "w")
+        print >>self.stream, "%s = %s" % (func, eqn)
+        for param, value in params.items():
+            print >>self.stream, "%s = %f" % (param, value)
+        print >>self.stream, "fit %s '-' via %s" % \
+            (func, ",".join(params.keys()))
+        self.outputData(list1, list2, list3)
+       
+                
+        # save and read parameters
+        outfile = tempfile(".", "plot", ".txt")        
+        print >>self.stream, "save var '%s'" % outfile
+        print >>self.stream, "print 'done'"
+        self.stream.flush()     
+        
+        # wait for variable file
+        while not os.path.isfile(outfile): pass
+        params = self.readParams(outfile)
+        os.remove(outfile)
+        
+        # build eqn for plotting
+        paramlist = ""
+        for param, value in params.items():
+            paramlist += "%s = %s, " % (param, value)
+        self.options["eqn"] = paramlist + "%s = %s, %s" % \
+            (func, eqn, func)
+        self.options["style"] = "lines"
+        
+        # add fitted eqn to graph
+        self.data.append(self.Plot([], [], [], copy.copy(self.options)))
+        
+        self.replot()
+        
+    
+    def readParams(self, filename):
+        params = {}
+        
+        for line in file(filename):
+            if line[0] == "#":
+                continue
+                
+            var, value = line.split("=")
+            if not var.startswith("MOUSE_"):
+                params[var.replace(" ", "")] = float(value)
+        
+        return params
+    
+    
     def plotfunc(self, func, start, end, step, **options):
-        list1 = []
+        x = []
+        y = []
         while start < end:
-            list1.append(start)
-            start += step    
-        list2 = map(func, list1)
-        self.plot(list1, list2, style="lines", ** options)
+            try:
+                y.append(func(start))
+                x.append(start)
+            except ZeroDivisionError:
+                pass
+            start += step
+        
+        self.plot(x, y, style="lines", ** options)
     
     def enableOutput(self, enable = True):
         self.stream = os.popen("gnuplot", "w")
@@ -489,11 +671,131 @@ def plotfunc(func, start, end, step, **options):
     g.plotfunc(func, start, end, step, ** options)
     return g
 
+def gfit(func, eqn, params, list1, list2=[], list3=[], ** options):
+    g = Gnuplot()
+    g.gfit(func, eqn, params, list1, list2, list3, ** options)
+    return g
+
+
+class MultiPlot:
+    def __init__(self, plots, ncols=None, nrows=None, direction="row",
+        width=800, height=800):
+        self.plots = plots
+        self.stream = os.popen("gnuplot -geometry %dx%d" % (width, height), "w")
+        
+        self.nrows = nrows
+        self.ncols = ncols
+        self.direction = direction
+        
+        self.replot()
+
+        
+    
+    def replot(self):
+        
+        
+        # determine layout
+        nplots = len(self.plots)
+        
+        if self.nrows == None and self.ncols == None:
+            self.ncols = int(math.sqrt(nplots))
+        
+        if self.ncols != None:
+            self.nrows = int(math.ceil(nplots / float(self.ncols))) 
+        else:
+            self.ncols = int(math.ceil(nplots / float(self.nrows)))
+
+        xstep = 1.0 / self.ncols
+        ystep = 1.0 / self.nrows
+        ypos = 0
+        xpos = 0
+        xorigin = 0.0
+        yorigin = 1.0
+        
+        print >>self.stream, "set multiplot"
+        for plot in self.plots:
+            xpt = xorigin + xpos * xstep
+            ypt = yorigin - (ypos+1) * ystep
+            
+            print >>self.stream, "set origin %f, %f" % (xpt, ypt)
+            print >>self.stream, "set size %f, %f" % (xstep, ystep)
+            plot.stream = self.stream
+            plot.replot()
+            
+            if self.direction == "row":
+                xpos += 1
+            elif self.direction == "col":
+                ypos += 1
+            else:
+                raise "unknown direction '%s'" % self.direction
+            
+            if xpos >= self.ncols:
+                xpos = 0
+                ypos += 1
+            if ypos >= self.nrows:
+                ypos = 0
+                xpos += 1
+            
+        
+        print >>self.stream, "unset multiplot"
+
 
 ###############################################################################
 # my personal nested Dictionary (with default values)
 
-class Dict:
+class Dict (dict):
+    def __init__(self, dim = 1, null=None):
+        self.dim = dim
+        self.null = null
+        
+        # backwards compatiability
+        self.data = self
+    
+    def __getitem__(self, i):
+        if not i in self:
+            if self.dim > 1:
+                self[i] = Dict(self.dim - 1, self.null)
+            else:
+                self[i] = copy.copy(self.null)
+                return self[i]
+        return dict.__getitem__(self, i)
+    
+    def __len__(self):
+        if self.dim == 1:
+            return dict.__len__(self)
+        else:
+            nnz = 0
+            for i in self:
+                nnz += len(self[i])
+            return nnz
+        
+    def has_keys(self, *keys):
+        if len(keys) == 0:
+            return True
+        elif len(keys) == 1:
+            return dict.has_key(self, keys[0])
+        else:
+            return dict.has_key(self, keys[0]) and \
+                   self[keys[0]].has_keys(*keys[1:])
+    
+    def write(self, out = sys.stdout):
+        def walk(node, path):
+            if node.dim == 1:
+                for i in node:
+                    print >>out, "  ",
+                    for j in path:
+                        print str(j) + ", ",
+                    print >>out, i, ":", node[i]
+            else:
+                for i in node:
+                    walk(node[i], path + [i])
+        
+        print >>out, "< DictMatrix "
+        walk(self, [])
+        print >>out, ">"
+
+
+class Dict2:
     def __init__(self, dim = 1, null=None):
         self.dim = dim
         self.data = {}
@@ -550,6 +852,9 @@ class Dict:
     def values(self):
         return self.data.values()
     
+    def items(self):
+        return self.data.items()
+    
     def write(self, out = sys.stdout):
         def walk(node, path):
             if node.dim == 1:
@@ -566,10 +871,11 @@ class Dict:
         walk(self, [])
         print >>out, ">"
 
-
 ################################################################################
 # small functions that I use a lot
 
+
+# print a list in columns
 def printcols(lst, width=75, out=sys.stdout):
     if len(lst) == 0:
         return
@@ -586,9 +892,24 @@ def printcols(lst, width=75, out=sys.stdout):
             if k < len(lst):
                 out.write(lst[k] + (" " * (maxwidth - len(lst[k]))))
         out.write("\n")
-    
 
-def equal(* vals):
+
+# print text with wrapping
+def printWrap(text, width=80, prefix="", out=sys.stdout):
+    if width == None:
+        out.write(text)
+        out.write("\n")
+        return
+    
+    pos = 0
+    while pos < len(text):
+        out.write(prefix)
+        out.write(text[pos:pos+width])
+        out.write("\n")
+        pos += width
+    
+# returns True if all arguments are equal
+def equal(vals):
     if len(vals) < 2:
         return True
     a = vals[0]
@@ -598,23 +919,20 @@ def equal(* vals):
     return True
 
 
+# removes a value from a list and return the list
 def remove(lst, val):
     lst.remove(val)
     return lst
 
+# returns the column(s) of a 2D list
 def cget(mat, *i):
     if len(i) == 1:
         return [row[i[0]] for row in mat]
     else:
         return [[row[j] for j in i] for row in mat]
 
-#def getkeys(dic, keys):
-#    dic2 = {}
-#    for key in keys:
-#        if key in dic:
-#            dic2[key] = dic[key]
-#    return dic2
 
+# returns a subdictionary
 def subdict(dic, keys):
     dic2 = {}
     for key in keys:
@@ -622,11 +940,63 @@ def subdict(dic, keys):
             dic2[key] = dic[key]
     return dic2
 
+# concatenates several lists into one
+def concat(* lists):
+    lst = []
+    for l in lists:
+        lst.extend(l)
+    return lst
 
-def overlap(a, b, x, y):
-    return (y >= a) and (x <= b)
+
+def sublist(lst, ind):
+    lst2 = []
+    for i in ind:
+        lst2.append(lst[i])
+    return lst2
 
 
+def catchall(func):
+    try:
+        func()
+    except:
+        return None
+
+def revdict(dct):
+    dct2 = {}
+    for key, val in dct.iteritems():
+        dct2[val] = key
+    return dct2
+
+
+def list2lookup(lst):
+    lookup = {}
+    for i in range(len(lst)):
+        lookup[lst[i]] = i
+    return lookup
+
+
+def list2dict(lst, val=1):
+    dct = {}
+    for i in lst:
+        dct[i] = val
+    return dct
+
+
+def uniq(lst):
+    return list2dict(lst).keys()
+
+
+#
+# returns a sorted copy of a list
+#
+def sort(lst, func=cmp):
+    lst2 = copy.copy(lst)
+    lst2.sort(func)
+    return lst2
+
+#
+# counts the number of times func(x) is True for x in list 'lst'
+#
 def count(func, lst):
     n = 0
     for i in lst:
@@ -634,9 +1004,15 @@ def count(func, lst):
             n += 1
     return n
 
+#
+# counts the number of occurrences of a in lst
+#
 def counteq(a, lst):
     return count(eqfunc(a), lst)
 
+#
+# returns the indices of func(x) == True for x in list 'lst'
+#
 def find(func, lst):
     pos = []
     for i in xrange(len(lst)):
@@ -644,8 +1020,52 @@ def find(func, lst):
             pos.append(i)
     return pos
 
+#
+# returns the indices of a occuring in list 'lst'
+#
 def findeq(a, lst):
     return find(eqfunc(a), lst)
+
+
+
+def islands(lst):
+
+    # takes a list, or a string, and gather islands of identical elements.
+    # it returns a dictionary counting where
+    # counting = {element: [(start,end), (start,end), ...],
+    #             element: [(start,end), (start,end), ...],
+    #             ...}
+    # counting.keys() is the list of unique elements of the input list
+    # counting[element] is the list of all islands of occurence of element
+    # counting[element][i] = (start,end)
+    #  is such that list[start-1:end] only contains element
+    if not list: return {}
+
+    counting = {}
+
+    i,current_char, current_start = 0,lst[0], 0
+    
+    while i < len(lst):
+
+        if current_char == lst[i]:
+            i = i+1
+        else:
+            if not counting.has_key(current_char): counting[current_char] = []
+            counting[current_char].append((current_start, i))
+            current_char = lst[i]
+            current_start = i
+
+    if not counting.has_key(current_char): counting[current_char] = []
+    counting[current_char].append((current_start, i))
+
+    return counting
+
+
+#
+# returns True if range [a,b] overlaps [x,y]
+#
+def overlap(a, b, x, y):
+    return (y >= a) and (x <= b)
 
 
 def argmax(lst):
@@ -682,7 +1102,7 @@ def minfunc(func, lst):
             low = val
     return low
 
-def argmaxfunc(func, lst):
+def argmaxfunc(func, lst, index=True):
     if len(lst) == 0:
         return -1
     top = 0
@@ -692,9 +1112,12 @@ def argmaxfunc(func, lst):
         if val > topval:
             topval = val
             top = i
-    return top
+    if index:
+        return top
+    else:
+        return lst[top]
     
-def argminfunc(func, lst):
+def argminfunc(func, lst, index=True):
     if len(lst) == 0:
         return -1
     low = 0
@@ -704,7 +1127,10 @@ def argminfunc(func, lst):
         if val < lowval:
             lowval = val
             low = i
-    return low
+    if index:
+        return low
+    else:
+        return lst[low]
 
 def eqfunc(a): return lambda x: x == a
 def neqfunc(a): return lambda x: x != a
@@ -712,7 +1138,18 @@ def ltfunc(a): return lambda x: x < a
 def gtfunc(a): return lambda x: x > a
 def lefunc(a): return lambda x: x <= a
 def gefunc(a): return lambda x: x >= a
-def withinfunc(a,b): return lambda x: a <= x <= b
+def withinfunc(a, b, ainc=True, binc=True):
+    if ainc:
+        if binc:
+            return lambda x: a <= x <= b
+        else:
+            return lambda x: a <= x < b
+    else:
+        if binc:
+            return lambda x: a < x <= b
+        else:
+            return lambda x: a < x < b
+
 
 def sign(num):
     return cmp(num,0)
@@ -720,86 +1157,6 @@ def sign(num):
 def lg(num):
     return math.log(num, 2)
 
-#def grab(lst, ind):
-#    util.log("util.grab is deprecated")
-#    lst2 = []
-#    for i in ind:
-#        lst2.append(lst[i])
-#    return lst2
-
-
-def concat(* lists):
-    lst = []
-    for l in lists:
-        lst.extend(l)
-    return lst
-
-
-def sublist(lst, ind):
-    lst2 = []
-    for i in ind:
-        lst2.append(lst[i])
-    return lst2
-
-
-def catchall(func):
-    try:
-        func()
-    except:
-        return None
-
-def revdict(dct):
-    dct2 = {}
-    for key, val in dct.iteritems():
-        dct2[val] = key
-    return dct2
-
-def list2lookup(lst):
-    lookup = {}
-    for i in range(len(lst)):
-        lookup[lst[i]] = i
-    return lookup
-
-def list2dict(lst, val=1):
-    dct = {}
-    for i in lst:
-        dct[i] = val
-    return dct
-
-def uniq(lst):
-    return list2dict(lst).keys()
-
-def islands(lst):
-
-    # takes a list, or a string, and gather islands of identical elements.
-    # it returns a dictionary counting where
-    # counting = {element: [(start,end), (start,end), ...],
-    #             element: [(start,end), (start,end), ...],
-    #             ...}
-    # counting.keys() is the list of unique elements of the input list
-    # counting[element] is the list of all islands of occurence of element
-    # counting[element][i] = (start,end)
-    #  is such that list[start-1:end] only contains element
-    if not list: return {}
-
-    counting = {}
-
-    i,current_char, current_start = 0,lst[0], 0
-    
-    while i < len(lst):
-
-        if current_char == lst[i]:
-            i = i+1
-        else:
-            if not counting.has_key(current_char): counting[current_char] = []
-            counting[current_char].append((current_start, i))
-            current_char = lst[i]
-            current_start = i
-
-    if not counting.has_key(current_char): counting[current_char] = []
-    counting[current_char].append((current_start, i))
-
-    return counting
 
 
 # set operations
@@ -875,7 +1232,17 @@ def openStream(filename, mode = "r"):
     if "read" in dir(filename):
         return filename
     elif type(filename) == str:
-        return file(filename, mode)
+        if filename.startswith("http://"):
+            return urllib2.urlopen(filename)
+        elif filename == "-":
+            if mode == "w":
+                return sys.stdout
+            elif mode == "r":
+                return sys.stdin
+            else:
+                raise "stream '-' can only be opened with modes r/w"
+        else:
+            return file(filename, mode)
     else:
         raise "unknown filename type"
 
@@ -936,18 +1303,22 @@ def readDelim(filename, delim="", header=False):
 
 def cutIter(myiter, cols, delim=""):
     if delim == "":
-        return IterFunc(lambda: " ".join(grab(myiter.next().split(), cols)))
+        return IterFunc(lambda: " ".join(sublist(myiter.next().split(), cols)))
     else:
         return IterFunc(lambda: delim.join(
-                                       grab(myiter.next().split(delim), cols)))
+                                       sublist(myiter.next().split(delim), cols)))
 
-def writeDelim(out, data, delim="\t"):
+def writeDelim(filename, data, delim="\t"):
+    out = openStream(filename, "w")
     for line in data:
         print >>out, delim.join(line)
 
 def clearFile(filename):
     out = file(filename, "w")
     out.close()
+
+def fileSize(filename):
+    return os.stat(filename)[6]
 
 def openZip(filename):
     (infile, outfile) = os.popen2("zcat '"+filename+"' ")
@@ -972,7 +1343,7 @@ class SafeReadIter:
 
 def linecount(filename):
     count = 0
-    for line in file(filename):
+    for line in openStream(filename):
         count += 1
     return count
 
@@ -1030,14 +1401,12 @@ def formatTableTypes(types, delim):
     return delim.join(names)
     
 
-def readTable(filename, key, delim="\t"):
+def readTable(filename, delim="\t"):
     infile = openStream(filename)
     
     types = []
     header = None
-    keyid = 0
-    lookup = {}
-    table = {}
+    table = []
     
     for line in infile:
         line = line.rstrip()
@@ -1054,14 +1423,15 @@ def readTable(filename, key, delim="\t"):
         if not header:
             # parse header
             header = tokens
-            lookup = list2lookup(header)
-            keyid = lookup[key]
         else:
             # parse data
             row = {}
             for i in xrange(len(tokens)):
-                row[header[i]] = types[i](tokens[i])
-            table[tokens[lookup[key]]] = row
+                if len(types) > 0:
+                    row[header[i]] = types[i](tokens[i])
+                else:
+                    row[header[i]] = tokens[i]
+            table.append(row)
     
     return table, header
 
@@ -1071,7 +1441,7 @@ def writeTable(filename, table, header=None, delim="\t"):
     
     # set default header if needed
     if not header:
-        header = table.values()[0].keys()
+        header = table[0].keys()
     
     # write types    
     entry = table.values()[0]
@@ -1082,13 +1452,47 @@ def writeTable(filename, table, header=None, delim="\t"):
     print >>out, delim.join(header)
     
     # write data
-    for key,entry in table.iteritems():
-        print >>out, delim.join(map(lambda x: str(entry[x]), header))
+    for row in table:
+        print >>out, delim.join(map(lambda x: str(row[x]), header))
+
+
+def lookupTable(table, key, index=False):
+    lookup = {}
+    if index:
+        for i in xrange(len(table)):
+            key2 = table[i][key]
+            if key2 in lookup:
+                raise "duplicate key '%s'" % str(key2)
+            lookup[key2] = i
+    else:
+        for i in xrange(len(table)):
+            key2 = table[i][key]
+            if key2 in lookup:
+                raise "duplicate key '%s'" % str(key2)
+            lookup[key2] = table[i]
+    return lookup
+
+
+def lookupTableMulti(table, * keys):
+    lookup = {}
+    key = keys[0]
+    for i in xrange(len(table)):
+        key2 = table[i][key]
+        if key2 not in lookup:
+            lookup[key2] = []
+        lookup[key2].append(table[i])
     
+    if len(keys) > 1:
+        keys2 = keys[1:]
+        for key, value in lookup.iteritems():
+            lookup[key] = lookupTableMulti(value, * keys2)
+    
+    return lookup
+
     
     
 ###############################################################################
-# directory stuff
+# file/directory stuff
 #
 def listFiles(path, extension=""):
     if path[-1] != "/":
@@ -1110,23 +1514,21 @@ def tempfile(dir, prefix, ext):
 ###############################################################################
 # sorting
 #
-def sortPerm(array, order = "asc"):
+def sortInd(array, compare = cmp):
     ind = range(len(array))
-    if (order == "asc"):
-        ind.sort(lambda x, y: array[x] - array[y])
-    elif (order == "desc"):
-        ind.sort(lambda x, y: array[y] - array[x])
-    else:
-        print "ERROR: bad order", order
+    ind.sort(lambda x, y: compare(array[x], array[y]))
     return ind
 
-
-def sort(array, order):
-    perm = sortPerm(array, order)
-    sorted = [0] * len(array)
-    for i in range(len(sorted)):
-        sorted[i] = array[perm[i]]
+def sortPerm(array, compare = cmp):
+    perm = sortPerm(array, compare)
+    sorted = permute(array, perm)
     return (sorted, perm)
+
+def permute(lst, perm):
+    sorted = [0] * len(lst)
+    for i in range(len(sorted)):
+        sorted[i] = lst[perm[i]]
+    return sorted
     
 def invPerm(perm):
     inv = [0] * len(perm)
@@ -1160,9 +1562,8 @@ def distrib(array, ndivs = 20):
     h = hist(array, ndivs)
     area = 0 
     delta = bucketSize(array, ndivs)
-    for i in h[1]:
-        area += delta * i
-    return (h[0], map(lambda x: x/area, h[1]))
+    total = float(sum(h[1]))
+    return (h[0], map(lambda x: (x/total)/delta, h[1]))
 
 def plothist(array, ndivs = 20):
     h = hist(array, ndivs)
@@ -1225,11 +1626,33 @@ def setvars(table, dct):
     for name in dct:
         table[name] = dct[name]
 
-def showvars(width=70, out=sys.stdout):
-    printcols(varset().keys(), width, out)
+def showvars(table=None, width=70, out=sys.stdout):
+    names = varset().keys()
+    names.sort()
+    
+    if not table:
+        printcols(names, width, out)
+    else:
+        maxname = max(map(len, names))
+        
+        
+        for name in names:
+            out.write(name + " "*(maxname-len(name)) + "  ")
+            out.write("type: " + type(table[name]).__name__)
+            
+            if "__len__" in dir(table[name]):
+                out.write(", size: %d\n" % len(table[name]))
+            
+
 
 def saveall(table, filename = "all.pickle"):
     binsave(filename, getvars(table))
+    
+    # display variables saved
+    keys = varset().keys()
+    keys.sort()
+    for key in keys:
+        log("%s: saved '%s'" % (filename, key))
 
 def loadall(table, filename = "all.pickle"):
     set = binload(filename)
@@ -1237,7 +1660,9 @@ def loadall(table, filename = "all.pickle"):
     
     # also add new var names to varset
     set2 = varset()
-    for key in set.keys():
+    keys = set.keys()
+    keys.sort()
+    for key in keys:
         set2[key] = 1
         log("%s: loaded '%s'" % (filename, key))
         

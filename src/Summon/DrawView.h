@@ -102,6 +102,7 @@ public:
         ClearTasks();
     }
     
+    bool WithinView(const Vertex2f &pos1, const Vertex2f &pos2);
 
 
 protected:

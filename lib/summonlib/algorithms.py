@@ -3,6 +3,7 @@ import util
 import graph
 import random, math
 
+
 class UnionFind:
     def __init__(self):
         self.items = {}
@@ -161,6 +162,7 @@ class TreeNode:
         self.name = name
         self.children = []
         self.parent = None
+        self.dist = 0
     
     def isLeaf(self):
         return len(self.children) == 0
@@ -185,10 +187,10 @@ class TreeNode:
 
 
 class Tree:
-    def __init__(self):
+    def __init__(self, nextname = 1):
         self.nodes = {}
         self.root = None
-        self.nextname = 1
+        self.nextname = nextname
 
     def makeRoot(self, name = "ROOT"):
         self.root = TreeNode(name)
@@ -200,11 +202,13 @@ class Tree:
     def addChild(self, parent, child):
         assert parent != child
         self.nodes[child.name] = child
+        self.nodes[parent.name] = parent
         child.parent = parent
         parent.children.append(child)
 
     def remove(self, node):
-        node.parent.children.remove(node)
+        if node.parent:
+            node.parent.children.remove(node)
         del self.nodes[node.name]
     
     def removeTree(self, node):
@@ -246,6 +250,7 @@ class Tree:
             index = parent.children.index(node)
             parent.children[index] = childTree.root
             childTree.root.parent = parent
+            del self.nodes[node.name]
         
     
     
@@ -329,6 +334,8 @@ class Tree:
 
 
     def lca(self, names, depths = None):
+        """Least Common Ancestor"""
+        
         if not depths:
             depths = self.findDepths(self.root)
 
@@ -347,7 +354,7 @@ class Tree:
 
     
     def subtree(self, node):
-        tree = Tree()
+        tree = Tree(nextname = self.newName())
         tree.root = node
         
         def walk(node):
@@ -385,11 +392,7 @@ class Tree:
         if depth == 0:
             print >>out, ";"
         else:
-            if "dist" in dir(node):
-                print >>out, ":"+ str(node.dist),
-            else:
-                print >>out, ":0",
-
+            print >>out, ":"+ str(node.dist),
 
 
     def readNewick(self, filename):
@@ -450,7 +453,7 @@ class Tree:
         def readRoot():
             word, char = readUntil("(")
             
-            assert char == "("
+            assert char == "(", (char, word)
             
             node = TreeNode(self.newName())
             depth = closure["opens"]
@@ -521,28 +524,157 @@ def tree2graph(tree):
     
     for name, node in tree.nodes.items():
         for child in node.children:
-            if "dist" in dir(child):
-                mat[name][child.name] = child.dist
-            else:
-                mat[name][child.name] = 0
+            mat[name][child.name] = child.dist
         
         if node.parent:
-            if "dist" in dir(node):
-                mat[name][node.parent.name] = node.dist
-            else:
-                mat[name][node.parent.name] = 0
+            mat[name][node.parent.name] = node.dist
             
     return mat
 
 
-def reroot(tree, newroot, mat = None):
+def graph2tree(mat, root, closedset=None):
+    if closedset == None:
+        closedset = {}
+    tree = Tree()
+
+    def walk(name):
+        node = TreeNode(name)
+        node.dist = 0
+        closedset[name] = 1
+        for child in mat[name]:
+            if child not in closedset:
+                childNode = walk(child)
+                childNode.dist = mat[name][child]
+                tree.addChild(node, childNode)
+        return node            
+    tree.root = walk(root)
+    return tree
+
+
+
+def maxDisjointSubtrees(tree, subroots):
+    marks = {}
+
+    # mark the path from each subroot to the root
+    for subroot in subroots:
+        ptr = subroot
+        while True:
+            lst = marks.setdefault(ptr, [])
+            lst.append(subroot)
+            if not ptr.parent: break
+            ptr = ptr.parent
+
+    # subtrees are those trees with nodes that have at most one mark
+    subroots2 = []
+    def walk(node):
+        marks.setdefault(node, [])
+        if len(marks[node]) < 2 and \
+           (not node.parent or len(marks[node.parent]) >= 2):
+            subroots2.append(node)
+        node.recurse(walk)
+    walk(tree.root)
+    
+    return subroots2
+
+
+def removeSingleChildren(tree):
+    removed = []
+    
+    # find single children
+    def walk(node):
+        if len(node.children) == 1 and node.parent:
+            removed.append(node)
+        node.recurse(walk)
+    walk(tree.root)
+    
+    # actually remove children
+    for node in removed:
+        dist = node.dist        
+        subtree = tree.subtree(node.children[0])
+        node.children[0].dist += node.dist
+        tree.removeTree(node.children[0])
+        tree.replaceTree(node, subtree)
+
+    # remove singleton from root
+    if len(tree.root.children) == 1:
+        oldroot = tree.root
+        tree.root = tree.root.children[0]
+        oldroot.children = []
+        tree.remove(oldroot)
+        tree.root.dist += oldroot.dist
+    
+    return map(lambda x: x.name, removed)
+
+
+def unroot(tree):
+    if 1 < len(tree.root.children) < 3:
+        for child in tree.root.children:
+            if len(child.children) >= 2:
+                tree2 = reroot(tree, child.name, onBranch=False)                
+                return tree2
+    return tree
+
+def isRooted(tree):
+    return len(tree.root.children) == 3 or len(tree.leaves()) <= 2
+
+
+def assertTree(tree):
+    visited = {}
+    def walk(node):
+        assert node.name in tree.nodes
+        assert node.name not in visited
+        visited[node.name] = 1
+        if node.parent:
+            node in node.parent.children
+        for child in node.children:
+            child.parent == node
+        node.recurse(walk)
+    walk(tree.root)
+    
+    assert len(tree.nodes) == len(visited)
+    
+
+def reroot(tree, newroot, mat = None, onBranch=True):
+    # handle trivial case
+    if tree.root.name == newroot or \
+       (newroot in map(lambda x: x.name, tree.root.children) and \
+        len(tree.root.children) == 2):
+        return tree        
+    
+    # convert tree to a graph
     if mat == None:
         mat = tree2graph(tree)
-    tree2 = Tree()
-    closedset = {newroot:1}
+        assert len(mat.keys()) == len(tree.nodes.keys())
+        for i in mat:
+            for j in mat[i]:
+                assert mat[j][i] == mat[i][j]
+        #print mat, newroot
+        
+    # intialize new tree
+    tree2 = Tree(nextname = tree.newName())
     
+    # generate new node if rooting on a branch
+    # branch designated as branch above newroot
+    if onBranch:
+        name1 = newroot
+        name2 = tree.nodes[newroot].parent.name
+        dist = mat[name1][name2]
+        del mat[name1][name2]
+        del mat[name2][name1]
+        
+        # create new name for newroot
+        newroot = tree2.newName()
+        mat[newroot] = {}
+        mat[newroot][name1] = dist / 2.0
+        mat[name1][newroot] = dist / 2.0
+        mat[newroot][name2] = dist / 2.0
+        mat[name2][newroot] = dist / 2.0
+        
+        #print name1, name2, newroot
+    
+    # build new tree   
     tree2.makeRoot(newroot)
-    
+    closedset = {newroot:1}
     def walk(node):
         for child in mat[node]:
             if not child in closedset:
@@ -553,7 +685,35 @@ def reroot(tree, newroot, mat = None):
                 walk(child)
     walk(newroot)
     
+    #print len(tree2.nodes.keys()), len(tree.nodes.keys())
+    assert len(tree2.nodes.keys()) >= len(tree.nodes.keys())
+    
+    # clean up tree and update mat
+    removed = removeSingleChildren(tree2)
+    """
+    for name in removed:
+        name1, name2 = mat[name].keys()
+        dist1 = mat[name][name1]
+        dist2 = mat[name][name2]
+        del mat[name]
+        del mat[name1][name]
+        del mat[name2][name]
+        mat[name1][name2] = dist1 + dist2
+        mat[name2][name1] = dist1 + dist2
+    """
+    
+    # undo changes to mat
+    if onBranch:
+        mat[name1][name2] = dist
+        mat[name2][name1] = dist
+        del mat[newroot]
+        del mat[name1][newroot]
+        del mat[name2][newroot]
+    
+    assert len(tree2.nodes.keys()) >= len(tree.nodes.keys())
+    
     return tree2
+
 
 
 def outgroupRoot(tree, outgroup, closedset = None):
@@ -612,6 +772,33 @@ def removeOutgroup(tree, outgroup):
     
     return (tree2, len(roots) == 1)
     
+
+
+def hashTreeCompose(childHashes):
+    return "(%s)" % ",".join(childHashes)
+
+def hashTree(tree, smap):
+    def walk(node):
+        if node.isLeaf():
+            return smap(node.name)
+        else:
+            childHashes = map(walk, node.children)
+            childHashes.sort()
+            return hashTreeCompose(childHashes)
+    return walk(tree.root)
+
+def hashOrderTree(tree, smap):
+    def walk(node):
+        if node.isLeaf():
+            return smap(node.name)
+        else:
+            childHashes = map(walk, node.children)
+            ind = util.sortInd(childHashes)
+            childHashes = util.permute(childHashes, ind)
+            node.children = util.permute(node.children, ind)
+            return hashTreeCompose(childHashes)
+    walk(tree.root)
+
     
 
 if __name__ == "__main__":

@@ -4,13 +4,15 @@ from summon import *
 from summonlib import shapes
 
 
-sys.setrecursionlimit(1000)
+sys.setrecursionlimit(2000)
 
 options = [
  ["p:", "ptree=", "ptree", "AUTO<ptree file>"],
  ["l:", "labels=", "labels", "AUTO<leaf labels file>"],
  ["n:", "newick=", "newick", "AUTO<newick file>"],
- ["t:", "usedist=", "usedist", "AUTO<distance factor>"]
+ ["t:", "usedist=", "usedist", "AUTO<distance factor>"],
+ ["L", "showlabels", "showlabels", "AUTO"],
+ ["h", "horizontal", "horizontal", "AUTO"]
 ]
 
 
@@ -25,6 +27,7 @@ class SumTree:
         self.param = {}
         self.markGroup = None
         self.labelids = []
+        self.showlabels = False
 
     
     def showLabels(self, visible):
@@ -102,13 +105,24 @@ class SumTree:
                            sx + node.size/2.0, sy - height,
                            func))
         
-        if False: #node.isLeaf():
-            label = group(
-                translate(sx - node.size/2.0, sy - height - 1,
-                    rotate(-90,
-                        text_clip(node.name, 0, 0, 1e1000, node.size, 5, 20,
-                            "left", "middle"))))
-
+        if self.showLabels and node.isLeaf() and type(node.name) == str:
+            if "horizontal" in self.param:
+                label = group(
+                    translate(sx - node.size/2.0, sy - height,
+                        rotate(-90,
+                            color(0,0,0),
+                            text_clip(node.name, 0, node.size*.1, 
+                                      node.size*100, node.size*.9, 5, 12,
+                                      "left", "middle"))))
+            else:
+                label = group(
+                    translate(sx - node.size/2.0, sy - height,
+                        rotate(-90,
+                            color(0,0,0),
+                            text_clip(node.name, 0, node.size*.1, 
+                                      node.size*100, node.size*.9, 5, 12,
+                                      "left", "middle", "vertical"))))
+        
             self.labelids.append(get_group_id(label))
             vis.append(label)
             
@@ -149,9 +163,15 @@ class SumTree:
         util.tic("drawing")
 
         set_bgcolor(1,1,1)
-        add_group(group(
-            color(0,0,0),
-            self.drawTree(param, tree.root)))    
+        if "horizontal" in param:
+            add_group(group(
+                color(0,0,0),
+                rotate(90, 
+                    self.drawTree(param, tree.root))))
+        else:
+            add_group(group(
+                color(0,0,0),
+                self.drawTree(param, tree.root)))    
         util.toc()
 
 
@@ -243,10 +263,7 @@ class SumTree:
 
     def setupNode(self, param, node):
         if "usedist" in param:
-            if "dist" in dir(node):
-                node.height = node.dist * float(param["usedist"][-1])
-            else:
-                node.height = float(param["usedist"][-1])
+            node.height = node.dist * float(param["usedist"][-1])
         else:
             node.height = 1
 
@@ -257,6 +274,10 @@ class SumTree:
         tree.setSizes()
         self.setupNode(param, tree.root)
         self.setColors(tree.root)
+        self.tree = tree
+        self.param = param
+        
+        self.showLabels = "showlabels" in param
 
     def readTree(self, param):
         util.tic("reading input")
@@ -275,9 +296,6 @@ class SumTree:
 
         # setup
         self.setupTree(param, tree)
-        self.tree = tree
-        self.param = param
-
-
+        
         util.toc()    
         return tree
