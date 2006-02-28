@@ -71,6 +71,23 @@ void DrawController::ExecCommand(Command &command)
             HotspotClick(((HotspotClickCommand*) &command)->pos);
             break;
         
+                
+        case GET_MOUSE_POS_COMMAND: {
+            Vertex2i pos = GetMousePos();
+            GetMousePosCommand* cmd = (GetMousePosCommand*) &command;
+            
+            if (cmd->kind == "world") {
+                pos = m_view->WindowToWorld(pos.x, pos.y);
+            } else if (cmd->kind == "screen") {
+                pos = m_view->WindowToScreen(pos.x, pos.y);
+            } else if (cmd->kind != "window") {
+                Error("Unknown coordinate system '%s'", cmd->kind.c_str());
+            }
+            
+            cmd->SetReturn(ScmCons(Int2Scm(pos.x),
+                             ScmCons(Int2Scm(pos.y), Scm_EOL)));
+            } break;
+        
         default:
             // execute default commands
             Glut2DController::ExecCommand(command);

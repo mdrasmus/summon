@@ -27,10 +27,10 @@ void drawCommandsInit()
     commonCommandsInit();
     glutCommandsInit();
     
-#define g() AddAttr(g_globalAttr)
-#define m() AddAttr(g_modelAttr)    
-#define v() AddAttr(g_viewAttr)    
-#define c() AddAttr(g_controllerAttr)
+#   define g() AddAttr(g_globalAttr)
+#   define m() AddAttr(g_modelAttr)    
+#   define v() AddAttr(g_viewAttr)    
+#   define c() AddAttr(g_controllerAttr)
     
     // global commands
     RegisterScriptCommand(GetWindowsCommand)    g()
@@ -68,12 +68,15 @@ void drawCommandsInit()
     RegisterScriptCommand(SetAntialiasCommand)  v()    
 
     // controller commands    
-    RegisterScriptCommand(SetBindingCommand)    c()
-    RegisterScriptCommand(ClearBindingCommand)  c()
+    RegisterScriptCommand(SetBindingCommand)       c()
+    RegisterScriptCommand(ClearBindingCommand)     c()
     RegisterScriptCommand(ClearAllBindingsCommand) c()
-    RegisterScriptCommand(HotspotClickCommand)  c()
+    RegisterScriptCommand(HotspotClickCommand)     c()
+    RegisterScriptCommand(GetMousePosCommand)      c()
     
     // constructs
+    
+    // structure
     RegisterConstruct(GroupConstruct)
     RegisterConstruct(DynamicGroupConstruct)
     RegisterConstruct(HotspotConstruct)
@@ -107,10 +110,10 @@ void drawCommandsInit()
     RegisterConstruct(InputClickConstruct)
     RegisterConstruct(InputMotionConstruct)
 
-#undef g
-#undef m
-#undef v
-#undef c
+#   undef g
+#   undef m
+#   undef v
+#   undef c
 
 }
 

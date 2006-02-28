@@ -71,7 +71,7 @@ enum {
     CLEAR_BINDING_COMMAND,
     CLEAR_ALL_BINDINGS_COMMAND,
     HOTSPOT_CLICK_COMMAND,
-    
+    GET_MOUSE_POS_COMMAND,
     
     // constructs
     
@@ -814,6 +814,25 @@ public:
     Vertex2i pos;
 };
 
+
+class GetMousePosCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new GetMousePosCommand(); }
+    virtual int GetId() { return GET_MOUSE_POS_COMMAND; }
+
+    virtual const char *GetName() { return "get_mouse_pos"; }
+    virtual const char *GetUsage() { return "'world'|'screen'|'window'"; }
+    virtual const char *GetDescription() 
+    { return "gets the current mouse position in the requested coordinates"; }
+
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "s", &kind);
+    }
+    
+    string kind;
+};
 
 
 // ----------------------------------------------------------------------------

@@ -42,6 +42,11 @@ void GlutController::AddKeyBinding(char key, CommandId cmd)
     input->key = key;
     m_defaultBinding.AddBinding(input, cmd);
 }
+
+Vertex2i GlutController::GetMousePos()
+{
+    return m_lastMouse;
+}
    
 void GlutController::GlutKey(unsigned char key, int x, int y)
 {
@@ -127,6 +132,7 @@ void GlutController::MouseClick(int button, int state, int x, int y)
 
     m_lastMouse = input.pos;
 }
+
 
 
 }

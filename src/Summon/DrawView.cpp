@@ -116,7 +116,7 @@ void DrawView::ExecCommand(Command &command)
             NoteModelChange();
             Glut2DView::ExecCommand(command);
             break;
-        
+                
         default:
             Glut2DView::ExecCommand(command);
     }
