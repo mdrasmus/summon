@@ -74,18 +74,21 @@ void DrawController::ExecCommand(Command &command)
                 
         case GET_MOUSE_POS_COMMAND: {
             Vertex2i pos = GetMousePos();
+            Vertex2f pos2(-1,-1);
             GetMousePosCommand* cmd = (GetMousePosCommand*) &command;
             
             if (cmd->kind == "world") {
-                pos = m_view->WindowToWorld(pos.x, pos.y);
+                pos2 = m_view->WindowToWorld(pos.x, pos.y);
             } else if (cmd->kind == "screen") {
-                pos = m_view->WindowToScreen(pos.x, pos.y);
-            } else if (cmd->kind != "window") {
+                pos2 = m_view->WindowToScreen(pos.x, pos.y);
+            } else if (cmd->kind == "window") {
+                pos2 = pos;
+            } else {
                 Error("Unknown coordinate system '%s'", cmd->kind.c_str());
             }
             
-            cmd->SetReturn(ScmCons(Int2Scm(pos.x),
-                             ScmCons(Int2Scm(pos.y), Scm_EOL)));
+            cmd->SetReturn(ScmCons(Float2Scm(pos2.x),
+                             ScmCons(Float2Scm(pos2.y), Scm_EOL)));
             } break;
         
         default:

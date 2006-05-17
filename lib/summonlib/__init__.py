@@ -113,13 +113,17 @@ def element_contents(elm):
     if is_group(elm):
         return group_contents(elm)
     elif is_translate(elm):
-        return translate_content(elm)[2:]
+        #return translate_content(elm)[2:]
+        return elm[3:]
     elif is_scale(elm):
-        return scale_contents(elm)[2:]
+        #return scale_contents(elm)[2:]
+        return elm[3:]
     elif is_flip(elm):
         return flip_contents(elm)[2:]
+        return elm[3:]
     elif is_rotate(elm):
         return rotate_contents(elm)[1:]
+        return elm[2:]
     else:
         return ()
 

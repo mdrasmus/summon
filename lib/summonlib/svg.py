@@ -57,6 +57,37 @@ def writeSvg(outfile, group):
             
             print >>outfile, \
             """<g transform='translate(%f,%f) scale(%f,%f)'>
+                <text x='0' y='0' font-size='%s' fill='%s' fill-opacity='%f'>%s</text></g>
+            """ % (x1, y1, scale, -scale, textheight,  col, color[3], msg)
+        elif is_text(elm):
+            print >>outfile, \
+            """<g transform='translate(%f,%f) scale(1,-1)'>
+                <text x='0' y='0' font-size='%s' fill='%s' fill-opacity='%f'>%s</text></g>
+            """ % (x1, y1, 10, col, color[3], msg)
+    
+    
+    def printText2(elm, verts, color):
+        msg = text_contents(elm)[0]
+        pos = text_contents(elm)[5:]
+        (x1, y1), (x2, y2) = verts
+        
+        col = color2string(color)
+        
+        # TODO: remove hack (why is color[3] so near 0)
+        color[3] = 1
+        
+        
+        boxheight = y2 - y1
+        boxwidth = x2 - x1
+        
+        if is_text_scale(elm) or is_text_clip(elm):
+            textheight = 20.0
+            textwidth = textheight * .75 * float(len(msg)) # TODO: approx for now
+            
+            scale = min(boxheight / textheight, boxwidth / textwidth)
+            
+            print >>outfile, \
+            """<g transform='translate(%f,%f) scale(%f,%f)'>
                 <text x='0' y='0' font-size='%s' stroke-width='%f' stroke='%s' 
                     fill='%s' stroke-opacity='%f' fill-opacity='%f'>%s</text></g>
             """ % (x1, y1, scale, -scale, textheight, 1/scale, col, col, 
@@ -67,9 +98,7 @@ def writeSvg(outfile, group):
                 <text x='0' y='0' font-size='%s' stroke-width='%f' stroke='%s' 
                     fill='%s' stroke-opacity='%f' fill-opacity='%f'>%s</text></g>
             """ % (x1, y1, 10, 1, col, col, 
-                    0, color[3], msg)
-        
-        
+                    0, color[3], msg)        
         
 
     def printGraphic(elm, verts, color):
@@ -120,7 +149,7 @@ def writeSvg(outfile, group):
     print >>outfile, svgEndTag
 
 
-def printScreen(filename = None):
+def printScreen(filename = None, visgroup=None):
     if filename == None:
         import warnings
         warnings.filterwarnings("ignore", ".*", RuntimeWarning)    
@@ -128,16 +157,19 @@ def printScreen(filename = None):
         warnings.filterwarnings("default", ".*", RuntimeWarning)        
         filename = filename.replace("./", "./summon")
     
+    if visgroup == None:
+        visgroup = get_group(get_root_id())
+    
     print "dumping screen to '%s'..." % filename
     
     if filename.endswith(".svg"):
         outfile = file(filename, "w")    
-        writeSvg(outfile, get_group(get_root_id()))
+        writeSvg(outfile, visgroup)
         outfile.close()
     else:
         svgfile = filename + ".svg"
         outfile = file(svgfile, "w")    
-        writeSvg(outfile, get_group(get_root_id()))
+        writeSvg(outfile, visgroup)
         outfile.close()
         os.system("convert " +svgfile+ " " +filename)
         os.system("rm " + svgfile)
