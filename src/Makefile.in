@@ -26,34 +26,33 @@ COMPILE = -c -g $(INCLUDE) \
           -DVISTOOLS_SCHEME=$(VISTOOLS_SCHEME) \
           -DVISTOOLS_PYTHON=$(VISTOOLS_PYTHON)
 
+
+# Profiling code
 ifdef PROFILE
     COMPILE := $(COMPILE) -pg
 endif
 
 #
-# Conditional compile flags based scripting engine
+# Python COMPILE flags
 #
-ifeq ($(VISTOOLS_SCRIPT),$(VISTOOLS_SCHEME))
-	COMPILE := $(COMPILE) `guile-config compile`
-endif
-ifeq ($(VISTOOLS_SCRIPT),$(VISTOOLS_PYTHON))
-    COMPILE := $(COMPILE) -I/usr/include/python2.4 -I/usr/include/python2.3
-endif
+COMPILE := $(COMPILE) -I/usr/include/python2.4 -I/usr/include/python2.3
 
+# test compiling
+test:
+	echo $(COMPILE)
 
 
 # rules for subsystems
-../Common/libCommon.a:
+$(PREFIX)/Common/libCommon.a:
 	make -C $(PREFIX)/Common
     
-../GlutMVC/libGlutMVC.a:
+$(PREFIX)/GlutMVC/libGlutMVC.a:
 	make -C $(PREFIX)/GlutMVC
 
-../MVC/libMVC.a:
+$(PREFIX)/MVC/libMVC.a:
 	make -C $(PREFIX)/MVC
 
-test:
-	echo $(COMPILE)
+
 
 
 # basic compile rule

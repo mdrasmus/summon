@@ -17,17 +17,9 @@ ifdef PROFILE
 endif
 
 
-#
-# Conditional linking
-#
-#ifeq ($(VISTOOLS_SCRIPT),$(VISTOOLS_SCHEME))
-#	LIBS := $(LIBS) `guile-config link`
-#        CYGWIN_LIBS := $(CYGWIN_LIBS) `guile-config link`
-#endif
-#ifeq ($(VISTOOLS_SCRIPT),$(VISTOOLS_PYTHON))
-	LIBS := $(LIBS) -lpython2.4  -lutil
-        CYGWIN_LIBS := $(CYGWIN_LIBS) -L/lib/python2.4/config -lpython2.4
-#endif
+LIBS := $(LIBS) -lpython2.4  -lutil
+CYGWIN_LIBS := $(CYGWIN_LIBS) -L/lib/python2.4/config -lpython2.4
+
 
 
 all: $(PROG)
@@ -43,3 +35,7 @@ $(PROG).exe: $(OBJS) $(MY_LIBS)
 
 install: $(PROG)
 	cp $(PROG) ../../bin
+
+
+test2:
+	echo $(PLATFORM)

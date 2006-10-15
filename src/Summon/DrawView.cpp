@@ -466,7 +466,7 @@ void DrawView::DrawTextElement(TextElement *elm)
         DrawText(font, elm->text, pos.x, pos.y);
         
     } else if (elm->kind == TextElement::KIND_SCALE) {
-        void *font = GLUT_STROKE_ROMAN;
+        void *font = GLUT_STROKE_MONO_ROMAN;
         float fontSize = 119.05;
         
         float textWidth  = glutStrokeLength(font, text);
@@ -492,7 +492,7 @@ void DrawView::DrawTextElement(TextElement *elm)
             glutStrokeCharacter(font, *chr);
         glPopMatrix();
     } else if (elm->kind == TextElement::KIND_CLIP) {
-        void *font = GLUT_STROKE_ROMAN;
+        void *font = GLUT_STROKE_MONO_ROMAN;
         float fontSize = 119.05;
                 
         Vertex2f zoom = GetZoom();

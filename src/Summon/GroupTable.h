@@ -29,7 +29,7 @@ public:
     void ReplaceGroup(int id, Group *group);
     void RemoveTree(Element *elm);
     
-    inline void GroupTable::AddGroup(Group *group)
+    inline void AddGroup(Group *group)
     { m_table.Insert(group->GetGroupId(), group); }
     inline Group* GetGroup(int id) { return m_table.Get(id); }
         

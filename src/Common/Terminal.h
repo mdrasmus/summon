@@ -53,9 +53,9 @@ public:
     
     
 
-    inline void Terminal::SetTerminalRunning(bool running)
+    inline void SetTerminalRunning(bool running)
     { m_termRunning = running; }
-    inline bool Terminal::GetTerminalRunning()
+    inline bool GetTerminalRunning()
     { return m_termRunning; } 
     
     inline vector<string> GetWords()
