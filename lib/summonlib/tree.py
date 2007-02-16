@@ -12,7 +12,7 @@ options = [
  ["n:", "newick=", "newick", "AUTO<newick file>"],
  ["t:", "usedist=", "usedist", "AUTO<distance factor>"],
  ["L", "showlabels", "showlabels", "AUTO"],
- ["h", "horizontal", "horizontal", "AUTO"]
+ ["H", "horizontal", "horizontal", "AUTO"]
 ]
 
 
