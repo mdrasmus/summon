@@ -1,3 +1,6 @@
+PACKAGE = summon
+VERSION = 1.1
+
 all:
 	make -C src/Summon summon
 
@@ -13,3 +16,11 @@ install:
 	
 cleanobj:
 	make -C src/Summon cleanallobj
+
+dist:
+	rm -rf ../$(PACKAGE)-$(VERSION)
+	mkdir ../$(PACKAGE)-$(VERSION)
+	cp -rv * ../$(PACKAGE)-$(VERSION)
+	rm -rf $$(find ../$(PACKAGE)-$(VERSION) -name CVS)
+	cd ../$(PACKAGE)-$(VERSION) && make cleanobj
+	cd .. && tar zcvf $(PACKAGE)-$(VERSION).tar.gz $(PACKAGE)-$(VERSION)

@@ -51,7 +51,7 @@ def push_transform(gid, trans, * args):
     insert_group(gid, group(trans(* args)))
     return get_group_id(grp)
 
-def init_binding(input_obj, func):
+def reset_binding(input_obj, func):
     clear_binding(input_obj)
     set_binding(input_obj, func)
 
@@ -232,26 +232,26 @@ class Window:
         
         set_window(self.winid)
         set_model(self.worldid)
-        apply(func, args)
+        func(*args)
         set_window(oldwin)
         set_model(oldmodel)
     
     
     def add_group(self, *args):
         set_model(self.worldid)
-        return apply(add_group, args)
+        return add_group(*args)
     
     def insert_group(self, *args):
         set_model(self.worldid)
-        return apply(insert_group, args)
+        return insert_group(*args)
     
     def remove_group(self, *args):
         set_model(self.worldid)
-        return apply(remove_group, args)
+        return remove_group(*args)
     
     def replace_group(self, *args):
         set_model(self.worldid)
-        return apply(replace_group, args)
+        return replace_group(*args)
     
     
     

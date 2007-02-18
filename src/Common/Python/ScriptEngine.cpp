@@ -130,6 +130,7 @@ int ScriptEngine::EngineRepl(string line)
     // add line to growing m_line
     m_line += line + "\n";
 
+    // TODO: should I also continue on '/'?
     // enter continue mode if line ends with colon
     if (line[line.size() - 1] == ':') {
         m_cont = true;

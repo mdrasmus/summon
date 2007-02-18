@@ -11,33 +11,71 @@
 #   *.lmat  label matrix 
 #
 
+# TODO: implement find, and marking
+
+
 import random
 import sys
 
 from summon import *
-from summonlib import shapes, util
+from summonlib import *
+from summonlib import shapes, util, plotting
 
 # command line options
 options = [
-    ["r:", "comprow=", "comprow", "AUTO<compressed row matrix file>"],
-    ["i:", "imat=", "imat", "AUTO<index matrix file>"],
-    ["l:", "lmat=", "lmat", "AUTO<labeled sparse matrix file>"],
-    ["d:", "dense=", "dense", "AUTO<dense matrix file>"],
+    "matrix formats",
+    ["r:", "comprow=", "comprow", "<compressed row matrix file>",
+        {"single": True}],
+    ["i:", "imat=", "imat", "<index matrix file>",
+        {"single": True}],
+    ["l:", "lmat=", "lmat", "<labeled sparse matrix file>",
+        {"single": True}],
+    ["d:", "dense=", "dense", "<dense matrix file>",
+        {"single": True}],
     
-    ["o:", "order=", "order", "AUTO<label order>"],
+    "labels",
+    ["", "rlab=", "rowlabels", "<row labels>",
+        {"single": True}],
+    ["", "clab=", "collabels", "<col labels>", 
+        {"single": True}],    
+    ["", "rclab=", "rowcollabels", "<row & col labels>", 
+        {"single": True}],
     
-    ["R:", "rperm=", "rperm", "AUTO<row permutation>"],
-    ["C:", "cperm=", "cperm", "AUTO<col permutation>"],
-    ["B:", "rcperm=", "rcperm", "AUTO<row & col permutation>"],
-   
-    ["s:", "sample=", "sample", "AUTO<sample fraction>"],
-    ["c:", "color=", "color", "AUTO(solid|posneg|rainbow)"]
+    "permutation",
+    ["R:", "rperm=", "rperm", "<row permutation>",
+        {"single": True}],
+    ["C:", "cperm=", "cperm", "<col permutation>",
+        {"single": True}],
+    ["B:", "rcperm=", "rcperm", "<row & col permutation>",
+        {"single": True}],
+
+    ["o:", "order=", "order", "<label order>",
+        {"single": True}],
+    
+    "clustering",
+    ["", "rpart=", "rpart", "<row partition ids>",
+        {"single": True}],
+    ["", "cpart=", "cpart", "<col partition ids>",
+        {"single": True}],
+    ["", "rcpart=", "rcpart", "<row & col partition ids>",
+        {"single": True}],
+
+    
+    "misc",
+    ["s:", "sample=", "sample", "<sample fraction>",
+        {"single": True,
+         "parser": float}],
+    ["c:", "color=", "color", "(solid|posneg|rainbow|filename)",
+        {"single": True,
+         "default": "solid"}],
+    ["", "cutoff=", "cutoff", "<value>",
+        {"default": [-1e1000],
+         "parser": float,
+         "single": True}]
 ]
 
-try:
-    param, rest = util.parseArgs(sys.argv[1:], options, "files")
-except:
-    sys.exit(1)
+
+param = util.parseOptions(sys.argv[1:], options, resthelp="<python script>")
 
 
 
@@ -68,6 +106,7 @@ class PosNegColorMap:
             return [0, 1, 0, val/self.min]
 
 
+
 class Matrix (util.Dict):
     def __init__(self):
         util.Dict.__init__(self, 2, 0)
@@ -79,10 +118,16 @@ class Matrix (util.Dict):
         self.maxval = None
         self.minval = None
         
+        self.rowlabels = None
+        self.collabels = None
+        
         self.rperm = []
         self.cperm = []
         self.rinv  = []
         self.cinv  = []
+        
+        self.rpart = None
+        self.cpart = None
         
         self.colormap = PosNegColorMap()
         self.rows = []
@@ -120,6 +165,22 @@ class Matrix (util.Dict):
 #############################################################################
 # Matrix Reading
 #
+
+
+
+def readColorMap(filename):
+    mat = []
+
+    for line in file(filename):
+        value, red, green, blue = map(float, line.rstrip().split())
+        mat.append([value, [red, green, blue, 1.0]])
+        
+    try:
+        return plotting.ColorMap(mat)
+    except:
+        print "error readin colormap, using default"
+        return RainbowColorMap()
+        
 
 
 def openCompRow(filename, mat):
@@ -230,7 +291,7 @@ def openLabeledMatrix(filename, mat):
             set[i] = 1
             for j in mat[i]:
                 set[j] = 1
-        labels = util.uniq(set.keys())
+        labels = util.unique(set.keys())
         labels.sort()
     lookup = util.list2lookup(labels)
     
@@ -262,18 +323,23 @@ def openDense(filename, mat):
     mat.setup(nrows, ncols, nnz)
     rows, cols, vals = (mat.rows, mat.cols, mat.vals)
     
+    cutoff = param['cutoff']
+    
     # read in whole matrix
     maxval = -1e1000
     minval = 1e1000
     r = 0
+    
     for line in infile:
         entries = map(float, line.split())
         for c in xrange(len(entries)):
-            rows.append(r)
-            cols.append(c)
-            vals.append(entries[c])
-            if entries[c] > maxval: maxval = entries[c]
-            if entries[c] < minval: minval = entries[c]
+            if entries[c] > cutoff:
+                rows.append(r)
+                cols.append(c)
+                vals.append(entries[c])
+                if entries[c] > maxval: maxval = entries[c]
+                if entries[c] < minval: minval = entries[c]
+                mat[r][c] = entries[c]
         r += 1
     
     mat.maxval = maxval
@@ -288,15 +354,58 @@ def openDense(filename, mat):
 # Drawing
 #
 
+def mouseClick():
+    x, y = get_mouse_pos('world')
+    x = int(x+.5)
+    y = -int(y-.5)
+    
+    x = mat.cperm[x]
+    y = mat.rperm[y]
+    
+    if mat.rowlabels != None:
+        row = mat.rowlabels[y]
+    else:
+        row = y
+    if mat.collabels != None:
+        col = mat.collabels[x]
+    else:
+        col = x
+    
+    print row, col, "mat[%d][%d] = %f" % (y, x, mat[y][x])
+    
+
 def drawBorder(nrows, ncols):
     # draw boundary 
     add_group(group(color(1,1,1), 
               shapes.boxStroke(-.5,.5,ncols-.5, -nrows+.5)))
+
+def drawPartitions(mat):
+    vis = [color(1,1,1)]
+    
+    # draw row partitions
+    if mat.rpart != None:
+        part = -1
+        for i in xrange(mat.nrows):
+            if mat.rpart[mat.rperm[i]] != part:
+                vis.append(lines(-.5, -i+.5, mat.ncols, -i+.5))
+                part = mat.rpart[mat.rperm[i]]
+    
+    # draw col partitions
+    if mat.cpart != None:
+        part = -1
+        for i in xrange(mat.ncols):
+            if mat.cpart[mat.cperm[i]] != part:
+                vis.append(lines(i-.5, .5, i-.5, -mat.nrows+.5))
+                part = mat.cpart[mat.cperm[i]]
+    
+    add_group(group(* vis))
+    
     
 def drawMatrix(mat):
     util.tic("drawing matrix")
     mat.colormap.max = mat.maxval
     mat.colormap.min = mat.minval
+    mat.colormap.range = mat.maxval - mat.minval
     getcolor = mat.colormap.get
     vis = []
     chunksize = 1000
@@ -304,7 +413,7 @@ def drawMatrix(mat):
     rinv, cinv = (mat.rinv, mat.cinv)
     
     for chunk in xrange(0, len(rows), chunksize):
-        if param["color"][-1] == "solid":
+        if param["color"] == "solid":
             for k in xrange(chunk, min(len(rows), chunk+chunksize)):
                 vis.append(cinv[cols[k]])
                 vis.append(-rinv[rows[k]])
@@ -316,8 +425,32 @@ def drawMatrix(mat):
         add_group(group(points(* vis)))
         vis = []
     
+    add_group(group(hotspot('click', -.5, .5, mat.ncols-.5, -mat.nrows+.5, mouseClick)))
+    
+    
+    # draw extra
+    drawBorder(mat.nrows, mat.ncols)
+    drawPartitions(mat)
+    
     util.toc()
     
+
+def one2one():
+    """Make zoom one2one"""
+    
+    x, y, x2, y2 = get_visible()
+    vwidth = x2 - x
+    vheight = y2 - y
+    width, height = get_window_size()
+    
+    zx = width / vwidth
+    zy = height / vheight
+    
+    if zx > zy:
+        zoomy(zx / zy)
+    else:
+        zoomx(zy / zx)
+
 
 
 #######################################################################
@@ -330,46 +463,73 @@ print
 
 set_antialias(False)
 mat = Matrix()
-
+set_binding(input_key("1"), one2one)
 
 # read permutations
 if "rperm" in param:
-    mat.rperm = util.readInts(param["rperm"][-1])
+    mat.rperm = util.readInts(param["rperm"])
 elif "cperm" in param:
-    mat.cperm = util.readInts(param["cperm"][-1])
+    mat.cperm = util.readInts(param["cperm"])
 elif "rcperm" in param:
-    mat.rperm = util.readInts(param["rcperm"][-1])        
-    mat.cperm = util.readInts(param["rcperm"][-1])
+    mat.rperm = util.readInts(param["rcperm"])        
+    mat.cperm = util.readInts(param["rcperm"])
 
 # read color
-param.setdefault("color", ["solid"])
-if param["color"][-1] == "posneg":
+if param["color"] == "posneg":
     mat.colormap = PosNegColorMap()
-elif param["color"][-1] == "rainbow":
+elif param["color"] == "rainbow":
     mat.colormap = RainbowColorMap()
+else:
+    mat.colormap = readColorMap(param["color"])
 
 
 if "order" in param:
-    mat.order = param["order"][-1]
+    mat.order = param["order"]
 
 # read matrix
 if "comprow" in param:
-    openCompRow(param["comprow"][-1], mat)
+    openCompRow(param["comprow"], mat)
 elif "imat" in param:
-    openImat(param["imat"][-1], mat)
+    openImat(param["imat"], mat)
 elif "lmat" in param:
     if "order" in param:
-        openLabeledMatrix(param["lmat"][-1], mat)
+        openLabeledMatrix(param["lmat"], mat)
     else:
-        openLabeledMatrix(param["lmat"][-1], mat)
+        openLabeledMatrix(param["lmat"], mat)
 elif "dense" in param:
-    openDense(param["dense"][-1], mat)
+    openDense(param["dense"], mat)
 else:
     raise "no matrix specified"
 
 
+# read labels
+if "rowlabels" in param:
+    mat.rowlabels = util.readStrings(param["rowlabels"])
+if "collabels" in param:
+    mat.collabels = util.readStrings(param["collabels"])
+if "rowcollabels" in param:
+    mat.rowlabels = util.readStrings(param["rowcollabels"])
+    mat.collabels = mat.rowlabels
+
+
+# read partitions
+if "rpart" in param:
+    mat.rpart = util.readStrings(param["rpart"])
+if "cpart" in param:
+    mat.cpart = util.readStrings(param["cpart"])
+if "rcpart" in param:
+    mat.rpart = util.readStrings(param["rcpart"])
+    mat.cpart = mat.rpart 
+
+
+# execute python script
+for script in param["REST"]:
+    print "executing", script
+    execfile(script)
+
+
+
 drawMatrix(mat)
-drawBorder(mat.nrows, mat.ncols)
 home()
 
 
