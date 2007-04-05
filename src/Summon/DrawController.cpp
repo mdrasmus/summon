@@ -35,7 +35,9 @@ DrawController::~DrawController()
 void DrawController::ExecCommand(Command &command)
 {
     // route view commands to connected view
-    if (command.GetId() > COMMON_COMMANDS_BEGIN &&
+    // XXX: why did I have this greater than GLUT_COMMANDS_BEGIN
+    //    To prevent an infinite loop (GLUT commands are processed here)
+    if (command.GetId() > GLUT_COMMANDS_END &&
         g_viewAttr.Has(&command))
     {
         m_view->ExecCommand(command);
@@ -43,7 +45,7 @@ void DrawController::ExecCommand(Command &command)
     }
 
     // send visdraw commands that are not for controller to global
-    if (command.GetId() > COMMON_COMMANDS_BEGIN &&
+    if (command.GetId() > GLUT_COMMANDS_END &&
         !g_controllerAttr.Has(&command))
     {
         m_global->ExecCommand(command);
@@ -113,6 +115,16 @@ void DrawController::HotspotClick(Vertex2i pos)
         ExecCommand(*(*i));
         delete (*i);
     }
+}
+
+
+void DrawController::Motion(int x, int y)
+{
+    // notify view that mouse has moved
+    m_view->SetMousePos(x, y);
+    
+    // pass motion event to base class
+    Glut2DController::Motion(x, y);
 }
 
 

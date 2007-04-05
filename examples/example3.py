@@ -1,3 +1,4 @@
+#!/usr/bin/env summon
 # SUMMON examples
 # example3.py - more complex building before add_group()
 

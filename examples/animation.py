@@ -1,3 +1,4 @@
+#!/usr/bin/env summon
 # SUMMON examples
 # animation.py - example of animation
 

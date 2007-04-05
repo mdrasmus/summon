@@ -29,6 +29,8 @@ public:
    
     inline void SetModel(DrawModel *model) { m_model = model; }
    
+    virtual void Motion(int x, int y);
+   
 protected:
     CommandExecutor *m_global;
     DrawView *m_view;

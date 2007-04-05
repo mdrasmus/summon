@@ -14,7 +14,7 @@
 #include "Color.h"
 #include "glutInputs.h"
 #include "glut2DCommands.h"
-#include "commonCommands.h"
+#include "ScriptCommand.h"
 #include "types.h"
 
 
@@ -26,16 +26,17 @@ using namespace std;
 
 
 
-
 // command ids
 enum {
-    VISDRAW_COMMANDS_BEGIN = COMMON_COMMANDS_END + 1,
+    VISDRAW_COMMANDS_BEGIN = GLUT_COMMANDS_END + 1,
     
     // global commands
     GET_WINDOWS_COMMAND,
     GET_WINDOW_COMMAND,
     NEW_WINDOW_COMMAND,
     SET_WINDOW_COMMAND,
+    SET_WINDOW_NAME_COMMAND,
+    GET_WINDOW_NAME_COMMAND,
     CLOSE_WINDOW_COMMAND,
     GET_MODELS_COMMAND,
     GET_MODEL_COMMAND,
@@ -45,6 +46,8 @@ enum {
     DEL_MODEL_COMMAND,
     TIMER_CALL_COMMAND,
     REDRAW_CALL_COMMAND,
+    VERSION_COMMAND,
+    QUIT_COMMAND,
     
     // model commands
     ADD_GROUP_COMMAND,
@@ -65,6 +68,8 @@ enum {
     SET_WINDOW_SIZE_COMMAND,
     GET_WINDOW_SIZE_COMMAND,
     SET_ANTIALIAS_COMMAND,
+    SHOW_CROSSHAIR_COMMAND,
+    SET_CROSSHAIR_COLOR_COMMAND,
     
     // controller commands
     SET_BINDING_COMMAND,
@@ -109,6 +114,9 @@ enum {
     INPUT_KEY_CONSTRUCT,
     INPUT_CLICK_CONSTRUCT,
     INPUT_MOTION_CONSTRUCT,
+    
+    // misc
+    CALL_PROC_COMMAND,    
         
     VISDRAW_COMMANDS_END
 };
@@ -131,6 +139,9 @@ bool ParseMod(Scm lst, int *mod);
 extern CommandAttr g_modelAttr;
 extern CommandAttr g_viewAttr;
 extern CommandAttr g_controllerAttr;
+extern CommandAttr g_globalAttr;
+extern CommandAttr g_glAttr;
+
 
 
 
@@ -146,6 +157,10 @@ extern CommandAttr g_constructAttr;
     RegisterStringCommand(cmd) \
     AddAttr(g_constructAttr)
 
+
+#define RegisterGlobalCommand(cmd) \
+    RegisterStringCommand(cmd) \
+    AddAttr(g_globalAttr)
 
 
 // -----------------------------------------------------------------------------
@@ -198,6 +213,47 @@ public:
     virtual const char *GetUsage() { return "id"; }
     virtual const char *GetDescription() 
     { return "sets the current window"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+    }
+    
+    int windowid;
+};
+
+
+class SetWindowNameCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new SetWindowNameCommand(); }
+    virtual int GetId() { return SET_WINDOW_NAME_COMMAND; }
+
+    virtual const char *GetName() { return "set_window_name"; }
+    virtual const char *GetUsage() { return "id name"; }
+    virtual const char *GetDescription() 
+    { return "sets the name of a window"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "ds", &windowid, &name);
+    }
+    
+    int windowid;
+    string name;
+};
+
+
+class GetWindowNameCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new GetWindowNameCommand(); }
+    virtual int GetId() { return GET_WINDOW_NAME_COMMAND; }
+
+    virtual const char *GetName() { return "get_window_name"; }
+    virtual const char *GetUsage() { return "id"; }
+    virtual const char *GetDescription() 
+    { return "get the name of a window"; }
     
     virtual bool Setup(Scm lst)
     {
@@ -380,6 +436,34 @@ public:
     }
     
     Scm proc;
+};
+
+
+class VersionCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new VersionCommand(); }
+    virtual int GetId() { return VERSION_COMMAND; }
+
+    virtual const char *GetOptionName() { return "-v"; }
+    virtual const char *GetName() { return "version"; }
+    virtual const char *GetUsage() { return ""; }
+    virtual const char *GetDescription() 
+    { return "prints the current version"; }
+};
+
+
+class QuitCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new QuitCommand(); }
+    virtual int GetId() { return QUIT_COMMAND; }
+
+    virtual const char *GetOptionName() { return ""; }
+    virtual const char *GetName() { return "quit"; }
+    virtual const char *GetUsage() { return ""; }
+    virtual const char *GetDescription() 
+    { return "quits summon"; }
 };
 
 
@@ -696,6 +780,59 @@ public:
 };
 
 
+class ShowCrosshairCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new ShowCrosshairCommand(); }
+    virtual int GetId() { return SHOW_CROSSHAIR_COMMAND; }
+
+    virtual const char *GetName() { return "show_crosshair"; }
+    virtual const char *GetUsage() { return "True|False"; }
+    virtual const char *GetDescription() 
+    { return "shows and hides the mouse crosshair"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "b", &enabled);
+    }
+    
+    bool enabled;
+};
+
+
+class SetCrosshairColorCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new SetCrosshairColorCommand(); }
+    virtual int GetId() { return SET_CROSSHAIR_COLOR_COMMAND; }
+
+    virtual const char *GetName() { return "set_crosshair_color"; }
+    virtual const char *GetUsage() { return "red, green, blue[, alpha]"; }
+    virtual const char *GetDescription() 
+    { return "sets mouse crosshair color"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        float r, g, b, a;
+        
+        if (ScmLength(lst) == 3 && 
+            ParseScm(ErrorHelp(), lst, "fff", &r, &g, &b))
+        {
+            color = Color(r, g, b, 1);
+            return true;
+        } else if (ScmLength(lst) == 4 && 
+                   ParseScm(ErrorHelp(), lst, "ffff", &r, &g, &b, &a))
+        {
+            color = Color(r, g, b, a);
+            return true;
+        }
+            return false;
+    }
+    
+    Color color;
+};
+
+
 //----------------------------------------------------------------------------
 // controller commands
 //
@@ -766,10 +903,7 @@ public:
         input = NULL;
         
         // parse input and command from lst
-        if (ParseInput(ScmCar(lst), &input))
-        {
-            return true;
-        }
+        return ParseInput(ScmCar(lst), &input);
     }
     
     Input *input;
@@ -1147,6 +1281,66 @@ public:
 ['shift'], ['ctrl'], ['alt']"; }
     virtual const char *GetDescription() 
     { return "specifies a mouse motion input"; }
+};
+
+
+
+// --------------
+
+class CallProcCommand : public ScriptCommand
+{
+public:
+    CallProcCommand(Scm code = Scm_UNDEFINED) : defined(false)
+    {
+        if (code != Scm_UNDEFINED) {
+            Setup(ScmCons(code, Scm_EOL));
+        }
+    }
+    
+    virtual ~CallProcCommand()
+    {
+        if (defined)  {
+            ScmUngaurd(proc);
+        }
+    }
+    
+    virtual Command* Create() { 
+        if (!defined) {
+            return new CallProcCommand();
+        } else {
+            Scm proc = GetScmProc();
+            return new CallProcCommand(proc);
+        }
+    }
+    virtual int GetId() { return CALL_PROC_COMMAND; }
+
+    virtual const char *GetName() { return "call_proc"; }
+    virtual const char *GetUsage() { return "proc"; }
+    virtual const char *GetDescription() 
+    { return "executes a procedure that takes no arguments"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        if (ScmProcedurep(ScmCar(lst))) {
+            proc = ScmCar(lst);
+            ScmGaurd(proc);
+            defined = true;
+            return true;            
+        } else {
+            Error("argument must be a procedure");
+            return false;
+        }
+    }
+    
+    inline Scm GetScmProc()
+    {
+        return proc;
+    }
+    
+    Scm proc;
+    bool defined;
+    string name;
+    static int procid;
 };
 
 

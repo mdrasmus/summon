@@ -1,3 +1,4 @@
+#!/usr/bin/env summon
 # SUMMON examples
 # tree.py - recursive drawing of a tree
 

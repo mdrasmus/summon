@@ -17,9 +17,9 @@
 import random
 import sys
 
+from summon.core import *
 from summon import *
-from summonlib import *
-from summonlib import shapes, util, plotting
+from summon import shapes, util, plotting
 
 # command line options
 options = [
@@ -69,7 +69,7 @@ options = [
         {"single": True,
          "default": "solid"}],
     ["", "cutoff=", "cutoff", "<value>",
-        {"default": [-1e1000],
+        {"default": -1e1000,
          "parser": float,
          "single": True}]
 ]
@@ -341,7 +341,7 @@ def openDense(filename, mat):
     for line in infile:
         entries = map(float, line.split())
         for c in xrange(len(entries)):
-            if entries[c] > cutoff:
+            if entries[c] >= cutoff:
                 rows.append(r)
                 cols.append(c)
                 vals.append(entries[c])

@@ -24,8 +24,8 @@ public:
     Element(int id = -1) : 
         m_id(id), 
         m_parent(NULL),
-        m_dynamic(false),
-        m_visible(true)        
+        m_visible(true),
+        m_dynamic(false)                
     {}
     
     virtual ~Element()
@@ -56,6 +56,7 @@ public:
                 return i;
             }
         }
+        return End();
     }
     
     inline int GetId() { return m_id; }

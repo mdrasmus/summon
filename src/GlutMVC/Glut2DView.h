@@ -16,7 +16,7 @@ namespace Vistools
 
 class Glut2DView : public GlutView {
 public:
-    Glut2DView(int width = 800, int height = 600);
+    Glut2DView(int width = 800, int height = 600, const char *name="");
     virtual ~Glut2DView();
 
     virtual void ExecCommand(Command &command);
@@ -29,18 +29,35 @@ public:
     void ZoomTo(float x, float y);
     void SetFocus(float x, float y);
 
-    // accessors
-    Vertex2i WindowToScreen(int x, int y);
-    Vertex2f ScreenToWorld(int x, int y);
-    Vertex2i WorldToScreen(float x, float y);   
-    inline Vertex2f WindowToWorld(int x, int y) {
-        Vertex2i pt = WindowToScreen(x, y);
-        return ScreenToWorld(pt.x, pt.y);
-    }
+    // accessors    
     inline Vertex2f GetTranslate() { return m_trans; }
     inline Vertex2f GetZoom() { return m_zoom; }
 
     static const float MIN_ZOOM = .01;
+    
+    // coordinate system conversions
+    inline Vertex2i Glut2DView::WindowToScreen(int x, int y)
+    {
+        return Vertex2i(x, m_windowSize.y - y);
+    }
+
+    
+    inline Vertex2f Glut2DView::ScreenToWorld(int x, int y)
+    {
+        return Vertex2f((x - m_trans.x - m_focus.x) / m_zoom.x + m_focus.x,
+                        (y - m_trans.y - m_focus.y) / m_zoom.y + m_focus.y);
+    }
+
+    inline Vertex2i Glut2DView::WorldToScreen(float x, float y)
+    {
+        return Vertex2i(int(m_trans.x + m_focus.x + m_zoom.x * (x - m_focus.x)),
+                        int(m_trans.y + m_focus.y + m_zoom.y * (y - m_focus.y)));
+    }
+
+    inline Vertex2f WindowToWorld(int x, int y) {
+        return Vertex2f((x - m_trans.x - m_focus.x) / m_zoom.x + m_focus.x,
+                        (m_windowSize.y - y - m_trans.y - m_focus.y) / m_zoom.y + m_focus.y);
+    }
 
 protected:
     // callbacks

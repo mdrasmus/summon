@@ -1,11 +1,3 @@
-#
-# Scripting engine selection
-#
-VISTOOLS_SCHEME = 1
-VISTOOLS_PYTHON = 2
-
-VISTOOLS_SCRIPT = $(VISTOOLS_PYTHON)
-
 
 CC = g++
 AR = ar
@@ -21,15 +13,15 @@ MY_LIBS = \
         $(PREFIX)/GlutMVC/libGlutMVC.a \
         $(PREFIX)/MVC/libMVC.a 
 
-COMPILE = -c -g $(INCLUDE) \
-          -DVISTOOLS_SCRIPT=$(VISTOOLS_SCRIPT) \
-          -DVISTOOLS_SCHEME=$(VISTOOLS_SCHEME) \
-          -DVISTOOLS_PYTHON=$(VISTOOLS_PYTHON)
+#  -DNDEBUG
 
+COMPILE = -c -g \
+    -Wall -g -fno-strict-aliasing -O2 -fPIC -Wstrict-prototypes  \
+    $(INCLUDE) 
 
 # Profiling code
 ifdef PROFILE
-    COMPILE := $(COMPILE) -pg
+    COMPILE := $(COMPILE) -pg 
 endif
 
 #

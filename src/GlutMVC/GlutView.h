@@ -9,17 +9,21 @@
 #define GLUT_VIEW_H
 
 #include <vector>
+#include <string>
 #include <GL/glut.h>
 #include "types.h"
 #include "View.h"
 #include "Command.h"
 
+
 namespace Vistools
 {
 
+using namespace std;
+
 class GlutView : public View {
 public:
-    GlutView(int width = 800, int height = 600);
+    GlutView(int width = 800, int height = 600, const char *name="");
     virtual ~GlutView();
 
     virtual void ExecCommand(Command &command);
@@ -41,6 +45,14 @@ public:
     static void GlutDisplay();
     static void GlutReshape(int width, int height);
 
+    inline void SetName(char *name) {
+        m_name = name;
+        glutSetWindowTitle(name);
+    }
+    
+    inline string GetName()
+    { return m_name; }
+
 protected:   
     inline void MakeCurrentWindow() { glutSetWindow(m_window); }
 
@@ -49,7 +61,8 @@ protected:
     virtual void Reshape(int width, int height);
 
     int m_window;
-    Vertex2i m_windowSize;    
+    Vertex2i m_windowSize;
+    string m_name;
 };
 
 }

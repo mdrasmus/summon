@@ -29,7 +29,7 @@ void Binding::AddBinding(Input *input, Command *command)
     int hash = input->GetHash();
 
     // increase vector if necessary
-    while (input->GetId() >= m_bindings.size()) {
+    while ((unsigned int) input->GetId() >= m_bindings.size()) {
         m_bindings.push_back(new BindType(TABLE_SIZE, (CommandList*) NULL));
     }
     
@@ -56,7 +56,7 @@ void Binding::ClearBinding(Input &input)
 {
     int hash = input.GetHash();
     
-    if (input.GetId() >= 0 && input.GetId() < m_bindings.size()) {
+    if (input.GetId() >= 0 && (unsigned int) input.GetId() < m_bindings.size()) {
         CommandList *commands = m_bindings[input.GetId()]->Get(hash);
         
         if (commands) {
@@ -78,7 +78,7 @@ list<Command*> Binding::GetCommand(Input &input)
     int hash = input.GetHash();
     CommandList cmds;
     
-    if (input.GetId() < 0 || input.GetId() >= m_bindings.size()) {
+    if (input.GetId() < 0 || (unsigned int) input.GetId() >= m_bindings.size()) {
         return cmds;
     } else {
         CommandList *commands = m_bindings[input.GetId()]->Get(hash);

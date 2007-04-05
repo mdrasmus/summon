@@ -19,7 +19,7 @@ $(IMAGES) : %.pdf: %.eps
 	epstopdf $<
 
 reference.tex:
-	summon ../examples/summon/help.py reference.tex > /dev/null
+	summon help.py reference.tex > /dev/null
 
 clean:
 	rm -rf $(PDF) $(IMAGES)

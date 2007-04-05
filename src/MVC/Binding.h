@@ -34,11 +34,11 @@ public:
     CommandList GetCommand(Input &input);
     inline vector<Input*> *GetInputs() { return &m_inputs; }
     inline void Clear() {
-        for (int i=0; i<m_bindings.size(); i++)
+        for (unsigned int i=0; i<m_bindings.size(); i++)
             delete m_bindings[i];
-        for (int i=0; i<m_inputs.size(); i++)
+        for (unsigned int i=0; i<m_inputs.size(); i++)
             delete m_inputs[i];
-        for (int i=0; i<m_cmds.size(); i++)
+        for (unsigned int i=0; i<m_cmds.size(); i++)
             delete m_cmds[i];
         
         m_bindings.clear();            

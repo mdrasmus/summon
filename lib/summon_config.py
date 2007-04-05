@@ -1,13 +1,17 @@
 #
 # Default configuration of Summon
 #
-# To make your own config file, place a config file called 'summon_config.py' 
+# To make your own config file, place a config file called '.summon_config'
+# in your HOME directory.  Alternatively, you can place 'summon_config.py' 
 # in a directory in your python path.  Ensure that the dirctory appears BEFORE 
 # .../summon/lib so that the new config file has precedence over this one.
+# 
 #
 
-from summon import *
-from summonlib import *
+import sys
+from summon.core import *
+import summon
+
 
 
 clear_all_bindings()
@@ -39,12 +43,14 @@ set_binding(input_motion("right", "down", "shift"), "zoomy")
 set_binding(input_click("middle", "up"), "hotspot_click")
 set_binding(input_click("left", "up", "ctrl"), "hotspot_click")
 
+
 # misc
 set_binding(input_key("h"), "home")
-set_binding(input_key("q"), "quit")
+set_binding(input_key("q"), close_window)
 set_binding(input_key("l", "ctrl"), toggle_aliasing)
-set_binding(input_key("d", "ctrl"), dupWindow)
+set_binding(input_key("x", "ctrl"), toggle_crosshair)
+set_binding(input_key("d", "ctrl"), summon.dupWindow)
 
 
 # add print screen bindings
-import summonlib.svg
+import summon.svg

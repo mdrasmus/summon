@@ -18,20 +18,33 @@
 namespace Vistools
 {
 
-DrawView::DrawView(DrawModel *model, int width, int height) :
-    Glut2DView(width, height),
+DrawView::DrawView(DrawModel *model, int width, int height, const char *name) :
+    Glut2DView(width, height, name),
     m_worldModel(model),
     m_screenModel(NULL),
+    m_bgColor(0,0,0,0),
     m_active(false),
-    m_bgColor(0,0,0,1),
     m_executingTasks(false),
-    m_listener(NULL)
+    m_listener(NULL),
+    m_showCrosshair(false),
+    m_crosshairColor(1,1,1,1),
+    m_mousePos(0,0)
 {
     SetVisible(0, 0, width, height);
+
     
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE);
+    glEnable(GL_MULTISAMPLE);
+    glEnable(GL_MULTISAMPLE_ARB);
     glEnable(GL_POLYGON_SMOOTH);
     glEnable(GL_LINE_SMOOTH);
-    glEnable(GL_POINT_SMOOTH);
+    glEnable(GL_POINT_SMOOTH);    
+    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+    glEnable(GL_BLEND);
 }
 
 
@@ -43,11 +56,12 @@ DrawView::~DrawView()
 void DrawView::ExecCommand(Command &command)
 {
     MakeCurrentWindow();
-
+    
     // don't execute anything without a model
     if (!m_worldModel) {
         return;
     }
+
 
     switch (command.GetId()) {
         case SET_BGCOLOR_COMMAND:
@@ -112,6 +126,14 @@ void DrawView::ExecCommand(Command &command)
 
             break;
         
+        case SHOW_CROSSHAIR_COMMAND:
+            m_showCrosshair = ((ShowCrosshairCommand*)&command)->enabled;
+            break;
+        
+        case SET_CROSSHAIR_COLOR_COMMAND:
+            m_crosshairColor = ((SetCrosshairColorCommand*)&command)->color;
+            break;
+        
         case REDISPLAY_COMMAND:
             NoteModelChange();
             Glut2DView::ExecCommand(command);
@@ -150,11 +172,13 @@ void DrawView::Home()
 }
 
 
+// TODO: everytime the model is changed all tasks are discarded.  Instead only
+// those tasks affect by the change should ideally be altered.
 void DrawView::ExecuteTasks()
 {
     m_executingTasks = true;
 
-    for (int i=0; i<m_tasks.size(); i++) {
+    for (unsigned int i=0; i<m_tasks.size(); i++) {
         switch (m_tasks[i]->GetId()) {
             case TASK_DRAWLIST:
                 glCallList(m_tasks[i]->m_drawlist);
@@ -169,6 +193,33 @@ void DrawView::ExecuteTasks()
     }
     
     m_executingTasks = false;
+}
+
+
+void DrawView::Display()
+{
+    glClearColor(m_bgColor.r, m_bgColor.g, m_bgColor.b, m_bgColor.a);
+
+    // clear screen and initialize coordinate system
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    // draw world in its own coordinate system
+    glPushMatrix();
+    TransformWorld();
+    DrawWorld();
+    glPopMatrix();   
+
+    // draw graphics with the screen coordinate system
+    DrawScreen();
+    
+    // draw crosshair
+    if (m_showCrosshair)
+        DrawCrosshair();
+    
+    // display new frame
+    glutSwapBuffers();
 }
 
 
@@ -215,6 +266,38 @@ void DrawView::DrawScreen()
     GroupTable *table = m_screenModel->GetGroupTable();
     DrawElement(table, table->GetGroup(table->GetRoot()));
 
+}
+
+
+void DrawView::SetMousePos(int x, int y) {
+    m_mousePos.x = x;
+    m_mousePos.y = y;
+    
+    if (m_showCrosshair)
+        Redisplay();
+}
+
+void DrawView::DrawCrosshair()
+{
+    // get dimensions
+    Vertex2i pos = WindowToScreen(m_mousePos.x, m_mousePos.y);
+    Vertex2i winsize = GetWindowSize();
+    
+    // draw crosshair
+    glDisable(GL_LINE_SMOOTH);
+    
+    glBegin(GL_LINES);
+    glColor4f(m_crosshairColor.r, 
+              m_crosshairColor.g, 
+              m_crosshairColor.b, 
+              m_crosshairColor.a);
+    glVertex3i(0, pos.y, 0);
+    glVertex3i(winsize.x, pos.y, 0);
+    glVertex3i(pos.x, 0, 0);
+    glVertex3i(pos.x, winsize.y, 0);
+    glEnd();
+    
+    glEnable(GL_LINE_SMOOTH);
 }
 
 
@@ -406,27 +489,13 @@ Vertex2f JustifyBox(int justified, Vertex2f pos1, Vertex2f pos2,
 
 bool DrawView::WithinView(const Vertex2f &pos1, const Vertex2f &pos2)
 {
-    Vertex2i size = GetWindowSize();
+    Vertex2i size = GetWindowSize();    
+    Vertex2i spos1 = WorldToScreen(pos1.x, pos1.y);
+    Vertex2i spos2 = WorldToScreen(pos2.x, pos2.y);
     
-    GLint    viewport[4];
-    GLdouble model[16], project[16];
-    GLdouble x1, y1, x2, y2, z;
-    
-    // get openGL matrices   
-    glGetIntegerv(GL_VIEWPORT, viewport);
-    glGetDoublev(GL_MODELVIEW_MATRIX, model);
-    glGetDoublev(GL_PROJECTION_MATRIX, project);
-
-    // perform projections
-    gluProject(pos1.x, pos1.y, 0, model, project, viewport, &x1, &y1, &z);
-    gluProject(pos2.x, pos2.y, 0, model, project, viewport, &x2, &y2, &z);
-    
-    if (x1 > x2) swap(x1, x2);
-    if (y1 > y2) swap(y1, y2);
-        
     // find overlap
-    return (x2 >= 0 && x1 <= size.x && 
-            y2 >= 0 && y1 <= size.y);
+    return (spos2.x >= 0 && spos1.x <= size.x && 
+            spos2.y >= 0 && spos1.y <= size.y);
 }
 
 
@@ -441,18 +510,18 @@ void DrawView::DrawTextElement(TextElement *elm)
     
     // do not draw text that is not visible
     // get bounding visible view
-    if (! WithinView(pos1, pos2)) {
+    if (! WithinView(elm->envpos1, elm->envpos2)) {
         return;
-    }    
-       
+    }
     
     if (elm->kind == TextElement::KIND_BITMAP) {
         void *font = GLUT_BITMAP_8_BY_13;
+        Vertex2f zoom =  GetZoom();
 
         // find text on-screen size
-        float textWidth  = glutBitmapLength(font, text) / GetZoom().x 
+        float textWidth  = glutBitmapLength(font, text) / zoom.x
                             / elm->scale.x;
-        float textHeight = 13.0 / GetZoom().y / elm->scale.y;
+        float textHeight = 13.0 / zoom.y / elm->scale.y;
         float boxWidth   = pos2.x - pos1.x;
         float boxHeight  = pos2.y - pos1.y;
 
@@ -491,6 +560,7 @@ void DrawView::DrawTextElement(TextElement *elm)
         for (; *chr; chr++)
             glutStrokeCharacter(font, *chr);
         glPopMatrix();
+        
     } else if (elm->kind == TextElement::KIND_CLIP) {
         void *font = GLUT_STROKE_MONO_ROMAN;
         float fontSize = 119.05;
@@ -534,9 +604,9 @@ void DrawView::DrawTextElement(TextElement *elm)
         glPushMatrix();
         
         // do not let user scaling affect text scaling
-        glScalef(1/zoom.x, 1/zoom.y, 1);
+        glScalef(1.0/zoom.x, 1.0/zoom.y, 1.0);
         
-        glTranslatef(pos.x, pos.y, 0);        
+        glTranslatef(pos.x, pos.y, 0.0);        
         
         
         glScalef(textHeight/fontSize, textHeight/fontSize, 
@@ -559,7 +629,7 @@ void DrawView::DrawText(void *font, string text, float x, float y)
 void DrawView::SetBgColor(Color &color)
 {
     m_bgColor = color;
-    glClearColor(color.r, color.g, color.b, color.a);
+    m_bgColor.a = 0.0;
 }
 
 

@@ -1,8 +1,4 @@
-LIBS = -lglut -lGL -lGLU -lpthread -lreadline \
-       -lSDL -lncurses
-CYGWIN_LIBS = -L/lib/w32api -L/usr/local/lib -lglut32 -lopengl32 -lreadline \
-	-lSDL -lncurses -lglu32
-PROG = summon
+PROG = summon_core.so
 OBJS = drawCommands.o \
        DrawController.o \
        DrawModel.o \
@@ -12,13 +8,15 @@ OBJS = drawCommands.o \
        Transform.o \
        Summon.o 
 
+
 ifdef PROFILE
     LIBS := $(LIBS) -pg
 endif
 
 
-LIBS := $(LIBS) -lpython2.4  -lutil
-CYGWIN_LIBS := $(CYGWIN_LIBS) -L/lib/python2.4/config -lpython2.4
+LIBS = -lglut -lGL -lSDL -lutil -lpython2.4
+CYGWIN_LIBS = -L/lib/w32api -L/usr/local/lib -lglut32 -lopengl32 \
+	-lSDL -L/lib/python2.4/config -lpython2.4
 
 
 
@@ -28,13 +26,13 @@ include ../Makefile.in
 
 
 $(PROG): $(OBJS) $(MY_LIBS)
-	$(CC) -o $(PROG) $(OBJS) $(MY_LIBS) $(LIBS)
+	$(CC) -pthread -shared $(OBJS) $(MY_LIBS) $(LIBS) -o $(PROG)
 
-$(PROG).exe: $(OBJS) $(MY_LIBS)
-	$(CC) -o $(PROG).exe $(OBJS) $(MY_LIBS) $(CYGWIN_LIBS) 
+#$(PROG).exe: $(OBJS) $(MY_LIBS)
+#	$(CC) -o $(PROG).exe $(OBJS) $(MY_LIBS) $(CYGWIN_LIBS) 
 
 install: $(PROG)
-	cp $(PROG) ../../bin
+	cp $(PROG) ../../lib/
 
 
 test2:

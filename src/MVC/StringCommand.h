@@ -14,6 +14,7 @@
 #include "Command.h"
 
 
+
 namespace Vistools
 {
 
@@ -63,6 +64,11 @@ public:
 
 extern CommandAttr g_stringAttr;
 vector<StringCommand*> GetAllStringCommands();
+StringCommand *GetCommand(vector<StringCommand*> &cmds, 
+                               int argc, char **argv, int *consume, 
+                               bool option = false, bool showError = true);
+
+
 
 extern vector<StringCommand*> g_usageList;
 inline vector<StringCommand*> GetUsageList() { return g_usageList; }

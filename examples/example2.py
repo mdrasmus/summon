@@ -1,3 +1,4 @@
+#!/usr/bin/env summon
 # SUMMON examples
 # example2.py - transforms and use of python functions
 

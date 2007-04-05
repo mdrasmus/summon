@@ -1,3 +1,4 @@
+#!/usr/bin/env summon
 # SUMMON examples
 # example1.py - basic commands
 

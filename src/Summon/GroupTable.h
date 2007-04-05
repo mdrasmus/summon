@@ -36,13 +36,13 @@ public:
     inline void Clear()
     { RemoveGroup(m_root); }
 
-    inline Group *GetRootGroup() { GetGroup(m_root); }
+    inline Group *GetRootGroup() { return GetGroup(m_root); }
     inline int GetRoot() { return m_root; }
-    inline int SetRoot(int id) { m_root = id; }
+    inline void SetRoot(int id) { m_root = id; }
     
 protected:    
     
-    enum { TABLE_SIZE = 2003 };
+    enum { TABLE_SIZE = 10003 };
     
     int m_root;
     HashTable<int, Group*, HashInt> m_table;

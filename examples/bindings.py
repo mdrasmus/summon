@@ -1,3 +1,4 @@
+#!/usr/bin/env summon
 # SUMMON examples
 # bindings.py - example use of bindings
 #

@@ -53,7 +53,7 @@ void DrawModel::ExecCommand(Command &command)
             RemoveGroupCommand *remove = (RemoveGroupCommand*) &command;
             
             // loop through group ids
-            for (int i=0; i<remove->groupids.size(); i++) {
+            for (unsigned int i=0; i<remove->groupids.size(); i++) {
                 RemoveGroup(remove->groupids[i]);
             }
             
@@ -635,6 +635,15 @@ Element *DrawModel::BuildText(BuildEnv &env, Scm code, int kind)
     textElm->scale = textElm->scale - orgin;
     Vertex2f pos1(x1, y1), pos2(x2, y2);
     textElm->SetRect(pos1, pos2);
+
+    // find environment position
+    env.trans.VecMult(x1, y1, &textElm->envpos1.x, &textElm->envpos1.y);
+    env.trans.VecMult(x2, y2, &textElm->envpos2.x, &textElm->envpos2.y);
+    if (textElm->envpos1.x > textElm->envpos2.x)
+        swap(textElm->envpos1.x, textElm->envpos2.x);
+    if (textElm->envpos1.y > textElm->envpos2.y)
+        swap(textElm->envpos1.y, textElm->envpos2.y);
+
     
     return textElm;
 }
@@ -740,7 +749,7 @@ Scm DrawModel::GetGroup(BuildEnv &env, Element *elm)
         env.trans.VecMult(text->pos1.x, text->pos1.y, &x1, &y1);
         env.trans.VecMult(text->pos2.x, text->pos2.y, &x2, &y2);
         
-        int id;
+        int id = 0;
         
         switch (text->kind) {
             case TextElement::KIND_BITMAP:

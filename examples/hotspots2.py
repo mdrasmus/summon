@@ -1,3 +1,4 @@
+#!/usr/bin/env summon
 # SUMMON examples
 # hotspots.py - example of hotspots
 

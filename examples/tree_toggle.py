@@ -1,3 +1,4 @@
+#!/usr/bin/env summon
 # SUMMON examples
 # tree_toggle.py - recursive drawing of a tree with node toggles
 

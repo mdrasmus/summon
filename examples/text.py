@@ -1,3 +1,4 @@
+#!/usr/bin/env summon
 # SUMMON examples
 # text.py - example of text
 #

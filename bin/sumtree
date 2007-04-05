@@ -1,11 +1,10 @@
 #!/usr/bin/env summon
 
 import sys
-import summonlib.tree
-from summonlib import util
-from summon import *
+from summon.core import *
+from summon import sumtree
+from summon import util
 
-sumtree = summonlib.tree
 
 
 # parse args

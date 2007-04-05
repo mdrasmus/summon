@@ -1,3 +1,4 @@
+#!/usr/bin/env summon
 # SUMMON examples
 # tree_big.py - recursive drawing of a BIG tree
 

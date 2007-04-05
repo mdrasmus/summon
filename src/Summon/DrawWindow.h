@@ -24,10 +24,11 @@ namespace Vistools
 class DrawWindow
 {
 public:
-    DrawWindow(int id, CommandExecutor *global) :
+    DrawWindow(int id, CommandExecutor *global,
+               int width=400, int height=400, const char *name="") :
         m_id(id),
         m_global(global),
-        m_view(NULL),
+        m_view(NULL, width, height, name),
         m_controller(global, &m_view, NULL),
         m_worldModel(NULL),
         m_screenModel(NULL)
@@ -70,7 +71,7 @@ public:
             model->AddView(&m_view);
         }
         m_view.Redisplay();
-    }
+    }    
     
     inline DrawModel *GetWorldModel() { return m_worldModel; }
     inline DrawModel *GetScreenModel() { return m_screenModel; }    
@@ -78,6 +79,12 @@ public:
     
     inline DrawView *GetView() { return &m_view; }
     inline DrawController *GetController() { return &m_controller; }
+    
+    inline void SetName(string name)
+    { m_view.SetName((char*) name.c_str()); }
+    
+    inline string GetName()
+    { return m_view.GetName(); }
     
 protected:
     int m_id;

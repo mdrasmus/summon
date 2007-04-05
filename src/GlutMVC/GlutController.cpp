@@ -18,9 +18,12 @@ namespace Vistools
 std::vector<GlutController*> g_controllers;
 
 
-GlutController::GlutController(int window)
+GlutController::GlutController(int window):
+    m_button(0),
+    m_state(GLUT_UP),
+    m_mod(0)
 {
-    if (window >= g_controllers.size()) {
+    if ((unsigned int) window >= g_controllers.size()) {
         g_controllers.resize(window+1);
     }
     g_controllers[window] = this;
@@ -29,6 +32,7 @@ GlutController::GlutController(int window)
     glutKeyboardFunc(GlutController::GlutKey);
     glutSpecialFunc(GlutController::GlutSpecialKey);
     glutMotionFunc(GlutController::GlutMotion);
+    glutPassiveMotionFunc(GlutController::GlutMotion);
     glutMouseFunc(GlutController::GlutMouseClick);
 }
 
@@ -50,22 +54,30 @@ Vertex2i GlutController::GetMousePos()
    
 void GlutController::GlutKey(unsigned char key, int x, int y)
 {
+    PyGILState_STATE gstate = PyGILState_Ensure();
     g_controllers[glutGetWindow()]->Key(key, x, y);
+    PyGILState_Release(gstate);
 }
 
 void GlutController::GlutSpecialKey(int key, int x, int y)
 {
+    PyGILState_STATE gstate = PyGILState_Ensure();
     g_controllers[glutGetWindow()]->SpecialKey(key, x, y);
+    PyGILState_Release(gstate);    
 }
 
 void GlutController::GlutMotion(int x, int y)
 {
+    PyGILState_STATE gstate = PyGILState_Ensure();
     g_controllers[glutGetWindow()]->Motion(x, y);
+    PyGILState_Release(gstate);
 }
 
 void GlutController::GlutMouseClick(int button, int state, int x, int y)
 {
+    PyGILState_STATE gstate = PyGILState_Ensure();
     g_controllers[glutGetWindow()]->MouseClick(button, state, x, y);
+    PyGILState_Release(gstate);    
 }
 
 
@@ -135,4 +147,4 @@ void GlutController::MouseClick(int button, int state, int x, int y)
 
 
 
-}
+} // namespace Vistools

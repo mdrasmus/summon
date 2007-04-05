@@ -14,8 +14,8 @@
 namespace Vistools
 {
 
-Glut2DView::Glut2DView(int width, int height) :
-   GlutView(width, height),
+Glut2DView::Glut2DView(int width, int height, const char *name) :
+   GlutView(width, height, name),
    m_trans(0, 0),
    m_zoom(1.0, 1.0)
 {
@@ -137,6 +137,7 @@ void Glut2DView::Reshape(int w, int h)
 // drawing
 void Glut2DView::DrawWorld()
 {
+   // default testing drawing
    glColor3f(1, 1, 1);
    glBegin(GL_LINES);
       glVertex3f(0, 0, 0);
@@ -158,6 +159,7 @@ void Glut2DView::DrawWorld()
 
 void Glut2DView::DrawScreen()
 {
+   // default testing drawing
    glColor3f(1, 1, 0);
    glBegin(GL_LINES);
       glVertex3f(0, -10, 0);
@@ -168,63 +170,6 @@ void Glut2DView::DrawScreen()
 }
 
 
-Vertex2i Glut2DView::WindowToScreen(int x, int y)
-{
-    return Vertex2i(x, m_windowSize.y - y);
-}
-
-
-Vertex2f Glut2DView::ScreenToWorld(int x, int y)
-{
-   GLint    viewport[4];
-   GLdouble model[16], project[16];
-   GLint    gl_y;       // must flip screen y coordinate for openGL
-   GLdouble wx, wy, wz; // unprojected coordinates
-
-   // setup world trasformation
-   glMatrixMode(GL_MODELVIEW);
-   glPushMatrix();
-   glLoadIdentity();
-   TransformWorld();
-
-   // get openGL matrices in world coordinate system
-   glGetIntegerv(GL_VIEWPORT, viewport);
-   glGetDoublev(GL_MODELVIEW_MATRIX, model);
-   glGetDoublev(GL_PROJECTION_MATRIX, project);
-
-   // perform unproject
-   gluUnProject((GLdouble) x, (GLdouble) y, 0.0, 
-                model, project, viewport, &wx, &wy, &wz);
-   glPopMatrix();
-   
-   // return world coords
-   return Vertex2f(float(wx), float(wy));
-}
-
-Vertex2i Glut2DView::WorldToScreen(float x, float y)
-{
-   GLint    viewport[4];
-   GLdouble model[16], project[16];
-   GLdouble winx, winy, winz;
-
-   // setup world trasformation
-   glMatrixMode(GL_MODELVIEW);
-   glPushMatrix();
-   glLoadIdentity();
-   TransformWorld();
-
-   // get openGL matrices
-   glGetIntegerv(GL_VIEWPORT, viewport);
-   glGetDoublev(GL_MODELVIEW_MATRIX, model);
-   glGetDoublev(GL_PROJECTION_MATRIX, project);
-
-   // perform projection
-   gluProject(x, y, 0, model, project, viewport, &winx, &winy, &winz);
-   glPopMatrix();
-   
-   // return screen coords
-   return Vertex2i(int(winx), int(winy));
-}
 
 
 // manipulation
@@ -237,18 +182,18 @@ void Glut2DView::SetVisible(float x, float y, float x2, float y2)
     Vertex2f worldTop(std::max(x, x2), std::max(y, y2));
     Vertex2f worldSize = worldTop - worldBottom;
     Vertex2f worldCenter = (worldTop + worldBottom);
-    worldCenter.x /= 2;
-    worldCenter.y /= 2;
+    worldCenter.x /= 2.0;
+    worldCenter.y /= 2.0;
     
     // can't zoom to fit window on a point
-    if (worldSize.x == 0 || worldSize.y == 0)
+    if (worldSize.x == 0.0 || worldSize.y == 0.0)
         return;
 
     // determine whether the heights of the world and window are tight
     bool heightTight;
     float winAspect = m_windowSize.x / float(m_windowSize.y);
     
-    if (worldSize.y == 0) {
+    if (worldSize.y == 0.0) {
         heightTight = false;
     } else {
        // find proper world rect based on window aspect ratio       

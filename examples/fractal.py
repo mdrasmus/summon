@@ -1,3 +1,5 @@
+#!/usr/bin/env summon
+
 from summon import *
 from math import *
 from summonlib import util

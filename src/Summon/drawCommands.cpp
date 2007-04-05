@@ -15,29 +15,43 @@ namespace Vistools
 
 using namespace std;
 
+
+
+CommandAttr g_globalAttr;
 CommandAttr g_constructAttr;
 CommandAttr g_modelAttr;
 CommandAttr g_viewAttr;
 CommandAttr g_controllerAttr;
+CommandAttr g_glAttr;
 
+int CallProcCommand::procid = 0;
 
 
 void drawCommandsInit()
 {
-    commonCommandsInit();
     glutCommandsInit();
     
 #   define g() AddAttr(g_globalAttr)
 #   define m() AddAttr(g_modelAttr)    
 #   define v() AddAttr(g_viewAttr)    
 #   define c() AddAttr(g_controllerAttr)
+#   define gl() AddAttr(g_glAttr)
+
+    // add glAttr to glut commands
+    g_glAttr.Add(new TranslateCommand());
+    g_glAttr.Add(new ZoomCommand());
+    g_glAttr.Add(new ZoomXCommand());
+    g_glAttr.Add(new ZoomYCommand());
+    g_glAttr.Add(new FocusCommand());
     
     // global commands
     RegisterScriptCommand(GetWindowsCommand)    g()
     RegisterScriptCommand(GetWindowCommand)     g()
-    RegisterScriptCommand(NewWindowCommand)     g()
-    RegisterScriptCommand(SetWindowCommand)     g()
-    RegisterScriptCommand(CloseWindowCommand)   g()
+    RegisterScriptCommand(NewWindowCommand)     g() gl()
+    RegisterScriptCommand(SetWindowCommand)     g() gl()
+    RegisterScriptCommand(SetWindowNameCommand) g() gl()
+    RegisterScriptCommand(GetWindowNameCommand) g()    
+    RegisterScriptCommand(CloseWindowCommand)   g() gl()
     RegisterScriptCommand(GetModelsCommand)     g()
     RegisterScriptCommand(GetModelCommand)      g()
     RegisterScriptCommand(NewModelCommand)      g()
@@ -46,6 +60,8 @@ void drawCommandsInit()
     RegisterScriptCommand(DelModelCommand)      g()
     RegisterScriptCommand(TimerCallCommand)     g()
     RegisterScriptCommand(RedrawCallCommand)    g()
+    RegisterScriptCommand(VersionCommand)       g()
+    RegisterScriptCommand(QuitCommand)          g()
     
     // model commands
     RegisterScriptCommand(AddGroupCommand)      m()
@@ -58,14 +74,16 @@ void drawCommandsInit()
     RegisterScriptCommand(GetRootIdCommand)     m()
     
     // view commands                      
-    RegisterScriptCommand(HomeCommand)          v()
-    RegisterScriptCommand(SetBgColorCommand)    v()
-    RegisterScriptCommand(GetBgColorCommand)    v()
-    RegisterScriptCommand(SetVisibleCommand)    v()
-    RegisterScriptCommand(GetVisibleCommand)    v()
-    RegisterScriptCommand(SetWindowSizeCommand) v()
-    RegisterScriptCommand(GetWindowSizeCommand) v()
-    RegisterScriptCommand(SetAntialiasCommand)  v()    
+    RegisterScriptCommand(HomeCommand)              v() gl()
+    RegisterScriptCommand(SetBgColorCommand)        v() gl()
+    RegisterScriptCommand(GetBgColorCommand)        v()
+    RegisterScriptCommand(SetVisibleCommand)        v()
+    RegisterScriptCommand(GetVisibleCommand)        v()
+    RegisterScriptCommand(SetWindowSizeCommand)     v() gl()
+    RegisterScriptCommand(GetWindowSizeCommand)     v()
+    RegisterScriptCommand(SetAntialiasCommand)      v() gl()
+    RegisterScriptCommand(ShowCrosshairCommand)     v()
+    RegisterScriptCommand(SetCrosshairColorCommand) v()
 
     // controller commands    
     RegisterScriptCommand(SetBindingCommand)       c()
@@ -110,10 +128,13 @@ void drawCommandsInit()
     RegisterConstruct(InputClickConstruct)
     RegisterConstruct(InputMotionConstruct)
 
+    RegisterScriptCommand(CallProcCommand) g()
+
 #   undef g
 #   undef m
 #   undef v
 #   undef c
+#   undef gl
 
 }
 
