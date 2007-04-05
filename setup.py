@@ -46,7 +46,7 @@ setup(
     download_url='http://people.csail.mit.edu/rasmus/summon/download/summon-1.6.tar.gz',
     
     classifiers=[
-          'Development Status :: 5 - Production/Stable'
+          'Development Status :: 5 - Production/Stable',
           'Environment :: Console',
           'Environment :: Win32 (MS Windows)',
           'Environment :: X11 Applications',
