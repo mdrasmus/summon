@@ -19,9 +19,13 @@ def load_config():
     config_file = os.path.join(os.environ["HOME"], ".summon_config")
     if not os.path.exists(config_file):
         # loof for config in python paths
-        config_file = env.findFile('summon_config.py', sys.path)
+        try:
+            import summon_config
+            reload(summon_config)
+        except:
+            print "could not import summon_config"
     
-    if config_file != None:
+    else:
         execfile(config_file)
 
 #
