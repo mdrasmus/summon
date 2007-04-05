@@ -7,8 +7,8 @@
 #
 
 
-from summon import *
-from summonlib import shapes
+from summon.core import *
+from summon import shapes
 
 # color background boxes
 #   save the group id of each box so we can manipulate it later

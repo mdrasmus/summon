@@ -3,8 +3,8 @@
 # animation.py - example of animation
 
 # make summon commands available
-from summon import *
-from summonlib import shapes
+from summon.core import *
+from summon import shapes
 import math, random
 
 # clear the screen of all drawing

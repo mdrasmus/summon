@@ -1,8 +1,8 @@
 #!/usr/bin/env summon
 
-from summon import *
 from math import *
-from summonlib import util
+from summon.core import *
+from summon import util
 
 def fractal(depth, offset):
     if depth == 0:
