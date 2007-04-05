@@ -12,7 +12,7 @@ setup(
     name='summon',
     version='1.6',
     description='SUMMON visualization prototyping module',
-    long_distription = """
+    long_discription = """
         SUMMON is a python extension module that provides rapid prototyping of
         2D visualizations. By heavily relying on the python scripting language,
         SUMMON allows the user to rapidly prototype a custom visualization for
