@@ -2,5 +2,8 @@ include *.txt
 recursive-include examples *.*
 recursive-include src *.cpp *.h
 include doc/summon_manual.pdf
+include bin/summon
+include bin/summatrix
+include bin/sumtree
 prune src/Common/old
 prune src/notes

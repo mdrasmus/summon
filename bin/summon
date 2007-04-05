@@ -1,0 +1,21 @@
+#!/usr/bin/python -i
+#
+# SUMMON script
+#
+
+
+import sys
+from summon.core import *
+import summon
+
+sys.ps1="summon> "
+sys.ps2="    ... "
+
+# load a default window
+win = summon.Window()
+
+
+# execute python file
+if len(sys.argv) > 1:
+    execfile(sys.argv[1])
+
