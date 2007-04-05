@@ -1,10 +1,11 @@
 VERSION=1.6
+PACKAGE=summon-$(VERSION).tar.gz
+WWWDIR=~/public_html/summon/download
 
-
-dist/summon-$(VERSION).tar.gz:
+dist/$(PACKAGE):
 	python setup.py sdist
 
 
-pub: dist/summon-$(VERSION).tar.gz
-	cp summon-$(VERSION).tar.gz ~/public_html/summon/download
-	tar -C ~/public_html/summon/download zxvf summon-$(VERSION).tar.gz
+pub: dist/$(PACKAGE)
+	cp dist/$(PACKAGE) $(WWWDIR)
+	tar zxvf $(WWWDIR)/$(PACKAGE) -C $(WWWDIR)

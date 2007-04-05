@@ -66,8 +66,8 @@ setup(
           'Topic :: Scientific/Engineering :: Visualization',
           ],
     
-    packages=['summon'],
     package_dir = {'': 'lib'},
+    packages=['summon'],
     py_modules=['summon_config'],
     scripts=['bin/summon',
              'bin/summatrix',

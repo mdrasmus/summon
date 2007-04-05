@@ -7,3 +7,4 @@ include bin/summatrix
 include bin/sumtree
 prune src/Common/old
 prune src/notes
+prune lib/summonlib.py
