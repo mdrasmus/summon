@@ -28,7 +28,7 @@
 
 
 
-\newcommand{\version}{1.0}
+\newcommand{\version}{1.6}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -48,6 +48,8 @@ SUMMON \version\ Manual
 
 {\large
 Matt Rasmussen
+
+\today
 }
 \vspace*{.5in}
 
@@ -74,21 +76,21 @@ rasmus@mit.edu
 
 \subsection{What is SUMMON}
 
-SUMMON is a general visualization program that uses an embedded python engine to
-allow customization through scripting.  This allows the user to rapidly
-prototype a custom visualization for their data, without the overhead of a
-designing a graphical user interface or recompiling native code.  By simplifying
-the task of designing a visualization, users can spend more time on
-understanding their data. 
+SUMMON is a python extension module that provides rapid prototyping of 2D
+visualizations.  By heavily relying on the python scripting language, SUMMOn
+allows the user to rapidly prototype a custom visualization for their data, 
+without the overhead of a designing a graphical user interface or recompiling 
+native code.  By simplifying the task of designing a visualization, users can 
+spend more time on understanding their data. 
 
 SUMMON was designed with several philosophies.  First, recompilation should
 be avoided in order to speed up the development process.  Second, design of
 graphical user interfaces should also be avoided.  Designing a good interface
 takes planning and time to layout buttons, scrollbars, and dialog boxes.  Yet a 
 poor interface is very painful to work with. Even when one has a good interface,
-rarely can it be automated for batch mode.  Instead SUMMON relies on the
-python terminal for most interaction.  This allows the users direct access to the
-underlining code, which is more expressive, and can be automated through
+rarely can it be automated for batch mode.  Instead, SUMMON relies on the
+python terminal for most interaction.  This allows the users direct access to 
+the underlining code, which is more expressive, and can be automated through
 scripting.  
 
 Lastly, SUMMON is designed to be fast.  Libraries already exist for
@@ -108,8 +110,8 @@ Listed below is a short summary of the features offered in this version of
 SUMMON.
 
 \items{
-    \item Embedded python engine
-    \item Fast OpenGL graphics    
+    \item Python module extension
+    \item Fast OpenGL graphics
     \item Drawing arbitrary points, lines, polygons
     \item Binding inputs (keyboard, mouse, hotspots) to any python function 
     \item SVG output (also PNG with ImageMagick)
@@ -120,65 +122,44 @@ SUMMON.
 \section{Installing SUMMON}
 \label{sec:installing}
 
+The latest version of SUMMON can be obtained from 
+http://people.csail.mit.edu/rasmus/summon/.  Download the *.tar.gz archive and
+unzip it with the command:
+
+\codeblock{tar zxvf summon-1.6.tar.gz}
+
 Before running or compiling SUMMON, the following libraries are required:
 \items {
     \item python 2.4 (or greater)
-    \item GL/GLU    
-    \item glut 
+    \item GL   
+    \item GLUT
     \item SDL (for threading)
-    \item pthread (for linux only)
-    \item readline/ncurses
-    \item cygwin (for windows only)
 }
-
-Precompiled versions of SUMMON are available in \code{summon/bin/} for linux
-(\code{summon}) and windows (\code{summon.exe}).  To install SUMMON either add
-\code{summon/bin/} to your \code{PATH} environment variable or copy all the
-programs in \code{summon/bin/} to a directory on your \code{PATH}.  Windows users
-will need to run SUMMON in the CYGWIN linux environment for windows 
-(http://www.cygwin.com/).
 
 \subsection{Compiling SUMMON}
 
-To compile your own version of SUMMON, use the Makefile available under 
-\code{summon/}.  Below several commands are given that should compile SUMMON for
-your system.
+SUMMON can be installed using the standard distutils 
+(http://docs.python.org/inst/inst.html).  For example, in the \code{summon-1.6}
+directory run:
 
-To compile the linux version change into the \code{summon/} directory and
-execute the following command.
+\codeblock{python setup.py install}
 
-\codeblock{\$ make}
+To install SUMMON in another location other than in \code{/usr} use:
 
-To copy the compiled linux version of SUMMON to \code{summon/bin/} type
-
-\codeblock{\$ make install}
-
-To compile the windows version of SUMMON and copy it to \code{summon/bin/} type
-
-\codeblock{\$ make summon.exe}
-
+\codeblock{python setup.py install --home=<another directory prefix>}
 
 
 \subsection{Configuring SUMMON}
 
-SUMMON requires access to its own python package in order to operate properly.
-In addition, SUMMON expects to find a configuration file called 
-\code{summon\_config.py} somewhere in the python path.  The SUMMON package, 
-\code{summonlib}, and a default configuration file appear under 
-\code{summon/lib/}.  Therefore, before attempting to run SUMMON add 
-\code{summon/lib/} to your \code{PYTHONPATH} environment variable.  For example,
-if you use bash as a shell then add the following to your \code{.bashrc} file:
-
-\codeblock{
-    export PYTHONPATH=\$PYTHONPATH:location\_of\_your\_choice/summon/lib
-}
-
-To customize SUMMON with your own key bindings and behavior, you can write your
-own \code{summon\_config.py} file.  Just be sure it appears in your python path
-somewhere {\em before} SUMMON default configuration file.  The configuration file
-is nothing more than a python script that calls the SUMMON function 
-\code{set\_binding} in order to initialize the default keyboard and mouse 
-bindings.
+SUMMON expects to find a configuration file called  \code{summon\_config.py}
+somewhere in the python path.  Distutils installs a default module installed in
+your python path.  To customize SUMMON with your own key bindings and behavior,
+you can write your own \code{summon\_config.py} file.  Just be sure it appears
+in your python path somewhere {\em before} SUMMON default configuration file. 
+Alternatively, you can create a configuration file \code{.summon\_config} in
+your home directory.  The configuration file is nothing more than a python
+script that calls the SUMMON function  \code{set\_binding} in order to
+initialize the default keyboard and mouse  bindings.
 
 
 
@@ -186,16 +167,16 @@ bindings.
 \section{Using SUMMON}
 \label{sec:using}
 
-SUMMON should be run from the commandline.  I recommend Windows users to use
-CYGWIN for running SUMMON from the commandline.  SUMMON itself takes a single
-optional python script as an argument.  On execution, SUMMON opens an OpenGL
-window and evaluates any script that it is given in the python engine. After
-evaluation, the SUMMON prompt should appear which provides direct access to the
-python engine.  Users should be familar with the python language in order to use
-SUMMON.
+SUMMON can be used a stand-alone program and as a module in a larger python
+program.  The stand-alone version is installed in \code{PREFIX/bin/summon} and
+is called from the command line as follows:
 
 \codeblock{usage: summon [python script]}
 
+On execution, SUMMON opens an OpenGL window and evaluates any script that it is
+given in the python engine. After evaluation, the SUMMON prompt should appear
+which provides direct access to the python engine.  Users should be familar with
+the python language in order to use SUMMON.
 
 The SUMMON prompt acts exactly like the python prompt except for the OpenGL
 window and the appearence of a builtin module called \code{summon}.  All of the
@@ -203,7 +184,7 @@ commands needed to interact with the visualization are within the \code{summon}
 module.  
 
 To learn how to use SUMMON, example scripts have been provided in the 
-\code{summon/examples/summon/} directory.  Examples of full fledged
+\code{summon/examples/} directory.  Examples of full fledged
 visualizations, SUMMATRIX and SUMTREE, are also given in the \code{summon/bin/}
 directory.  Their example input files are given in
 \code{summon/examples/summatrix/} and \code{summon/examples/sumtree/},
@@ -215,7 +196,7 @@ respectively.
 
 For an introduction to the basic commands of SUMMON, let us walk through the
 code of the first example.  To begin, change into the
-\code{summon/examples/summon/} directory and open up \code{example1.py} in a
+\code{summon/examples/} directory and open up \code{example1.py} in a
 text editor.  Also use SUMMON to execute the example with following command.
 
 \codeblock{\$ summon example1.py}
@@ -249,11 +230,12 @@ following python code:
 \begin{minipage}{6in}
 { \footnotesize
 \begin{verbatim}
+#!/usr/bin/env summon
 # SUMMON examples
 # example1.py - basic commands
 
 # make summon commands available
-from summon import *
+from summon.core import *
 
 # syntax of used summon functions
 # add_group( <group> )   : adds a group of graphics to the screen
@@ -375,12 +357,13 @@ with no arguments.  Here are some recommended examples:
 \codeblock{\$ summatrix -i human\_mouse.imat}
 
 
+\clearpage
 \section{SUMMON Function Reference}
 
 All help information is also available from the SUMMON prompt.  Use 
 \code{help(command)} to get required arguments and a usage description.
 
-\include{reference}
+\input{reference.tex}
 
 
 \end{document}

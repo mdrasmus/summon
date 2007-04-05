@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{ SUMMON General Functions }
+\subsection{SUMMON General Functions}
 
-{\tt add\_group(groups) }
+{\tt add\_group(group) }
 
 adds drawing groups to the current model \\
 
@@ -66,6 +66,11 @@ gets the model id of a window \\
 gets a list of ids for all models \\
 
 
+{\tt get\_mouse\_pos('world'|'screen'|'window') }
+
+gets the current mouse position in the requested coordinates \\
+
+
 {\tt get\_root\_id() }
 
 gets the group id of the root group \\
@@ -81,6 +86,11 @@ gets visible bounding box \\
 gets the id of the current window \\
 
 
+{\tt get\_window\_name(id) }
+
+get the name of a window \\
+
+
 {\tt get\_window\_size() }
 
 gets current window's size \\
@@ -91,22 +101,12 @@ gets current window's size \\
 gets a list of ids for all open windows \\
 
 
-{\tt group(* elements) }
-
-constructs a group of elements \\
-
-
 {\tt home() }
 
 adjust view to show all graphics \\
 
 
-{\tt hotspot\_click(cannot be invoked on commandline) }
-
-activates a hotspot with a 'click' action \\
-
-
-{\tt insert\_group(groups) }
+{\tt insert\_group(groupid, group) }
 
 inserts drawing groups under an existing group \\
 
@@ -119,11 +119,6 @@ creates a new model and returns its id \\
 {\tt new\_window() }
 
 creates a new window and returns its id \\
-
-
-{\tt quit() }
-
-quits program \\
 
 
 {\tt redraw\_call(func) }
@@ -171,6 +166,11 @@ change display to contain region (x1,y1)-(x2,y2) \\
 sets the current window \\
 
 
+{\tt set\_window\_name(id name) }
+
+sets the name of a window \\
+
+
 {\tt set\_window\_size(x, y) }
 
 sets current window's size \\
@@ -196,6 +196,11 @@ translate the view by (x,y) \\
 prints the current version \\
 
 
+{\tt vertices(x, y, * more) }
+
+creates a list of vertices \\
+
+
 {\tt zoom(factorX, factorY) }
 
 zoom view by a factor \\
@@ -212,7 +217,7 @@ zoom y-axis by a factor \\
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{ SUMMON Graphics }
+\subsection{SUMMON Graphics}
 
 {\tt points(* vertices|colors) }
 
@@ -260,7 +265,7 @@ plots vertices as a convex polygon \\
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{ SUMMON Primitives }
+\subsection{SUMMON Primitives}
 
 {\tt vertices(x, y, * more) }
 
@@ -273,7 +278,7 @@ creates a color from 3 or 4 values in [0,1] \\
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{ SUMMON Text constructs }
+\subsection{SUMMON Text constructs}
 
 {\tt text(string, x1, y1, x2, y2, ['left'|'center'|'right'], ['top'|'middle'|'bottom']) }
 
@@ -291,7 +296,7 @@ draws stroked text within a bounding box and height restrictions \\
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{ SUMMON Transforms }
+\subsection{SUMMON Transforms}
 
 {\tt translate(x, y, * elements) }
 
@@ -314,7 +319,7 @@ scales the coordinate system of enclosed elements \\
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{ SUMMON Input specifications }
+\subsection{SUMMON Input specifications}
 
 {\tt input\_motion('left'|'middle'|'right', 'up'|'down', ['shift'], ['ctrl'], ['alt']) }
 
@@ -332,10 +337,15 @@ specifies a mouse click input \\
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{ SUMMON Miscellaneous }
+\subsection{SUMMON Miscellaneous}
 
 {\tt hotspot('over'|'out'|'click', x1, y1, x2, y2, proc) }
 
 constructs hotspot for a region that activates a python procedure 'proc' \\
+
+
+{\tt hotspot\_click(cannot be invoked on commandline) }
+
+activates a hotspot with a 'click' action \\
 
 

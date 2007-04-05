@@ -4,24 +4,55 @@ import sys
 
 commands = """
 add_group
-get_visible                      
-assign_model        get_window                    
-call_proc           get_window_size                    
-  get_windows         quit                timer_call
-clear_binding       group               redraw_call         trans
-clear_groups        home                remove_group        
-close_window                     replace_group       
-               hotspot_click                     
-del_model                                   
-                               set_antialias       version
-                            set_bgcolor         
-focus               insert_group        set_binding         zoom
-get_bgcolor                   set_model           zoomx
-get_group                          set_visible         zoomy
-get_model           new_model           set_window          
-get_models          new_window          set_window_size     
-get_root_id                       show_group
+assign_model
+call_proc
 clear_all_bindings
+clear_binding
+clear_groups
+close_window
+del_model
+focus
+get_bgcolor
+get_group
+get_group_id
+get_model
+get_models
+get_mouse_pos
+get_root_id
+get_visible
+get_window
+get_window_name
+get_window_size
+get_windows
+home
+insert_group
+new_groupid
+new_model
+new_window
+redraw_call
+remove_group
+replace_group
+reset_binding
+set_antialias
+set_bgcolor
+set_binding
+set_crosshair_color
+set_model
+set_visible
+set_window
+set_window_name
+set_window_size
+show_crosshair
+show_group
+timer_call
+toggle_aliasing
+toggle_crosshair
+trans
+version
+vertices
+zoom
+zoomx
+zoomy
 """.split()
 commands.sort()
 
@@ -67,6 +98,7 @@ input_click
 
 other = """
 hotspot
+hotspot_click
 """.split()
 
 
@@ -81,14 +113,17 @@ sections = [
 ]
 
 
-out = file(sys.argv[2], "w")
+out = sys.stdout
 
 for name, lst in sections:
     print >>out, "%" * 70
-    print >>out, "\subsection{ %s }" % name
+    print >>out, "\subsection{%s}" % name
     print >>out
     for cmd in lst:
-        args, usage = eval(cmd).func_doc.split("\n")
+        doc = eval(cmd).func_doc
+        if doc == None:
+            continue
+        args, usage = doc.split("\n")
         
         cmd = cmd.replace("_", "\\_")
         args = args.replace("_", "\\_")

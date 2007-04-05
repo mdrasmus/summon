@@ -3,7 +3,7 @@
 # example1.py - basic commands
 
 # make summon commands available
-from summon import *
+from summon.core import *
 
 # syntax of used summon functions
 # add_group( <group> )   : adds a group of graphics to the screen

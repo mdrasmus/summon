@@ -6,20 +6,18 @@ PDF = $(PAPER).pdf
 
 
 $(PDF): $(TEX) $(IMAGES) reference.tex
-	latex $(TEX)
-	dvipdf $(DVI)
+	pdflatex $(TEX)
 
 toc:
-	latex $(TEX)
-	latex $(TEX)
-	dvipdf $(DVI)
+	pdflatex $(TEX)
+	pdflatex $(TEX)
         
 
 $(IMAGES) : %.pdf: %.eps
 	epstopdf $<
 
-reference.tex:
-	summon help.py reference.tex > /dev/null
+reference.tex: help.py
+	python help.py > reference.tex
 
 clean:
 	rm -rf $(PDF) $(IMAGES)
