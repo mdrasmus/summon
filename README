@@ -1,0 +1,11 @@
+SUMMON - visualization protyping python module
+Matt Rasmussen
+2007/4/5
+
+To install summon with python distutils use the following command:
+
+python setup.py install
+
+
+For documentation see doc/summon_manual.pdf
+

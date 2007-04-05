@@ -1,0 +1,6 @@
+include *.txt
+recursive-include examples *.*
+recursive-include src *.cpp *.h
+include doc/summon_manual.pdf
+prune src/Common/old
+prune src/notes
