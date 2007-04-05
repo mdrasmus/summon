@@ -39,7 +39,7 @@ setup(
         real-time interaction is handled with compiled native C++ code. Python
         is only executed in the construction and occasional interaction with the
         visualization. This arrangement provides the best of both worlds. 
-    """    
+    """,
     author='Matt Rasmussen',
     author_email='rasmus@mit.edu',
     url='http://mit.edu/rasmus',
