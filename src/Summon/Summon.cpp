@@ -65,7 +65,8 @@ public:
         m_nextModelId(1),
         
         m_commandWaiting(NULL),
-        m_graphicsExec(false),        
+        m_graphicsExec(false),
+        m_waiting(false),        
         m_lock(SDL_CreateMutex()),
         m_cond(SDL_CreateCond()),
         m_condlock(SDL_CreateMutex()),
@@ -584,8 +585,6 @@ def __" + name + "_contents(obj): return obj[1:]\n\
                 
                 PyGILState_Release(gstate);
                 
-                g_summon->NotifyExecOccurred();
-                
                 delay = 0;
             } else {
                 // non-graphic command will be execute in other thread
@@ -614,6 +613,12 @@ def __" + name + "_contents(obj): return obj[1:]\n\
                 
             }
         }
+        
+        
+        // wake up python thread if it is waiting for a graphic command to
+        // complete
+        if (g_summon->m_waiting && !g_summon->m_graphicsExec)
+            g_summon->NotifyExecOccurred();
         
         // look at timer-delay function
         if (g_summon->m_timerCommand && 
@@ -654,6 +659,7 @@ def __" + name + "_contents(obj): return obj[1:]\n\
                 // pass command to other thread
                 assert(m_commandWaiting == NULL);
                 m_graphicsExec = true;
+                m_waiting = true;
                 m_commandWaiting = command;
 
                 // wait for graphics thread to exec command
@@ -661,7 +667,9 @@ def __" + name + "_contents(obj): return obj[1:]\n\
                 Py_BEGIN_ALLOW_THREADS
                 WaitForExec();
                 Py_END_ALLOW_THREADS
-
+                
+                m_waiting = false;
+                
                 assert(m_commandWaiting == NULL);
 
             } else {
@@ -695,6 +703,7 @@ def __" + name + "_contents(obj): return obj[1:]\n\
     // thread management
     Command *m_commandWaiting;
     bool m_graphicsExec;
+    bool m_waiting;
     int m_threadId;
     SDL_mutex *m_lock;
     SDL_cond *m_cond;    
