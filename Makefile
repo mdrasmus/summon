@@ -1,4 +1,4 @@
-VERSION=1.6
+VERSION=1.6.1
 PACKAGE=summon-$(VERSION).tar.gz
 WWWDIR=~/public_html/summon/download
 

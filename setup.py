@@ -10,7 +10,7 @@ from distutils.core import setup, Extension
 
 setup(
     name='summon',
-    version='1.6',
+    version='1.6.1',
     description='SUMMON visualization prototyping module',
     long_description = """
         SUMMON is a python extension module that provides rapid prototyping of
