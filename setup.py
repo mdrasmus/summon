@@ -42,8 +42,8 @@ setup(
     """,
     author='Matt Rasmussen',
     author_email='rasmus@mit.edu',
-    url='http://people.csail.mit.edu/rasmus/summon/',
-    download_url='http://compbio.mit.edu/pub/summon/summon-1.6.1.tar.gz',
+    url='http://mit.edu/rasmus',
+    download_url='http://people.csail.mit.edu/rasmus/summon/download/summon-1.6.tar.gz',
     
     classifiers=[
           'Development Status :: 5 - Production/Stable',
