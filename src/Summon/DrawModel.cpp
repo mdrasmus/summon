@@ -90,7 +90,7 @@ void DrawModel::ExecCommand(Command &command)
             } break;
         
         case CLEAR_GROUPS_COMMAND: {
-            // remove root group, GroupTable will creat new root
+            // remove root group, GroupTable will create new root
             RemoveHotspots(m_table.GetRootGroup());
             m_table.Clear();
             Redisplay();

@@ -6,7 +6,7 @@
 
 import os, sys
 from summon.core import *
-from summon import env
+from summon import util
 
 state = get_summon_state()
 
@@ -49,24 +49,26 @@ def push_transform(gid, trans, * args):
 def set_update_interval(secs):
     state.updateInterval = secs
 
-def add_update_func(func):
-    state.updateFuncs.append(func)
+def add_update_func(func, win):
+    state.updateFuncs.append((func, win))
 
 def remove_update_func(func):
-    state.updateFuncs.remove(func)
+    state.updateFuncs = filter(lambda x: x[0] !=  func, state.updateFuncs)
 
 def is_update_func(func):
-    return func in state.updateFuncs
+    return func in util.cget(state.updateFuncs, 0)
 
 def get_update_funcs():
     return state.updateFuncs
 
 def begin_updating():
-    for func in state.updateFuncs:
+    for func, win in state.updateFuncs:
+        win.activate()
         func()
     timer_call(state.updateInterval, begin_updating)
     
-    
+def stop_updating():
+    timer_call(0, lambda :None)
 
 #
 # functions for iterating and inspecting graphical elements
@@ -212,24 +214,30 @@ class Window:
             self.worldid = get_model(winid, "world")
             self.screenid = get_model(winid, "screen")
     
+        self.activate()
+    
     
     def set_name(self, name):
         self.name = name
-        set_window_name(self.winid, name)
+        return set_window_name(self.winid, name)
     
     
     def activate(self):
         set_window(self.winid)
+        set_model(self.worldid)
+        state.current_window = self
+        
 
     def close(self):
-        close_window(self.winid)
+        return close_window(self.winid)
 
     def apply(self, func, *args):
         set_window(self.winid)
         set_model(self.worldid)
-        func(*args)
+        return func(*args)
     
     
+    # model manipulation
     def add_group(self, *args):
         set_model(self.worldid)
         return add_group(*args)
@@ -246,7 +254,79 @@ class Window:
         set_model(self.worldid)
         return replace_group(*args)
     
+    def get_root_id(self):
+        set_model(self.worldid)
+        return get_root_id()
     
+    
+    # view
+    def focus(self, x, y):
+        set_window(self.winid)
+        return focus(x, y)
+    
+    def zoom(self, x, y):
+        set_window(self.winid)
+        return zoom(x, y)
+
+    def zoomx(self, x):
+        set_window(self.winid)
+        return zoomx(x)
+    
+    def zoomy(self, y):
+        set_window(self.winid)
+        return zoomy(y)
+
+    def trans(self, x, y):
+        set_window(self.winid)
+        return trans(x, y)
+    
+    def set_bgcolor(self, *args):
+        set_window(self.winid)
+        return set_bgcolor(*args)
+    
+    def show_crosshair(self, *args):
+        set_window(self.winid)
+        return show_crosshair(*args)
+
+    def set_crosshair_color(self, *args):
+        set_window(self.winid)
+        return set_crosshair_color(* args)
+    
+    def set_window_size(self, width, height):
+        set_window(self.winid)
+        return set_window_size(width, height)
+    
+    
+    def get_window_size(self):
+        set_window(self.winid)
+        return get_window_size()
+    
+    def set_visible(self, x1, y1, x2, y2):
+        set_window(self.winid)
+        return set_visible(x1, y1, x2, y2)
+        
+    
+    # controller
+    def set_binding(self, *args):
+        set_window(self.winid)
+        return set_binding(*args)
+        
+    def clear_binding(self, *args):
+        set_window(self.winid)
+        return clear_binding(*args)
+
+    def reset_binding(self, *args):
+        set_window(self.winid)
+        return reset_binding(*args)
+    
+    def clear_all_bindings(self):
+        set_window(self.winid)
+        return clear_all_bindings()
+                
+    
+    
+    
+            
     
 
 def dupWindow():

@@ -54,3 +54,7 @@ set_binding(input_key("d", "ctrl"), summon.dupWindow)
 
 # add print screen bindings
 import summon.svg
+
+set_binding(input_key("p", "ctrl"), summon.svg.printScreen)
+set_binding(input_key("p", "ctrl", "shift"), summon.svg.printScreenPng)
+

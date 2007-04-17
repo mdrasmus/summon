@@ -23,8 +23,10 @@ while get_windows() == None: pass
 #
 # state of SUMMON
 #
-class State:
+class SummonState:
     def __init__(self):
+        self.current_window = None
+    
         self.antialias = True
 
         self.updateFuncs = []
@@ -33,10 +35,10 @@ class State:
         self.crosshair = False
         self.crosshair_color = None
 
-_state = State()
+_summon_state = SummonState()
 
 def get_summon_state():
-    return _state
+    return _summon_state
 
 #
 # common functions needed for key bindings
@@ -57,26 +59,26 @@ def zoom_camera(factor, factor2=None):
     return func
 
 def toggle_aliasing():
-    _state.antialias = not _state.antialias
-    set_antialias(_state.antialias)
+    _summon_state.antialias = not _summon_state.antialias
+    set_antialias(_summon_state.antialias)
 
 def toggle_crosshair():
-    _state.crosshair = not _state.crosshair
-    show_crosshair(_state.crosshair)
+    _summon_state.crosshair = not _summon_state.crosshair
+    show_crosshair(_summon_state.crosshair)
     
-    if _state.crosshair_color == None:
+    if _summon_state.crosshair_color == None:
         col = get_bgcolor()
         set_crosshair_color(1-col[0], 1-col[1], 1-col[2], 1)
 
 _set_crosshair_color = set_crosshair_color
 def set_crosshair_color(r, g, b, a=1):
-    _state.crosshair_color = (r, g, b, a)
+    _summon_state.crosshair_color = (r, g, b, a)
     _set_crosshair_color(r, g, b, a)
 
 
 _show_crosshair = show_crosshair
 def show_crosshair(enabled):
-    _state.crosshair = enabled
+    _summon_state.crosshair = enabled
     _show_crosshair(enabled)
 
 

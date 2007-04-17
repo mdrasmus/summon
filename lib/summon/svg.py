@@ -1,5 +1,6 @@
-from summon import *
-from __init__ import *
+from summon_core import *
+import summon
+
 import os
 
 
@@ -49,7 +50,7 @@ def writeSvg(outfile, group):
         boxheight = y2 - y1
         boxwidth = x2 - x1
         
-        if is_text_scale(elm) or is_text_clip(elm):
+        if summon.is_text_scale(elm) or summon.is_text_clip(elm):
             textheight = 20.0
             textwidth = textheight * .75 * float(len(msg)) # TODO: approx for now
             
@@ -59,7 +60,7 @@ def writeSvg(outfile, group):
             """<g transform='translate(%f,%f) scale(%f,%f)'>
                 <text x='0' y='0' font-size='%s' fill='%s' fill-opacity='%f'>%s</text></g>
             """ % (x1, y1, scale, -scale, textheight,  col, color[3], msg)
-        elif is_text(elm):
+        elif summon.is_text(elm):
             print >>outfile, \
             """<g transform='translate(%f,%f) scale(1,-1)'>
                 <text x='0' y='0' font-size='%s' fill='%s' fill-opacity='%f'>%s</text></g>
@@ -80,7 +81,7 @@ def writeSvg(outfile, group):
         boxheight = y2 - y1
         boxwidth = x2 - x1
         
-        if is_text_scale(elm) or is_text_clip(elm):
+        if summon.is_text_scale(elm) or summon.is_text_clip(elm):
             textheight = 20.0
             textwidth = textheight * .75 * float(len(msg)) # TODO: approx for now
             
@@ -92,7 +93,7 @@ def writeSvg(outfile, group):
                     fill='%s' stroke-opacity='%f' fill-opacity='%f'>%s</text></g>
             """ % (x1, y1, scale, -scale, textheight, 1/scale, col, col, 
                     0, color[3], msg)
-        elif is_text(elm):
+        elif summon.is_text(elm):
             print >>outfile, \
             """<g transform='translate(%f,%f) scale(1,-1)'>
                 <text x='0' y='0' font-size='%s' stroke-width='%f' stroke='%s' 
@@ -108,19 +109,20 @@ def writeSvg(outfile, group):
                            (vert[1] + transy) * scaley])
         verts = verts2
     
-        if is_lines(elm) or is_line_strip(elm):
+        if summon.is_lines(elm) or summon.is_line_strip(elm):
             printLine(verts[0][0], verts[0][1], verts[1][0], verts[1][1], color)
-        elif is_triangles(elm) or \
-             is_triangle_strip(elm) or \
-             is_quads(elm) or \
-             is_quad_strip(elm) or \
-             is_polygon(elm):
+        elif summon.is_triangles(elm) or \
+             summon.is_triangle_strip(elm) or \
+             summon.is_quads(elm) or \
+             summon.is_quad_strip(elm) or \
+             summon.is_polygon(elm):
             printPolygon(verts, color)
-        elif is_text_elm(elm):
+        elif summon.is_text_elm(elm):
             printText(elm, verts2, color)
-
+    
+    
     def printElm(elm):
-        visitGraphics(elm, printGraphic)
+        summon.visitGraphics(elm, printGraphic)
 
     # print out svg code
     (x, y, x2, y2) = get_visible()  
@@ -190,9 +192,5 @@ def printScreenPng(pngFilename = None):
     print "wrote '%s'" % pngFilename
     
     return pngFilename
-
-
-set_binding(input_key("p"), printScreen)
-set_binding(input_key("p", "ctrl"), printScreenPng)
 
 
