@@ -238,6 +238,10 @@ class Window:
     
     
     # model manipulation
+    def clear_groups(self):
+        set_model(self.worldid)
+        return clear_groups()
+    
     def add_group(self, *args):
         set_model(self.worldid)
         return add_group(*args)

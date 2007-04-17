@@ -8,9 +8,11 @@
 
 from distutils.core import setup, Extension
 
+SUMMON_VERSION = '1.6.1'
+
 setup(
     name='summon',
-    version='1.6.1',
+    version=SUMMON_VERSION,
     description='A general 2D visualization prototyping module',
     long_description = """
         SUMMON is a python extension module that provides rapid prototyping of
@@ -42,8 +44,8 @@ setup(
     """,
     author='Matt Rasmussen',
     author_email='rasmus@mit.edu',
-    url='http://mit.edu/rasmus',
-    download_url='http://people.csail.mit.edu/rasmus/summon/download/summon-1.6.tar.gz',
+    url='http://people.csail.mit.edu/rasmus/summon/',
+    download_url='http://compbio.mit.edu/pub/summon/summon-%s.tar.gz' % SUMMON_VERSION,
     
     classifiers=[
           'Development Status :: 5 - Production/Stable',
