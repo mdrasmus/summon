@@ -41,6 +41,10 @@ struct HashString {
 };
 
 
+struct HashPointer {
+    static unsigned int Hash(const void *p) { return (unsigned int) p; }
+};
+
 
 
 template <class KeyType, class ValueType, class HashFunc>

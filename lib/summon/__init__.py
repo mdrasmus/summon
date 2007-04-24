@@ -53,7 +53,7 @@ def add_update_func(func, win):
     state.updateFuncs.append((func, win))
 
 def remove_update_func(func):
-    state.updateFuncs = filter(lambda x: x[0] !=  func, state.updateFuncs)
+    state.updateFuncs = filter(lambda x: x[0] != func, state.updateFuncs)
 
 def is_update_func(func):
     return func in util.cget(state.updateFuncs, 0)
@@ -62,9 +62,20 @@ def get_update_funcs():
     return state.updateFuncs
 
 def begin_updating():
-    for func, win in state.updateFuncs:
-        win.activate()
-        func()
+    windows = set(get_windows())
+    dels = set()
+    
+    for i, (func, win) in enumerate(state.updateFuncs):
+        if win.winid in windows:
+            win.activate()
+            func()
+        else:
+            dels.add(func)
+    
+    # remove closed windows
+    if len(dels) > 0:
+        state.updateFuncs = filter(lambda x: x[0] not in dels, state.updateFuncs)
+    
     timer_call(state.updateInterval, begin_updating)
     
 def stop_updating():
@@ -264,6 +275,10 @@ class Window:
     
     
     # view
+    def home(self):
+        set_window(self.winid)
+        return home()
+    
     def focus(self, x, y):
         set_window(self.winid)
         return focus(x, y)
@@ -308,7 +323,14 @@ class Window:
     def set_visible(self, x1, y1, x2, y2):
         set_window(self.winid)
         return set_visible(x1, y1, x2, y2)
-        
+    
+    def get_visible(self):
+        set_window(self.winid)
+        return get_visible()
+    
+    def get_mouse_pos(self, coord):
+        set_window(self.winid)
+        return get_mouse_pos(coord)
     
     # controller
     def set_binding(self, *args):

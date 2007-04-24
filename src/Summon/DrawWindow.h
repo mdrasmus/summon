@@ -86,6 +86,11 @@ public:
     inline string GetName()
     { return m_view.GetName(); }
     
+    void Close()
+    {
+        m_view.Close();
+    }
+    
 protected:
     int m_id;
     CommandExecutor *m_global;

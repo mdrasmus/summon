@@ -23,7 +23,9 @@ GlutView::GlutView(int width, int height, const char *name) :
     // set initial glut settings for window
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_MULTISAMPLE);
     glutInitWindowSize(width, height);
-
+    
+    
+    
     // create glut window and register it
     m_window = glutCreateWindow(name);
     if ((unsigned int) m_window >= g_windows.size()) {
@@ -34,6 +36,7 @@ GlutView::GlutView(int width, int height, const char *name) :
     // register callbacks
     glutDisplayFunc(GlutView::GlutDisplay);
     glutReshapeFunc(GlutView::GlutReshape);
+    glutCloseFunc(GlutView::GlutClose);
 
     // setup opengl
     glEnable(GL_BLEND);
@@ -44,7 +47,6 @@ GlutView::GlutView(int width, int height, const char *name) :
 
 GlutView::~GlutView()
 {
-    glutDestroyWindow(m_window);
 }
    
 void GlutView::ExecCommand(Command &command)
@@ -70,6 +72,15 @@ void GlutView::GlutReshape(int width, int height)
     PyGILState_Release(gstate);
 }
 
+
+void GlutView::GlutClose()
+{
+    PyGILState_STATE gstate = PyGILState_Ensure();
+    g_windows[glutGetWindow()]->OnClose();
+    PyGILState_Release(gstate);
+}
+
+
 void GlutView::Display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -79,6 +90,21 @@ void GlutView::Display()
 void GlutView::Reshape(int width, int height)
 {
    
+}
+
+
+void GlutView::OnClose()
+{
+    // window has been closed
+    for (ListenerIter iter = m_listeners.begin(); 
+         iter != m_listeners.end(); iter++) {
+        (*iter)->OnClose(this);
+    }
+}
+
+void GlutView::Close()
+{
+    glutDestroyWindow(m_window);
 }
 
 

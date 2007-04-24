@@ -54,7 +54,7 @@ static Summon *g_summon;
 
 
 
-class Summon : public CommandExecutor
+class Summon : public CommandExecutor, GlutViewListener
 {
 public:
     Summon() :
@@ -73,7 +73,6 @@ public:
 
         m_timerCommand(NULL),
         m_timerDelay(0)
-    
     {
     }
     
@@ -352,10 +351,17 @@ public:
     
     void CloseWindow(DrawWindow* window)
     {
-        // close old window
+        // remove window from window list
         m_windows.erase(window->GetId());
-        delete window;
+        
+        // close the window
+        window->Close();
+        
+        m_closeWaiting[window->GetView()] = window;
+        // delete the window
+        //delete window;
 
+        // if current window was closed choose a new current window
         if (window == m_window) {
             // choose new window or null
             if (m_windows.begin() != m_windows.end()) {
@@ -365,6 +371,14 @@ public:
             }
         }
     }
+    
+    
+    void OnClose(GlutView *view)
+    {
+        delete m_closeWaiting[view];
+        m_closeWaiting.erase(view);
+    }
+    
     
     
     int NewModel()
@@ -724,6 +738,7 @@ def __" + name + "_contents(obj): return obj[1:]\n\
     map<int, DrawWindow*> m_windows;
     map<int, DrawModel*> m_models;
    
+    map<GlutView*, DrawWindow*> m_closeWaiting;
 };
 
 
@@ -869,6 +884,10 @@ initsummon_core()
     // create hidden window
     // so that GLUT does not get unset (it always wants one window)
     glutInitDisplayMode(GLUT_RGBA);
+    
+    // NOTE: requires freeglut > 2.4.0-1  (2005)
+    glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
+    
     glutInitWindowSize(1, 1);
     int hidden_window = glutCreateWindow("SUMMON");
     glutHideWindow();
