@@ -55,8 +55,6 @@ DrawView::~DrawView()
 
 void DrawView::ExecCommand(Command &command)
 {
-    MakeCurrentWindow();
-    
     // don't execute anything without a model
     if (!m_worldModel) {
         return;
@@ -65,6 +63,7 @@ void DrawView::ExecCommand(Command &command)
 
     switch (command.GetId()) {
         case SET_BGCOLOR_COMMAND:
+            MakeCurrentWindow();
             SetBgColor(((SetBgColorCommand*)&command)->color);
             Redisplay();
             break;
@@ -77,6 +76,7 @@ void DrawView::ExecCommand(Command &command)
             break;
         
         case SET_VISIBLE_COMMAND: {
+            MakeCurrentWindow();        
             SetVisibleCommand *vis = (SetVisibleCommand*) &command;
             SetVisible(vis->data[0], vis->data[1],
                        vis->data[2], vis->data[3]);
@@ -96,6 +96,7 @@ void DrawView::ExecCommand(Command &command)
             } break;
         
         case SET_WINDOW_SIZE_COMMAND: {
+            MakeCurrentWindow();
             SetWindowSizeCommand *size = (SetWindowSizeCommand*) &command;
             Resize(size->width, size->height);
             } break;
@@ -108,11 +109,13 @@ void DrawView::ExecCommand(Command &command)
             } break;
         
         case HOME_COMMAND:
+            MakeCurrentWindow();
             Home();
             Redisplay();
             break;
         
         case SET_ANTIALIAS_COMMAND:
+            MakeCurrentWindow();
             if (((SetAntialiasCommand*)&command)->enabled) {
                 glEnable(GL_POLYGON_SMOOTH);
                 glEnable(GL_LINE_SMOOTH);
@@ -135,11 +138,13 @@ void DrawView::ExecCommand(Command &command)
             break;
         
         case REDISPLAY_COMMAND:
+            MakeCurrentWindow();
             NoteModelChange();
             Glut2DView::ExecCommand(command);
             break;
                 
         default:
+            MakeCurrentWindow();
             Glut2DView::ExecCommand(command);
     }
 }

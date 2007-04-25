@@ -73,7 +73,8 @@ void drawCommandsInit()
     RegisterScriptCommand(GetGroupCommand)      m()
     RegisterScriptCommand(GetRootIdCommand)     m()
     
-    // view commands                      
+    // view commands
+    // These are potentially gl commands because MakeCurrent is always called
     RegisterScriptCommand(HomeCommand)              v() gl()
     RegisterScriptCommand(SetBgColorCommand)        v() gl()
     RegisterScriptCommand(GetBgColorCommand)        v()
