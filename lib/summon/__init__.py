@@ -348,24 +348,38 @@ class Window:
     def clear_all_bindings(self):
         set_window(self.winid)
         return clear_all_bindings()
-                
-    
-    
-    
-            
-    
+
+
+
+
 
 def dupWindow():
     # get current window, model, and visible
     cur = get_window()
     model = get_model(cur, "world")
     coords = get_visible()
+    size = get_window_size()
+    bg = get_bgcolor()
+
+    zoomx = (coords[2] - coords[0]) / size[0]
+    zoomy = (coords[3] - coords[1]) / size[1]
 
     # create new window with same model and coords    
     win = new_window()
     assign_model(win, "world", model)
     set_window(win)
+    set_window_size(* size)
+    set_bgcolor(* bg)
+        
     set_visible(*coords)
+    coords = get_visible()
+    
+    zoomx2 = (coords[2] - coords[0]) / size[0]
+    zoomy2 = (coords[3] - coords[1]) / size[1]
+    
+    focus(size[0] / 2.0, size[1] / 2.0)
+    zoom(zoomx2 / zoomx, zoomy2 / zoomy)
+    
     load_config()
     set_window(cur)
 

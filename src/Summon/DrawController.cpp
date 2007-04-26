@@ -92,7 +92,7 @@ void DrawController::ExecCommand(Command &command)
             cmd->SetReturn(ScmCons(Float2Scm(pos2.x),
                              ScmCons(Float2Scm(pos2.y), Scm_EOL)));
             } break;
-        
+            
         default:
             // execute default commands
             Glut2DController::ExecCommand(command);
