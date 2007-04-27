@@ -2,7 +2,7 @@
 import sys
 from summon.core import *
 from summon import shapes
-from summon import algorithms
+from summon import treelib
 from summon import util
 
 
@@ -285,7 +285,7 @@ class SumTree:
     def readTree(self, param):
         util.tic("reading input")
 
-        tree = algorithms.Tree()
+        tree = treelib.Tree()
 
         if "ptree" in param:
             tree.readParentTree(param["ptree"][-1], param["labels"][-1])

@@ -253,7 +253,34 @@ class Window:
     
     
     def duplicate(self):
-        dupWindow(self.winid)
+        # get current window, model, and visible
+        coords = self.get_visible()
+        size = self.get_window_size()
+        bg = self.get_bgcolor()
+
+        zoomx = (coords[2] - coords[0]) / size[0]
+        zoomy = (coords[3] - coords[1]) / size[1]
+
+        # create new window with same model and coords    
+        win = Window(worldid=self.world.id)
+        win.set_window_size(* size)
+        win.set_bgcolor(* bg)
+        
+        # make the view the same
+        win.set_visible(*coords)
+        coords = win.get_visible()
+        zoomx2 = (coords[2] - coords[0]) / size[0]
+        zoomy2 = (coords[3] - coords[1]) / size[1]
+        win.focus(size[0] / 2.0, size[1] / 2.0)
+        win.zoom(zoomx2 / zoomx, zoomy2 / zoomy)
+        
+        
+        # load up the configuration
+        win.activate()
+        load_config()
+        
+        return win
+    
     
     # model manipulation (forward to world)
     def clear_groups(self):
@@ -449,35 +476,10 @@ class Model:
     
 
 
-def dupWindow(cur=None):
-    # get current window, model, and visible
-    if cur == None:
-        cur = get_window()
-    model = get_model(cur, "world")
-    coords = get_visible()
-    size = get_window_size()
-    bg = get_bgcolor()
-
-    zoomx = (coords[2] - coords[0]) / size[0]
-    zoomy = (coords[3] - coords[1]) / size[1]
-
-    # create new window with same model and coords    
-    win = Window(worldid=model)
-    win.activate()
-    win.set_window_size(* size)
-    win.set_bgcolor(* bg)
-        
-    win.set_visible(*coords)
-    coords = win.get_visible()
+#def dupWindow():
+#    # get current window, model, and visible
+#    return state.current_window.duplicate()
     
-    zoomx2 = (coords[2] - coords[0]) / size[0]
-    zoomy2 = (coords[3] - coords[1]) / size[1]
-    
-    win.focus(size[0] / 2.0, size[1] / 2.0)
-    win.zoom(zoomx2 / zoomx, zoomy2 / zoomy)
-    
-    load_config()
-    set_window(cur)
 
 def defaultWindow():
     return Window(get_window())

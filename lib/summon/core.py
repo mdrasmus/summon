@@ -47,6 +47,10 @@ def get_summon_window():
 
 
 # All functions exported from summon_core 
+#
+# TODO: should only really need to export Contructs.  Everything else should
+# be under summon.*
+
 
 def add_group(*groups):
     return summon_core.add_group(* groups)
