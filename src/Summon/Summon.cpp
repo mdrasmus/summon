@@ -295,7 +295,6 @@ public:
             default:
                 // ensure a window exists for commands
                 if (!m_window) {
-                    //MakeDefaultWindowModel();
                     return;
                 }
             

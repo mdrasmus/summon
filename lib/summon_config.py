@@ -13,8 +13,15 @@ from summon.core import *
 import summon
 
 
+win = get_summon_window()
+print "window", win
 
 clear_all_bindings()
+
+def _set_and_call(win, func):
+    win.activate()
+    func()
+
 
 # scrolling
 set_binding(input_motion("left", "down"), "trans")
@@ -46,15 +53,17 @@ set_binding(input_click("left", "up", "ctrl"), "hotspot_click")
 
 # misc
 set_binding(input_key("h"), "home")
-set_binding(input_key("q"), close_window)
-set_binding(input_key("l", "ctrl"), toggle_aliasing)
-set_binding(input_key("x", "ctrl"), toggle_crosshair)
-set_binding(input_key("d", "ctrl"), summon.dupWindow)
+set_binding(input_key("q"), lambda: _set_and_call(win, close_window))
+set_binding(input_key("l", "ctrl"), lambda: _set_and_call(win, toggle_aliasing))
+set_binding(input_key("x", "ctrl"), lambda: _set_and_call(win, toggle_crosshair))
+set_binding(input_key("d", "ctrl"), lambda: summon.dupWindow(win.winid))
 
 
 # add print screen bindings
 import summon.svg
 
-set_binding(input_key("p", "ctrl"), summon.svg.printScreen)
-set_binding(input_key("p", "ctrl", "shift"), summon.svg.printScreenPng)
+set_binding(input_key("p", "ctrl"), 
+            lambda: _set_and_call(win, summon.svg.printScreen))
+set_binding(input_key("p", "ctrl", "shift"), 
+            lambda: _set_and_call(win, summon.svg.printScreenPng))
 

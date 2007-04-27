@@ -196,46 +196,49 @@ def visitGraphics(elm, func):
 #
 
 class Window:
+    """The SUMMON Window"""
+
     def __init__(self, name="SUMMON", winid = None):
         if winid == None:
             # create new window
             self.winid = new_window()
-            self.worldid = new_model()
-            self.screenid = new_model()
+            self.world = Model()
+            self.screen = Model()
             self.name = name
 
             assert self.winid != None
             
             set_window_name(self.winid, name)
             
-            assign_model(self.winid, "world", self.worldid)
-            assign_model(self.winid, "screen", self.screenid)
+            assign_model(self.winid, "world", self.world.id)
+            assign_model(self.winid, "screen", self.screen.id)
             
             # load default configuration
             set_window(self.winid)
-            set_model(self.worldid)
+            set_model(self.world.id)
 
             self.cursor = get_root_id()
-
+            
+            self.activate()
             load_config()
 
         else:
             # attach to existing window
             self.winid = winid
-            self.worldid = get_model(winid, "world")
-            self.screenid = get_model(winid, "screen")
-    
-        self.activate()
+            self.world = Model(get_model(winid, "world"))
+            self.screen = Model(get_model(winid, "screen"))
+            
+            self.activate()
+        
     
     
     def set_name(self, name):
         self.name = name
         return set_window_name(self.winid, name)
     
-    
     def activate(self):
         set_window(self.winid)
-        set_model(self.worldid)
+        set_model(self.world.id)
         state.current_window = self
         
 
@@ -244,41 +247,37 @@ class Window:
 
     def apply(self, func, *args):
         set_window(self.winid)
-        set_model(self.worldid)
+        set_model(self.world.id)
         return func(*args)
     
     
-    # model manipulation
+    # model manipulation (forward to world)
     def clear_groups(self):
-        set_model(self.worldid)
-        return clear_groups()
+        return self.world.clear_groups()
     
     def add_group(self, *args):
-        set_model(self.worldid)
-        return add_group(*args)
+        return self.world.add_group(*args)
     
     def insert_group(self, *args):
-        set_model(self.worldid)
-        return insert_group(*args)
+        return self.world.insert_group(*args)
     
     def remove_group(self, *args):
-        set_model(self.worldid)
-        return remove_group(*args)
+        return self.world.remove_group(*args)
     
     def replace_group(self, *args):
-        set_model(self.worldid)
-        return replace_group(*args)
+        return self.world.replace_group(*args)
+    
+    def show_group(self, *args):
+        return self.world.show_group(*args)
+    
+    def get_group(self, *args):
+        return self.world.get_group(*args)
     
     def get_root_id(self):
-        set_model(self.worldid)
-        return get_root_id()
+        return self.world.get_root_id()
     
     
     # view
-    def home(self):
-        set_window(self.winid)
-        return home()
-    
     def focus(self, x, y):
         set_window(self.winid)
         return focus(x, y)
@@ -299,9 +298,37 @@ class Window:
         set_window(self.winid)
         return trans(x, y)
     
+    def home(self):
+        set_window(self.winid)
+        return home()
+    
     def set_bgcolor(self, *args):
         set_window(self.winid)
         return set_bgcolor(*args)
+    
+    def get_bgcolor(self, *args):
+        set_window(self.winid)    
+        return get_bgcolor(*args)
+    
+    def set_visible(self, x1, y1, x2, y2):
+        set_window(self.winid)
+        return set_visible(x1, y1, x2, y2)
+    
+    def get_visible(self):
+        set_window(self.winid)
+        return get_visible()
+        
+    def set_window_size(self, width, height):
+        set_window(self.winid)
+        return set_window_size(width, height)
+    
+    def get_window_size(self):
+        set_window(self.winid)
+        return get_window_size()    
+    
+    def set_antialias(self, *args):
+        set_window(self.winid)
+        return set_antialias(*args)
     
     def show_crosshair(self, *args):
         set_window(self.winid)
@@ -311,26 +338,6 @@ class Window:
         set_window(self.winid)
         return set_crosshair_color(* args)
     
-    def set_window_size(self, width, height):
-        set_window(self.winid)
-        return set_window_size(width, height)
-    
-    
-    def get_window_size(self):
-        set_window(self.winid)
-        return get_window_size()
-    
-    def set_visible(self, x1, y1, x2, y2):
-        set_window(self.winid)
-        return set_visible(x1, y1, x2, y2)
-    
-    def get_visible(self):
-        set_window(self.winid)
-        return get_visible()
-    
-    def get_mouse_pos(self, coord):
-        set_window(self.winid)
-        return get_mouse_pos(coord)
     
     # controller
     def set_binding(self, *args):
@@ -349,13 +356,66 @@ class Window:
         set_window(self.winid)
         return clear_all_bindings()
 
+    def get_mouse_pos(self, coord):
+        set_window(self.winid)
+        return get_mouse_pos(coord)        
+                
+    
+class Model:
+    """A Model contains graphics for display.
+    
+       Each window has a 'world' and 'screen' model.
+    """
+
+    def __init__(self, modelid = None):
+        if modelid == None:
+            # create new window
+            self.id = new_model()
+            assert self.id != None
+        else:
+            # attach to existing window
+            self.id = modelid
+    
+    
+    def clear_groups(self):
+        set_model(self.id)
+        return clear_groups()
+    
+    def add_group(self, *args):
+        set_model(self.id)
+        return add_group(*args)
+    
+    def insert_group(self, *args):
+        set_model(self.id)
+        return insert_group(*args)
+    
+    def remove_group(self, *args):
+        set_model(self.id)
+        return remove_group(*args)
+    
+    def replace_group(self, *args):
+        set_model(self.id)
+        return replace_group(*args)
+    
+    def get_root_id(self):
+        set_model(self.id)
+        return get_root_id()
+
+    def show_group(self, *args):
+        set_model(self.id)
+        return show_group(*args)
+    
+    def get_group(self, *args):
+        set_model(self.id)
+        return get_group(*args)
+
+    
 
 
-
-
-def dupWindow():
+def dupWindow(cur=None):
     # get current window, model, and visible
-    cur = get_window()
+    if cur == None:
+        cur = get_window()
     model = get_model(cur, "world")
     coords = get_visible()
     size = get_window_size()
