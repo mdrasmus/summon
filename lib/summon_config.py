@@ -14,27 +14,28 @@ import summon
 
 
 win = get_summon_window()
-print "window", win
 
 clear_all_bindings()
 
 def _set_and_call(win, func):
-    win.activate()
-    func()
+    def func2():
+        win.activate()
+        func()
+    return func2
 
 
 # scrolling
 set_binding(input_motion("left", "down"), "trans")
-set_binding(input_key("right"), trans_camera(20, 0))
-set_binding(input_key("left"), trans_camera(-20, 0))
-set_binding(input_key("up"), trans_camera(0, 20))
-set_binding(input_key("down"), trans_camera(0, -20))
-set_binding(input_key("right", "shift"), trans_camera(60, 0))
-set_binding(input_key("left", "shift"), trans_camera(-60, 0))
-set_binding(input_key("up", "shift"), trans_camera(0, 60))
-set_binding(input_key("down", "shift"), trans_camera(0, -60))
-set_binding(input_key("Z", "shift"), zoom_camera(1.2))
-set_binding(input_key("z"), zoom_camera(.8333))
+set_binding(input_key("right"), win.trans_camera(20, 0))
+set_binding(input_key("left"), win.trans_camera(-20, 0))
+set_binding(input_key("up"), win.trans_camera(0, 20))
+set_binding(input_key("down"), win.trans_camera(0, -20))
+set_binding(input_key("right", "shift"), win.trans_camera(60, 0))
+set_binding(input_key("left", "shift"), win.trans_camera(-60, 0))
+set_binding(input_key("up", "shift"), win.trans_camera(0, 60))
+set_binding(input_key("down", "shift"), win.trans_camera(0, -60))
+set_binding(input_key("Z", "shift"), win.zoom_camera(1.2))
+set_binding(input_key("z"), win.zoom_camera(.8333))
 
 
 # zooming
@@ -53,17 +54,17 @@ set_binding(input_click("left", "up", "ctrl"), "hotspot_click")
 
 # misc
 set_binding(input_key("h"), "home")
-set_binding(input_key("q"), lambda: _set_and_call(win, close_window))
-set_binding(input_key("l", "ctrl"), lambda: _set_and_call(win, toggle_aliasing))
-set_binding(input_key("x", "ctrl"), lambda: _set_and_call(win, toggle_crosshair))
-set_binding(input_key("d", "ctrl"), lambda: summon.dupWindow(win.winid))
+set_binding(input_key("q"), win.close)
+set_binding(input_key("l", "ctrl"), win.toggle_aliasing)
+set_binding(input_key("x", "ctrl"), win.toggle_crosshair)
+set_binding(input_key("d", "ctrl"), win.duplicate)
 
 
 # add print screen bindings
 import summon.svg
 
 set_binding(input_key("p", "ctrl"), 
-            lambda: _set_and_call(win, summon.svg.printScreen))
+            _set_and_call(win, summon.svg.printScreen))
 set_binding(input_key("p", "ctrl", "shift"), 
-            lambda: _set_and_call(win, summon.svg.printScreenPng))
+            _set_and_call(win, summon.svg.printScreenPng))
 

@@ -22,8 +22,9 @@ def load_config():
         try:
             import summon_config
             reload(summon_config)
-        except:
+        except Exception, e:
             print "could not import summon_config"
+            print e
     
     else:
         execfile(config_file)
@@ -198,12 +199,12 @@ def visitGraphics(elm, func):
 class Window:
     """The SUMMON Window"""
 
-    def __init__(self, name="SUMMON", winid = None):
+    def __init__(self, name="SUMMON", winid = None, worldid=None, screenid=None):
         if winid == None:
             # create new window
             self.winid = new_window()
-            self.world = Model()
-            self.screen = Model()
+            self.world = Model(worldid)
+            self.screen = Model(screenid)
             self.name = name
 
             assert self.winid != None
@@ -251,6 +252,9 @@ class Window:
         return func(*args)
     
     
+    def duplicate(self):
+        dupWindow(self.winid)
+    
     # model manipulation (forward to world)
     def clear_groups(self):
         return self.world.clear_groups()
@@ -294,9 +298,24 @@ class Window:
         set_window(self.winid)
         return zoomy(y)
 
+    def zoom_camera(self, factor, factor2=None):
+        if factor2 == None:
+            factor2 = factor
+
+        def func():
+            w, h = self.get_window_size()
+            self.focus(w/2, h/2)
+            self.zoom(factor, factor2)
+        return func
+
+
     def trans(self, x, y):
         set_window(self.winid)
         return trans(x, y)
+    
+    def trans_camera(self, x, y):
+        """Return a function of no arguments that will translate the camera"""
+        return lambda: self.trans(x, y)
     
     def home(self):
         set_window(self.winid)
@@ -330,9 +349,27 @@ class Window:
         set_window(self.winid)
         return set_antialias(*args)
     
-    def show_crosshair(self, *args):
+    def toggle_aliasing(self):
+        state.antialias = not state.antialias
+        self.set_antialias(state.antialias)
+
+    def toggle_crosshair(self):
+        state.crosshair = not state.crosshair
+        self.show_crosshair(state.crosshair)
+
+        if state.crosshair_color == None:
+            col = self.get_bgcolor()
+            self.set_crosshair_color(1-col[0], 1-col[1], 1-col[2], 1)
+    
+    def set_crosshair_color(self, r, g, b, a=1):
+        state.crosshair_color = (r, g, b, a)
+        self.set_crosshair_color(r, g, b, a)
+
+
+    def show_crosshair(self, enabled):
+        state.crosshair = enabled
         set_window(self.winid)
-        return show_crosshair(*args)
+        return show_crosshair(enabled)
 
     def set_crosshair_color(self, *args):
         set_window(self.winid)
@@ -425,20 +462,19 @@ def dupWindow(cur=None):
     zoomy = (coords[3] - coords[1]) / size[1]
 
     # create new window with same model and coords    
-    win = new_window()
-    assign_model(win, "world", model)
-    set_window(win)
-    set_window_size(* size)
-    set_bgcolor(* bg)
+    win = Window(worldid=model)
+    win.activate()
+    win.set_window_size(* size)
+    win.set_bgcolor(* bg)
         
-    set_visible(*coords)
-    coords = get_visible()
+    win.set_visible(*coords)
+    coords = win.get_visible()
     
     zoomx2 = (coords[2] - coords[0]) / size[0]
     zoomy2 = (coords[3] - coords[1]) / size[1]
     
-    focus(size[0] / 2.0, size[1] / 2.0)
-    zoom(zoomx2 / zoomx, zoomy2 / zoomy)
+    win.focus(size[0] / 2.0, size[1] / 2.0)
+    win.zoom(zoomx2 / zoomx, zoomy2 / zoomy)
     
     load_config()
     set_window(cur)
