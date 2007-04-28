@@ -1,4 +1,4 @@
-from summon import *
+from summon.core import *
 import os
 
 
@@ -7,7 +7,7 @@ def plotList(arr):
     for i in range(len(arr)):
         pts.append(i)
         pts.append(arr[i])
-    return group(line_strip(apply(vertices, pts)))
+    return group(line_strip(* pts))
 
 def plotFunc(func, start, end, step):
     pts = []
@@ -16,7 +16,7 @@ def plotFunc(func, start, end, step):
         pts.append(i)
         pts.append(func(i))
         i += step
-    return group(line_strip(apply(vertices, pts)))
+    return group(line_strip(* pts))
 
 
 

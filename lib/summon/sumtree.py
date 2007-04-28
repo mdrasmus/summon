@@ -274,7 +274,10 @@ class SumTree:
             self.setupNode(param, child)
 
     def setupTree(self, param, tree):
-        tree.setSizes()
+        sizes = treelib.countDescendents(tree.root)
+        for node, size in sizes.iteritems():
+            node.size = size
+        
         self.setupNode(param, tree.root)
         self.setColors(tree.root)
         self.tree = tree
