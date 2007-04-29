@@ -116,7 +116,7 @@ protected:
     virtual void DrawScreen();
     virtual void DrawCrosshair();
         
-    void DrawElement(GroupTable *table, Element *elm); 
+    void DrawElement(GroupTable *table, Element *elm, bool useTasks=true); 
     void DrawGraphic(Graphic *graphic);
     /*
     void DrawPrimitives(Graphic::PrimitiveIterator begin, 

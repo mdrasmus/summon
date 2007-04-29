@@ -13,30 +13,35 @@
 #include "drawCommands.h"
 #include "Graphic.h"
 #include "GroupTable.h"
-#include "RectTree.h"
+#include "Hotspot.h"
 #include "Transform.h"
 
 namespace Vistools
 {
 
 
+
+
 struct BuildEnv
 {
-    BuildEnv(bool identity = false) {
+    BuildEnv(bool identity = false, int kind=MODEL_WORLD) :
+        modelKind(kind) {
         if (identity) {
             trans.SetIdentity();
         }
     }
     
     TransformMatrix trans;
+    int modelKind;
 };
 
 
 class DrawModel : public Model
 {
 public:
-    DrawModel(int id) :
-        m_id(id)
+    DrawModel(int id, int kind=MODEL_WORLD) :
+        m_id(id),
+        m_kind(kind)
     {
     }
     
@@ -61,7 +66,9 @@ public:
     Scm GetGroup(BuildEnv &env, Element *elm);
     
     void RemoveHotspots(Element *elm);
- 
+    
+    void SetKind(int kind) { m_kind = kind; }
+    
     void FindBounding(Element *elm, 
                       float *top, float *bottom, float *left, float *right,
                       TransformMatrix *matrix);
@@ -76,11 +83,13 @@ public:
         RedisplayCommand redisplay;
         UpdateViews(redisplay);
     }
+
     
 protected:
     int m_id;
+    int m_kind;
     GroupTable m_table;
-    RectTree<Command*> m_hotspotClicks;
+    list<Hotspot*> m_hotspotClicks;
 };
 
 }

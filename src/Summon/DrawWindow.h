@@ -54,6 +54,7 @@ public:
         m_controller.SetModel(model);
         if (model) {
             model->AddView(&m_view);
+            model->SetKind(MODEL_WORLD);
         }
         m_view.Redisplay();
     }
@@ -69,6 +70,7 @@ public:
         m_view.SetScreenModel(model);
         if (model) {
             model->AddView(&m_view);
+            model->SetKind(MODEL_SCREEN);
         }
         m_view.Redisplay();
     }    

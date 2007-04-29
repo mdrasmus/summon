@@ -189,8 +189,9 @@ void DrawView::ExecuteTasks()
                 glCallList(m_tasks[i]->m_drawlist);
                 break;
             case TASK_ELEMENT: {
+                // assumes only world elements are on task list
                 GroupTable *table = m_worldModel->GetGroupTable();
-                DrawElement(table, m_tasks[i]->m_element);
+                DrawElement(table, m_tasks[i]->m_element, true);
                 } break;
             default:
                 assert(0);
@@ -248,7 +249,7 @@ void DrawView::DrawWorld()
         AddTask(new DrawTask(glGenLists(1)));
             
         GroupTable *table = m_worldModel->GetGroupTable();
-        DrawElement(table, table->GetGroup(table->GetRoot()));
+        DrawElement(table, table->GetGroup(table->GetRoot()), true);
         
         GetLastTask()->Close();
     } else {
@@ -269,7 +270,7 @@ void DrawView::DrawScreen()
 
     glPointSize(1.0);
     GroupTable *table = m_screenModel->GetGroupTable();
-    DrawElement(table, table->GetGroup(table->GetRoot()));
+    DrawElement(table, table->GetGroup(table->GetRoot()), false);
 
 }
 
@@ -306,14 +307,14 @@ void DrawView::DrawCrosshair()
 }
 
 
-void DrawView::DrawElement(GroupTable *table, Element *element)
+void DrawView::DrawElement(GroupTable *table, Element *element, bool useTasks)
 {
     // ignore non-visible elements
     if (!element->IsVisible())
         return;
 
     // prepprocess dynamic elements
-    if (element->IsDynamic() && !IsExecutingTasks()) {
+    if (useTasks && element->IsDynamic() && !IsExecutingTasks()) {
         // close any drawlists that are currently being compiled
         GetLastTask()->Close();
         
@@ -348,8 +349,6 @@ void DrawView::DrawElement(GroupTable *table, Element *element)
             
             DrawGraphic((Graphic*) element);
             
-            //DrawPrimitives(((Graphic*)element)->PrimitivesBegin(),
-            //           ((Graphic*)element)->PrimitivesEnd());
             glEnd();
             break;
         
@@ -362,23 +361,19 @@ void DrawView::DrawElement(GroupTable *table, Element *element)
 
             {
                 Transform *trans = (Transform*) element;
-                for (Transform::Iterator i = trans->TransformsBegin();
-                     i != trans->TransformsEnd(); i++)
-                {
-                    switch ((*i).kind) {
-                        case TRANSLATE_CONSTRUCT:
-                            glTranslatef((*i).first, (*i).second, 0);
-                            break;
-                        case ROTATE_CONSTRUCT:
-                            glRotatef((*i).first, 0, 0, 1);
-                            break;
-                        case SCALE_CONSTRUCT:
-                            glScalef((*i).first, (*i).second, 0);
-                            break;
-                        case FLIP_CONSTRUCT:
-                            glRotatef(180, (*i).first, (*i).second, 0);
-                            break;
-                    }
+                switch (trans->GetKind()) {
+                    case TRANSLATE_CONSTRUCT:
+                        glTranslatef(trans->GetParam1(), trans->GetParam2(), 0);
+                        break;
+                    case ROTATE_CONSTRUCT:
+                        glRotatef(trans->GetParam1(), 0, 0, 1);
+                        break;
+                    case SCALE_CONSTRUCT:
+                        glScalef(trans->GetParam1(), trans->GetParam2(), 0);
+                        break;
+                    case FLIP_CONSTRUCT:
+                        glRotatef(180, trans->GetParam1(), trans->GetParam2(), 0);
+                        break;
                 }
             }
             break;
@@ -396,7 +391,7 @@ void DrawView::DrawElement(GroupTable *table, Element *element)
     
     // exec element's children
     for (Element::Iterator i=element->Begin(); i!=element->End(); i++) {
-        DrawElement(table, *i);
+        DrawElement(table, *i, useTasks);
     }
     
     
@@ -409,7 +404,7 @@ void DrawView::DrawElement(GroupTable *table, Element *element)
     
     
     // postprocess dynamic elements
-    if (element->IsDynamic() && !IsExecutingTasks()) {
+    if (useTasks && element->IsDynamic() && !IsExecutingTasks()) {
         // start a new drawlist task for later elements
         AddTask(new DrawTask(glGenLists(1)));
     }
@@ -515,13 +510,19 @@ void DrawView::DrawTextElement(TextElement *elm)
     
     // do not draw text that is not visible
     // get bounding visible view
-    if (! WithinView(elm->envpos1, elm->envpos2)) {
+    if (elm->modelKind == MODEL_WORLD && 
+        !WithinView(elm->envpos1, elm->envpos2)) 
+    {
         return;
     }
     
     if (elm->kind == TextElement::KIND_BITMAP) {
         void *font = GLUT_BITMAP_8_BY_13;
-        Vertex2f zoom =  GetZoom();
+        Vertex2f zoom = GetZoom();
+        if (elm->modelKind == MODEL_SCREEN) {
+            zoom.x = 1.0;
+            zoom.y = 1.0;
+        }
 
         // find text on-screen size
         float textWidth  = glutBitmapLength(font, text) / zoom.x
@@ -571,6 +572,10 @@ void DrawView::DrawTextElement(TextElement *elm)
         float fontSize = 119.05;
                 
         Vertex2f zoom = GetZoom();
+        if (elm->modelKind == MODEL_SCREEN) {
+            zoom.x = 1.0;
+            zoom.y = 1.0;
+        }
         
         // flip zooming if text is known to be vertical
         if (elm->justified & TextElement::VERTICAL) {

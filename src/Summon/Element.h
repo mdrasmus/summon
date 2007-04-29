@@ -17,6 +17,12 @@ namespace Vistools {
 using namespace std;
 
 
+enum {
+    MODEL_SCREEN,
+    MODEL_WORLD
+};
+
+
 
 class Element
 {

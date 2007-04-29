@@ -210,7 +210,7 @@ public:
                 } break;
                 
             case NEW_MODEL_COMMAND:
-                ((ScriptCommand*) &command)->SetReturn(Int2Scm(NewModel()));
+                ((ScriptCommand*) &command)->SetReturn(Int2Scm(NewModel(MODEL_WORLD)));
                 break;
                 
             case ASSIGN_MODEL_COMMAND: {
@@ -380,10 +380,10 @@ public:
     
     
     
-    int NewModel()
+    int NewModel(int kind)
     {
         int id = m_nextModelId;
-        m_models[id] = new DrawModel(id);
+        m_models[id] = new DrawModel(id, kind);
         m_nextModelId++;
         return id;
     }
@@ -391,7 +391,7 @@ public:
     void MakeDefaultWindowModel()
     {
         int winId = NewWindow();
-        int modelId = NewModel();
+        int modelId = NewModel(MODEL_WORLD);
         m_window = m_windows[winId];
         m_window->SetWorldModel(m_models[modelId]);
     }

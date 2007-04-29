@@ -121,64 +121,10 @@ extern PyObject *python_globals;
 #define Scm2Py(var) (var.GetPy())
 #define Py2ScmTake(var) (Scm(var, false))
 
-#define GAURDIAN_KEY "__gaurdian"
 
 void InitPython();
 void DestroyPython();
 
-
-// guardians are probably unnecessary if I just use reference counts
-inline PyObject *GetGaurdian()
-{
-    PyObject *globals = PyModule_GetDict(PyImport_AddModule("__main__"));
-    return PyDict_GetItemString(globals, GAURDIAN_KEY);
-}
-
-// gaurd a scm object from garbage collection
-inline void ScmGaurd(Scm scm)
-{
-    return;
-    PyObject *gaurdian = GetGaurdian();
-    PyObject *p = Scm2Py(scm);
-    
-    int count = 1;
-    PyObject *pcount = PyDict_GetItem(gaurdian, p);
-    
-    if (pcount) {
-        // add one to count
-        count = PyInt_AS_LONG(pcount) + 1;
-    }
-    
-    //printf("gaurd %p %d %d\n", p, count, p->ob_refcnt);
- 
-    PyObject *pcount2 = PyInt_FromLong((long) count);
-    PyDict_SetItem(gaurdian, p, pcount2);
-    //Py_INCREF(p);
-    Py_DECREF(pcount2);
-}
-
-
-inline void ScmUngaurd(Scm scm)
-{
-    return;
-    PyObject *gaurdian = GetGaurdian();
-    PyObject *p = Scm2Py(scm);
-    
-    PyObject *pcount = PyDict_GetItem(gaurdian, p);
-    assert(pcount);
-    
-    int count = PyInt_AS_LONG(pcount) - 1;
-    
-    //printf("ungaurd %p %d %d\n", p, count, p->ob_refcnt);
-    
-    if (count == 0) {
-        PyDict_DelItem(gaurdian, p);
-    } else {
-        PyObject *pcount2 = PyInt_FromLong((long) count);
-        PyDict_SetItem(gaurdian, p, pcount2);
-        Py_DECREF(pcount2);
-    }
-}
 
 
 inline Scm ScmEvalStr(const char *str)

@@ -84,6 +84,7 @@ void drawCommandsInit()
     RegisterScriptCommand(SetAntialiasCommand)      v() gl()
     RegisterScriptCommand(ShowCrosshairCommand)     v()
     RegisterScriptCommand(SetCrosshairColorCommand) v()
+    RegisterCommand(ModelChangedCommand)
 
     // controller commands    
     RegisterScriptCommand(SetBindingCommand)       c()
@@ -122,6 +123,8 @@ void drawCommandsInit()
     RegisterConstruct(RotateConstruct)
     RegisterConstruct(ScaleConstruct)
     RegisterConstruct(FlipConstruct)
+    RegisterConstruct(NozoomConstruct)
+    RegisterConstruct(SideAlignConstruct)
     
     // inputs
     RegisterConstruct(InputKeyConstruct)

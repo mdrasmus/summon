@@ -17,13 +17,16 @@
 
 namespace Vistools {
 
+
+
 class TextElement : public Element
 {
 public:
     TextElement() : 
         Element(TEXT_CONSTRUCT),
         minHeight(0.0),
-        maxHeight(0.0)
+        maxHeight(0.0),
+        modelKind(MODEL_WORLD)
     {
         m_dynamic = true;
     }
@@ -61,6 +64,7 @@ public:
     int kind;
     float minHeight;
     float maxHeight;
+    int modelKind;
 };
 
 

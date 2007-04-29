@@ -9,7 +9,6 @@
 #include <list>
 
 #include "DrawModel.h"
-#include "Hotspot.h"
 #include "TextElement.h"
 
 
@@ -20,14 +19,19 @@ void DrawModel::ExecCommand(Command &command)
 {
     switch (command.GetId()) {
         case ADD_GROUP_COMMAND: {
-            BuildEnv env(true);
+            //ModelChangeCommand change;        
+            BuildEnv env(true, m_kind);
             int id = AddGroup(env, -1, ((AddGroupCommand*)(&command))->code);
             ((AddGroupCommand*)(&command))->SetReturn(Int2Scm(id));
+            
+            //change.changedGroups.push_back(m_table.GetGroup(id));
+            
             Redisplay();
             } break;
         
         case INSERT_GROUP_COMMAND: {
-            BuildEnv env(true);
+            //ModelChangeCommand change;
+            BuildEnv env(true, m_kind);
             int pid = ((InsertGroupCommand*)(&command))->groupid;
             
             // find parent group to insert into
@@ -41,12 +45,15 @@ void DrawModel::ExecCommand(Command &command)
                                   ((InsertGroupCommand*)(&command))->code);
                 
                 ((InsertGroupCommand*)(&command))->SetReturn(Int2Scm(id));
+                //change.changedGroups.push_back(group);
+                
+                Redisplay();                
             } else {
                 Error("unknown group %d", pid);
                 ((InsertGroupCommand*)(&command))->SetReturn(Int2Scm(-1));
             }
             
-            Redisplay();
+
             } break;
         
         case REMOVE_GROUP_COMMAND: {
@@ -61,8 +68,9 @@ void DrawModel::ExecCommand(Command &command)
             } break;
         
         case REPLACE_GROUP_COMMAND: {
+            //ModelChangeCommand change;
             ReplaceGroupCommand *replace = (ReplaceGroupCommand*) &command;
-            BuildEnv env(true);
+            BuildEnv env(true, m_kind);
             
             // find group to replace
             Group *group = m_table.GetGroup(replace->groupid);
@@ -80,13 +88,14 @@ void DrawModel::ExecCommand(Command &command)
                 PopulateElement(env, parent, replace->code);
                 replace->SetReturn(ScmCadr(ScmCar(replace->code)));
                 
+                //change.changedGroups.push_back();
                
+                Redisplay();
             } else {
                 Error("unknown group %d", replace->groupid);
                 replace->SetReturn(Int2Scm(-1));
             }
             
-            Redisplay();
             } break;
         
         case CLEAR_GROUPS_COMMAND: {
@@ -97,12 +106,14 @@ void DrawModel::ExecCommand(Command &command)
             } break;
         
         case SHOW_GROUP_COMMAND: {
+            //ModelChangeCommand change;
             ShowGroupCommand *show = (ShowGroupCommand*) &command;
             
             // toggle a group's visibility
             Group *group = m_table.GetGroup(show->groupid);
             if (group) {
                 group->SetVisible(show->visible);
+                //change.changedGroups.push_back(group);
             }
         
             Redisplay();
@@ -113,7 +124,7 @@ void DrawModel::ExecCommand(Command &command)
             
             Group *group = m_table.GetGroup(getGroup->groupid);
             if (group) {
-                BuildEnv env(true);
+                BuildEnv env(true, m_kind);
                 getGroup->SetReturn(GetGroup(env, group));
             } else {
                 Error("unknown group %d", getGroup->groupid);
@@ -134,14 +145,17 @@ void DrawModel::ExecCommand(Command &command)
 // Checks to see if any hotspots have been activated
 list<Command*> DrawModel::HotspotClick(Vertex2f pos)
 {
-    list<Command*> cmds, tmpCmds;
+    list<Command*> cmds;
     
-    // find commands associated with this location
-    tmpCmds = m_hotspotClicks.Find(pos);
-
-    // must make a copy of commands to return    
-    for (list<Command*>::iterator i=tmpCmds.begin(); i!=tmpCmds.end(); i++)
-        cmds.push_back((*i)->Create());
+    for (list<Hotspot*>::iterator i=m_hotspotClicks.begin(); 
+         i!=m_hotspotClicks.end(); i++)
+    {
+        if (pos.x >= (*i)->pos1.x && pos.x <= (*i)->pos2.x &&
+            pos.y >= (*i)->pos1.y && pos.y <= (*i)->pos2.y)
+        {
+            cmds.push_back((*i)->GetProc()->Create());
+        }
+    }
     
     return cmds;
 }
@@ -345,7 +359,6 @@ Element *DrawModel::BuildElement(BuildEnv &env, Scm code)
             case TRANSLATE_CONSTRUCT:
             case SCALE_CONSTRUCT:
             case FLIP_CONSTRUCT: {
-                Transform *trans = new Transform();
                 Scm first  = ScmCadr(code);
                 Scm second = ScmCaddr(code);
 
@@ -353,8 +366,9 @@ Element *DrawModel::BuildElement(BuildEnv &env, Scm code)
                     delete elm;
                     return NULL;
                 }
-
-                trans->Add(header, Scm2Float(first), Scm2Float(second));
+                
+                Transform *trans = new Transform(header, 
+                                           Scm2Float(first), Scm2Float(second));
                 
                 // modify environment for children elements
                 BuildEnv env2 = env;
@@ -369,15 +383,14 @@ Element *DrawModel::BuildElement(BuildEnv &env, Scm code)
                 } break;
 
             case ROTATE_CONSTRUCT: {
-                Transform *trans = new Transform();
                 Scm first  = ScmCadr(code);
 
                 if (!ScmFloatp(first)) {
                     delete elm;
                     return NULL;
                 }
-
-                trans->Add(header, Scm2Float(first));
+                
+                Transform *trans = new Transform(header, Scm2Float(first));
 
                 // modify environment for children elements
                 BuildEnv env2 = env;
@@ -400,136 +413,6 @@ Element *DrawModel::BuildElement(BuildEnv &env, Scm code)
     return elm;
 }
 
-
-
-/*
-    // create children if they exist
-    for (Scm children = code;
-         ScmConsp(children); 
-         children = ScmCdr(children))
-    {
-        // get code for child
-        Scm child = ScmCar(children);
-        
-        // if integer then it is an implied vertices primitive
-        if (ScmFloatp(child)) {
-            int len = 0;
-            Scm ptr = children;
-            
-            // determine size of vertices primitive
-            do {
-                len++;
-                ptr = ScmCdr(ptr);
-            } while (ScmConsp(ptr) && ScmFloatp(ScmCar(ptr)));
-            
-            // parse vertices
-            if (len % 2 == 0) {
-                VerticesPrimitive *vertices = new VerticesPrimitive();
-
-                vertices->len = len;
-                vertices->data = new float [len];
-                
-                for (int i=0; i<len; i++) {
-                    vertices->data[i] = Scm2Float(ScmCar(children));
-                    children = ScmCdr(children);
-                }
-                
-                graphic->AddPrimitive(vertices);
-            } else {
-                Error("Odd number of coordinates given for vertices");
-                return false;
-            }
-            
-            // determine if loop should continue
-            if (!ScmConsp(children))
-                break;
-            else
-                // repair the child pointer
-                child = ScmCar(children);
-        }
-        
-        // build primitive and add to graphic
-        Primitive *prim = BuildPrimitive(env, child);
-        if (prim) {
-            graphic->AddPrimitive(prim);
-        } else {
-            Error("Bad primitive in graphic");
-            return false;
-        }
-
-    }  
-    return true;
-}
-
-Primitive *DrawModel::BuildPrimitive(BuildEnv &env, Scm code)
-{
-    Primitive *prim = NULL;
-
-    // do nothing if not a list
-    if (!ScmConsp(code))
-        return NULL;
-    
-    // check that header is int
-    if (!ScmIntp(ScmCar(code))) {
-        return NULL;
-    }
-    
-    // build element based on header
-    switch (Scm2Int(ScmCar(code))) 
-    {
-        case VERTICES_CONSTRUCT: {
-            VerticesPrimitive *vertices = new VerticesPrimitive();
-            
-            Scm lst = ScmCdr(code);
-            vertices->len = ScmLength(lst);
-            vertices->data = new float [vertices->len];
-            
-            for (int i=0; 
-                 ScmConsp(lst) && i < vertices->len; 
-                 i++, lst = ScmCdr(lst))
-            {
-                Scm node = ScmCar(lst);
-                if (ScmFloatp(node)) {
-                    vertices->data[i] = Scm2Float(node);
-                } else {
-                    Error("Bad vertex coordinate");
-                    delete prim;
-                    return NULL;
-                }
-            }
-            
-            prim = vertices;
-            
-            } break;
-        
-        case COLOR_CONSTRUCT: {
-            ColorPrimitive *color = new ColorPrimitive();
-            
-            Scm lst = ScmCdr(code);
-            
-            for (int i=0; ScmConsp(lst) && i<4; i++, lst = ScmCdr(lst)) {
-                Scm node = ScmCar(lst);
-                if (ScmFloatp(node)) {
-                    color->data[i] = Scm2Float(node);
-                } else {
-                    Error("Bad color value");
-                    delete prim;
-                    return NULL;
-                }
-            }
-            
-            prim = color;
-            
-            } break;
-            
-        default:
-            Error("Unknown primitive %d", Scm2Int(ScmCar(code)));
-            return NULL;
-    }
-    
-    return prim;
-}
-*/
 
 
 Element *DrawModel::BuildHotspot(BuildEnv &env, Scm code)
@@ -572,7 +455,7 @@ Element *DrawModel::BuildHotspot(BuildEnv &env, Scm code)
     hotspot->pos2 = pos2;
     
     // register hotspot
-    m_hotspotClicks.Insert(proc, pos1, pos2);
+    m_hotspotClicks.push_back(hotspot);
     
     return hotspot;
 }
@@ -627,6 +510,7 @@ Element *DrawModel::BuildText(BuildEnv &env, Scm code, int kind)
     textElm->justified = justified;
     textElm->minHeight = minHeight;
     textElm->maxHeight = maxHeight;
+    textElm->modelKind = env.modelKind;
     
     // find scaling
     Vertex2f orgin;
@@ -817,7 +701,7 @@ void DrawModel::RemoveGroup(int id)
 void DrawModel::RemoveHotspots(Element *elm)
 {
     if (elm->GetId() == HOTSPOT_CONSTRUCT) {
-        m_hotspotClicks.Remove(((Hotspot*)elm)->GetProc());
+        m_hotspotClicks.remove((Hotspot*) elm);
     } else {
         // recurse
         for (Element::Iterator i=elm->Begin(); i!=elm->End(); i++) {

@@ -34,8 +34,8 @@ void MakeTransMatrix(float *vec, float *m)
 
 void MakeRotateMatrix(float angle, float *vec, float *m)
 {
-    float s = sin(angle * (3.1415926/180));
-    float c = cos(angle * (3.1415926/180));
+    float s = sin(angle * (3.1415926/180.0));
+    float c = cos(angle * (3.1415926/180.0));
     float t = 1 - c;
     float x = vec[0];
     float y = vec[1];
@@ -80,52 +80,46 @@ void CopyMatrix(float *m, float *n)
 }
 
 
-void Transform::UpdateMatrix()
+Transform::Transform(int kind, float param1, float param2) :
+    Element(TRANSFORM_CONSTRUCT),
+    m_kind(kind),
+    m_param1(param1),
+    m_param2(param2)
 {
-    TransformNode trans = m_transforms.back();
-    float mat[16];
-    float mat2[16];
     float vec[3];
     
-    switch (trans.kind) {
+    switch (kind) {
         case TRANSLATE_CONSTRUCT:
-            vec[0] = trans.first;
-            vec[1] = trans.second;
+            vec[0] = param1;
+            vec[1] = param2;
             vec[2] = 0;
-            MakeTransMatrix(vec, mat);
+            MakeTransMatrix(vec, m_matrix);
             break;
             
         case ROTATE_CONSTRUCT:
             vec[0] = 0;
             vec[1] = 0;
             vec[2] = 1;
-            MakeRotateMatrix(trans.first, vec, mat);            
+            MakeRotateMatrix(param1, vec, m_matrix);            
             break;
         
         case SCALE_CONSTRUCT:
-            vec[0] = trans.first;
-            vec[1] = trans.second;
+            vec[0] = param1;
+            vec[1] = param2;
             vec[2] = 0;
-            MakeScaleMatrix(vec, mat);
+            MakeScaleMatrix(vec, m_matrix);
             break;
         
         case FLIP_CONSTRUCT:
-            vec[0] = trans.first;
-            vec[1] = trans.second;
+            vec[0] = param1;
+            vec[1] = param2;
             vec[2] = 0;
-            MakeRotateMatrix(180, vec, mat);            
+            MakeRotateMatrix(180, vec, m_matrix);            
             break;
         
         default:
             Error("Unknown transform");
             assert(0);
-    }
-    
-    if (m_transforms.size() > 1) {
-        MultMatrix(m_matrix, mat, mat2);
-        CopyMatrix(m_matrix, mat2);
-    } else {
-        CopyMatrix(m_matrix, mat);
     }
 }
 

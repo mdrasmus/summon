@@ -9,6 +9,7 @@
 #define DRAW_COMMANDS_H
 
 #include "Script.h"
+#include <list>
 #include <set>
 #include "common.h"
 #include "Color.h"
@@ -70,6 +71,7 @@ enum {
     SET_ANTIALIAS_COMMAND,
     SHOW_CROSSHAIR_COMMAND,
     SET_CROSSHAIR_COLOR_COMMAND,
+    MODEL_CHANGED_COMMAND,
     
     // controller commands
     SET_BINDING_COMMAND,
@@ -109,6 +111,8 @@ enum {
     ROTATE_CONSTRUCT,
     SCALE_CONSTRUCT,
     FLIP_CONSTRUCT,
+    NOZOOM_CONSTRUCT,
+    SIDE_ALIGN_CONSTRUCT,
     
     // inputs
     INPUT_KEY_CONSTRUCT,
@@ -832,6 +836,17 @@ public:
     Color color;
 };
 
+// forward declaration
+class Group;
+class ModelChangedCommand : public Command
+{
+public:
+    virtual Command* Create() { return new ModelChangedCommand(); }
+    virtual int GetId() { return MODEL_CHANGED_COMMAND; }
+    
+    list<Group*> changedGroups;
+};
+
 
 //----------------------------------------------------------------------------
 // controller commands
@@ -1243,6 +1258,32 @@ public:
 };
 
 
+class NozoomConstruct : public Construct
+{
+public:
+    virtual Command* Create() { return new NozoomConstruct(); }
+    virtual int GetId() { return NOZOOM_CONSTRUCT; }
+
+    virtual const char *GetName() { return "nozoom"; }
+    virtual const char *GetUsage() { return "zoomx, zoomy, * elements"; }
+    virtual const char *GetDescription() 
+    { return "Prevents zooming along either the x or y coordinates for the enclosed elements"; }
+};
+
+
+class SideAlignConstruct : public Construct
+{
+public:
+    virtual Command* Create() { return new SideAlignConstruct(); }
+    virtual int GetId() { return SIDE_ALIGN_CONSTRUCT; }
+
+    virtual const char *GetName() { return "side_align"; }
+    virtual const char *GetUsage() { return "['top'], ['bottom'], ['left'], ['right'], * elements"; }
+    virtual const char *GetDescription() 
+    { return "Prevents the origin of the elements from leaving the window via the specified sides"; }
+};
+
+
 class InputKeyConstruct : public Construct
 {
 public:
@@ -1297,13 +1338,6 @@ public:
         }
     }
     
-    virtual ~CallProcCommand()
-    {
-        if (defined)  {
-            ScmUngaurd(proc);
-        }
-    }
-    
     virtual Command* Create() { 
         if (!defined) {
             return new CallProcCommand();
@@ -1323,7 +1357,6 @@ public:
     {
         if (ScmProcedurep(ScmCar(lst))) {
             proc = ScmCar(lst);
-            ScmGaurd(proc);
             defined = true;
             return true;            
         } else {

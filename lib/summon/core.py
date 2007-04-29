@@ -57,8 +57,8 @@ def add_group(*groups):
     
 """
 # future wrapper
-def add_group(modelid, *groups):
-    return summon_core.add_group(state.current_window.winid, *groups)
+def add_group(*groups):
+    return summon_core.add_group(_summon_state.current_window.world.id, *groups)
 
 """
 
