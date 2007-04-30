@@ -36,6 +36,38 @@ class SummonState:
 
         self.crosshair = False
         self.crosshair_color = None
+        
+        self.windows = {}
+        self.models = {}
+    
+    
+    def add_window(self, win):
+        self.windows[win.winid] = win
+    
+    def remove_window(self, win):
+        if win.winid in self.windows:
+            del self.windows[win.winid]
+    
+    def get_window(self, winid):
+        if winid in self.windows:
+            return self.windows[winid]
+        else:
+            return None
+    
+    def add_model(self, model):
+        self.models[model.id] = model
+    
+    def remove_model(self, model):
+        if model.id in self.models:
+            del self.models[model.id]
+
+    def get_model(self, modelid):
+        if modelid in self.models:
+            return self.models[modelid]
+        else:
+            return None
+
+
 
 _summon_state = SummonState()
 
@@ -51,23 +83,49 @@ def get_summon_window():
 # TODO: should only really need to export Contructs.  Everything else should
 # be under summon.*
 
+#
+# these are wrappers around the old global function interface
+#
 
 def add_group(*groups):
-    return summon_core.add_group(* groups)
+    return summon_core.add_group(_summon_state.current_window.world.id, 
+                                 *groups)
     
-"""
-# future wrapper
-def add_group(*groups):
-    return summon_core.add_group(_summon_state.current_window.world.id, *groups)
 
-"""
+def insert_group(groupid, *groups):
+    return summon_core.insert_group(_summon_state.current_window.world.id, 
+                                    groupid, *groups)
+
+def remove_group(*groupids):
+    return summon_core.remove_group(_summon_state.current_window.world.id, 
+                                    *groupids)
+
+def replace_group(groupid, *groups):
+    return summon_core.replace_group(_summon_state.current_window.world.id, 
+                                     groupid, *groups)
+
+def clear_groups():
+    return summon_core.clear_groups(_summon_state.current_window.world.id)
+
+def show_group(groupid, visible):
+    return summon_core.show_group(_summon_state.current_window.world.id,
+                                    groupid, visible)
+
+def get_group(groupid):
+    return summon_core.get_group(_summon_state.current_window.world.id,
+                                 groupid)
+
+def get_root_id():
+    return summon_core.get_root_id(_summon_state.current_window.world.id)
+
+
+
 
 _summon_core_export = """\
 assign_model
 call_proc
 clear_all_bindings
 clear_binding
-clear_groups
 close_window
 color
 color_contents
@@ -78,12 +136,10 @@ flip
 flip_contents
 focus
 get_bgcolor
-get_group
 get_group_id
 get_model
 get_models
 get_mouse_pos
-get_root_id
 get_visible
 get_window
 get_window_name
@@ -91,7 +147,6 @@ get_window_size
 get_windows
 group
 group_contents
-groupid
 home
 hotspot
 hotspot_click
@@ -102,7 +157,6 @@ input_key
 input_key_contents
 input_motion
 input_motion_contents
-insert_group
 is_color
 is_dynamic_group
 is_flip
@@ -145,8 +199,6 @@ quads
 quads_contents
 quit
 redraw_call
-remove_group
-replace_group
 rotate
 rotate_contents
 scale
@@ -161,7 +213,6 @@ set_window
 set_window_name
 set_window_size
 show_crosshair
-show_group
 summon_main_loop
 text
 text_clip
@@ -218,9 +269,8 @@ def zoom_camera(factor, factor2=None):
     return func
 
 
-def reset_binding(input_obj, func):
+add_binding = set_binding
+def set_binding(input_obj, func):
     clear_binding(input_obj)
-    set_binding(input_obj, func)
-    
-   
-
+    add_binding(input_obj, func)
+reset_binding = set_binding

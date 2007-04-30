@@ -85,12 +85,13 @@ void DrawModel::ExecCommand(Command &command)
                 RemoveGroup(replace->groupid);
                 
                 // add new group
-                PopulateElement(env, parent, replace->code);
-                replace->SetReturn(ScmCadr(ScmCar(replace->code)));
-                
-                //change.changedGroups.push_back();
-               
-                Redisplay();
+                if (PopulateElement(env, parent, replace->code)) {
+                    replace->SetReturn(ScmCadr(ScmCar(replace->code)));
+                    //change.changedGroups.push_back();
+                } else {
+                    replace->SetReturn(Int2Scm(-1));
+                }
+                Redisplay();                
             } else {
                 Error("unknown group %d", replace->groupid);
                 replace->SetReturn(Int2Scm(-1));

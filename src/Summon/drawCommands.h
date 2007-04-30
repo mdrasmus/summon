@@ -476,39 +476,47 @@ public:
 // model commands
 //
 
-class AddGroupCommand : public ScriptCommand
+
+class ModelCommand : public ScriptCommand
+{
+public:
+    int modelid;
+};
+
+
+class AddGroupCommand : public ModelCommand
 {
 public:
     virtual Command* Create() { return new AddGroupCommand(); }
     virtual int GetId() { return ADD_GROUP_COMMAND; }
 
     virtual const char *GetName() { return "add_group"; }
-    virtual const char *GetUsage() { return "group"; }
+    virtual const char *GetUsage() { return "modelid, group"; }
     virtual const char *GetDescription() 
     { return "adds drawing groups to the current model"; }
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "c", &code);
+        return ParseScm(ErrorHelp(), lst, "dc", &modelid, &code);
     }
     
     Scm code;
 };
 
-class InsertGroupCommand : public ScriptCommand
+class InsertGroupCommand : public ModelCommand
 {
 public:
     virtual Command* Create() { return new InsertGroupCommand(); }
     virtual int GetId() { return INSERT_GROUP_COMMAND; }
 
     virtual const char *GetName() { return "insert_group"; }
-    virtual const char *GetUsage() { return "groupid, group"; }
+    virtual const char *GetUsage() { return "modelid, groupid, group"; }
     virtual const char *GetDescription() 
     { return "inserts drawing groups under an existing group"; }
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "dc", &groupid, &code);
+        return ParseScm(ErrorHelp(), lst, "ddc", &modelid, &groupid, &code);
     }
     
     int groupid;
@@ -516,19 +524,27 @@ public:
 };
 
 
-class RemoveGroupCommand : public ScriptCommand
+class RemoveGroupCommand : public ModelCommand
 {
 public:
     virtual Command* Create() { return new RemoveGroupCommand(); }
     virtual int GetId() { return REMOVE_GROUP_COMMAND; }
 
     virtual const char *GetName() { return "remove_group"; }
-    virtual const char *GetUsage() { return "groups"; }
+    virtual const char *GetUsage() { return "modelid, *groups"; }
     virtual const char *GetDescription() 
     { return "removes drawing groups from the current display"; }
     
     virtual bool Setup(Scm lst)
     {
+        // parse modelid
+        if (ScmConsp(lst) && ScmIntp(ScmCar(lst))) {
+            modelid = Scm2Int(ScmCar(lst));
+            lst = ScmCdr(lst);
+        } else {
+            return false;
+        }
+    
         // parse group ids
         for (; ScmConsp(lst); lst = ScmCdr(lst)) {
             if (ScmIntp(ScmCar(lst))) {
@@ -546,21 +562,21 @@ public:
 };
 
 
-class ReplaceGroupCommand : public ScriptCommand
+class ReplaceGroupCommand : public ModelCommand
 {
 public:
     virtual Command* Create() { return new ReplaceGroupCommand(); }
     virtual int GetId() { return REPLACE_GROUP_COMMAND; }
 
     virtual const char *GetName() { return "replace_group"; }
-    virtual const char *GetUsage() { return "groupid, group"; }
+    virtual const char *GetUsage() { return "modelid, groupid, group"; }
     virtual const char *GetDescription() 
     { return "replaces a drawing group on the current display"; }
     
     virtual bool Setup(Scm lst)
     {
-        if (ParseScm(ErrorHelp(), lst, "d", &groupid)) {
-            code = ScmCdr(lst);
+        if (ParseScm(ErrorHelp(), lst, "dd", &modelid, &groupid)) {
+            code = ScmCddr(lst);
             return true;
         } else {
             return false;
@@ -572,33 +588,38 @@ public:
 };
 
 
-class ClearGroupsCommand : public ScriptCommand
+class ClearGroupsCommand : public ModelCommand
 {
 public:
     virtual Command* Create() { return new ClearGroupsCommand(); }
     virtual int GetId() { return CLEAR_GROUPS_COMMAND; }
 
     virtual const char *GetName() { return "clear_groups"; }
-    virtual const char *GetUsage() { return ""; }
+    virtual const char *GetUsage() { return "modelid"; }
     virtual const char *GetDescription() 
     { return "removes all drawing groups from the current display"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "d", &modelid);
+    }
 };
 
 
-class ShowGroupCommand : public ScriptCommand
+class ShowGroupCommand : public ModelCommand
 {
 public:
     virtual Command* Create() { return new ShowGroupCommand(); }
     virtual int GetId() { return SHOW_GROUP_COMMAND; }
 
     virtual const char *GetName() { return "show_group"; }
-    virtual const char *GetUsage() { return "groupid, True|False"; }
+    virtual const char *GetUsage() { return "modelid, groupid, True|False"; }
     virtual const char *GetDescription() 
     { return "sets the visibilty of a group"; }
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "db", &groupid, &visible);
+        return ParseScm(ErrorHelp(), lst, "ddb", &modelid, &groupid, &visible);
     }
     
     int groupid;
@@ -606,36 +627,41 @@ public:
 };
 
 
-class GetGroupCommand : public ScriptCommand
+class GetGroupCommand : public ModelCommand
 {
 public:
     virtual Command* Create() { return new GetGroupCommand(); }
     virtual int GetId() { return GET_GROUP_COMMAND; }
 
     virtual const char *GetName() { return "get_group"; }
-    virtual const char *GetUsage() { return "groupid"; }
+    virtual const char *GetUsage() { return "modelid, groupid"; }
     virtual const char *GetDescription() 
     { return "creates a tuple object that represents a group"; }
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "d", &groupid);
+        return ParseScm(ErrorHelp(), lst, "dd", &modelid, &groupid);
     }
     
     int groupid;
 };
 
 
-class GetRootIdCommand : public ScriptCommand
+class GetRootIdCommand : public ModelCommand
 {
 public:
     virtual Command* Create() { return new GetRootIdCommand(); }
     virtual int GetId() { return GET_ROOT_ID_COMMAND; }
 
     virtual const char *GetName() { return "get_root_id"; }
-    virtual const char *GetUsage() { return ""; }
+    virtual const char *GetUsage() { return "modelid"; }
     virtual const char *GetDescription() 
     { return "gets the group id of the root group"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "d", &modelid);
+    }
 };
 
 

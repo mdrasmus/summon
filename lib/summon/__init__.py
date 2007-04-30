@@ -206,7 +206,10 @@ class Window:
             self.world = Model(worldid)
             self.screen = Model(screenid)
             self.name = name
-
+            
+            state.add_window(self)
+            
+            
             assert self.winid != None
             
             set_window_name(self.winid, name)
@@ -216,21 +219,10 @@ class Window:
             
             # load default configuration
             set_window(self.winid)
-            set_model(self.world.id)
-
-            self.cursor = get_root_id()
             
             self.activate()
             load_config()
-
-        else:
-            # attach to existing window
-            self.winid = winid
-            self.world = Model(get_model(winid, "world"))
-            self.screen = Model(get_model(winid, "screen"))
-            
-            self.activate()
-        
+    
     
     
     def set_name(self, name):
@@ -239,17 +231,11 @@ class Window:
     
     def activate(self):
         set_window(self.winid)
-        set_model(self.world.id)
         state.current_window = self
         
 
     def close(self):
         return close_window(self.winid)
-
-    def apply(self, func, *args):
-        set_window(self.winid)
-        set_model(self.world.id)
-        return func(*args)
     
     
     def duplicate(self):
@@ -436,53 +422,33 @@ class Model:
             # create new window
             self.id = new_model()
             assert self.id != None
-        else:
-            # attach to existing window
-            self.id = modelid
+            state.add_model(self.id)
     
     
     def clear_groups(self):
-        set_model(self.id)
-        return clear_groups()
+        return summon_core.clear_groups(self.id)
     
-    def add_group(self, *args):
-        set_model(self.id)
-        return add_group(*args)
+    def add_group(self, *groups):
+        return summon_core.add_group(self.id, *groups)
     
-    def insert_group(self, *args):
-        set_model(self.id)
-        return insert_group(*args)
+    def insert_group(self, groupid, *groups):
+        return summon_core.insert_group(self.id, groupid, *groups)
     
-    def remove_group(self, *args):
-        set_model(self.id)
-        return remove_group(*args)
+    def remove_group(self, groupids):
+        return summon_core.remove_group(self.id, *groupids)
     
-    def replace_group(self, *args):
-        set_model(self.id)
-        return replace_group(*args)
+    def replace_group(self, groupid, *groups):
+        return summon_core.replace_group(self.id, groupid, *groups)
     
     def get_root_id(self):
-        set_model(self.id)
-        return get_root_id()
+        return summon_core.get_root_id(self.id)
 
-    def show_group(self, *args):
-        set_model(self.id)
-        return show_group(*args)
+    def show_group(self, groupid, visible):
+        return summon_core.show_group(self.id, groupid, visible)
     
-    def get_group(self, *args):
-        set_model(self.id)
-        return get_group(*args)
+    def get_group(self, groupid):
+        return summon_core.get_group(self.id, groupid)
 
-    
-
-
-#def dupWindow():
-#    # get current window, model, and visible
-#    return state.current_window.duplicate()
-    
-
-def defaultWindow():
-    return Window(get_window())
 
 
 

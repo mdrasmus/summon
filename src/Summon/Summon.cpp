@@ -293,11 +293,6 @@ public:
                 
                 
             default:
-                // ensure a window exists for commands
-                if (!m_window) {
-                    return;
-                }
-            
                 // do command routing
                 if (g_globalAttr.Has(&command)) {
                     // global
@@ -306,18 +301,22 @@ public:
                 
                 } else if (g_modelAttr.Has(&command)) {
                     // model
-                    if (!m_model) {
-                        m_model = m_window->GetWorldModel();
-                    }
-                    m_model->ExecCommand(command);
+                    DrawModel *model = 
+                        GetModel(((ModelCommand*) &command)->modelid);
+                    if (model)
+                        model->ExecCommand(command);
                 
                 } else if (g_viewAttr.Has(&command)) {
                     // view
-                    m_window->GetView()->ExecCommand(command);
+                    if (m_window) {
+                        m_window->GetView()->ExecCommand(command);
+                    }
                     
                 } else {
                     // controller and default
-                    m_window->GetController()->ExecCommand(command);
+                    if (m_window) {
+                        m_window->GetController()->ExecCommand(command);
+                    }
                 }
         }
     }
@@ -489,10 +488,10 @@ public:
         // install group id generator
         ScmEvalStr("import " MODULE_NAME);
         ScmEvalStr(
-MODULE_NAME ".groupid = 1 \n\
+MODULE_NAME ".__groupid = 1 \n\
 def __new_groupid(): \n\
-    "MODULE_NAME".groupid = "MODULE_NAME".groupid + 1 \n\
-    return "MODULE_NAME".groupid\n\
+    "MODULE_NAME".__groupid = "MODULE_NAME".__groupid + 1 \n\
+    return "MODULE_NAME".__groupid\n\
 "MODULE_NAME".new_groupid = __new_groupid\n");
 
 
