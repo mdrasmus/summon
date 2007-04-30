@@ -23,7 +23,7 @@ options = [
 # Drawing Code
 #
 
-class SumTree:
+class SumTree (object):
     def __init__(self):
         self.selnode = None
         self.tree = None

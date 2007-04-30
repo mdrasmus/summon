@@ -321,6 +321,15 @@ class Window:
             self.zoom(factor, factor2)
         return func
 
+    def get_zoom(self):
+        coords = self.get_visible()
+        size = self.get_window_size()
+        
+        zoomx = (coords[2] - coords[0]) / size[0]
+        zoomy = (coords[3] - coords[1]) / size[1]
+        
+        return zoomx, zoomy
+
 
     def trans(self, x, y):
         set_window(self.winid)
@@ -350,13 +359,16 @@ class Window:
         set_window(self.winid)
         return get_visible()
         
-    def set_window_size(self, width, height):
+    def set_size(self, width, height):
         set_window(self.winid)
         return set_window_size(width, height)
+    set_window_size = set_size
     
-    def get_window_size(self):
+    def get_size(self):
         set_window(self.winid)
-        return get_window_size()    
+        return get_window_size()
+    get_window_size = get_size
+
     
     def set_antialias(self, *args):
         set_window(self.winid)
@@ -390,17 +402,18 @@ class Window:
     
     
     # controller
-    def set_binding(self, *args):
+    def add_binding(self, *args):
         set_window(self.winid)
-        return set_binding(*args)
+        return add_binding(*args)
         
     def clear_binding(self, *args):
         set_window(self.winid)
         return clear_binding(*args)
 
-    def reset_binding(self, *args):
+    def set_binding(self, *args):
         set_window(self.winid)
-        return reset_binding(*args)
+        return set_binding(*args)
+    reset_binding = set_binding
     
     def clear_all_bindings(self):
         set_window(self.winid)
@@ -422,7 +435,7 @@ class Model:
             # create new window
             self.id = new_model()
             assert self.id != None
-            state.add_model(self.id)
+            state.add_model(self)
     
     
     def clear_groups(self):

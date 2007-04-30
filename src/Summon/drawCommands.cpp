@@ -64,12 +64,12 @@ void drawCommandsInit()
     RegisterScriptCommand(QuitCommand)          g()
     
     // model commands
-    RegisterScriptCommand(AddGroupCommand)      m()
-    RegisterScriptCommand(InsertGroupCommand)   m()
-    RegisterScriptCommand(RemoveGroupCommand)   m()
-    RegisterScriptCommand(ReplaceGroupCommand)  m()
-    RegisterScriptCommand(ClearGroupsCommand)   m()
-    RegisterScriptCommand(ShowGroupCommand)     m()
+    RegisterScriptCommand(AddGroupCommand)      m() gl()
+    RegisterScriptCommand(InsertGroupCommand)   m() gl()
+    RegisterScriptCommand(RemoveGroupCommand)   m() gl()
+    RegisterScriptCommand(ReplaceGroupCommand)  m() gl()
+    RegisterScriptCommand(ClearGroupsCommand)   m() gl()
+    RegisterScriptCommand(ShowGroupCommand)     m() gl()
     RegisterScriptCommand(GetGroupCommand)      m()
     RegisterScriptCommand(GetRootIdCommand)     m()
     

@@ -138,8 +138,9 @@ void DrawView::ExecCommand(Command &command)
             break;
         
         case REDISPLAY_COMMAND:
-            MakeCurrentWindow();
             NoteModelChange();
+            
+            MakeCurrentWindow();            
             Glut2DView::ExecCommand(command);
             break;
                 
