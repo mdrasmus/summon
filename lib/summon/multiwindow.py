@@ -4,6 +4,7 @@ import summon
 
 
 def tie_windows(windows, tiex=False, tiey=False, pinx=False, piny=False):
+    # call back that sets translation and zoom
     def tie_scroll(w1, others):
         def update_view():
             pos1 = w1.get_position()
@@ -32,7 +33,8 @@ def tie_windows(windows, tiex=False, tiey=False, pinx=False, piny=False):
                 w2.set_trans(*trans2)
                 w2.set_zoom(*zoom2)
         return update_view
-
+    
+    # callback that sets focus
     def tie_focus(w1, others):
         def update_view():
             focus1 = w1.get_focus()
@@ -40,12 +42,11 @@ def tie_windows(windows, tiex=False, tiey=False, pinx=False, piny=False):
                 w2.set_focus(*focus1)
         return update_view
     
-    
+    # set callbacks for each window
     for win in windows:
         others = windows[:]
         others.remove(win)
-    
-        # add callbacks to window
+        
         t1 = tie_scroll(win, others)
         t2 = tie_focus(win, others)
         win.add_binding(input_motion("left", "down"), t1)
@@ -59,15 +60,18 @@ def tie_windows(windows, tiex=False, tiey=False, pinx=False, piny=False):
 
 
 class WindowEnsembl (summon.VisObject):
-    def __init__(self, windows):
-        self.windows = windows
+    def __init__(self, windows, stackx=False, stacky=False, 
+                                samew=False, sameh=False):
+        self.windows = windows[:]
         self.pos = {}
-        
-        for win in windows:
-            self.pos[win] = win.get_position()
+        self.sizes = {}
+        self.stackx = stackx
+        self.stacky = stacky
+        self.samew = samew
+        self.sameh = sameh
         
         # determine window decoration offset
-        pos1 = self.pos[windows[0]]
+        pos1 = windows[0].get_position()
         windows[0].set_position(*pos1)
         pos2 = windows[0].get_position()
         
@@ -76,9 +80,75 @@ class WindowEnsembl (summon.VisObject):
         windows[0].set_position(pos1[0] + self.offset[0], 
                                 pos1[1] + self.offset[1])
         
+        # setup stacking
+        if stackx or stacky:
+            self.stack(self.windows[0])
+
+        # record window positions and sizes
+        for win in windows:
+            pos = win.get_position()
+            self.pos[win] = [pos[0] + self.offset[0], pos[1] + self.offset[1]]
+            self.sizes[win] = win.get_size()
+        
+        # enable updating
         self.win = windows[0]
         self.enableUpdating()
+    
+    
+    def stack(self, win):
+        print "restack", win.name
         
+        others = self.windows[:]
+        others.remove(win)
+        
+        target_pos = win.get_position()
+        target_pos = [target_pos[0] + self.offset[0],
+                      target_pos[1] + self.offset[1]]
+        target_size = win.get_size()
+        
+        # get window sizes
+        widths = []
+        heights = []
+        x = []
+        y = []
+        totalx = 0
+        totaly = 0
+        target = []
+        
+        for win2 in self.windows:
+            w, h = win2.get_size()
+            
+            if self.samew:
+                w = target_size[0]
+            if self.sameh:
+                h = target_size[1]
+            
+            win2.set_size(w, h)
+            self.sizes[win2] = (w, h)
+            
+            if win2 == win:
+                target = [totalx, totaly]
+            
+            widths.append(w)
+            heights.append(h)
+            x.append(totalx)
+            y.append(totaly)
+            totalx += w - self.offset[0]
+            totaly += h - self.offset[1]
+        
+        # set window positions
+        for i, win2 in enumerate(self.windows):
+            if self.stackx:
+                newx = target_pos[0]
+                newy = target_pos[1] + y[i] - target[1]
+            elif self.stacky:
+                newx = target_pos[0] + x[i] - target[0]
+                newy = target_pos[1]
+            
+            self.pos[win2] = [newx, newy]
+            win2.set_position(newx, newy)
+        
+            
     def align(self, win):
         now = win.get_position()
         now = [now[0] + self.offset[0], now[1] + self.offset[1]]
@@ -103,8 +173,16 @@ class WindowEnsembl (summon.VisObject):
             pos1 = win.get_position()
             pos1 = [pos1[0] + self.offset[0], pos1[1] + self.offset[1]]
             pos2 = self.pos[win]
+            size1 = win.get_size()
+            size2 = self.sizes[win]
             
-            if pos1 != pos2:
-                self.align(win)
-                break
+            if self.stackx or self.stacky:
+                if pos1 != pos2 or size1 != size2:
+                    print pos1, pos2, size1, size2
+                    self.stack(win)
+                    break
+            else:
+                if pos1 != pos2:
+                    self.align(win)
+                    break
             
