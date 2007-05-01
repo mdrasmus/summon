@@ -72,6 +72,11 @@ public:
     inline string GetName()
     { return m_name; }
     
+    inline void SetPosition(int x, int y)
+    { glutPositionWindow(x, y); }
+    
+    inline Vertex2i GetPosition()
+    { return Vertex2i(glutGet(GLUT_WINDOW_X), glutGet(GLUT_WINDOW_Y)); }
     
     inline void AddListener(GlutViewListener *view) {
         m_listeners.push_back(view);

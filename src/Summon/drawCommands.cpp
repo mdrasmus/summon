@@ -23,6 +23,7 @@ CommandAttr g_modelAttr;
 CommandAttr g_viewAttr;
 CommandAttr g_controllerAttr;
 CommandAttr g_glAttr;
+CommandAttr g_viewAttr2;
 
 int CallProcCommand::procid = 0;
 
@@ -34,6 +35,7 @@ void drawCommandsInit()
 #   define g() AddAttr(g_globalAttr)
 #   define m() AddAttr(g_modelAttr)    
 #   define v() AddAttr(g_viewAttr)    
+#   define v2() AddAttr(g_viewAttr2)
 #   define c() AddAttr(g_controllerAttr)
 #   define gl() AddAttr(g_glAttr)
 
@@ -49,8 +51,8 @@ void drawCommandsInit()
     RegisterScriptCommand(GetWindowCommand)     g()
     RegisterScriptCommand(NewWindowCommand)     g() gl()
     RegisterScriptCommand(SetWindowCommand)     g() gl()
-    RegisterScriptCommand(SetWindowNameCommand) g() gl()
-    RegisterScriptCommand(GetWindowNameCommand) g()    
+    RegisterScriptCommand(SetWindowNameCommand) v2() gl()
+    RegisterScriptCommand(GetWindowNameCommand) v2()    
     RegisterScriptCommand(CloseWindowCommand)   g() gl()
     RegisterScriptCommand(GetModelsCommand)     g()
     RegisterScriptCommand(GetModelCommand)      g()
@@ -136,6 +138,7 @@ void drawCommandsInit()
 #   undef g
 #   undef m
 #   undef v
+#   undef v2
 #   undef c
 #   undef gl
 

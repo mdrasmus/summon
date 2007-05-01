@@ -203,26 +203,27 @@ class Window:
         if winid == None:
             # create new window
             self.winid = new_window()
-            self.world = Model(worldid)
-            self.screen = Model(screenid)
-            self.name = name
-            
+            assert self.winid != None
             state.add_window(self)
             
+            if worldid != None:
+                self.world = state.get_model(worldid)
+            else:
+                self.world = Model()
             
-            assert self.winid != None
-            
-            set_window_name(self.winid, name)
+            if screenid != None:
+                self.screen = state.get_model(screenid)
+            else:
+                self.screen = Model()
             
             assign_model(self.winid, "world", self.world.id)
             assign_model(self.winid, "screen", self.screen.id)
             
             # load default configuration
-            set_window(self.winid)
-            
             self.activate()
             load_config()
-    
+            
+            self.set_name(name)
     
     
     def set_name(self, name):

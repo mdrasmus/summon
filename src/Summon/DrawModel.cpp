@@ -452,6 +452,12 @@ Element *DrawModel::BuildHotspot(BuildEnv &env, Scm code)
     Vertex2f pos1, pos2;
     env.trans.VecMult(x1, y1, &pos1.x, &pos1.y);
     env.trans.VecMult(x2, y2, &pos2.x, &pos2.y);
+    
+    if (pos1.x > pos2.x)
+        swap(pos1.x, pos2.x);
+    if (pos1.y > pos2.y)
+        swap(pos1.y, pos2.y);
+    
     hotspot->pos1 = pos1;
     hotspot->pos2 = pos2;
     

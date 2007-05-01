@@ -139,29 +139,7 @@ public:
                 }
                 } break;
             
-            case SET_WINDOW_NAME_COMMAND: {
-                int windowid = ((SetWindowNameCommand*)&command)->windowid;
-                string name = ((SetWindowNameCommand*)&command)->name;
-                DrawWindow *window = GetWindow(windowid);
-                
-                if (window) {
-                    window->SetName(name);
-                } else {
-                    Error("cannot find window %d", windowid);
-                }
-                } break;
-            
-            case GET_WINDOW_NAME_COMMAND: {
-                int windowid = ((SetWindowNameCommand*)&command)->windowid;
-                DrawWindow *window = GetWindow(windowid);
-                
-                if (window) {
-                    ((ScriptCommand*)
-                       &command)->SetReturn(String2Scm(window->GetName().c_str()));
-                } else {
-                    Error("cannot find window %d", windowid);
-                }
-                } break;
+
             
             case CLOSE_WINDOW_COMMAND: {
                 int windowid = ((CloseWindowCommand*)&command)->windowid;
@@ -310,6 +288,17 @@ public:
                     // view
                     if (m_window) {
                         m_window->GetView()->ExecCommand(command);
+                    }
+                
+                } else if (g_viewAttr2.Has(&command)) {
+                    // view
+                    int windowid = ((WindowCommand*) &command)->windowid;
+                    
+                    DrawWindow *window = GetWindow(windowid);
+                    if (window) {
+                        window->GetView()->ExecCommand(command);
+                    } else {
+                        Error("unknown window %d", windowid);
                     }
                     
                 } else {

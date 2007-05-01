@@ -95,6 +95,19 @@ void DrawView::ExecCommand(Command &command)
                    ScmCons(Float2Scm(pos2.y), Scm_EOL)))));
             } break;
         
+        
+        case SET_WINDOW_NAME_COMMAND: {
+            string name = ((SetWindowNameCommand*)&command)->name;
+            MakeCurrentWindow();
+            SetName((char*) name.c_str());
+            } break;
+        
+        
+        case GET_WINDOW_NAME_COMMAND: {
+            ((ScriptCommand*) &command)->SetReturn(String2Scm(GetName().c_str()));
+            } break;
+        
+        
         case SET_WINDOW_SIZE_COMMAND: {
             MakeCurrentWindow();
             SetWindowSizeCommand *size = (SetWindowSizeCommand*) &command;

@@ -145,7 +145,7 @@ extern CommandAttr g_viewAttr;
 extern CommandAttr g_controllerAttr;
 extern CommandAttr g_globalAttr;
 extern CommandAttr g_glAttr;
-
+extern CommandAttr g_viewAttr2;
 
 
 
@@ -170,6 +170,12 @@ extern CommandAttr g_constructAttr;
 // -----------------------------------------------------------------------------
 // global commands
 // 
+
+class WindowCommand : public ScriptCommand
+{
+public:
+    int windowid;
+};
 
 class GetWindowsCommand : public ScriptCommand
 {
@@ -227,7 +233,7 @@ public:
 };
 
 
-class SetWindowNameCommand : public ScriptCommand
+class SetWindowNameCommand : public WindowCommand
 {
 public:
     virtual Command* Create() { return new SetWindowNameCommand(); }
@@ -243,12 +249,11 @@ public:
         return ParseScm(ErrorHelp(), lst, "ds", &windowid, &name);
     }
     
-    int windowid;
     string name;
 };
 
 
-class GetWindowNameCommand : public ScriptCommand
+class GetWindowNameCommand : public WindowCommand
 {
 public:
     virtual Command* Create() { return new GetWindowNameCommand(); }
@@ -263,9 +268,8 @@ public:
     {
         return ParseScm(ErrorHelp(), lst, "d", &windowid);
     }
-    
-    int windowid;
 };
+
 
 class CloseWindowCommand : public ScriptCommand
 {
