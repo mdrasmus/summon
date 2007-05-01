@@ -14,9 +14,9 @@ import summon_core
 
 
 # start summon thread
-summon_thread = threading.Thread(target=summon_core.summon_main_loop)
-summon_thread.setDaemon(True)
-summon_thread.start()
+__summon_thread = threading.Thread(target=summon_core.summon_main_loop)
+__summon_thread.setDaemon(True)
+__summon_thread.start()
 
 # wait for summon to startup
 while summon_core.get_windows() == None: pass
@@ -83,6 +83,7 @@ def get_summon_window():
 # TODO: should only really need to export Contructs.  Everything else should
 # be under summon.*
 
+
 #
 # these are wrappers around the old global function interface
 #
@@ -119,6 +120,17 @@ def get_root_id():
     return summon_core.get_root_id(_summon_state.current_window.world.id)
 
 
+#
+# view wrappers
+#
+
+def set_window_size(w, h):
+    return summon_core.set_window_size(_summon_state.current_window.winid,
+                                       w, h)
+
+
+def get_window_size():
+    return summon_core.get_window_size(_summon_state.current_window.winid)
 
 
 _summon_core_export = """\
@@ -143,7 +155,6 @@ get_mouse_pos
 get_visible
 get_window
 get_window_name
-get_window_size
 get_windows
 group
 group_contents
@@ -211,7 +222,6 @@ set_model
 set_visible
 set_window
 set_window_name
-set_window_size
 show_crosshair
 summon_main_loop
 text

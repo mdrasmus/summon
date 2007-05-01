@@ -36,8 +36,6 @@ enum {
     GET_WINDOW_COMMAND,
     NEW_WINDOW_COMMAND,
     SET_WINDOW_COMMAND,
-    SET_WINDOW_NAME_COMMAND,
-    GET_WINDOW_NAME_COMMAND,
     CLOSE_WINDOW_COMMAND,
     GET_MODELS_COMMAND,
     GET_MODEL_COMMAND,
@@ -61,13 +59,23 @@ enum {
     GET_ROOT_ID_COMMAND,
     
     // view commands
-    HOME_COMMAND,
+    SET_WINDOW_NAME_COMMAND,
+    GET_WINDOW_NAME_COMMAND,
+    SET_WINDOW_POSITION_COMMAND,
+    GET_WINDOW_POSITION_COMMAND,
+    SET_WINDOW_SIZE_COMMAND,
+    GET_WINDOW_SIZE_COMMAND,    
+    SET_TRANS_COMMAND,
+    GET_TRANS_COMMAND,
+    SET_ZOOM_COMMAND,
+    GET_ZOOM_COMMAND,
+    SET_FOCUS_COMMAND,
+    GET_FOCUS_COMMAND,
     SET_BGCOLOR_COMMAND,
     GET_BGCOLOR_COMMAND,
     SET_VISIBLE_COMMAND,
-    GET_VISIBLE_COMMAND,    
-    SET_WINDOW_SIZE_COMMAND,
-    GET_WINDOW_SIZE_COMMAND,
+    GET_VISIBLE_COMMAND,
+    HOME_COMMAND,
     SET_ANTIALIAS_COMMAND,
     SHOW_CROSSHAIR_COMMAND,
     SET_CROSSHAIR_COLOR_COMMAND,
@@ -232,43 +240,6 @@ public:
     int windowid;
 };
 
-
-class SetWindowNameCommand : public WindowCommand
-{
-public:
-    virtual Command* Create() { return new SetWindowNameCommand(); }
-    virtual int GetId() { return SET_WINDOW_NAME_COMMAND; }
-
-    virtual const char *GetName() { return "set_window_name"; }
-    virtual const char *GetUsage() { return "id name"; }
-    virtual const char *GetDescription() 
-    { return "sets the name of a window"; }
-    
-    virtual bool Setup(Scm lst)
-    {
-        return ParseScm(ErrorHelp(), lst, "ds", &windowid, &name);
-    }
-    
-    string name;
-};
-
-
-class GetWindowNameCommand : public WindowCommand
-{
-public:
-    virtual Command* Create() { return new GetWindowNameCommand(); }
-    virtual int GetId() { return GET_WINDOW_NAME_COMMAND; }
-
-    virtual const char *GetName() { return "get_window_name"; }
-    virtual const char *GetUsage() { return "id"; }
-    virtual const char *GetDescription() 
-    { return "get the name of a window"; }
-    
-    virtual bool Setup(Scm lst)
-    {
-        return ParseScm(ErrorHelp(), lst, "d", &windowid);
-    }
-};
 
 
 class CloseWindowCommand : public ScriptCommand
@@ -674,16 +645,231 @@ public:
 // view commands
 //
 
-class HomeCommand : public ScriptCommand
+
+class SetWindowNameCommand : public WindowCommand
 {
 public:
-    virtual Command* Create() { return new HomeCommand(); }
-    virtual int GetId() { return HOME_COMMAND; }
+    virtual Command* Create() { return new SetWindowNameCommand(); }
+    virtual int GetId() { return SET_WINDOW_NAME_COMMAND; }
 
-    virtual const char *GetName() { return "home"; }
-    virtual const char *GetUsage() { return ""; }
+    virtual const char *GetName() { return "set_window_name"; }
+    virtual const char *GetUsage() { return "id, name"; }
     virtual const char *GetDescription() 
-    { return "adjust view to show all graphics"; }
+    { return "sets the name of a window"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "ds", &windowid, &name);
+    }
+    
+    string name;
+};
+
+
+class GetWindowNameCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new GetWindowNameCommand(); }
+    virtual int GetId() { return GET_WINDOW_NAME_COMMAND; }
+
+    virtual const char *GetName() { return "get_window_name"; }
+    virtual const char *GetUsage() { return "id"; }
+    virtual const char *GetDescription() 
+    { return "get the name of a window"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+    }
+};
+
+
+class SetWindowPositionCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new SetWindowPositionCommand(); }
+    virtual int GetId() { return SET_WINDOW_POSITION_COMMAND; }
+
+    virtual const char *GetName() { return "set_window_position"; }
+    virtual const char *GetUsage() { return "id, x, y"; }
+    virtual const char *GetDescription() 
+    { return "sets the position of a window"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "ddd", &windowid, &x, &y);
+    }
+    
+    int x, y;
+};
+
+class GetWindowPositionCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new GetWindowPositionCommand(); }
+    virtual int GetId() { return GET_WINDOW_POSITION_COMMAND; }
+
+    virtual const char *GetName() { return "get_window_position"; }
+    virtual const char *GetUsage() { return "id"; }
+    virtual const char *GetDescription() 
+    { return "gets the position of a window"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+    }
+};
+
+
+class SetWindowSizeCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new SetWindowSizeCommand(); }
+    virtual int GetId() { return SET_WINDOW_SIZE_COMMAND; }
+
+    virtual const char *GetName() { return "set_window_size"; }
+    virtual const char *GetUsage() { return "id, x, y"; }
+    virtual const char *GetDescription() 
+    { return "sets current window's size"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "ddd", &windowid, &width, &height);
+    }
+    
+    
+    int width;
+    int height;
+};
+
+
+class GetWindowSizeCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new GetWindowSizeCommand(); }
+    virtual int GetId() { return GET_WINDOW_SIZE_COMMAND; }
+
+    virtual const char *GetName() { return "get_window_size"; }
+    virtual const char *GetUsage() { return "id"; }
+    virtual const char *GetDescription() 
+    { return "gets current window's size"; }
+
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+    }    
+};
+
+
+
+class SetTransCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new SetTransCommand(); }
+    virtual int GetId() { return SET_TRANS_COMMAND; }
+
+    virtual const char *GetName() { return "set_trans"; }
+    virtual const char *GetUsage() { return "id, x, y"; }
+    virtual const char *GetDescription() 
+    { return "sets the translation of a window"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "dff", &windowid, &x, &y);
+    }
+    
+    float x, y;
+};
+
+class GetTransCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new GetTransCommand(); }
+    virtual int GetId() { return GET_TRANS_COMMAND; }
+
+    virtual const char *GetName() { return "get_trans"; }
+    virtual const char *GetUsage() { return "id"; }
+    virtual const char *GetDescription() 
+    { return "gets the translation of a window"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+    }
+};
+
+
+class SetZoomCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new SetZoomCommand(); }
+    virtual int GetId() { return SET_ZOOM_COMMAND; }
+
+    virtual const char *GetName() { return "set_zoom"; }
+    virtual const char *GetUsage() { return "id, zoomx, zoomy"; }
+    virtual const char *GetDescription() 
+    { return "sets the zoom of a window"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "dff", &windowid, &x, &y);
+    }
+    
+    float x, y;
+};
+
+class GetZoomCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new GetZoomCommand(); }
+    virtual int GetId() { return GET_ZOOM_COMMAND; }
+
+    virtual const char *GetName() { return "get_zoom"; }
+    virtual const char *GetUsage() { return "id"; }
+    virtual const char *GetDescription() 
+    { return "gets the zoom of a window"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+    }
+};
+
+
+class SetFocusCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new SetFocusCommand(); }
+    virtual int GetId() { return SET_FOCUS_COMMAND; }
+
+    virtual const char *GetName() { return "set_focus"; }
+    virtual const char *GetUsage() { return "id, x, y"; }
+    virtual const char *GetDescription() 
+    { return "sets the focus point of a window"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "dff", &windowid, &x, &y);
+    }
+    
+    float x, y;
+};
+
+class GetFocusCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new GetFocusCommand(); }
+    virtual int GetId() { return GET_FOCUS_COMMAND; }
+
+    virtual const char *GetName() { return "get_focus"; }
+    virtual const char *GetUsage() { return "id"; }
+    virtual const char *GetDescription() 
+    { return "gets the focus point of a window"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+    }
 };
 
 
@@ -760,37 +946,16 @@ public:
 };
 
 
-class SetWindowSizeCommand : public ScriptCommand
+class HomeCommand : public ScriptCommand
 {
 public:
-    virtual Command* Create() { return new SetWindowSizeCommand(); }
-    virtual int GetId() { return SET_WINDOW_SIZE_COMMAND; }
+    virtual Command* Create() { return new HomeCommand(); }
+    virtual int GetId() { return HOME_COMMAND; }
 
-    virtual const char *GetName() { return "set_window_size"; }
-    virtual const char *GetUsage() { return "x, y"; }
-    virtual const char *GetDescription() 
-    { return "sets current window's size"; }
-    
-    bool Setup(Scm lst)
-    {
-        return ParseScm(ErrorHelp(), lst, "dd", &width, &height);
-    }
-    
-    int width;
-    int height;
-};
-
-
-class GetWindowSizeCommand : public ScriptCommand
-{
-public:
-    virtual Command* Create() { return new GetWindowSizeCommand(); }
-    virtual int GetId() { return GET_WINDOW_SIZE_COMMAND; }
-
-    virtual const char *GetName() { return "get_window_size"; }
+    virtual const char *GetName() { return "home"; }
     virtual const char *GetUsage() { return ""; }
     virtual const char *GetDescription() 
-    { return "gets current window's size"; }
+    { return "adjust view to show all graphics"; }
 };
 
 

@@ -216,8 +216,8 @@ class Window:
             else:
                 self.screen = Model()
             
-            assign_model(self.winid, "world", self.world.id)
-            assign_model(self.winid, "screen", self.screen.id)
+            summon_core.assign_model(self.winid, "world", self.world.id)
+            summon_core.assign_model(self.winid, "screen", self.screen.id)
             
             # load default configuration
             self.activate()
@@ -231,12 +231,13 @@ class Window:
         return set_window_name(self.winid, name)
     
     def activate(self):
-        set_window(self.winid)
+        summon_core.set_window(self.winid)
         state.current_window = self
         
 
     def close(self):
-        return close_window(self.winid)
+        state.remove_window(self)
+        return summon_core.close_window(self.winid)
     
     
     def duplicate(self):
@@ -296,6 +297,20 @@ class Window:
     
     
     # view
+    def set_size(self, width, height):
+        return summon_core.set_window_size(self.winid, width, height)
+    set_window_size = set_size
+    
+    def get_size(self):
+        return summon_core.get_window_size(self.winid)
+    get_window_size = get_size
+
+    def set_position(self, x, y):
+        return summon_core.set_window_position(self.winid, x, y)
+    
+    def get_position(self):
+        return summon_core.get_window_position(self.winid)
+    
     def focus(self, x, y):
         set_window(self.winid)
         return focus(x, y)
@@ -321,17 +336,25 @@ class Window:
             self.focus(w/2, h/2)
             self.zoom(factor, factor2)
         return func
+    
+    def set_trans(self, x, y):
+        return summon_core.set_trans(self.winid, x, y)
+    
+    def get_trans(self):
+        return summon_core.get_trans(self.winid)
+    
+    def set_zoom(self, x, y):
+        return summon_core.set_zoom(self.winid, x, y)
 
     def get_zoom(self):
-        coords = self.get_visible()
-        size = self.get_window_size()
-        
-        zoomx = (coords[2] - coords[0]) / size[0]
-        zoomy = (coords[3] - coords[1]) / size[1]
-        
-        return zoomx, zoomy
-
-
+        return summon_core.get_zoom(self.winid)
+    
+    def get_focus(self):
+        return summon_core.get_focus(self.winid)
+    
+    def set_focus(self, x, y):
+        return summon_core.set_focus(self.winid, x, y)
+    
     def trans(self, x, y):
         set_window(self.winid)
         return trans(x, y)
@@ -359,17 +382,6 @@ class Window:
     def get_visible(self):
         set_window(self.winid)
         return get_visible()
-        
-    def set_size(self, width, height):
-        set_window(self.winid)
-        return set_window_size(width, height)
-    set_window_size = set_size
-    
-    def get_size(self):
-        set_window(self.winid)
-        return get_window_size()
-    get_window_size = get_size
-
     
     def set_antialias(self, *args):
         set_window(self.winid)
@@ -434,7 +446,7 @@ class Model:
     def __init__(self, modelid = None):
         if modelid == None:
             # create new window
-            self.id = new_model()
+            self.id = summon_core.new_model()
             assert self.id != None
             state.add_model(self)
     
@@ -466,5 +478,30 @@ class Model:
 
 
 
+class VisObject (object):
+    """Base class of dynamic visualization objects"""
+    def __init__(self):
+        self.win = None
+    
+    def __del__(self):
+        self.setVisible(False)
+    
+    def update(self):
+        pass
+    
+    def show(self):
+        pass
+    
+    def enableUpdating(self, visible=True):
+        if visible:    
+            if not is_update_func(self.update):
+                assert self.win != None, "must set window"
+                add_update_func(self.update, self.win)
+        else:
+            if summon.is_update_func(self.update):
+                remove_update_func(self.update)
+
+    setVisible = enableUpdating
+    
 
 

@@ -62,6 +62,87 @@ void DrawView::ExecCommand(Command &command)
 
 
     switch (command.GetId()) {
+        case SET_WINDOW_NAME_COMMAND: {
+            string name = ((SetWindowNameCommand*)&command)->name;
+            MakeCurrentWindow();
+            SetName((char*) name.c_str());
+            } break;
+        
+        
+        case GET_WINDOW_NAME_COMMAND: {
+            ((ScriptCommand*) &command)->SetReturn(String2Scm(GetName().c_str()));
+            } break;
+        
+        case SET_WINDOW_POSITION_COMMAND: {
+            int x = ((SetWindowPositionCommand*)&command)->x;
+            int y = ((SetWindowPositionCommand*)&command)->y;
+            
+            MakeCurrentWindow();
+            SetPosition(x, y);
+            } break;
+            
+        case GET_WINDOW_POSITION_COMMAND: {
+            MakeCurrentWindow();
+            Vertex2i pos = GetPosition();
+            ((ScriptCommand*) &command)->SetReturn(
+                ScmCons(Int2Scm(pos.x),
+                    ScmCons(Int2Scm(pos.y),
+                        Scm_EOL)));
+            } break;
+
+        
+        case SET_WINDOW_SIZE_COMMAND: {
+            MakeCurrentWindow();
+            SetWindowSizeCommand *size = (SetWindowSizeCommand*) &command;
+            Resize(size->width, size->height);
+            } break;
+        
+        case GET_WINDOW_SIZE_COMMAND: {
+            Vertex2i size = GetWindowSize();
+            ((ScriptCommand*) &command)->SetReturn(
+                ScmCons(Int2Scm(size.x),
+                    ScmCons(Int2Scm(size.y), Scm_EOL)));
+            } break;
+
+        case SET_TRANS_COMMAND: {
+            MakeCurrentWindow();
+            SetTransCommand *trans = (SetTransCommand*) &command;
+            TranslateTo(trans->x, trans->y);
+            Redisplay();
+            } break;
+        
+        case GET_TRANS_COMMAND: {
+            ((ScriptCommand*) &command)->SetReturn(
+                ScmCons(Float2Scm(m_trans.x),
+                    ScmCons(Float2Scm(m_trans.y), Scm_EOL)));
+            } break;
+            
+        case SET_ZOOM_COMMAND: {
+            MakeCurrentWindow();
+            SetZoomCommand *zoom = (SetZoomCommand*) &command;
+            ZoomTo(zoom->x, zoom->y);
+            Redisplay();
+            } break;
+            
+        case GET_ZOOM_COMMAND: {
+            ((ScriptCommand*) &command)->SetReturn(
+                ScmCons(Float2Scm(m_zoom.x),
+                    ScmCons(Float2Scm(m_zoom.y), Scm_EOL)));
+            } break;
+    
+        case SET_FOCUS_COMMAND: {
+            MakeCurrentWindow();
+            SetFocusCommand *focus = (SetFocusCommand*) &command;
+            SetFocus(focus->x, focus->y);
+            Redisplay();
+            } break;
+            
+        case GET_FOCUS_COMMAND: {
+            ((ScriptCommand*) &command)->SetReturn(
+                ScmCons(Float2Scm(m_focus.x),
+                    ScmCons(Float2Scm(m_focus.y), Scm_EOL)));
+            } break;    
+    
         case SET_BGCOLOR_COMMAND:
             MakeCurrentWindow();
             SetBgColor(((SetBgColorCommand*)&command)->color);
@@ -93,32 +174,6 @@ void DrawView::ExecCommand(Command &command)
                  ScmCons(Float2Scm(pos1.y),
                   ScmCons(Float2Scm(pos2.x),
                    ScmCons(Float2Scm(pos2.y), Scm_EOL)))));
-            } break;
-        
-        
-        case SET_WINDOW_NAME_COMMAND: {
-            string name = ((SetWindowNameCommand*)&command)->name;
-            MakeCurrentWindow();
-            SetName((char*) name.c_str());
-            } break;
-        
-        
-        case GET_WINDOW_NAME_COMMAND: {
-            ((ScriptCommand*) &command)->SetReturn(String2Scm(GetName().c_str()));
-            } break;
-        
-        
-        case SET_WINDOW_SIZE_COMMAND: {
-            MakeCurrentWindow();
-            SetWindowSizeCommand *size = (SetWindowSizeCommand*) &command;
-            Resize(size->width, size->height);
-            } break;
-        
-        case GET_WINDOW_SIZE_COMMAND: {
-            Vertex2i size = GetWindowSize();
-            ((SetWindowSizeCommand*) &command)->SetReturn(
-                ScmCons(Int2Scm(size.x),
-                 ScmCons(Int2Scm(size.y), Scm_EOL)));
             } break;
         
         case HOME_COMMAND:
