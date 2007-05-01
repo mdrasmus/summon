@@ -6,7 +6,7 @@
 
 import os, sys
 from summon.core import *
-from summon import util
+
 
 state = get_summon_state()
 
@@ -57,7 +57,7 @@ def remove_update_func(func):
     state.updateFuncs = filter(lambda x: x[0] != func, state.updateFuncs)
 
 def is_update_func(func):
-    return func in util.cget(state.updateFuncs, 0)
+    return func in (x[0] for x in state.updateFuncs)
 
 def get_update_funcs():
     return state.updateFuncs
@@ -228,7 +228,7 @@ class Window:
     
     def set_name(self, name):
         self.name = name
-        return set_window_name(self.winid, name)
+        return summon_core.set_window_name(self.winid, name)
     
     def activate(self):
         summon_core.set_window(self.winid)
@@ -259,7 +259,7 @@ class Window:
         coords = win.get_visible()
         zoomx2 = (coords[2] - coords[0]) / size[0]
         zoomy2 = (coords[3] - coords[1]) / size[1]
-        win.focus(size[0] / 2.0, size[1] / 2.0)
+        win.focus(size[0] / 2, size[1] / 2)
         win.zoom(zoomx2 / zoomx, zoomy2 / zoomy)
         
         
@@ -312,20 +312,16 @@ class Window:
         return summon_core.get_window_position(self.winid)
     
     def focus(self, x, y):
-        set_window(self.winid)
-        return focus(x, y)
+        return summon_core.focus(self.winid, int(x), int(y))
     
     def zoom(self, x, y):
-        set_window(self.winid)
-        return zoom(x, y)
+        return summon_core.zoom(self.winid, x, y)
 
     def zoomx(self, x):
-        set_window(self.winid)
-        return zoomx(x)
+        return summon_core.zoomx(self.winid, x)
     
     def zoomy(self, y):
-        set_window(self.winid)
-        return zoomy(y)
+        return summon_core.zoomy(self.winid, y)
 
     def zoom_camera(self, factor, factor2=None):
         if factor2 == None:
@@ -333,7 +329,7 @@ class Window:
 
         def func():
             w, h = self.get_window_size()
-            self.focus(w/2, h/2)
+            self.focus(w/2.0, h/2.0)
             self.zoom(factor, factor2)
         return func
     
@@ -356,8 +352,7 @@ class Window:
         return summon_core.set_focus(self.winid, x, y)
     
     def trans(self, x, y):
-        set_window(self.winid)
-        return trans(x, y)
+        return summon_core.trans(self.winid, x, y)
     
     def trans_camera(self, x, y):
         """Return a function of no arguments that will translate the camera"""
@@ -469,7 +464,8 @@ class VisObject (object):
         self.win = None
     
     def __del__(self):
-        self.setVisible(False)
+        if state != None:
+            self.enableUpdating(False)
     
     def update(self):
         pass
@@ -483,7 +479,7 @@ class VisObject (object):
                 assert self.win != None, "must set window"
                 add_update_func(self.update, self.win)
         else:
-            if summon.is_update_func(self.update):
+            if is_update_func(self.update):
                 remove_update_func(self.update)
 
     setVisible = enableUpdating

@@ -398,25 +398,18 @@ public:
     {
         // init commands
         drawCommandsInit();
-        m_summonCommands = GetAllStringCommands();
+        m_summonCommands.clear();
         
-        // remove constructs from cmds 
-        // they aren't processed by python because we process them
+        for (CommandAttr::Iterator i=g_scriptAttr.Begin();
+             i != g_scriptAttr.End(); i++)
         {
-            unsigned int j=0;
-            for (unsigned int i=0; i<m_summonCommands.size(); i++) {
-                m_summonCommands[j] = m_summonCommands[i];
-                if (!g_constructAttr.Has(m_summonCommands[i]->GetId()) &&
-                    strlen(m_summonCommands[i]->GetName()) > 0)
-                {
-                    j++;
-                }
-            }
-            while (j<m_summonCommands.size()) {
-                m_summonCommands.pop_back();
+            if (!g_constructAttr.Has((*i)->GetId()) &&
+                strlen(((ScriptCommand*) *i)->GetName()) > 0)
+            {
+                m_summonCommands.push_back((ScriptCommand*) *i);
             }
         }
-    
+        
         static PyMethodDef *g_vistoolsMethods = new PyMethodDef [m_summonCommands.size() + 1];
 
         // install main command

@@ -96,6 +96,13 @@ void drawCommandsInit()
     RegisterScriptCommand(SetCrosshairColorCommand) v()
     RegisterCommand(ModelChangedCommand)
 
+    // view basics commands
+    RegisterScriptCommand(TranslateScriptCommand)   v() gl()
+    RegisterScriptCommand(ZoomScriptCommand)        v() gl()
+    RegisterScriptCommand(ZoomXScriptCommand)       v() gl()
+    RegisterScriptCommand(ZoomYScriptCommand)       v() gl()
+    RegisterScriptCommand(FocusScriptCommand)       v()
+
     // controller commands    
     RegisterScriptCommand(SetBindingCommand)       c()
     RegisterScriptCommand(ClearBindingCommand)     c()

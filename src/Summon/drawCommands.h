@@ -79,7 +79,14 @@ enum {
     SET_ANTIALIAS_COMMAND,
     SHOW_CROSSHAIR_COMMAND,
     SET_CROSSHAIR_COLOR_COMMAND,
-    MODEL_CHANGED_COMMAND,
+    MODEL_CHANGED_COMMAND,    
+    
+    // view basic commands
+    TRANSLATE_SCRIPT_COMMAND,
+    ZOOM_SCRIPT_COMMAND,
+    ZOOM_X_SCRIPT_COMMAND,
+    ZOOM_Y_SCRIPT_COMMAND,
+    FOCUS_SCRIPT_COMMAND,
     
     // controller commands
     SET_BINDING_COMMAND,
@@ -1057,6 +1064,176 @@ public:
     list<Group*> changedGroups;
 };
 
+
+//----------------------------------------------------------------------------
+// View basic commands
+//
+
+class TranslateScriptCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new TranslateScriptCommand(); }
+    virtual CommandId GetId() { return TRANSLATE_SCRIPT_COMMAND; }
+    
+    virtual void Setup(Input &input) 
+    {
+        if (input.GetId() == MOUSE_MOTION_INPUT) {
+            trans = ((MouseMotionInput*)(&input))->vel;
+            trans.y *= -1;
+        }
+    }
+
+    virtual const char *GetName() { return "trans"; }
+    virtual const char *GetUsage() { return "id, x, y"; }
+    virtual const char *GetDescription() 
+    { return "translate the view by (x,y)"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "dff", &windowid, &trans.x, &trans.y);
+    }
+    
+    Vertex2f trans;
+};
+
+
+class ZoomScriptCommand : public WindowCommand
+{
+public:
+    ZoomScriptCommand() : zoom(1.0, 1.0) {}
+
+    virtual Command* Create() { return new ZoomScriptCommand(); }
+    virtual CommandId GetId() { return ZOOM_SCRIPT_COMMAND; }
+    
+    virtual void Setup(Input &input) 
+    {
+        if (input.GetId() == MOUSE_MOTION_INPUT) {
+            float num = (float) ((MouseMotionInput*)(&input))->vel.y;
+            
+            // clamp zoom
+            if (num > MAX_ZOOM)  num = MAX_ZOOM;
+            if (num < -MAX_ZOOM) num = -MAX_ZOOM;
+            
+            zoom.x = 1 + num / (MAX_ZOOM + 1);
+            zoom.y = 1 + num / (MAX_ZOOM + 1);
+        }
+    }
+    
+    virtual const char *GetName() { return "zoom"; }
+    virtual const char *GetUsage() { return "id, factorX, factorY"; }
+    virtual const char *GetDescription() { return "zoom view by a factor"; }
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "dff", &windowid, &zoom.x, &zoom.y);
+    }
+    
+    enum { MAX_ZOOM = 20 };
+    
+    Vertex2f zoom;
+};
+
+
+class ZoomXScriptCommand : public WindowCommand
+{
+public:
+    ZoomXScriptCommand() : zoom(1.0, 1.0) {}
+
+    virtual Command* Create() { return new ZoomXScriptCommand(); }
+    virtual CommandId GetId() { return ZOOM_X_SCRIPT_COMMAND; }
+    
+    virtual void Setup(Input &input) 
+    {
+        if (input.GetId() == MOUSE_MOTION_INPUT) {
+            float num = (float) ((MouseMotionInput*)(&input))->vel.y;
+            
+            // clamp zoom
+            if (num > MAX_ZOOM)  num = MAX_ZOOM;
+            if (num < -MAX_ZOOM) num = -MAX_ZOOM;
+            
+            zoom.x = 1 + num / (MAX_ZOOM + 1);
+            zoom.y = 1.0;
+        }
+    }
+    
+    virtual const char *GetName() { return "zoomx"; }
+    virtual const char *GetUsage() { return "id, factorX"; }
+    virtual const char *GetDescription() 
+    { return "zoom x-axis by a factor"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        zoom.y = 1.0;
+        return ParseScm(ErrorHelp(), lst, "df", &windowid, &zoom.x);
+    }
+    
+    enum { MAX_ZOOM = 20 };
+    
+    Vertex2f zoom;    
+};
+
+class ZoomYScriptCommand : public WindowCommand
+{
+public:
+    ZoomYScriptCommand() : zoom(1.0, 1.0) {}
+
+    virtual Command* Create() { return new ZoomYScriptCommand(); }
+    virtual CommandId GetId() { return ZOOM_Y_SCRIPT_COMMAND; }
+    
+    virtual void Setup(Input &input) 
+    {
+        if (input.GetId() == MOUSE_MOTION_INPUT) {
+            float num = (float) ((MouseMotionInput*)(&input))->vel.y;
+            
+            // clamp zoom
+            if (num > MAX_ZOOM)  num = MAX_ZOOM;
+            if (num < -MAX_ZOOM) num = -MAX_ZOOM;
+
+            zoom.x = 1.0;            
+            zoom.y = 1 + num / (MAX_ZOOM + 1);
+        }
+    }
+    
+    virtual const char *GetName() { return "zoomy"; }
+    virtual const char *GetUsage() { return "id, factorY"; }
+    virtual const char *GetDescription() 
+    { return "zoom y-axis by a factor"; }
+
+    
+    virtual bool Setup(Scm lst)
+    {
+        zoom.x = 1.0;
+        return ParseScm(ErrorHelp(), lst, "df", &windowid, &zoom.y);
+    }
+    
+    enum { MAX_ZOOM = 20 };
+    
+    Vertex2f zoom;    
+};
+
+
+class FocusScriptCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new FocusScriptCommand(); }
+    virtual CommandId GetId() { return FOCUS_SCRIPT_COMMAND; }
+    
+    virtual void Setup(Input &input) 
+    {
+        if (input.GetId() == MOUSE_CLICK_INPUT) {
+            focus = ((MouseClickInput*)&input)->pos;
+        }
+    }
+    
+    virtual const char *GetName() { return "focus"; }
+    virtual const char *GetUsage() { return "id, x, y"; }
+    virtual const char *GetDescription() { return "focus the view on (x,y)"; }
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "ddd", &windowid, &focus.x, &focus.y);
+    }
+    
+    Vertex2i focus;
+};
 
 //----------------------------------------------------------------------------
 // controller commands

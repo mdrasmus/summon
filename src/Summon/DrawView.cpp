@@ -205,6 +205,36 @@ void DrawView::ExecCommand(Command &command)
             m_crosshairColor = ((SetCrosshairColorCommand*)&command)->color;
             break;
         
+        // basic
+        case TRANSLATE_SCRIPT_COMMAND: {
+            TranslateBy(((TranslateScriptCommand*)(&command))->trans.x, 
+                        ((TranslateScriptCommand*)(&command))->trans.y);    
+            Redisplay();
+            } break;
+    
+        case ZOOM_SCRIPT_COMMAND: {
+            ZoomBy(((ZoomScriptCommand*) &command)->zoom.x,
+                   ((ZoomScriptCommand*) &command)->zoom.y);
+            Redisplay();
+            } break;
+        
+        case ZOOM_X_SCRIPT_COMMAND: {
+            ZoomBy(((ZoomScriptCommand*) &command)->zoom.x, 1.0);
+            Redisplay();
+            } break;
+        
+        case ZOOM_Y_SCRIPT_COMMAND: {
+            ZoomBy(1.0, ((ZoomScriptCommand*) &command)->zoom.y);
+            Redisplay();
+            } break;
+            
+        case FOCUS_SCRIPT_COMMAND: {
+            FocusScriptCommand* cmd = (FocusScriptCommand*) &command;
+            Vertex2i pt = WindowToScreen(cmd->focus.x, cmd->focus.y);
+            Vertex2f focus = ScreenToWorld(pt.x, pt.y);
+            SetFocus(focus.x, focus.y);
+            } break;
+        
         case REDISPLAY_COMMAND:
             NoteModelChange();
             

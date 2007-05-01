@@ -95,7 +95,6 @@ dynamic_group
 dynamic_group_contents
 flip
 flip_contents
-focus
 get_group_id
 get_model
 get_models
@@ -168,7 +167,6 @@ text_contents
 text_scale
 text_scale_contents
 timer_call
-trans
 translate
 translate_contents
 triangle_fan
@@ -180,15 +178,14 @@ triangles_contents
 version
 vertices
 vertices_contents
-zoom
-zoomx
-zoomy
 """.split()
 
 
 _globals = globals()
 for func in _summon_core_export:
     _globals[func] = summon_core.__dict__[func]
+
+
 
 
 #=============================================================================
@@ -261,6 +258,21 @@ def show_crosshair(*args):
 def set_crosshair_color(*args):
     return summon_core.set_crosshair_color(_summon_state.current_window.winid, *args)
 
+# basic view
+def trans(x, y):
+    summon_core.trans(_summon_state.current_window.winid, x, y)
+
+def zoom(x, y):
+    summon_core.zoom(_summon_state.current_window.winid, x, y)
+
+def focus(x, y):
+    summon_core.focus(_summon_state.current_window.winid, x, y)
+
+def zoomx(x):
+    summon_core.zoomx(_summon_state.current_window.winid, x)
+
+def zoomy(y):
+    summon_core.zoomy(_summon_state.current_window.winid, y)
 
 
 # controller wrappers
@@ -274,9 +286,13 @@ def clear_all_bindings():
 def get_mouse_pos(coord):
     return summon_core.get_mouse_pos(_summon_state.current_window.winid, coord)
 
-add_binding = set_binding
 def set_binding(input_obj, func):
     winid = _summon_state.current_window.winid
     summon_core.clear_binding(winid, input_obj)
     summon_core.set_binding(winid, input_obj, func)
 reset_binding = set_binding
+
+def add_binding(input_obj, func):
+    winid = _summon_state.current_window.winid
+    summon_core.set_binding(winid, input_obj, func)
+
