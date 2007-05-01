@@ -1,8 +1,10 @@
 #!/usr/bin/python -i
 
+import sys
 from summon.core import *
 from summon.multiwindow import *
 import summon
+
 
 win1 = summon.Window("window 1")
 win1.add_group(group(lines(0, 0, 100,100)))
@@ -25,12 +27,6 @@ win2.set_size(400, 400)
 win3.set_size(400, 100)
 win4.set_size(100, 400)
 win5.set_size(100, 400)
-
-#pos = win1.get_position()
-#win2.set_position(pos[0], pos[1]+105)
-#win3.set_position(pos[0], pos[1]+216)
-
-
 
        
 tie_windows([win1, win2, win3], tiex=True, pinx=True)

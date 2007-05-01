@@ -23,7 +23,7 @@ CommandAttr g_modelAttr;
 CommandAttr g_viewAttr;
 CommandAttr g_controllerAttr;
 CommandAttr g_glAttr;
-CommandAttr g_viewAttr2;
+
 
 int CallProcCommand::procid = 0;
 
@@ -74,18 +74,18 @@ void drawCommandsInit()
     RegisterScriptCommand(GetRootIdCommand)     m()
     
     // view commands
-    RegisterScriptCommand(SetWindowNameCommand)     v2() gl()
-    RegisterScriptCommand(GetWindowNameCommand)     v2()   
-    RegisterScriptCommand(SetWindowPositionCommand) v2() gl()
-    RegisterScriptCommand(GetWindowPositionCommand) v2() gl()          
-    RegisterScriptCommand(SetWindowSizeCommand)     v2() gl()
-    RegisterScriptCommand(GetWindowSizeCommand)     v2()    
-    RegisterScriptCommand(SetTransCommand)          v2() gl()
-    RegisterScriptCommand(GetTransCommand)          v2()
-    RegisterScriptCommand(SetZoomCommand)           v2() gl()
-    RegisterScriptCommand(GetZoomCommand)           v2()
-    RegisterScriptCommand(SetFocusCommand)          v2()
-    RegisterScriptCommand(GetFocusCommand)          v2()
+    RegisterScriptCommand(SetWindowNameCommand)     v() gl()
+    RegisterScriptCommand(GetWindowNameCommand)     v()   
+    RegisterScriptCommand(SetWindowPositionCommand) v() gl()
+    RegisterScriptCommand(GetWindowPositionCommand) v() gl()          
+    RegisterScriptCommand(SetWindowSizeCommand)     v() gl()
+    RegisterScriptCommand(GetWindowSizeCommand)     v()    
+    RegisterScriptCommand(SetTransCommand)          v() gl()
+    RegisterScriptCommand(GetTransCommand)          v()
+    RegisterScriptCommand(SetZoomCommand)           v() gl()
+    RegisterScriptCommand(GetZoomCommand)           v()
+    RegisterScriptCommand(SetFocusCommand)          v()
+    RegisterScriptCommand(GetFocusCommand)          v()
     RegisterScriptCommand(SetBgColorCommand)        v() gl()
     RegisterScriptCommand(GetBgColorCommand)        v()
     RegisterScriptCommand(SetVisibleCommand)        v() gl()
@@ -148,6 +148,7 @@ void drawCommandsInit()
 #   undef v
 #   undef v2
 #   undef c
+#   undef c2
 #   undef gl
 
 }

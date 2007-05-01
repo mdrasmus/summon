@@ -286,12 +286,6 @@ public:
                 
                 } else if (g_viewAttr.Has(&command)) {
                     // view
-                    if (m_window) {
-                        m_window->GetView()->ExecCommand(command);
-                    }
-                
-                } else if (g_viewAttr2.Has(&command)) {
-                    // view
                     int windowid = ((WindowCommand*) &command)->windowid;
                     
                     DrawWindow *window = GetWindow(windowid);
@@ -301,10 +295,15 @@ public:
                         Error("unknown window %d", windowid);
                     }
                     
-                } else {
-                    // controller and default
-                    if (m_window) {
-                        m_window->GetController()->ExecCommand(command);
+                } else if (g_controllerAttr.Has(&command)) {
+                    // controller
+                    int windowid = ((WindowCommand*) &command)->windowid;
+                    
+                    DrawWindow *window = GetWindow(windowid);
+                    if (window) {
+                        window->GetController()->ExecCommand(command);
+                    } else {
+                        Error("unknown window %d", windowid);
                     }
                 }
         }

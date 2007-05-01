@@ -73,7 +73,10 @@ class WindowEnsembl (summon.VisObject):
         # determine window decoration offset
         pos1 = windows[0].get_position()
         windows[0].set_position(*pos1)
-        pos2 = windows[0].get_position()
+        # wait for position to change
+        pos2 = pos1
+        while pos2 == pos1:
+            pos2 = windows[0].get_position()
         
         self.offset = [pos1[0] - pos2[0], pos1[1] - pos2[1]]
         
@@ -96,8 +99,6 @@ class WindowEnsembl (summon.VisObject):
     
     
     def stack(self, win):
-        print "restack", win.name
-        
         others = self.windows[:]
         others.remove(win)
         
@@ -178,7 +179,6 @@ class WindowEnsembl (summon.VisObject):
             
             if self.stackx or self.stacky:
                 if pos1 != pos2 or size1 != size2:
-                    print pos1, pos2, size1, size2
                     self.stack(win)
                     break
             else:

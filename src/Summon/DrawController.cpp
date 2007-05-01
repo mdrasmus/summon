@@ -44,7 +44,7 @@ void DrawController::ExecCommand(Command &command)
         return;
     }
 
-    // send visdraw commands that are not for controller to global
+    // send SUMMON commands that are not for controller to global
     if (command.GetId() > GLUT_COMMANDS_END &&
         !g_controllerAttr.Has(&command))
     {
@@ -60,7 +60,7 @@ void DrawController::ExecCommand(Command &command)
             break;
         
         case CLEAR_BINDING_COMMAND: {
-            Input *input = ((SetBindingCommand*)&command)->input;
+            Input *input = ((ClearBindingCommand*)&command)->input;
             m_binding->ClearBinding(*input);
             delete input;
             } break;

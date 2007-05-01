@@ -364,28 +364,22 @@ class Window:
         return lambda: self.trans(x, y)
     
     def home(self):
-        set_window(self.winid)
-        return home()
+        return summon_core.home(self.winid)
     
     def set_bgcolor(self, *args):
-        set_window(self.winid)
-        return set_bgcolor(*args)
+        return summon_core.set_bgcolor(self.winid, *args)
     
     def get_bgcolor(self, *args):
-        set_window(self.winid)    
-        return get_bgcolor(*args)
+        return summon_core.get_bgcolor(self.winid, *args)
     
     def set_visible(self, x1, y1, x2, y2):
-        set_window(self.winid)
-        return set_visible(x1, y1, x2, y2)
+        return summon_core.set_visible(self.winid, x1, y1, x2, y2)
     
     def get_visible(self):
-        set_window(self.winid)
-        return get_visible()
+        return summon_core.get_visible(self.winid)
     
     def set_antialias(self, *args):
-        set_window(self.winid)
-        return set_antialias(*args)
+        return summon_core.set_antialias(self.winid, *args)
     
     def toggle_aliasing(self):
         state.antialias = not state.antialias
@@ -401,40 +395,31 @@ class Window:
     
     def set_crosshair_color(self, r, g, b, a=1):
         state.crosshair_color = (r, g, b, a)
-        self.set_crosshair_color(r, g, b, a)
-
+        return summon_config.set_crosshair_color(self.winid, r, g, b, a)
 
     def show_crosshair(self, enabled):
         state.crosshair = enabled
-        set_window(self.winid)
-        return show_crosshair(enabled)
+        return summon_config.show_crosshair(self.winid, enabled)
 
-    def set_crosshair_color(self, *args):
-        set_window(self.winid)
-        return set_crosshair_color(* args)
     
     
     # controller
-    def add_binding(self, *args):
-        set_window(self.winid)
-        return add_binding(*args)
+    def add_binding(self, input_obj, func):
+        return summon_core.set_binding(self.winid, input_obj, func)
         
-    def clear_binding(self, *args):
-        set_window(self.winid)
-        return clear_binding(*args)
+    def clear_binding(self, input_obj):
+        return summon_core.clear_binding(self.winid, input_obj)
 
-    def set_binding(self, *args):
-        set_window(self.winid)
-        return set_binding(*args)
+    def set_binding(self, input_obj, func):
+        summon_core.clear_binding(self.winid, input_obj)
+        return summon_core.set_binding(self.winid, input_obj, func)
     reset_binding = set_binding
     
     def clear_all_bindings(self):
-        set_window(self.winid)
-        return clear_all_bindings()
+        return summon_core.clear_all_bindings(self.winid)
 
     def get_mouse_pos(self, coord):
-        set_window(self.winid)
-        return get_mouse_pos(coord)        
+        return summon_core.get_mouse_pos(self.winid, coord)        
                 
     
 class Model:

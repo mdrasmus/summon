@@ -1,4 +1,4 @@
-#!/usr/bin/env summon
+#!/usr/bin/python -i
 # SUMMON examples
 # bindings.py - example use of bindings
 #
@@ -9,6 +9,9 @@
 
 from summon.core import *
 from summon import shapes
+import summon
+
+win = summon.Window()
 
 # color background boxes
 #   save the group id of each box so we can manipulate it later

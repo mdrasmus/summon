@@ -153,7 +153,7 @@ extern CommandAttr g_viewAttr;
 extern CommandAttr g_controllerAttr;
 extern CommandAttr g_globalAttr;
 extern CommandAttr g_glAttr;
-extern CommandAttr g_viewAttr2;
+
 
 
 
@@ -873,14 +873,14 @@ public:
 };
 
 
-class SetBgColorCommand : public ScriptCommand
+class SetBgColorCommand : public WindowCommand
 {
 public:
     virtual Command* Create() { return new SetBgColorCommand(); }
     virtual int GetId() { return SET_BGCOLOR_COMMAND; }
 
     virtual const char *GetName() { return "set_bgcolor"; }
-    virtual const char *GetUsage() { return "red, green, blue"; }
+    virtual const char *GetUsage() { return "id, red, green, blue"; }
     virtual const char *GetDescription() 
     { return "sets background color"; }
     
@@ -888,7 +888,7 @@ public:
     {
         float r, g, b;
         
-        if (ParseScm(ErrorHelp(), lst, "fff", &r, &g, &b)) {
+        if (ParseScm(ErrorHelp(), lst, "dfff", &windowid, &r, &g, &b)) {
             color = Color(r, g, b);
             return true;
         } else
@@ -899,33 +899,38 @@ public:
 };
 
 
-class GetBgColorCommand : public ScriptCommand
+class GetBgColorCommand : public WindowCommand
 {
 public:
     virtual Command* Create() { return new GetBgColorCommand(); }
     virtual int GetId() { return GET_BGCOLOR_COMMAND; }
 
     virtual const char *GetName() { return "get_bgcolor"; }
-    virtual const char *GetUsage() { return ""; }
+    virtual const char *GetUsage() { return "id"; }
     virtual const char *GetDescription() 
     { return "gets background color"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+    }
 };
 
 
-class SetVisibleCommand : public ScriptCommand
+class SetVisibleCommand : public WindowCommand
 {
 public:
     virtual Command* Create() { return new SetVisibleCommand(); }
     virtual int GetId() { return SET_VISIBLE_COMMAND; }
 
     virtual const char *GetName() { return "set_visible"; }
-    virtual const char *GetUsage() { return "x1, y1, x2, y2"; }
+    virtual const char *GetUsage() { return "id, x1, y1, x2, y2"; }
     virtual const char *GetDescription() 
     { return "change display to contain region (x1,y1)-(x2,y2)"; }
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "ffff", 
+        return ParseScm(ErrorHelp(), lst, "dffff", &windowid,
                         &data[0], &data[1], &data[2], &data[3]);
     }
     
@@ -933,80 +938,90 @@ public:
 };
 
 
-class GetVisibleCommand : public ScriptCommand
+class GetVisibleCommand : public WindowCommand
 {
 public:
     virtual Command* Create() { return new GetVisibleCommand(); }
     virtual int GetId() { return GET_VISIBLE_COMMAND; }
 
     virtual const char *GetName() { return "get_visible"; }
-    virtual const char *GetUsage() { return ""; }
+    virtual const char *GetUsage() { return "id"; }
     virtual const char *GetDescription() 
     { return "gets visible bounding box"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+    }
 };
 
 
-class HomeCommand : public ScriptCommand
+class HomeCommand : public WindowCommand
 {
 public:
     virtual Command* Create() { return new HomeCommand(); }
     virtual int GetId() { return HOME_COMMAND; }
 
     virtual const char *GetName() { return "home"; }
-    virtual const char *GetUsage() { return ""; }
+    virtual const char *GetUsage() { return "id"; }
     virtual const char *GetDescription() 
     { return "adjust view to show all graphics"; }
+    
+        virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+    }
 };
 
 
-class SetAntialiasCommand : public ScriptCommand
+class SetAntialiasCommand : public WindowCommand
 {
 public:
     virtual Command* Create() { return new SetAntialiasCommand(); }
     virtual int GetId() { return SET_ANTIALIAS_COMMAND; }
 
     virtual const char *GetName() { return "set_antialias"; }
-    virtual const char *GetUsage() { return "True|False"; }
+    virtual const char *GetUsage() { return "id, True|False"; }
     virtual const char *GetDescription() 
     { return "sets anti-aliasing status"; }
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "b", &enabled);
+        return ParseScm(ErrorHelp(), lst, "db", &windowid, &enabled);
     }
     
     bool enabled;
 };
 
 
-class ShowCrosshairCommand : public ScriptCommand
+class ShowCrosshairCommand : public WindowCommand
 {
 public:
     virtual Command* Create() { return new ShowCrosshairCommand(); }
     virtual int GetId() { return SHOW_CROSSHAIR_COMMAND; }
 
     virtual const char *GetName() { return "show_crosshair"; }
-    virtual const char *GetUsage() { return "True|False"; }
+    virtual const char *GetUsage() { return "id, True|False"; }
     virtual const char *GetDescription() 
     { return "shows and hides the mouse crosshair"; }
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "b", &enabled);
+        return ParseScm(ErrorHelp(), lst, "db", &windowid, &enabled);
     }
     
     bool enabled;
 };
 
 
-class SetCrosshairColorCommand : public ScriptCommand
+class SetCrosshairColorCommand : public WindowCommand
 {
 public:
     virtual Command* Create() { return new SetCrosshairColorCommand(); }
     virtual int GetId() { return SET_CROSSHAIR_COLOR_COMMAND; }
 
     virtual const char *GetName() { return "set_crosshair_color"; }
-    virtual const char *GetUsage() { return "red, green, blue[, alpha]"; }
+    virtual const char *GetUsage() { return "id, red, green, blue[, alpha]"; }
     virtual const char *GetDescription() 
     { return "sets mouse crosshair color"; }
     
@@ -1015,12 +1030,12 @@ public:
         float r, g, b, a;
         
         if (ScmLength(lst) == 3 && 
-            ParseScm(ErrorHelp(), lst, "fff", &r, &g, &b))
+            ParseScm(ErrorHelp(), lst, "dfff", &windowid, &r, &g, &b))
         {
             color = Color(r, g, b, 1);
             return true;
         } else if (ScmLength(lst) == 4 && 
-                   ParseScm(ErrorHelp(), lst, "ffff", &r, &g, &b, &a))
+                   ParseScm(ErrorHelp(), lst, "dffff", &windowid, &r, &g, &b, &a))
         {
             color = Color(r, g, b, a);
             return true;
@@ -1047,7 +1062,7 @@ public:
 // controller commands
 //
 
-class SetBindingCommand : public ScriptCommand
+class SetBindingCommand : public WindowCommand
 {
 public:
     SetBindingCommand() : 
@@ -1059,14 +1074,16 @@ public:
     virtual int GetId() { return SET_BINDING_COMMAND; }
 
     virtual const char *GetName() { return "set_binding"; }
-    virtual const char *GetUsage() { return "input, proc|command_name"; }
+    virtual const char *GetUsage() { return "id, input, proc|command_name"; }
     virtual const char *GetDescription() 
     { return "bind an input to a command or procedure"; }
     
     virtual bool Setup(Scm lst)
     {
-        // ensure basic structure of lst
-        if (!ScmConsp(lst) || !ScmConsp(ScmCdr(lst))) {
+        Scm inputArg;
+        Scm commandArg;
+        
+        if (!ParseScm(ErrorHelp(), lst, "dcc", &windowid, &inputArg, &commandArg)) {
             Error("must specify an input and command/procedure");
             return false;
         }
@@ -1076,8 +1093,8 @@ public:
         command = NULL;
         
         // parse input and command from lst
-        if (ParseInput(ScmCar(lst), &input) &&
-            ParseCommand(ScmCadr(lst), &command))
+        if (ParseInput(inputArg, &input) &&
+            ParseCommand(commandArg, &command))
         {
             return true;
         } else {
@@ -1092,7 +1109,7 @@ public:
 };
 
 
-class ClearBindingCommand : public ScriptCommand
+class ClearBindingCommand : public WindowCommand
 {
 public:
     ClearBindingCommand() : 
@@ -1103,37 +1120,49 @@ public:
     virtual int GetId() { return CLEAR_BINDING_COMMAND; }
 
     virtual const char *GetName() { return "clear_binding"; }
-    virtual const char *GetUsage() { return "input"; }
+    virtual const char *GetUsage() { return "id, input"; }
     virtual const char *GetDescription() 
     { return "clear all bindings for an input"; }
     
     virtual bool Setup(Scm lst)
     {
+        Scm inputArg;
+    
+        if (!ParseScm(ErrorHelp(), lst, "dc", &windowid, &inputArg)) {
+            Error("must specify an input");
+            return false;
+        }
+    
         // ensure member vars are NULL before parsing
         input = NULL;
         
         // parse input and command from lst
-        return ParseInput(ScmCar(lst), &input);
+        return ParseInput(inputArg, &input);
     }
     
     Input *input;
 };
 
 
-class ClearAllBindingsCommand : public ScriptCommand
+class ClearAllBindingsCommand : public WindowCommand
 {
 public:
     virtual Command* Create() { return new ClearAllBindingsCommand(); }
     virtual int GetId() { return CLEAR_ALL_BINDINGS_COMMAND; }
 
     virtual const char *GetName() { return "clear_all_bindings"; }
-    virtual const char *GetUsage() { return ""; }
+    virtual const char *GetUsage() { return "id"; }
     virtual const char *GetDescription() 
-    { return "clear all bindings for all input"; }    
+    { return "clear all bindings for all input"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+    }
 };
 
 
-class HotspotClickCommand : public ScriptCommand
+class HotspotClickCommand : public WindowCommand
 {
 public:
     virtual Command* Create() { return new HotspotClickCommand(); }
@@ -1159,20 +1188,20 @@ public:
 };
 
 
-class GetMousePosCommand : public ScriptCommand
+class GetMousePosCommand : public WindowCommand
 {
 public:
     virtual Command* Create() { return new GetMousePosCommand(); }
     virtual int GetId() { return GET_MOUSE_POS_COMMAND; }
 
     virtual const char *GetName() { return "get_mouse_pos"; }
-    virtual const char *GetUsage() { return "'world'|'screen'|'window'"; }
+    virtual const char *GetUsage() { return "id, 'world'|'screen'|'window'"; }
     virtual const char *GetDescription() 
     { return "gets the current mouse position in the requested coordinates"; }
 
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "s", &kind);
+        return ParseScm(ErrorHelp(), lst, "ds", &windowid, &kind);
     }
     
     string kind;

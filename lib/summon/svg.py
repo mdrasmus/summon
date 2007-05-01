@@ -22,7 +22,7 @@ def color2string(color):
                             int(255 * color[2]))
 
 
-def writeSvg(outfile, group):
+def writeSvg(win, outfile, group):
     def printLine(x1, y1, x2, y2, color):
         print >>outfile, "<line x1='%f' y1='%f' x2='%f' y2='%f' " % (x1, y1, x2, y2)
         print >>outfile, "stroke-opacity='%f' " % (color[3])
@@ -125,15 +125,15 @@ def writeSvg(outfile, group):
         summon.visitGraphics(elm, printGraphic)
 
     # print out svg code
-    (x, y, x2, y2) = get_visible()  
+    (x, y, x2, y2) = win.get_visible()  
     boxWidth  = x2 - x
     boxHeight = y2 - y
-    (width, height) = get_window_size()    
+    (width, height) = win.get_size()    
     transx = -x
     transy = -y
     scalex = width / boxWidth
     scaley = height / boxHeight
-    bgcolor = get_bgcolor()
+    bgcolor = win.get_bgcolor()
     
     print >>outfile, svgHeader
     print >>outfile, svgTag % (width, height)
@@ -151,7 +151,7 @@ def writeSvg(outfile, group):
     print >>outfile, svgEndTag
 
 
-def printScreen(filename = None, visgroup=None):
+def printScreen(win, filename = None, visgroup=None):
     if filename == None:
         import warnings
         warnings.filterwarnings("ignore", ".*", RuntimeWarning)    
@@ -160,13 +160,13 @@ def printScreen(filename = None, visgroup=None):
         filename = filename.replace("./", "./summon")
     
     if visgroup == None:
-        visgroup = get_group(get_root_id())
+        visgroup = win.get_group(win.get_root_id())
     
     print "dumping screen to '%s'..." % filename
     
     if filename.endswith(".svg"):
         outfile = file(filename, "w")    
-        writeSvg(outfile, visgroup)
+        writeSvg(win, outfile, visgroup)
         outfile.close()
     else:
         svgfile = filename + ".svg"
@@ -180,10 +180,10 @@ def printScreen(filename = None, visgroup=None):
     
     return filename
 
-def printScreenPng(pngFilename = None):
+def printScreenPng(win, pngFilename = None):
     print "dumping screen to '%s'..." % pngFilename
 
-    filename = printScreen()
+    filename = printScreen(win)
     if pngFilename == None:
         pngFilename = filename.replace(".svg", ".png")
     os.system("convert " +filename+ " " +pngFilename)
