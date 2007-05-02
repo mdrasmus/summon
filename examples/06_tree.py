@@ -1,13 +1,15 @@
-#!/usr/bin/env summon
+#!/usr/bin/python -i
 # SUMMON examples
-# tree.py - recursive drawing of a tree
+# 6_tree.py - recursive drawing of a tree
 
 # make summon commands available
-from summon import *
+from summon.core import *
+import summon
 
 
-# clear the screen of all drawing
-clear_groups()
+# create a new window
+win = summon.Window("6_tree")
+
 
 
 # draw tree recursively
@@ -32,11 +34,11 @@ def drawTree(depth, width, height):
     
 
 # set background to white
-set_bgcolor(1,1,1)
+win.set_bgcolor(1,1,1)
 
 
 # draw a black tree
-add_group(group(color(0,0,0), drawTree(6, 100, 10)))
+win.add_group(group(color(0,0,0), drawTree(6, 100, 10)))
 
 # center the "camera" so that all shapes are in view
-home()
+win.home()

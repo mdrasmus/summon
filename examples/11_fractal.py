@@ -1,8 +1,13 @@
-#!/usr/bin/env summon
+#!/usr/bin/python -i
+# 11_fractal.py
 
 from math import *
 from summon.core import *
+import summon
 from summon import util
+
+win = summon.Window("11_fractal")
+
 
 def fractal(depth, offset):
     if depth == 0:
@@ -25,7 +30,8 @@ def fractal(depth, offset):
     return list2group(vis)
     
 
+
 util.tic("draw")
-add_group(fractal(6, 0))
+win.add_group(fractal(6, 0))
 home()
 util.toc()

@@ -1,20 +1,23 @@
-#!/usr/bin/env summon
+#!/usr/bin/python -i
 # SUMMON examples
-# tree_toggle.py - recursive drawing of a tree with node toggles
+# 7_tree_toggle.py - recursive drawing of a tree with node toggles
 
 # make summon commands available
-from summon import *
+from summon.core import *
+import summon
 
 
-# clear the screen of all drawing
-clear_groups()
+# create a new window
+win = summon.Window("7_tree_toggle")
+
 
 button_size = 1
 
 class Node:
     def __init__(self, gid):
-        self.shown = True
-        self.groupid = gid
+        self.shown = True   # boolean whether this node is visible
+        self.groupid = gid  # group id, used to change visibility of group
+
 
 # draw tree recursively
 def drawTree(depth, width, height):  
@@ -33,9 +36,11 @@ def drawTree(depth, width, height):
                 drawTree(depth-1, width/2.0, height)))
         
         node = Node(get_group_id(grp))   
-        def func():
+        
+        # callback function for when a tree node is clicked
+        def onClickNode():
             node.shown = not node.shown
-            show_group(node.groupid, node.shown)
+            win.show_group(node.groupid, node.shown)
         
         return group(
             color(0,0,0),
@@ -51,17 +56,17 @@ def drawTree(depth, width, height):
                 hotspot("click", 
                     -button_size, -button_size,
                     button_size, button_size,
-                    func)))
+                    onClickNode)))
     else:
         return group(lines(0, 0, 0, -height))
     
 
 # set background to white
-set_bgcolor(1,1,1)
+win.set_bgcolor(1,1,1)
 
 
 # draw a black tree
-add_group(group(color(0,0,0), drawTree(6, 100, 10)))
+win.add_group(group(color(0,0,0), drawTree(6, 100, 10)))
 
 # center the "camera" so that all shapes are in view
-home()
+win.home()

@@ -1,14 +1,18 @@
-#!/usr/bin/env summon
+#!/usr/bin/python -i
 # SUMMON examples
-# tree_big.py - recursive drawing of a BIG tree
+# 8_tree_big.py - recursive drawing of a BIG tree
 
-# make summon commands available
-from summon import *
+
 import random
 
+# make summon commands available
+from summon.core import *
+import summon
 
-# clear the screen of all drawing
-clear_groups()
+# create new window
+win = summon.Window("8_tree_big")
+
+
 
 # size of node toggle buttons
 button_size = .25
@@ -73,7 +77,7 @@ def drawTree(tree, height):
         node = Node(get_group_id(grp))   
         def func():
             node.shown = not node.shown
-            show_group(node.groupid, node.shown)
+            win.show_group(node.groupid, node.shown)
         
         return group(
             color(0,0,0),
@@ -97,13 +101,20 @@ def drawTree(tree, height):
 
 
 # set background to white
-set_bgcolor(1,1,1)
+win.set_bgcolor(1, 1, 1)
 
 # make a random tree
 tree = MakeRandomTree(30, 1, .96)
 
 # draw the tree
-add_group(group(color(0,0,0), drawTree(tree, 1)))
+win.add_group(group(color(0, 0, 0), drawTree(tree, 1)))
 
 # center the "camera" so that all shapes are in view
-home()
+win.home()
+
+
+
+print
+print "NOTE: use shift+right drag and ctrl+right drag to zoom"
+print "x and y axis independently"
+print

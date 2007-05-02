@@ -1,8 +1,15 @@
-#!/usr/bin/env summon
-
+#!/usr/bin/python -i
+# 12_sierpinski.py
+#
+# sierpinski's triangle
+#
 
 from summon.core import *
+import summon
 import math
+
+win = summon.Window("12_sierpinski")
+
 
 trix = math.cos(math.pi / 2.0 - 2*math.pi / 3.0)
 triy = math.sin(math.pi / 2.0 - 2*math.pi / 3.0)
@@ -25,6 +32,6 @@ def tri(size, depth):
 
 
 
-add_group(tri(100, 8))
-home()
+win.add_group(tri(100, 8))
+win.home()
 

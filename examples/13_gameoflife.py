@@ -1,11 +1,18 @@
-#!/usr/bin/env summon
-
+#!/usr/bin/python -i
+# 13_gameoflife.py
+#
+# Game of Life
+#
 
 import random
 import time
 import sys
 
-from rasmus import util
+
+from summon.core import *
+import summon
+
+win = summon.Window("13_gameoflife")
 
 
 width = 400
@@ -189,10 +196,11 @@ def drawFrame():
 
 print "press 'a' to place a cell under the mouse pointer"
 print "initializing..."
-add_group(group(hotspot("click", 0, 0, width, height, create)))
-set_binding(input_key("a"), create) 
-set_visible(0, 0, width, height)
-set_antialias(False)
+
+win.add_group(group(hotspot("click", 0, 0, width, height, create)))
+win.set_binding(input_key("a"), create) 
+win.set_visible(0, 0, width, height)
+win.set_antialias(False)
 
 
 game = Game(width, height)
@@ -211,7 +219,7 @@ if len(sys.argv) > 2:
         make_wave()
 
 pause = False
-gid = add_group(drawBoard(game.board))
+gid = win.add_group(drawBoard(game.board))
 
 
 print "animating"
@@ -219,5 +227,10 @@ while True:
     game.evolve()
     
     g = drawBoard(game.board)
-    gid = replace_group(gid, g)
+    
+    # stop looping if window is closed
+    if win.winid not in summon.get_windows():
+        break
+        
+    gid = win.replace_group(gid, g)
     time.sleep(.1)

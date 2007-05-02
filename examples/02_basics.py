@@ -1,13 +1,14 @@
-#!/usr/bin/env summon
+#!/usr/bin/python -i
 # SUMMON examples
-# example2.py - transforms and use of python functions
+# 2_basics.py - transforms and use of python functions
 
 # make summon commands available
-from summon import *
+from summon.core import *
+import summon
 
 
-# clear the screen of all drawing
-clear_groups()
+# create a new window
+win = summon.Window("2_basics")
 
 
 # a function for drawing a commonly used shape
@@ -36,33 +37,33 @@ def label(string, pos):
 
 
 # draw an arrow with our function
-add_group(arrow())
-add_group(label("arrow", 0))
+win.add_group(arrow())
+win.add_group(label("arrow", 0))
 
 # draw the arrow again, 
 # except translated to the right by 100
 # NOTE: we must wrap the translate construct in a group because add_group
 # expects a group construct
-add_group(group(translate(100, 0, arrow())))
-add_group(label("translated arrow", 100))
+win.add_group(group(translate(100, 0, arrow())))
+win.add_group(label("translated arrow", 100))
 
 
 # draw another arrow thats translated and then rotated 
-add_group(group(translate(200, 0, rotate(40, arrow()))))
-add_group(label("rotated arrow", 200))
+win.add_group(group(translate(200, 0, rotate(40, arrow()))))
+win.add_group(label("rotated arrow", 200))
 
 
 # draw another arrow thats translated and then fliped over the line (0, 100) 
-add_group(group(translate(350, 0, 
+win.add_group(group(translate(350, 0, 
     flip(0, 100, arrow()),
     label("fliped arrow", 0))))
 # notice how the label is now also in the translation
 
 # draw another arrow thats translated and then scaled by a 1/3
-add_group(group(translate(450, 0, 
+win.add_group(group(translate(450, 0, 
     scale(.3, .3, arrow()),
     label("scaled arrow", 0))))
 
 
 # center the "camera" so that all shapes are in view
-home()
+win.home()

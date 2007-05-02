@@ -1,6 +1,6 @@
-#!/usr/bin/env summon
+#!/usr/bin/python -i
 # SUMMON examples
-# text.py - example of text
+# 10_text.py - example of text
 #
 # Try zoomin in and out so see affects on text.  Use CTRL-right drag and 
 # SHIFT-right drag to zoom and x and y axis separately.
@@ -8,12 +8,11 @@
 
 
 # make summon commands available
-from summon import *
+from summon.core import *
+import summon
 
 
-# clear the screen of all drawing
-clear_groups()
-
+win = summon.Window("10_text")
 
 width = 100
 a = 0
@@ -25,18 +24,21 @@ d = width
 
 ##################
 # Bitmap Text
+#
+# Always the same on-screen size.  Clips when text cannot fit in bounding box
+#
 
 x = 0
 y = 0
 
-add_group(group(line_strip(color(1,1,1), 
+win.add_group(group(line_strip(color(1,1,1), 
     x, y,
     x + width, y,
     x + width, y + width,
     x, y + width,
     x, y)))
 
-add_group(group(
+win.add_group(group(
     translate(x, y,
         text("NW", a, c, b, d, "top", "left"),
         text("N",  b, c, c, d, "top", "center"),
@@ -51,18 +53,22 @@ add_group(group(
 
 ##################
 # Scale Text
+#
+# Text is drawn with lines.  Always visible, scales to fit as large as 
+# possible inside bounding box
+#
 
 x = 110
 y = 0
 
-add_group(group(line_strip(color(1,1,1), 
+win.add_group(group(line_strip(color(1,1,1), 
     x, y,
     x + width, y,
     x + width, y + width,
     x, y + width,
     x, y)))
 
-add_group(group(
+win.add_group(group(
     translate(x, y,
         text_scale("NW", a, c, b, d, "top", "left"),
         text_scale("N",  b, c, c, d, "top", "center"),
@@ -76,20 +82,24 @@ add_group(group(
 
 ##################
 # Clip Text
+#
+# Similar to Scale Text except it has a minimum and maximum height.  Also
+# text will not distort when x and y axis are zoomed independently.
+#
 
 x = 220
 y = 0
 minsize = 10
 maxsize = 33
 
-add_group(group(line_strip(color(1,1,1), 
+win.add_group(group(line_strip(color(1,1,1), 
     x, y,
     x + width, y,
     x + width, y + width,
     x, y + width,
     x, y)))
 
-add_group(group(
+win.add_group(group(
     translate(x, y,
         text_clip("NW", a, c, b, d, minsize, maxsize, "top", "left"),
         text_clip("N",  b, c, c, d, minsize, maxsize, "top", "center"),
@@ -104,4 +114,4 @@ add_group(group(
 
 
 # center the "camera" so that all shapes are in view
-home()
+win.home()

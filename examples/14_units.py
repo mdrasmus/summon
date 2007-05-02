@@ -1,6 +1,14 @@
-#!/usr/bin/env summon
+#!/usr/bin/python -i
+# 14_units.py
+#
+# simple demo of various measurements
+#
+
 
 from summon.core import *
+import summon
+
+win = summon.Window("14_units")
 
 
 units = [149e9, "distance from sun",
@@ -40,5 +48,5 @@ for i in range(0, len(units), 2):
                         
 
 shrink = 1
-add_group(group(scale(shrink, shrink, *vis)))
-set_visible(0, 0, shrink, shrink)
+win.add_group(group(scale(shrink, shrink, *vis)))
+win.set_visible(0, 0, shrink, shrink)

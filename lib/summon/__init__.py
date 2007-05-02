@@ -440,7 +440,7 @@ class Model:
     def insert_group(self, groupid, *groups):
         return summon_core.insert_group(self.id, groupid, *groups)
     
-    def remove_group(self, groupids):
+    def remove_group(self, *groupids):
         return summon_core.remove_group(self.id, *groupids)
     
     def replace_group(self, groupid, *groups):

@@ -1,13 +1,14 @@
-#!/usr/bin/env summon
+#!/usr/bin/python -i
 # SUMMON examples
-# example3.py - more complex building before add_group()
+# 3_basics.py - more complex building before add_group()
 
 # make summon commands available
-from summon import *
+from summon.core import *
+import summon
 
 
-# clear the screen of all drawing
-clear_groups()
+# create a new window
+win = summon.Window("3_basics")
 
 
 # a function for drawing a commonly used shape
@@ -41,24 +42,24 @@ def drawArrows():
                 rotate(x*-10, arrow())))
 
     # now convert our list to a single group!
-    g = list2group(vis)
+    g = group(*vis)
     
     # return the group to who ever wants it
     return g
 
 
 # change the background color to dark green
-set_bgcolor(0, .5, 0)
+win.set_bgcolor(0, .5, 0)
 
 
 # add a row of arrows
-add_group(drawArrows())
+win.add_group(drawArrows())
 
 # draw row of arrows flipped!
-add_group(group(
+win.add_group(group(
     translate(0, -200, 
         flip(100, 0, drawArrows()))))
 
 
 # center the "camera" so that all shapes are in view
-home()
+win.home()

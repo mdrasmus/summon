@@ -1,14 +1,16 @@
-#!/usr/bin/env summon
+#!/usr/bin/python -i
 # SUMMON examples
-# animation.py - example of animation
+# 15_animation.py - example of animation
+
+import math, random
 
 # make summon commands available
 from summon.core import *
 from summon import shapes
-import math, random
+import summon
 
-# clear the screen of all drawing
-clear_groups()
+
+win = summon.Window("15_animation")
 
 
 # class for bouncing Ball
@@ -51,7 +53,7 @@ for i in range(nballs):
 
 
 # draw bounding box
-add_group(group(color(1,1,1), shapes.boxStroke(0, 0, winsize, winsize)))
+win.add_group(group(color(1,1,1), shapes.boxStroke(0, 0, winsize, winsize)))
 
 
 def drawBall(ball):
@@ -68,13 +70,13 @@ def drawBall(ball):
                              2*ball.size, 2*ball.size,
                              func)))
     ball.group = get_group_id(g)
-    add_group(g)
+    win.add_group(g)
 
 
 def drawFrame():
     for ball in balls:
         if ball.group != None:
-            remove_group(ball.group)
+            win.remove_group(ball.group)
 
         # update position and velocity
         ball.x += ball.vx
@@ -105,9 +107,9 @@ def drawFrame():
             ball.y = winsize - ball.size
     
     # setup timer to call this function again
-    timer_call(rate, drawFrame)
+    summon.timer_call(rate, drawFrame)
 
 
 # begin animation
-home()
+win.home()
 drawFrame()
