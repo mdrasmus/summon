@@ -390,11 +390,11 @@ class Window:
     
     def set_crosshair_color(self, r, g, b, a=1):
         state.crosshair_color = (r, g, b, a)
-        return summon_config.set_crosshair_color(self.winid, r, g, b, a)
+        return summon_core.set_crosshair_color(self.winid, r, g, b, a)
 
     def show_crosshair(self, enabled):
         state.crosshair = enabled
-        return summon_config.show_crosshair(self.winid, enabled)
+        return summon_core.show_crosshair(self.winid, enabled)
 
     
     

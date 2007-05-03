@@ -1036,12 +1036,12 @@ public:
     {
         float r, g, b, a;
         
-        if (ScmLength(lst) == 3 && 
+        if (ScmLength(lst) == 4 && 
             ParseScm(ErrorHelp(), lst, "dfff", &windowid, &r, &g, &b))
         {
             color = Color(r, g, b, 1);
             return true;
-        } else if (ScmLength(lst) == 4 && 
+        } else if (ScmLength(lst) == 5 && 
                    ParseScm(ErrorHelp(), lst, "dffff", &windowid, &r, &g, &b, &a))
         {
             color = Color(r, g, b, a);

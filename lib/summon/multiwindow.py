@@ -1,9 +1,27 @@
 
 from summon.core import *
+from summon import util
 import summon
 
 
-def tie_windows(windows, tiex=False, tiey=False, pinx=False, piny=False):
+def tie_windows(windows, tiex=False, tiey=False, pinx=False, piny=False,
+                         coordsx=None, coordsy=None):
+    
+    if len(windows) < 2:
+        return
+    
+    if coordsx == None:
+        coordsx = [0] * len(windows)
+    
+    if coordsy == None:
+        coordsy = [0] * len(windows)
+        
+    # make coordinate lookup
+    coords = {}
+    for win, x, y in zip(windows, coordsx, coordsy):
+        coords[win] = util.Bundle(x=x, y=y)
+        
+    
     # call back that sets translation and zoom
     def tie_scroll(w1, others):
         def update_view():
@@ -17,14 +35,14 @@ def tie_windows(windows, tiex=False, tiey=False, pinx=False, piny=False):
                 zoom2 = list(w2.get_zoom())
             
                 if tiex:
-                    trans2[0] = trans1[0]
+                    trans2[0] = trans1[0] - coords[w2].x + coords[w1].x
                     zoom2[0] = zoom1[0]
                 
                     if pinx:
                         trans2[0] += pos1[0] - pos2[0]
             
                 if tiey:
-                    trans2[1] = trans1[1]
+                    trans2[1] = trans1[1] - coords[w2].y + coords[w1].y
                     zoom2[1] = zoom1[1]
 
                     if piny:
@@ -37,9 +55,12 @@ def tie_windows(windows, tiex=False, tiey=False, pinx=False, piny=False):
     # callback that sets focus
     def tie_focus(w1, others):
         def update_view():
-            focus1 = w1.get_focus()
+            x1, y1 = w1.get_focus()
+            x1 -= coords[w1].x
+            y1 -= coords[w1].y
+                      
             for w2 in others:
-                w2.set_focus(*focus1)
+                w2.set_focus(x1 + coords[w2].x, y1 + coords[w2].y)
         return update_view
     
     # set callbacks for each window

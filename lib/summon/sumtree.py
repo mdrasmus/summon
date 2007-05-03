@@ -1,22 +1,20 @@
+#
+# phylogenetic tree visualization
+#
+#
 
 import sys
+import math
+
 from summon.core import *
 from summon import shapes
 from summon import treelib
 from summon import util
-
+import summon
 
 
 sys.setrecursionlimit(2000)
 
-options = [
- ["p:", "ptree=", "ptree", "AUTO<ptree file>"],
- ["l:", "labels=", "labels", "AUTO<leaf labels file>"],
- ["n:", "newick=", "newick", "AUTO<newick file>"],
- ["t:", "usedist=", "usedist", "AUTO<distance factor>"],
- ["L", "showlabels", "showlabels", "AUTO"],
- ["H", "horizontal", "horizontal", "AUTO"]
-]
 
 
 ###########################################################################
@@ -24,18 +22,177 @@ options = [
 #
 
 class SumTree (object):
-    def __init__(self):
+    def __init__(self, tree, name="SUMTREE",
+                       showLabels=True, xscale=1.0,
+                       vertical=False):
+        self.tree = tree   
+        
+        self.name = name 
         self.selnode = None
-        self.tree = None
-        self.param = {}
         self.markGroup = None
         self.labelids = []
-        self.showlabels = False
+        self.showlabels = showLabels
+        self.xscale = float(xscale)
+        self.win = None
+        self.vertical = vertical
+        
+        self.setupTree(tree)
+        
+        
+    def setupTree(self, tree):
+        sizes = treelib.countDescendents(tree.root)
+        for node, size in sizes.iteritems():
+            node.size = size
+        
+        self.setupNode(tree.root)
+        self.setColors(tree.root)
+        self.tree = tree
+    
+    
+    def setupNode(self, node):
+        if self.xscale == 0:
+            node.height = 1
+        else:
+            node.height = node.dist * self.xscale
+        
 
+        for child in node.children:
+            self.setupNode(child)
+    
+    
+    def show(self):
+        util.tic("drawing")
+        
+        self.win = summon.Window(self.name)
+        self.win.set_bgcolor(1,1,1)
+        
+        if self.vertical:
+            # draw vertical tree
+            self.win.add_group(group(
+                color(0,0,0),
+                self.drawTree(self.tree.root)))    
+                
+        else:        
+            # draw horizontal tree
+            self.win.add_group(group(
+                color(0,0,0),
+                rotate(90, 
+                    self.drawTree(self.tree.root))))
+
+        util.toc()
+        
+        
+        # draw branch length legend
+        if not self.vertical and self.xscale != 0:
+            maxwidth = max(-node.y for node in self.tree.nodes.itervalues())
+
+            # automatically choose a scale
+            length = maxwidth / self.xscale
+            print length
+            order = math.floor(math.log10(length))
+            length = 10 ** order
+    
+            self.win.add_group(self.drawScale(0, -self.tree.root.size/2.0 - 2 , 
+                                              length, self.xscale))
+        
+
+        # put tree into view
+        w, h = self.win.get_size()        
+        self.win.home()
+        self.win.focus(w/2, h/2)
+        self.win.zoom(.9, .9)
+    
+    
+    #======================================================================
+    # graphics functions
+    #
+    
+    def drawTree(self, node, sx=0, sy=0):
+        vis = []
+
+        # draw root of tree
+        vis.append(self.drawNode(node, sx, sy, node.height))
+
+        # draw children
+        if len(node.children) > 0:
+            try:
+                x = -node.size/2.0
+                for child in node.children:
+                    x += child.size/2.0
+                    vis.append(self.drawTree(child, sx + x, sy - node.height))
+                    x += child.size/2.0
+            except RuntimeError:
+                print sys.exc_type, ": Tree is too deep to draw"
+
+        return group(*vis) 
+    
+    
+    def drawScale(self, x, y, length, xscale):
+        
+        
+        return group(color(0, 0, 1), lines(x, y, x + xscale*length, y),
+                     text_clip("%.2f" % length, x + xscale*length, y-2, 
+                                          x+10*xscale*length, y+2,
+                                          3, 12,
+                                "left", "middle"))
+    
+    
+    def drawNode(self, node, sx, sy, height):
+        vis = []
+        vis.append(lines(color(*node.color), 
+                         sx, sy, sx, sy - height))
+
+        # record node position in tree
+        node.x = sx
+        node.y = sy - node.height
+
+        def func():
+            self.selnode = node
+            self.nodeClick(node)
+
+        vis.append(hotspot("click", 
+                           sx - node.size/2.0, sy,
+                           sx + node.size/2.0, sy - height,
+                           func))
+        
+        if self.showLabels and node.isLeaf() and type(node.name) == str:
+            if self.vertical:
+                label = group(
+                    translate(sx - node.size/2.0, sy - height,
+                        rotate(-90,
+                            color(0,0,0),
+                            text_clip(node.name, 0, node.size*.1, 
+                                      node.size*100, node.size*.9, 5, 12,
+                                      "left", "middle", "vertical"))))
+            else:
+                label = group(
+                    translate(sx - node.size/2.0, sy - height,
+                        rotate(-90,
+                            color(0,0,0),
+                            text_clip(node.name, 0, node.size*.1, 
+                                      node.size*100, node.size*.9, 5, 12,
+                                      "left", "middle"))))
+        
+            self.labelids.append(get_group_id(label))
+            vis.append(label)
+            
+        
+        # draw horizontal line
+        if len(node.children) > 0:
+            left = sx - node.size/2.0 + node.children[0].size/2.0
+            right = sx + node.size/2.0 - node.children[-1].size/2.0
+
+            vis.append(lines(color(*node.color),
+                             left, sy - height, 
+                                      right, sy - height))
+        return group(*vis)
+
+
+   
     
     def showLabels(self, visible):
         for label in self.labelids:
-            show_group(label, visible)
+            self.win.show_group(label, visible)
     
     
     def nodeClick(self, node):
@@ -90,93 +247,11 @@ class SumTree (object):
         print "rat    green"
 
 
-    def drawNode(self, param, node, sx, sy, height):
-        vis = []
-        vis.append(lines(apply(color,node.color), 
-                         vertices(sx, sy, sx, sy - height)))
-
-        # record node position in tree
-        node.x = sx
-        node.y = sy - node.height
-
-        def func():
-            self.selnode = node
-            self.nodeClick(node)
-
-        vis.append(hotspot("click", 
-                           sx - node.size/2.0, sy,
-                           sx + node.size/2.0, sy - height,
-                           func))
-        
-        if self.showLabels and node.isLeaf() and type(node.name) == str:
-            if "horizontal" in self.param:
-                label = group(
-                    translate(sx - node.size/2.0, sy - height,
-                        rotate(-90,
-                            color(0,0,0),
-                            text_clip(node.name, 0, node.size*.1, 
-                                      node.size*100, node.size*.9, 5, 12,
-                                      "left", "middle"))))
-            else:
-                label = group(
-                    translate(sx - node.size/2.0, sy - height,
-                        rotate(-90,
-                            color(0,0,0),
-                            text_clip(node.name, 0, node.size*.1, 
-                                      node.size*100, node.size*.9, 5, 12,
-                                      "left", "middle", "vertical"))))
-        
-            self.labelids.append(get_group_id(label))
-            vis.append(label)
-            
-
-        # draw horizontal line
-        if len(node.children) > 0:
-            left = sx - node.size/2.0 + node.children[0].size/2.0
-            right = sx + node.size/2.0 - node.children[-1].size/2.0
-
-            vis.append(lines(apply(color,node.color),
-                             vertices(left, sy - height, 
-                                      right, sy - height)))
-        return list2group(vis)
 
 
-    def drawTree(self, param, node, sx=0, sy=0):
-        vis = []
-
-        # draw root of tree
-        vis.append(self.drawNode(param, node, sx, sy, node.height))
-
-        # draw children
-        if len(node.children) > 0:
-            try:
-                x = -node.size/2.0
-                for child in node.children:
-                    x += child.size/2.0
-                    vis.append(self.drawTree(param, child, 
-                                             sx + x, sy - node.height))
-                    x += child.size/2.0
-            except RuntimeError:
-                print sys.exc_type, ": Tree is too deep to draw"
-
-        return list2group(vis)
-
-
-    def display(self, param, tree):
-        util.tic("drawing")
-
-        set_bgcolor(1,1,1)
-        if "horizontal" in param:
-            add_group(group(
-                color(0,0,0),
-                rotate(90, 
-                    self.drawTree(param, tree.root))))
-        else:
-            add_group(group(
-                color(0,0,0),
-                self.drawTree(param, tree.root)))    
-        util.toc()
-
+    
+    #======================================================================
+    # interactive functions
 
     def find(self, name):
         margin = 10
@@ -185,14 +260,14 @@ class SumTree (object):
             x = self.tree.nodes[name].x
             y = self.tree.nodes[name].y
             print "found '%s' at (%f, %f)" % (name, x, y)
-            set_visible(x-margin, y-margin, x+margin, y+margin)
+            self.win.set_visible(x-margin, y-margin, x+margin, y+margin)
         else:
             print "could not find '%s' in tree" % name
     
     
-    def markNodes(self, names, boxColor = color(1, 0, 0)):
+    def mark(self, names, boxColor = color(1, 0, 0)):
         if self.markGroup == None:
-            self.markGroup = add_group(group())
+            self.markGroup = self.win.add_group(group())
         
         vis = [boxColor]
         found = 0
@@ -207,12 +282,12 @@ class SumTree (object):
                 
         print "found %d of %d nodes" % (found, len(names))
         
-        insert_group(self.markGroup, group(* vis))
+        self.win.insert_group(self.markGroup, group(* vis))
     
     
-    def flagNodes(self, names, flagColor = color(1,0,0)):
+    def flag(self, names, flagColor = color(1,0,0)):
         if self.markGroup == None:
-            self.markGroup = add_group(group())
+            self.markGroup = self.win.add_group(group())
         
         vis = [flagColor]
         found = 0
@@ -232,76 +307,12 @@ class SumTree (object):
         
         print "found %d of %d nodes" % (found, len(names))
             
-        insert_group(self.markGroup, group(* vis))
+        self.win.insert_group(self.markGroup, group(* vis))
     
     
     def clearMarks(self):
         if self.markGroup != None:
-            remove_group(self.markGroup)
+            self.win.remove_group(self.markGroup)
             self.markGroup = None
     
-    
-    def mark(self, boxColor = color(1,0,0)):
-        names = []
-        while True:
-            line = sys.stdin.readline().rstrip()
-            if line == "": break
-            names.append(line)
-        self.markNodes(names, boxColor)
-    
-    
-    def flag(self, flagColor = color(1,0,0)):
-        names = []
-        while True:
-            line = sys.stdin.readline().rstrip()
-            if line == "": break
-            names.append(line)
-        self.flagNodes(names, flagColor)
 
-
-
-    ##########################################################################
-    # Reading and Initialization
-    #
-
-    def setupNode(self, param, node):
-        if "usedist" in param:
-            node.height = node.dist * float(param["usedist"][-1])
-        else:
-            node.height = 1
-
-        for child in node.children:
-            self.setupNode(param, child)
-
-    def setupTree(self, param, tree):
-        sizes = treelib.countDescendents(tree.root)
-        for node, size in sizes.iteritems():
-            node.size = size
-        
-        self.setupNode(param, tree.root)
-        self.setColors(tree.root)
-        self.tree = tree
-        self.param = param
-        
-        self.showLabels = "showlabels" in param
-
-    def readTree(self, param):
-        util.tic("reading input")
-
-        tree = treelib.Tree()
-
-        if "ptree" in param:
-            tree.readParentTree(param["ptree"][-1], param["labels"][-1])
-            print "%s: %d nodes, %d leaves\n" % \
-                (param["ptree"][-1], len(tree.nodes), len(tree.leaves()))
-
-        elif "newick" in param:
-            tree.readNewick(param["newick"][-1])
-            print "%s: %d nodes, %d leaves\n" % \
-                (param["newick"][-1], len(tree.nodes), len(tree.leaves()))
-
-        # setup
-        self.setupTree(param, tree)
-        
-        util.toc()    
-        return tree
