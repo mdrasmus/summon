@@ -1646,8 +1646,7 @@ def printHist(array, ndivs=20, low=None, width=None,
 
 
 # import common functions from other files, 
-# so that only util needs to be included.
-# If module does not exist, skip it
+# so that only util needs to be included
 
 # TODO: use new relative import when we port to 2.5
 
@@ -1674,83 +1673,3 @@ except:
 
 
 
-"""
-=============================================================================
-DEPRECATED
-
-class IterFunc:
-    def __init__(self, func):
-        self.func = func
-    
-    def __iter__(self):
-        return self
-    
-    def next(self):
-        return self.func()
-    
-
-def selcolIter(myiter, cols):       
-    return IterFunc(lambda: sublist(myiter.next(), cols))
-
-def joinIter(myiter, delim):
-    return IterFunc(lambda: delim.join(myiter.next()))
-
-def cutIter(myiter, cols, delim=None):
-    return IterFunc(lambda: delim.join(sublist(myiter.next().split(delim), cols)))
-
-
-
-def clearFile(filename):
-    out = file(filename, "w")
-    out.close()
-
-def filesize(filename):
-    return os.stat(filename)[6]
-
-def openZip(filename):
-    (infile, outfile) = os.popen2("zcat '"+filename+"' ")
-    return outfile
-    
-def linecount(filename):
-    count = 0
-    for line in openStream(filename):
-        count += 1
-    return count
-
-
-#
-# set operations
-#
-# Should use python set instead
-#
-# DEPRECATED
-#
-
-def makeset(lst):
-    return dict.fromkeys(lst, 1)
-
-def union(set1, set2):
-    set = {}
-    set.update(set1)
-    set.update(set2)
-    return set
-
-def intersect(set1, set2):
-    set = {}
-    for i in set1:
-        if i in set2:
-            set[i] = 1
-    return set
-
-def nonintersect(set1, set2):
-    diffset = setSubtract(set1, set2)
-    diffset.update(setSubtract(set2, set1))
-    return diffset
-
-def setSubtract(set1, set2):
-    set = {}
-    for i in set1:
-        if i not in set2:
-            set[i] = 1
-    return set
-"""

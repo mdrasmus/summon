@@ -146,14 +146,16 @@ class Window (object):
     
     # view
     def close(self):
-        self.onClose()
+        #self.onClose()
         state.remove_window(self)
         return summon_core.close_window(self.winid)
     close.__doc__ = summon_core.close_window.__doc__.split("\n")[1]
     
-    def onClose(self):
-        """Subclass to detect window close events"""
-        pass
+    #def onClose(self):
+    #    """Subclass to detect window close events"""
+    #    pass
+    # TODO: need to also capture events when window is closed by X button
+    #
     
     def set_name(self, name):
         self.name = name
@@ -166,7 +168,7 @@ class Window (object):
     
     def set_size(self, width, height):
         return summon_core.set_window_size(self.winid, width, height)
-    set_window_size.__doc__ = set_size
+    set_size.__doc__ = summon_core.set_window_size.__doc__.split("\n")[1]
     
     def get_size(self):
         return summon_core.get_window_size(self.winid)
@@ -468,6 +470,10 @@ class VisObject (object):
     # temporary backwards compatibility
     setVisible = enableUpdating
     
+    
+    def get_window(self):
+        return self.win
+
 
 
 #=============================================================================

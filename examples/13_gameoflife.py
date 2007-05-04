@@ -169,7 +169,7 @@ def drawBoard(board):
 
 def create():
     global gid
-    x, y = [int(round(i)) for i in get_mouse_pos('world')]
+    x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
     game.pause = 2
     
     if 1 <= x <= game.width and 1 <= y <= game.height:
@@ -214,7 +214,7 @@ for row in game.neighbors:
     print row
 """
 
-if len(sys.argv) > 2:
+if len(sys.argv) > 1:
     if "wave" in sys.argv:
         make_wave()
 

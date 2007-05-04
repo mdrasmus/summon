@@ -19,7 +19,7 @@ import sys
 
 from summon.core import *
 from summon import *
-from summon import shapes, util, plotting
+from summon import shapes, util
 from summon.matrix import *
 
 
