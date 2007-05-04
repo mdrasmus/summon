@@ -87,12 +87,12 @@ class Matrix (util.Dict):
             self.nnz = nnz
 
         if self.rperm == []:
-            self.rperm[:] = range(self.nrows)
+            self.rperm = range(self.nrows)
         if self.cperm == []:
-            self.cperm[:] = range(self.ncols)
+            self.cperm = range(self.ncols)
 
-        self.rinv[:] = util.invPerm(self.rperm)
-        self.cinv[:] = util.invPerm(self.cperm)
+        self.rinv = util.invPerm(self.rperm)
+        self.cinv = util.invPerm(self.cperm)
 
     def setColor(colormap, low, top):
         self.colormin = float(low)
@@ -114,6 +114,7 @@ class Matrix (util.Dict):
         nrows, ncols = len(mat), len(mat[0])
         self.setup(nrows, ncols, nrows * ncols)
         
+        self.rows, self.cols, self.vals = [], [], []
         rows, cols, vals = self.rows, self.cols, self.vals
         
         maxval = -1e1000

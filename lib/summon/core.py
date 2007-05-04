@@ -25,17 +25,12 @@ while summon_core.get_windows() == None: pass
 #
 # python state of SUMMON
 #
-class SummonState:
+class SummonState (object):
     def __init__(self):
         self.current_window = None
-    
-        self.antialias = True
 
         self.updateFuncs = []
         self.updateInterval = .5
-
-        self.crosshair = False
-        self.crosshair_color = None
         
         self.windows = {}
         self.models = {}
@@ -75,6 +70,7 @@ def get_summon_state():
     return _summon_state
 
 def get_summon_window():
+    """Return the currently active window"""
     return _summon_state.current_window
 
 
@@ -189,12 +185,11 @@ for func in _summon_core_export:
 
 
 #=============================================================================
-# these are wrappers around the old global function interface
+# these are wrappers to support the old global function interface
 #
 
 
 # model wrappers
-
 def add_group(*groups):
     return summon_core.add_group(_summon_state.current_window.world.id, 
                                  *groups)
@@ -227,7 +222,6 @@ def get_root_id():
 
 
 # window function wrappers (for backward compatibility)
-
 def set_window_size(w, h):
     return summon_core.set_window_size(_summon_state.current_window.winid,
                                        w, h)
@@ -249,14 +243,14 @@ def get_visible(*args):
 def home():
     return summon_core.home(_summon_state.current_window.winid)
 
-def set_antialias(*args):
-    return summon_core.set_antialias(_summon_state.current_window.winid, *args)
+def set_antialias(enabled):
+    return _summon_state.current_window.set_antialias(enabled)
 
-def show_crosshair(*args):
-    return summon_core.show_crosshair(_summon_state.current_window.winid, *args)
+def show_crosshair(enabled):
+    return _summon_state.current_window.show_crosshair(enabled)
 
 def set_crosshair_color(*args):
-    return summon_core.set_crosshair_color(_summon_state.current_window.winid, *args)
+    return _summon_state.current_window.set_crosshair_color(*args)
 
 # basic view
 def trans(x, y):
@@ -276,7 +270,6 @@ def zoomy(y):
 
 
 # controller wrappers
-
 def clear_binding(input_obj):
     summon_core.clear_binding(_summon_state.current_window.winid, input_obj)
 
