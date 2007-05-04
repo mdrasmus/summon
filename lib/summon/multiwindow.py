@@ -24,6 +24,10 @@ def tie_windows(windows, tiex=False, tiey=False, pinx=False, piny=False,
     
     # call back that sets translation and zoom
     def tie_scroll(w1, others):
+        fx1, fy1 = w1.get_focus()
+        fx1 -= coords[w1].x
+        fy1 -= coords[w1].y
+    
         def update_view():
             pos1 = w1.get_position()
             trans1 = w1.get_trans()
@@ -47,7 +51,8 @@ def tie_windows(windows, tiex=False, tiey=False, pinx=False, piny=False,
 
                     if piny:
                         trans2[1] -= pos1[1] - pos2[1]
-
+                
+                #w2.set_focus(fx1 + coords[w2].x, fy1 + coords[w2].y)
                 w2.set_trans(*trans2)
                 w2.set_zoom(*zoom2)
         return update_view
@@ -55,12 +60,12 @@ def tie_windows(windows, tiex=False, tiey=False, pinx=False, piny=False,
     # callback that sets focus
     def tie_focus(w1, others):
         def update_view():
-            x1, y1 = w1.get_focus()
-            x1 -= coords[w1].x
-            y1 -= coords[w1].y
+            fx1, fy1 = w1.get_focus()
+            fx1 -= coords[w1].x
+            fy1 -= coords[w1].y
                       
             for w2 in others:
-                w2.set_focus(x1 + coords[w2].x, y1 + coords[w2].y)
+                w2.set_focus(fx1 + coords[w2].x, fy1 + coords[w2].y)
         return update_view
     
     # set callbacks for each window

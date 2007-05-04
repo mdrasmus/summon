@@ -27,6 +27,7 @@ class SumTree (object):
                        vertical=False):
         self.tree = tree   
         
+        self.win = None
         self.name = name 
         self.selnode = None
         self.markGroup = None
@@ -63,7 +64,10 @@ class SumTree (object):
     def show(self):
         util.tic("drawing")
         
-        self.win = summon.Window(self.name)
+        if self.win == None:
+            self.win = summon.Window(self.name)
+        else:
+            self.win.clear_groups()
         self.win.set_bgcolor(1,1,1)
         
         if self.vertical:

@@ -151,7 +151,7 @@ def readColorMap(filename):
     try:
         return plotting.ColorMap(mat)
     except:
-        print "error readin colormap, using default"
+        print "error reading colormap, using default"
         return RainbowColorMap()
         
 
@@ -401,8 +401,7 @@ def drawMatrix(win, mat, mouseClick=None,
         vis = []
 
     if mouseClick != None:
-        print -.5, .5, mat.ncols, mat.nrows
-        print win.add_group(group(hotspot('click', -.5, .5, 
+        win.add_group(group(hotspot('click', -.5, .5, 
                                     mat.ncols-.5, -mat.nrows+.5, 
                                     mouseClick)))
     
@@ -417,6 +416,7 @@ def drawMatrix(win, mat, mouseClick=None,
 
 class MatrixViewer (object):
     def __init__(self, mat=None, conf={}, onClick=None):
+        self.win = None
         self.mat = mat
         self.conf = conf
         self.conf.setdefault("style", "points")
@@ -426,14 +426,21 @@ class MatrixViewer (object):
         
         
     def show(self):
-        self.win = summon.Window()
-        set_antialias(False)
+        if self.win == None:
+            self.win = summon.Window()
+        else:
+            self.win.clear_groups()
+        self.win.set_antialias(False)
         
         self.win.set_binding(input_key("1"), self.one2one)
         drawMatrix(self.win, self.mat, mouseClick=self.clickCallback, 
                    conf=self.conf)
         self.win.home()
     
+    def redraw(self):
+        self.win.clear_groups()
+        drawMatrix(self.win, self.mat, mouseClick=self.clickCallback, 
+                   conf=self.conf)
     
     def clickCallback(self):
         x, y = self.win.get_mouse_pos('world')
@@ -505,3 +512,24 @@ class DenseMatrixViewer (MatrixViewer):
         
         conf = {"style": "quads"}
         MatrixViewer.__init__(self, mat, conf, **options)
+    
+    
+    def setMatrix(self, data, colormap=None,
+                  rlabels=None, clabels=None, cutoff=-util.INF,
+                  rperm=[], cperm=[], rpart=None, cpart=None):
+        
+        self.mat = Matrix()
+        self.mat.from2DList(data, cutoff=cutoff)
+        self.mat.rowlabels = rlabels
+        self.mat.collabels = clabels
+        self.mat.rperm = rperm
+        self.mat.cperm = cperm
+        self.mat.rpart = rpart
+        self.mat.cpart = cpart
+        
+        if colormap != None:
+            self.mat.colormap = colormap
+        
+        self.mat.setup()
+        
+        
