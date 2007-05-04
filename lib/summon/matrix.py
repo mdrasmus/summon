@@ -7,7 +7,7 @@ from summon.core import *
 import summon
 from summon import shapes
 from summon import util
-from summon import plotting
+
 
 
 
@@ -150,7 +150,7 @@ def readColorMap(filename):
         mat.append([value, [red, green, blue, 1.0]])
         
     try:
-        return plotting.ColorMap(mat)
+        return summon.ColorMap(mat)
     except:
         print "error reading colormap, using default"
         return RainbowColorMap()

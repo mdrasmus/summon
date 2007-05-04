@@ -1,15 +1,24 @@
-#
-# SUMMON
-# Matt Rasmussen
-# __init__.py  summon package, basic python extensions to SUMMON core
-#
+"""
+    SUMMON
+    visualization prototyping and scripting
+
+    Matt Rasmussen
+
+    SUMMON is a python extension module that provides rapid prototyping of 2D
+    visualizations. By heavily relying on the python scripting language, SUMMON
+    allows the user to rapidly prototype a custom visualization for their data,
+    without the overhead of a designing a graphical user interface or
+    recompiling native code. By simplifying the task of designing a
+    visualization, users can spend more time on understanding their data.
+
+
+"""
 
 import os, sys
 from summon.core import *
 
 
 state = get_summon_state()
-
 
 
 def load_config():
@@ -35,23 +44,41 @@ def load_config():
 # Dynamic updating interface
 #
 
-# new python implementation of timer_call()
-def set_update_interval(secs):
-    state.updateInterval = secs
+"""
+SUMMON provides a timer that calls a python function of your choice at regular
+intervals.  The following functions provide an interface to the SUMMON timer.
+
+"""
 
 def add_update_func(func, win):
+    """
+    adds a function of no arguments to the list of functions called by SUMMON
+    at regular intervals
+    """
     state.updateFuncs.append((func, win))
 
 def remove_update_func(func):
+    """
+    removes a function from the list of SUMMON timer functions
+    """
     state.updateFuncs = filter(lambda x: x[0] != func, state.updateFuncs)
 
 def is_update_func(func):
+    """returns True if 'func' is currently registered as a SUMMON timer function"""
     return func in (x[0] for x in state.updateFuncs)
 
 def get_update_funcs():
+    """returns all functions registered as SUMMON timer functions"""
     return state.updateFuncs
 
+def set_update_interval(secs):
+    """sets the timer interval between calls the to the timer function"""
+    state.updateInterval = secs
+
+
 def begin_updating():
+    """starts the SUMMON timer"""
+    
     windows = set(get_windows())
     dels = set()
     
@@ -69,6 +96,7 @@ def begin_updating():
     timer_call(state.updateInterval, begin_updating)
     
 def stop_updating():
+    """stops the SUMMON timer"""
     timer_call(0, lambda :None)
 
 
@@ -121,7 +149,7 @@ class Window (object):
         self.onClose()
         state.remove_window(self)
         return summon_core.close_window(self.winid)
-    
+    close.__doc__ = summon_core.close_window.__doc__.split("\n")[1]
     
     def onClose(self):
         """Subclass to detect window close events"""
@@ -130,34 +158,49 @@ class Window (object):
     def set_name(self, name):
         self.name = name
         return summon_core.set_window_name(self.winid, name)
+    set_name.__doc__ = summon_core.set_window_name.__doc__.split("\n")[1]
+    
+    def get_name(self, name):
+        """returns the name of a window"""
+        return self.name
     
     def set_size(self, width, height):
         return summon_core.set_window_size(self.winid, width, height)
-    set_window_size = set_size
+    set_window_size.__doc__ = set_size
     
     def get_size(self):
         return summon_core.get_window_size(self.winid)
     get_window_size = get_size
+    get_size.__doc__ = summon_core.get_window_size.__doc__.split("\n")[1]
 
     def set_position(self, x, y):
         return summon_core.set_window_position(self.winid, x, y)
+    set_position.__doc__ = summon_core.set_window_position.__doc__.split("\n")[1]
     
     def get_position(self):
         return summon_core.get_window_position(self.winid)
+    get_position.__doc__ = summon_core.get_window_position.__doc__.split("\n")[1]
     
     def focus(self, x, y):
         return summon_core.focus(self.winid, int(x), int(y))
+    focus.__doc__ = summon_core.focus.__doc__.split("\n")[1]
     
     def zoom(self, x, y):
         return summon_core.zoom(self.winid, x, y)
+    zoom.__doc__ = summon_core.zoom.__doc__.split("\n")[1]
 
     def zoomx(self, x):
         return summon_core.zoomx(self.winid, x)
+    zoomx.__doc__ = summon_core.zoomx.__doc__.split("\n")[1]
     
     def zoomy(self, y):
         return summon_core.zoomy(self.winid, y)
+    zoomy.__doc__ = summon_core.zoomy.__doc__.split("\n")[1]
 
     def zoom_camera(self, factor, factor2=None):
+        """returns function that will zoom a window by a fixed factor.
+           handy for use with set_binding()"""
+        
         if factor2 == None:
             factor2 = factor
 
@@ -169,24 +212,31 @@ class Window (object):
     
     def set_trans(self, x, y):
         return summon_core.set_trans(self.winid, x, y)
+    set_trans.__doc__ = summon_core.set_trans.__doc__.split("\n")[1]
     
     def get_trans(self):
         return summon_core.get_trans(self.winid)
+    get_trans.__doc__ = summon_core.get_trans.__doc__.split("\n")[1]
     
     def set_zoom(self, x, y):
         return summon_core.set_zoom(self.winid, x, y)
+    set_zoom.__doc__ = summon_core.set_zoom.__doc__.split("\n")[1]
 
     def get_zoom(self):
         return summon_core.get_zoom(self.winid)
+    get_zoom.__doc__ = summon_core.get_zoom.__doc__.split("\n")[1]
     
     def get_focus(self):
         return summon_core.get_focus(self.winid)
+    get_focus.__doc__ = summon_core.get_focus.__doc__.split("\n")[1]
     
     def set_focus(self, x, y):
         return summon_core.set_focus(self.winid, x, y)
+    set_focus.__doc__ = summon_core.set_focus.__doc__.split("\n")[1]
     
     def trans(self, x, y):
         return summon_core.trans(self.winid, x, y)
+    trans.__doc__ = summon_core.trans.__doc__.split("\n")[1]
     
     def trans_camera(self, x, y):
         """Return a function of no arguments that will translate the camera"""
@@ -194,22 +244,28 @@ class Window (object):
     
     def home(self):
         return summon_core.home(self.winid)
+    home.__doc__ = summon_core.home.__doc__.split("\n")[1]
     
     def set_bgcolor(self, *args):
         return summon_core.set_bgcolor(self.winid, *args)
+    set_bgcolor.__doc__ = summon_core.set_bgcolor.__doc__.split("\n")[1]
     
     def get_bgcolor(self, *args):
         return summon_core.get_bgcolor(self.winid, *args)
+    get_bgcolor.__doc__ = summon_core.get_bgcolor.__doc__.split("\n")[1]
     
     def set_visible(self, x1, y1, x2, y2):
         return summon_core.set_visible(self.winid, x1, y1, x2, y2)
+    set_visible.__doc__ = summon_core.set_visible.__doc__.split("\n")[1]
     
     def get_visible(self):
         return summon_core.get_visible(self.winid)
+    get_visible.__doc__ = summon_core.get_visible.__doc__.split("\n")[1]
     
     def set_antialias(self, enabled):
         self.antialias = enabled
         return summon_core.set_antialias(self.winid, enabled)
+    set_antialias.__doc__ = summon_core.set_antialias.__doc__.split("\n")[1]
     
     def toggle_aliasing(self):
         self.set_antialias(not self.antialias)
@@ -224,61 +280,85 @@ class Window (object):
     def set_crosshair_color(self, r, g, b, a=1):
         self.crosshair_color = (r, g, b, a)
         return summon_core.set_crosshair_color(self.winid, r, g, b, a)
+    set_crosshair_color.__doc__ = summon_core.set_crosshair_color.__doc__.split("\n")[1]
 
     def show_crosshair(self, enabled):
         self.crosshair = enabled
         return summon_core.show_crosshair(self.winid, enabled)
+    show_crosshair.__doc__ = summon_core.show_crosshair.__doc__.split("\n")[1]
     
     
     
     # controller
     def add_binding(self, input_obj, func):
+        """add a function to the list of functions bounded to an input"""
         return summon_core.set_binding(self.winid, input_obj, func)
         
     def clear_binding(self, input_obj):
         return summon_core.clear_binding(self.winid, input_obj)
+    clear_binding.__doc__ = summon_core.clear_binding.__doc__.split("\n")[1]
 
     def set_binding(self, input_obj, func):
         summon_core.clear_binding(self.winid, input_obj)
         return summon_core.set_binding(self.winid, input_obj, func)
+    set_binding.__doc__ = summon_core.set_binding.__doc__.split("\n")[1]        
     reset_binding = set_binding
+
     
     def clear_all_bindings(self):
         return summon_core.clear_all_bindings(self.winid)
+    clear_all_bindings.__doc__ = summon_core.clear_all_bindings.__doc__.split("\n")[1]
 
     def get_mouse_pos(self, coord):
-        return summon_core.get_mouse_pos(self.winid, coord)        
+        """gets the current mouse position within the window
+        
+           coords -- either 'world', 'screen', or 'window'.
+                     mouse position will be returned as a coordinate in the
+                     specified coordinate system
+        """          
+           
+        return summon_core.get_mouse_pos(self.winid, coord)
     
     
         
     # model manipulation (forward to world)
     def clear_groups(self):
         return self.world.clear_groups()
+    clear_groups.__doc__ = summon_core.clear_groups.__doc__.split("\n")[1]
     
     def add_group(self, *args):
         return self.world.add_group(*args)
+    add_group.__doc__ = summon_core.add_group.__doc__.split("\n")[1]
     
     def insert_group(self, *args):
         return self.world.insert_group(*args)
+    insert_group.__doc__ = summon_core.insert_group.__doc__.split("\n")[1]
     
     def remove_group(self, *args):
         return self.world.remove_group(*args)
+    remove_group.__doc__ = summon_core.remove_group.__doc__.split("\n")[1]
     
     def replace_group(self, *args):
         return self.world.replace_group(*args)
+    replace_group.__doc__ = summon_core.replace_group.__doc__.split("\n")[1]
     
     def show_group(self, *args):
         return self.world.show_group(*args)
+    show_group.__doc__ = summon_core.show_group.__doc__.split("\n")[1]
     
     def get_group(self, *args):
         return self.world.get_group(*args)
+    get_group.__doc__ = summon_core.get_group.__doc__.split("\n")[1]
     
     def get_root_id(self):
         return self.world.get_root_id()
+    get_root_id.__doc__ = summon_core.get_root_id.__doc__.split("\n")[1]
     
     
     # misc
     def duplicate(self):
+        """returns a new window with same model and properties as this window"""
+    
         # get current window, model, and visible
         coords = self.get_visible()
         size = self.get_window_size()
@@ -326,28 +406,35 @@ class Model (object):
     
     def clear_groups(self):
         return summon_core.clear_groups(self.id)
+    clear_groups.__doc__ = summon_core.clear_groups.__doc__.split("\n")[1]
     
     def add_group(self, *groups):
         return summon_core.add_group(self.id, *groups)
+    add_group.__doc__ = summon_core.add_group.__doc__.split("\n")[1]
     
     def insert_group(self, groupid, *groups):
         return summon_core.insert_group(self.id, groupid, *groups)
+    insert_group.__doc__ = summon_core.insert_group.__doc__.split("\n")[1]
     
     def remove_group(self, *groupids):
         return summon_core.remove_group(self.id, *groupids)
+    remove_group.__doc__ = summon_core.remove_group.__doc__.split("\n")[1]
     
     def replace_group(self, groupid, *groups):
         return summon_core.replace_group(self.id, groupid, *groups)
-    
-    def get_root_id(self):
-        return summon_core.get_root_id(self.id)
+    replace_group.__doc__ = summon_core.replace_group.__doc__.split("\n")[1]
 
     def show_group(self, groupid, visible):
         return summon_core.show_group(self.id, groupid, visible)
+    show_group.__doc__ = summon_core.show_group.__doc__.split("\n")[1]
     
     def get_group(self, groupid):
         return summon_core.get_group(self.id, groupid)
+    get_group.__doc__ = summon_core.get_group.__doc__.split("\n")[1]
 
+    def get_root_id(self):
+        return summon_core.get_root_id(self.id)
+    get_root_id.__doc__ = summon_core.get_root_id.__doc__.split("\n")[1]
 
 
 
@@ -362,12 +449,14 @@ class VisObject (object):
             self.enableUpdating(False)
     
     def update(self):
+        """this function is called from the SUMMER timer"""
         pass
     
     def show(self):
         pass
     
     def enableUpdating(self, visible=True):
+        """add/remove this object's update function to/from the SUMMON timer"""
         if visible:    
             if not is_update_func(self.update):
                 assert self.win != None, "must set window"
@@ -489,3 +578,11 @@ def visitGraphics(elm, func):
         return None
 
     visitElements(elm, beginElement, endElement)
+
+
+
+#=============================================================================
+# additonal modules imported here
+#
+
+from summon.colors import *

@@ -1646,11 +1646,30 @@ def printHist(array, ndivs=20, low=None, width=None,
 
 
 # import common functions from other files, 
-# so that only util needs to be included
-from timer import *
-from vector import *
-from options import *
-from plotting import *
+# so that only util needs to be included.
+# If module does not exist, skip it
+
+# TODO: use new relative import when we port to 2.5
+
+try:
+    from timer import *
+except:
+    pass
+
+try:
+    from vector import *
+except:
+    pass
+
+try:
+    from options import *
+except:
+    pass
+    
+try:
+    from plotting import *
+except:
+    pass
 
 
 
