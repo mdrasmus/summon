@@ -197,7 +197,7 @@ class Window (object):
     def zoomy(self, y):
         return summon_core.zoomy(self.winid, y)
     zoomy.__doc__ = summon_core.zoomy.__doc__.split("\n")[1]
-
+    
     def zoom_camera(self, factor, factor2=None):
         """returns function that will zoom a window by a fixed factor.
            handy for use with set_binding()"""
