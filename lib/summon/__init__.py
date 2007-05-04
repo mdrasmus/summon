@@ -172,7 +172,6 @@ class Window (object):
     
     def get_size(self):
         return summon_core.get_window_size(self.winid)
-    get_window_size = get_size
     get_size.__doc__ = summon_core.get_window_size.__doc__.split("\n")[1]
 
     def set_position(self, x, y):
