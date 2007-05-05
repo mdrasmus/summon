@@ -140,6 +140,7 @@ class Window (object):
     
     
     def activate(self):
+        """make this window the current window (deprecated)"""
         summon_core.set_window(self.winid)
         state.current_window = self
     
@@ -200,7 +201,11 @@ class Window (object):
     
     def zoom_camera(self, factor, factor2=None):
         """returns function that will zoom a window by a fixed factor.
-           handy for use with set_binding()"""
+           handy for use with set_binding()
+           
+           if two zoom factors are supplied, the x and y coordinates will be
+           zoomed separately.
+        """
         
         if factor2 == None:
             factor2 = factor
@@ -247,12 +252,12 @@ class Window (object):
         return summon_core.home(self.winid)
     home.__doc__ = summon_core.home.__doc__.split("\n")[1]
     
-    def set_bgcolor(self, *args):
-        return summon_core.set_bgcolor(self.winid, *args)
+    def set_bgcolor(self, r, g, b):
+        return summon_core.set_bgcolor(self.winid, r, g, b)
     set_bgcolor.__doc__ = summon_core.set_bgcolor.__doc__.split("\n")[1]
     
-    def get_bgcolor(self, *args):
-        return summon_core.get_bgcolor(self.winid, *args)
+    def get_bgcolor(self):
+        return summon_core.get_bgcolor(self.winid)
     get_bgcolor.__doc__ = summon_core.get_bgcolor.__doc__.split("\n")[1]
     
     def set_visible(self, x1, y1, x2, y2):
@@ -327,28 +332,31 @@ class Window (object):
         return self.world.clear_groups()
     clear_groups.__doc__ = summon_core.clear_groups.__doc__.split("\n")[1]
     
-    def add_group(self, *args):
-        return self.world.add_group(*args)
+    def add_group(self, aGroup):
+        return self.world.add_group(aGroup)
     add_group.__doc__ = summon_core.add_group.__doc__.split("\n")[1]
     
-    def insert_group(self, *args):
-        return self.world.insert_group(*args)
-    insert_group.__doc__ = summon_core.insert_group.__doc__.split("\n")[1]
+    def insert_group(self, groupid, aGroup):
+        """inserts a drawing group 'aGroup' as a child to an existing group
+           with id 'groupid'."""
+        return self.world.insert_group(groupid, aGroup)
     
-    def remove_group(self, *args):
-        return self.world.remove_group(*args)
+    def remove_group(self, *groupids):
+        return self.world.remove_group(*groupids)
     remove_group.__doc__ = summon_core.remove_group.__doc__.split("\n")[1]
     
-    def replace_group(self, *args):
-        return self.world.replace_group(*args)
+    def replace_group(self, groupid, aGroup):
+        """replaces a current drawing group with id 'groupid' with a new 
+           group 'aGroup'"""
+        return self.world.replace_group(groupid, aGroup)
     replace_group.__doc__ = summon_core.replace_group.__doc__.split("\n")[1]
     
-    def show_group(self, *args):
-        return self.world.show_group(*args)
+    def show_group(self, groupid, visible):
+        return self.world.show_group(groupid, visible)
     show_group.__doc__ = summon_core.show_group.__doc__.split("\n")[1]
     
-    def get_group(self, *args):
-        return self.world.get_group(*args)
+    def get_group(self, groupid):
+        return self.world.get_group(groupid)
     get_group.__doc__ = summon_core.get_group.__doc__.split("\n")[1]
     
     def get_root_id(self):
@@ -409,20 +417,20 @@ class Model (object):
         return summon_core.clear_groups(self.id)
     clear_groups.__doc__ = summon_core.clear_groups.__doc__.split("\n")[1]
     
-    def add_group(self, *groups):
-        return summon_core.add_group(self.id, *groups)
+    def add_group(self, aGroup):
+        return summon_core.add_group(self.id, aGroup)
     add_group.__doc__ = summon_core.add_group.__doc__.split("\n")[1]
     
-    def insert_group(self, groupid, *groups):
-        return summon_core.insert_group(self.id, groupid, *groups)
+    def insert_group(self, groupid, aGroup):
+        return summon_core.insert_group(self.id, groupid, aGroup)
     insert_group.__doc__ = summon_core.insert_group.__doc__.split("\n")[1]
     
     def remove_group(self, *groupids):
         return summon_core.remove_group(self.id, *groupids)
     remove_group.__doc__ = summon_core.remove_group.__doc__.split("\n")[1]
     
-    def replace_group(self, groupid, *groups):
-        return summon_core.replace_group(self.id, groupid, *groups)
+    def replace_group(self, groupid, aGroup):
+        return summon_core.replace_group(self.id, groupid, aGroup)
     replace_group.__doc__ = summon_core.replace_group.__doc__.split("\n")[1]
 
     def show_group(self, groupid, visible):

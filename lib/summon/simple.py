@@ -1,118 +1,72 @@
 """
-    Backwards compatability module
+    Simple mode
 
-    Currently this module provides replacements for the global functions 
-    provided in SUMMON 1.6.1 and earlier.  It is recommended to use the new
-    object-oriented functions.
+    Use SUMMON in simple single-window mode.
+    
+    In single-window mode, these global functions can be used to interact 
+    directly with the summon window.  This is useful for people not familiar
+    with object-oriented programming.
+    
+    Scripts executed by bin/summon have simple single-window mode loaded by
+    default.
 """
 
+import inspect
 
-import summon_core
-from summon.core import *
+import summon
 
-_summon_state = get_summon_state()
+
+_w = summon.get_summon_window
 
 #=============================================================================
-# these are wrappers to support the old global function interface
+# these are wrappers to support the simple global function interface
 #
 
 
-# model wrappers
-def add_group(*groups):
-    return summon_core.add_group(_summon_state.current_window.world.id, 
-                                 *groups)
+
+def _make_func(get_obj, func):
+    """wrap a method call into a function call"""
     
-def insert_group(groupid, *groups):
-    return summon_core.insert_group(_summon_state.current_window.world.id, 
-                                    groupid, *groups)
+    regargs, varargs, varkwargs, defaults = inspect.getargspec(func)
+    argnames = list(regargs)
+    if varargs:
+        argnames.append(varargs)
+    if varkwargs:
+        argnames.append(varkwargs)
+    signature = inspect.formatargspec(regargs[1:], varargs, varkwargs, defaults,
+                                      formatvalue=lambda value: "")[1:-1]
+    new_func = eval("lambda %s: __call_summon_func__(_w(), %s)" % \
+                    (signature, signature),
+                    {"__call_summon_func__": func,
+                     "_w": get_obj})
 
-def remove_group(*groupids):
-    return summon_core.remove_group(_summon_state.current_window.world.id, 
-                                    *groupids)
-
-def replace_group(groupid, *groups):
-    return summon_core.replace_group(_summon_state.current_window.world.id, 
-                                     groupid, *groups)
-
-def clear_groups():
-    return summon_core.clear_groups(_summon_state.current_window.world.id)
-
-def show_group(groupid, visible):
-    return summon_core.show_group(_summon_state.current_window.world.id,
-                                    groupid, visible)
-
-def get_group(groupid):
-    return summon_core.get_group(_summon_state.current_window.world.id,
-                                 groupid)
-
-def get_root_id():
-    return summon_core.get_root_id(_summon_state.current_window.world.id)
+    new_func.__name__ = func.__name__
+    new_func.__doc__ = func.__doc__
+    new_func.__dict__.update(func.__dict__) 
+    return new_func
 
 
-# window function wrappers (for backward compatibility)
-def set_window_size(w, h):
-    return summon_core.set_window_size(_summon_state.current_window.winid,
-                                       w, h)
-def get_window_size():
-    return summon_core.get_window_size(_summon_state.current_window.winid)
 
-def set_bgcolor(*args):
-    return summon_core.set_bgcolor(_summon_state.current_window.winid, *args)
+_globals = globals()
 
-def get_bgcolor(*args):
-    return summon_core.get_bgcolor(_summon_state.current_window.winid, *args)
+_name_changes = {"set_name": "set_window_name",
+                 "get_name": "get_window_name",
+                 "set_size": "set_window_size",
+                 "get_size": "get_window_size",
+                 "set_position": "set_window_position",
+                 "get_position": "get_window_position",
+                 "close": "close_window"}
 
-def set_visible(*args):
-    return summon_core.set_visible(_summon_state.current_window.winid, *args)
+_exclude = set(["activate", "duplicate"])
 
-def get_visible(*args):
-    return summon_core.get_visible(_summon_state.current_window.winid, *args)
-
-def home():
-    return summon_core.home(_summon_state.current_window.winid)
-
-def set_antialias(enabled):
-    return _summon_state.current_window.set_antialias(enabled)
-
-def show_crosshair(enabled):
-    return _summon_state.current_window.show_crosshair(enabled)
-
-def set_crosshair_color(*args):
-    return _summon_state.current_window.set_crosshair_color(*args)
-
-# basic view
-def trans(x, y):
-    summon_core.trans(_summon_state.current_window.winid, x, y)
-
-def zoom(x, y):
-    summon_core.zoom(_summon_state.current_window.winid, x, y)
-
-def focus(x, y):
-    summon_core.focus(_summon_state.current_window.winid, x, y)
-
-def zoomx(x):
-    summon_core.zoomx(_summon_state.current_window.winid, x)
-
-def zoomy(y):
-    summon_core.zoomy(_summon_state.current_window.winid, y)
-
-
-# controller wrappers
-def clear_binding(input_obj):
-    summon_core.clear_binding(_summon_state.current_window.winid, input_obj)
-
-def clear_all_bindings():
-    summon_core.clear_all_bindings(_summon_state.current_window.winid)
-
-def get_mouse_pos(coord):
-    return summon_core.get_mouse_pos(_summon_state.current_window.winid, coord)
-
-def set_binding(input_obj, func):
-    winid = _summon_state.current_window.winid
-    summon_core.clear_binding(winid, input_obj)
-    summon_core.set_binding(winid, input_obj, func)
-reset_binding = set_binding
-
-def add_binding(input_obj, func):
-    winid = _summon_state.current_window.winid
-    summon_core.set_binding(winid, input_obj, func)
+# window function wrappers
+for name, func in summon.Window.__dict__.iteritems():
+    if name.startswith("__") or name in _exclude:
+        continue
+    
+    # change some function names
+    if name in _name_changes:
+        name = _name_changes[name]
+    
+    _globals[name] = _make_func(_w, func)
+    _globals[name].__name__ = name
