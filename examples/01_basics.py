@@ -1,6 +1,6 @@
 #!/usr/bin/python -i
 # SUMMON examples
-# 1_basics.py - basic commands
+# 01_basics.py - basic commands
 
 # make summon commands available
 from summon.core import *
@@ -15,7 +15,7 @@ import summon
 
 
 # create a new window
-win = summon.Window("1_basics")
+win = summon.Window("01_basics")
 
 # add a line from (0,0) to (30,40)
 win.add_group(group(lines(0,0, 30,40)))

@@ -1,6 +1,6 @@
 #!/usr/bin/python -i
 # SUMMON examples
-# 6_tree.py - recursive drawing of a tree
+# 06_tree.py - recursive drawing of a tree
 
 # make summon commands available
 from summon.core import *
@@ -8,7 +8,7 @@ import summon
 
 
 # create a new window
-win = summon.Window("6_tree")
+win = summon.Window("06_tree")
 
 
 

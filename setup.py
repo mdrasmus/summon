@@ -8,7 +8,7 @@
 
 from distutils.core import setup, Extension
 
-SUMMON_VERSION = '1.6.1'
+SUMMON_VERSION = '1.7'
 
 setup(
     name='summon',
@@ -26,7 +26,7 @@ setup(
         SUMMON was designed with several philosophies. First,
         recompilation should be avoided in order to speed up the development
         process. Second, design of graphical user interfaces should also be
-        avoided. Designing a good interface takes planning and time to layout
+        minimized. Designing a good interface takes planning and time to layout
         buttons, scrollbars, and dialog boxes. Yet a poor interface is very
         painful to work with. Even when one has a good interface, rarely can it
         be automated for batch mode. Instead, SUMMON relies on the python

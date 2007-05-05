@@ -1,6 +1,6 @@
 #!/usr/bin/python -i
 # SUMMON examples
-# 3_basics.py - more complex building before add_group()
+# 03_basics.py - more complex building before add_group()
 
 # make summon commands available
 from summon.core import *
@@ -8,7 +8,7 @@ import summon
 
 
 # create a new window
-win = summon.Window("3_basics")
+win = summon.Window("03_basics")
 
 
 # a function for drawing a commonly used shape

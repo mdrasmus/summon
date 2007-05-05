@@ -1,6 +1,6 @@
 #!/usr/bin/python -i
 # SUMMON examples
-# 2_basics.py - transforms and use of python functions
+# 02_basics.py - transforms and use of python functions
 
 # make summon commands available
 from summon.core import *
@@ -8,7 +8,7 @@ import summon
 
 
 # create a new window
-win = summon.Window("2_basics")
+win = summon.Window("02_basics")
 
 
 # a function for drawing a commonly used shape

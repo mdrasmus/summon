@@ -1,6 +1,6 @@
 #!/usr/bin/python -i
 # SUMMON examples
-# 8_tree_big.py - recursive drawing of a BIG tree
+# 08_tree_big.py - recursive drawing of a BIG tree
 
 
 import random
@@ -10,7 +10,7 @@ from summon.core import *
 import summon
 
 # create new window
-win = summon.Window("8_tree_big")
+win = summon.Window("08_tree_big")
 
 
 

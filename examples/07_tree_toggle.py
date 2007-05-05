@@ -1,6 +1,6 @@
 #!/usr/bin/python -i
 # SUMMON examples
-# 7_tree_toggle.py - recursive drawing of a tree with node toggles
+# 07_tree_toggle.py - recursive drawing of a tree with node toggles
 
 # make summon commands available
 from summon.core import *
@@ -8,7 +8,7 @@ import summon
 
 
 # create a new window
-win = summon.Window("7_tree_toggle")
+win = summon.Window("07_tree_toggle")
 
 
 button_size = 1

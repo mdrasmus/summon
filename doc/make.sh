@@ -11,7 +11,7 @@ $PYDOC -w summon.util
 $PYDOC -w summon.options
 $PYDOC -w summon.core
 $PYDOC -w summon.treelib
-$PYDOC -w summon.backwards
+$PYDOC -w summon.simple
 $PYDOC -w summon.plot
 $PYDOC -w summon.svg
 $PYDOC -w summon.colors

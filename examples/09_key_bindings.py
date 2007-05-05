@@ -1,6 +1,6 @@
 #!/usr/bin/python -i
 # SUMMON examples
-# 9_key_bindings.py - example use of bindings
+# 09_key_bindings.py - example use of bindings
 #
 # Also see summon/lib/summon_config.py file for example use of set_binding() 
 # and input_*(). 
@@ -11,7 +11,7 @@ from summon.core import *
 from summon import shapes
 import summon
 
-win = summon.Window("9_key_bindings")
+win = summon.Window("09_key_bindings")
 
 # color background boxes
 #   save the group id of each box so we can manipulate it later

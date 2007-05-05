@@ -1,6 +1,6 @@
 #!/usr/bin/python -i
 # SUMMON examples
-# 5_hotspots.py - example of hotspots
+# 05_hotspots.py - example of hotspots
 
 # The default binding for hotspot clicking is 'middle click'
 # Middle click inside each box to activate the hotspots
@@ -10,7 +10,7 @@
 from summon.core import *
 import summon
 
-win = summon.Window("5_hotspots.py")
+win = summon.Window("05_hotspots.py")
 
 
 def makeBox(string, x, y, width, boxColor):
