@@ -56,9 +56,19 @@ compile: $(OBJS)
 
 
 .cpp.obj:
-	$(CC) $(INCLUDE) $(CFLAGS) $<
+	$(CC) $(INCLUDE) $(CFLAGS) $< 
 	move *.obj $(BUILD_DIR)
+    #$@
 
 
-$(BUILD_DIR):
+build_dir:
 	mkdir $(BUILD_DIR)
+    mkdir $(BUILD_DIR)\src
+    mkdir $(BUILD_DIR)\src\Summon
+    mkdir $(BUILD_DIR)\src\Common
+    mkdir $(BUILD_DIR)\src\GlutMVC
+    mkdir $(BUILD_DIR)\src\MVC
+
+
+
+
