@@ -32,8 +32,6 @@ public:
     // accessors    
     inline Vertex2f GetTranslate() { return m_trans; }
     inline Vertex2f GetZoom() { return m_zoom; }
-
-    static const float MIN_ZOOM = .01;
     
     // coordinate system conversions
     inline Vertex2i Glut2DView::WindowToScreen(int x, int y)
@@ -73,6 +71,9 @@ protected:
     Vertex2f m_zoom;
     Vertex2f m_focus;
 };
+
+
+
 
 }
 

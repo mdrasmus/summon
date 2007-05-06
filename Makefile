@@ -4,7 +4,7 @@ WWWDIR=/scratch-sm/www/pub/summon
 WWWHOST=rasmus@compbio.mit.edu
 
 install:
-	make -C src/Summon/ install
+	$(MAKE) -C src/Summon/ install
 
 
 pkg: dist/$(PACKAGE)
@@ -20,4 +20,4 @@ pub: dist/$(PACKAGE)
 
 
 clean:
-	make -C src/Summon/ cleanall
+	$(MAKE) -C src/Summon/ cleanall

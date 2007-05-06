@@ -21,6 +21,9 @@ public:
    Vertex2(T x = 0, T y = 0)  :
       x(x), y(y) {}  
    
+   Vertex2(const Vertex2<T> &other) :
+      x(other.x), y(other.y) {}
+   
    template <class T2>
    Vertex2(const Vertex2<T> &v) :
       x(T(v.x)), y(T(v.y)) {}

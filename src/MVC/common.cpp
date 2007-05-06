@@ -2,7 +2,7 @@
 
 
 #include "first.h"
-#include <sys/times.h>
+//#include <sys/times.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string>
@@ -116,9 +116,9 @@ void PushStage(const char *stage)
    g_logStages.push_back(string(stage));
    
    // timing
-   struct tms buf;
-   times(&buf);
-   g_logTimes.push_back(buf.tms_utime);
+   //struct tms buf;
+   //times(&buf);
+   //g_logTimes.push_back(buf.tms_utime);
 }
 
 void PopStage()
@@ -126,12 +126,12 @@ void PopStage()
    for (unsigned int i=0; i<g_logStages.size()-1; i++)
       fprintf(stderr, "  ");
    
-   struct tms buf;
-   times(&buf);
-   float elapse = float(buf.tms_utime - g_logTimes.back()) / sysconf(_SC_CLK_TCK);
-      
-   fprintf(stderr, "STAGE END:   %s [%.3f s]\n", 
-           g_logStages.back().c_str(), elapse);
+   //struct tms buf;
+   //times(&buf);
+   //float elapse = float(buf.tms_utime - g_logTimes.back()) / sysconf(_SC_CLK_TCK);
+   //   
+   //fprintf(stderr, "STAGE END:   %s [%.3f s]\n", 
+   //       g_logStages.back().c_str(), elapse);
    g_logStages.pop_back();
    g_logTimes.pop_back();
 }

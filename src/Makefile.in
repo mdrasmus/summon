@@ -1,6 +1,4 @@
-
-CC = g++
-AR = ar
+#AR = ar
 PREFIX = ..
 
 INCLUDE = \

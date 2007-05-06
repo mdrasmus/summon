@@ -11,8 +11,11 @@
 #include "glut2DCommands.h"
 
 
+
 namespace Vistools
 {
+
+
 
 Glut2DView::Glut2DView(int width, int height, const char *name) :
    GlutView(width, height, name),

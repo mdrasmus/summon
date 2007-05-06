@@ -38,8 +38,8 @@ DrawView::DrawView(DrawModel *model, int width, int height, const char *name) :
     
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE);
-    glEnable(GL_MULTISAMPLE);
-    glEnable(GL_MULTISAMPLE_ARB);
+    //glEnable(GL_MULTISAMPLE);
+    //glEnable(GL_MULTISAMPLE_ARB);
     glEnable(GL_POLYGON_SMOOTH);
     glEnable(GL_LINE_SMOOTH);
     glEnable(GL_POINT_SMOOTH);    

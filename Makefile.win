@@ -1,0 +1,64 @@
+CC=cl
+LINK=link
+
+SUMMON=lib/summon_core.dll
+BUILD_DIR=build\windows
+
+INCLUDE=\
+    -Isrc/MVC \
+    -Isrc/GlutMVC \
+    -Isrc/Common \
+    -Isrc/Summon \
+    "-I/Program Files/Microsoft Visual Studio 8/VC/include" \
+    -I/Python24/include \
+    -I/dev/SDL-1.2.11/include \
+    -I/dev/OpenGLUT-0.6.3 \
+    "-I/Program Files/Microsoft Platform SDK for Windows Server 2003 R2/Include"
+    
+
+LIBS=\
+    /libpath:/Python24/libs python24.lib \
+    /libpath:/dev/SDL-1.2.11/lib SDL.lib \
+    /libpath:/dev/OpenGLUT-0.6.3 OpenGLUT_static.lib \
+    "/libpath:/Program Files/Microsoft Platform SDK for Windows Server 2003 R2/Lib"
+
+OBJS=src/Common/Matrix.obj \
+     src/Common/Script.obj \
+     src/Common/ScriptCommand.obj \
+     src/GlutMVC/glut2DCommands.obj \
+     src/GlutMVC/Glut2DController.obj \
+     src/GlutMVC/Glut2DView.obj \
+     src/GlutMVC/GlutController.obj \
+     src/GlutMVC/glutInputs.obj \
+     src/GlutMVC/GlutView.obj \
+     src/MVC/Binding.obj \
+     src/MVC/Command.obj \
+     src/MVC/common.obj \
+     src/MVC/Input.obj \
+     src/MVC/Model.obj \
+     src/MVC/StringCommand.obj \
+     src/Summon/drawCommands.obj \
+     src/Summon/DrawController.obj \
+     src/Summon/DrawModel.obj \
+     src/Summon/DrawView.obj \
+     src/Summon/Graphic.obj \
+     src/Summon/GroupTable.obj \
+     src/Summon/Summon.obj \
+     src/Summon/Transform.obj
+
+
+CFLAGS = -D__WXMSW__ -c
+
+$(SUMMON):
+	$(LINK) -out:$(SUMMON) $(BUILD_DIR)/*.obj $(LIBS) /DLL
+
+compile: $(OBJS)
+
+
+.cpp.obj:
+	$(CC) $(INCLUDE) $(CFLAGS) $<
+	move *.obj $(BUILD_DIR)
+
+
+$(BUILD_DIR):
+	mkdir $(BUILD_DIR)

@@ -25,8 +25,11 @@ def load_config():
     """Load a summon config file"""
     
     # look for config in HOME directory
-    config_file = os.path.join(os.environ["HOME"], ".summon_config")
-    if not os.path.exists(config_file):
+    if "HOME" in os.environ:
+        config_file = os.path.join(os.environ["HOME"], ".summon_config")
+    else:
+        config_file = ""        
+    if not config_file or not os.path.exists(config_file):
         # loof for config in python paths
         try:
             import summon_config
@@ -211,7 +214,7 @@ class Window (object):
             factor2 = factor
 
         def func():
-            w, h = self.get_window_size()
+            w, h = self.get_size()
             self.focus(w/2.0, h/2.0)
             self.zoom(factor, factor2)
         return func
@@ -370,7 +373,7 @@ class Window (object):
     
         # get current window, model, and visible
         coords = self.get_visible()
-        size = self.get_window_size()
+        size = self.get_size()
         bg = self.get_bgcolor()
 
         zoomx = (coords[2] - coords[0]) / size[0]
@@ -378,7 +381,7 @@ class Window (object):
 
         # create new window with same model and coords    
         win = Window(worldid=self.world.id)
-        win.set_window_size(* size)
+        win.set_size(* size)
         win.set_bgcolor(* bg)
         
         # make the view the same
