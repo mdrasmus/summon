@@ -19,7 +19,10 @@ import StringIO
 import util
 
 # newick parsing support
-import pyparsing
+try:
+    import pyparsing
+except:
+    pyparsing = None
 
 
 
@@ -436,6 +439,10 @@ class Tree:
     
     
     def readNewick(self, filename, readData=None):
+        # use simple parsing if pyparsing is not available
+        if pyparsing == None:
+            return self.readBigNewick(filename)
+        
         try:
 
             # default data reader
