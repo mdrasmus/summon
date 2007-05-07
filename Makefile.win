@@ -1,8 +1,9 @@
 CC=cl
 LINK=link
 
-SUMMON=lib/summon_core.dll
+
 BUILD_DIR=build\windows
+SUMMON=build\lib.win32-2.4\summon_core.dll
 
 INCLUDE=\
     -Isrc/MVC \
@@ -20,6 +21,7 @@ LIBS=\
     /libpath:/Python24/libs python24.lib \
     /libpath:/dev/SDL-1.2.11/lib SDL.lib \
     /libpath:/dev/OpenGLUT-0.6.3 OpenGLUT_static.lib \
+    "/libpath:/Program Files/Microsoft Visual Studio 8/VC/lib" \
     "/libpath:/Program Files/Microsoft Platform SDK for Windows Server 2003 R2/Lib"
 
 OBJS=src/Common/Matrix.obj \
@@ -46,23 +48,48 @@ OBJS=src/Common/Matrix.obj \
      src/Summon/Summon.obj \
      src/Summon/Transform.obj
 
+OBJS2=$(BUILD_DIR)/src/Common/Matrix.obj \
+      $(BUILD_DIR)/src/Common/Script.obj \
+      $(BUILD_DIR)/src/Common/ScriptCommand.obj \
+      $(BUILD_DIR)/src/GlutMVC/glut2DCommands.obj \
+      $(BUILD_DIR)/src/GlutMVC/Glut2DController.obj \
+      $(BUILD_DIR)/src/GlutMVC/Glut2DView.obj \
+      $(BUILD_DIR)/src/GlutMVC/GlutController.obj \
+      $(BUILD_DIR)/src/GlutMVC/glutInputs.obj \
+      $(BUILD_DIR)/src/GlutMVC/GlutView.obj \
+      $(BUILD_DIR)/src/MVC/Binding.obj \
+      $(BUILD_DIR)/src/MVC/Command.obj \
+      $(BUILD_DIR)/src/MVC/common.obj \
+      $(BUILD_DIR)/src/MVC/Input.obj \
+      $(BUILD_DIR)/src/MVC/Model.obj \
+      $(BUILD_DIR)/src/MVC/StringCommand.obj \
+      $(BUILD_DIR)/src/Summon/drawCommands.obj \
+      $(BUILD_DIR)/src/Summon/DrawController.obj \
+      $(BUILD_DIR)/src/Summon/DrawModel.obj \
+      $(BUILD_DIR)/src/Summon/DrawView.obj \
+      $(BUILD_DIR)/src/Summon/Graphic.obj \
+      $(BUILD_DIR)/src/Summon/GroupTable.obj \
+      $(BUILD_DIR)/src/Summon/Summon.obj \
+      $(BUILD_DIR)/src/Summon/Transform.obj
+
 
 CFLAGS = -D__WXMSW__ -c
 
 $(SUMMON):
-	$(LINK) -out:$(SUMMON) $(BUILD_DIR)/*.obj $(LIBS) /DLL
+	$(LINK) -out:$(SUMMON) $(OBJS2) $(LIBS) /DLL
 
 compile: $(OBJS)
 
 
 .cpp.obj:
-	$(CC) $(INCLUDE) $(CFLAGS) $< 
-	move *.obj $(BUILD_DIR)
-    #$@
+	$(CC) $(INCLUDE) $(CFLAGS) $< /Fo$(BUILD_DIR)/$@
+
+    
 
 
 build_dir:
-	mkdir $(BUILD_DIR)
+#	mkdir $(BUILD_DIR)
+    mkdir $(BUILD_DIR)\lib
     mkdir $(BUILD_DIR)\src
     mkdir $(BUILD_DIR)\src\Summon
     mkdir $(BUILD_DIR)\src\Common
