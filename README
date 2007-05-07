@@ -6,6 +6,10 @@ To install summon with python distutils use the following command:
 
 python setup.py install
 
+or to install in your home directory use:
+
+python setup.py install --prefix=$HOME
+
 
 For documentation see doc/summon_manual.pdf
 
