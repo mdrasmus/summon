@@ -7,15 +7,18 @@ install:
 	$(MAKE) -C src/Summon/ install
 
 
-pkg: dist/$(PACKAGE)
+pkg: 
+	make dist/$(PACKAGE)
 	
 
 dist/$(PACKAGE):
+	rm MANIFEST
 	python setup.py sdist
 
 
 pub: dist/$(PACKAGE)
 	scp dist/$(PACKAGE) $(WWWHOST):$(WWWDIR)
+	ssh $(WWWHOST) chmod o+r $(WWWDIR)/$(PACKAGE)
 	ssh $(WWWHOST) tar zxvf $(WWWDIR)/$(PACKAGE) -C $(WWWDIR)
 
 

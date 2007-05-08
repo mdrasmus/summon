@@ -4,7 +4,7 @@ recursive-include examples *.*
 recursive-include examples README*
 recursive-include src *.cpp *.h
 include doc/summon_manual.pdf
-include doc *.html
+recursive-include doc *.html
 include bin/summon
 include bin/summatrix
 include bin/sumtree
