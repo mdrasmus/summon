@@ -59,8 +59,6 @@ class Summon : public CommandExecutor, GlutViewListener
 public:
     Summon() :
         m_initialized(false),
-        m_window(NULL),
-        m_model(NULL),
         m_nextWindowId(1),
         m_nextModelId(1),
         
@@ -117,38 +115,15 @@ public:
                 ((ScriptCommand*) &command)->SetReturn(lst);
                 } break;
             
-            case GET_WINDOW_COMMAND: {
-                if (m_window) {
-                    ((ScriptCommand*)
-                        &command)->SetReturn(Int2Scm(m_window->GetId()));
-                }
-                } break;
 
             case NEW_WINDOW_COMMAND:
                 ((ScriptCommand*) &command)->SetReturn(Int2Scm(NewWindow()));
                 break;
                 
-            case SET_WINDOW_COMMAND: {
-                int windowid = ((SetWindowCommand*)&command)->windowid;
-                DrawWindow *window = GetWindow(windowid);
-                
-                if (window) {
-                    m_window = window;
-                } else {
-                    Error("cannot find window %d", windowid);
-                }
-                } break;
-            
-
-            
+                        
             case CLOSE_WINDOW_COMMAND: {
                 int windowid = ((CloseWindowCommand*)&command)->windowid;
                 DrawWindow *window = GetWindow(windowid);
-                
-                // default window
-                if (windowid == -1) {
-                    window = m_window;
-                }
                 
                 if (window) {
                     CloseWindow(window);
@@ -156,7 +131,8 @@ public:
                     Error("cannot find window %d", windowid);
                 }
                 } break;
-                
+            
+            
             case GET_MODELS_COMMAND: {
                 Scm lst = Scm_EOL;
                 for (ModelIter i=m_models.begin(); i!=m_models.end(); i++) {
@@ -165,32 +141,34 @@ public:
                 ((ScriptCommand*) &command)->SetReturn(lst);
                 } break;
             
-            case GET_MODEL_COMMAND: {
-                int windowid = ((GetModelCommand*)&command)->windowid;
-                string kind = ((GetModelCommand*)&command)->kind;
-                DrawWindow *window = GetWindow(windowid);
-                DrawModel *model = NULL;
-            
-                if (window) {
-                    if (kind == "world")
-                        model = window->GetWorldModel();
-                    else if (kind == "screen")
-                        model = window->GetScreenModel();
-                    else
-                        Error("unknown model kind '%s'", kind.c_str());
-                    
-                    if (model)
-                        ((ScriptCommand*)
-                            &command)->SetReturn(Int2Scm(model->GetId()));
-                } else {
-                    Error("cannot find window %d", windowid);
-                }
-                } break;
                 
             case NEW_MODEL_COMMAND:
                 ((ScriptCommand*) &command)->SetReturn(Int2Scm(NewModel(MODEL_WORLD)));
                 break;
+            
+            case DEL_MODEL_COMMAND: {
+                int modelid  = ((DelModelCommand*)&command)->modelid;
+                DrawModel *model = GetModel(modelid);
                 
+                if (!model) {
+                    Error("cannot find model %d", modelid);
+                    break;
+                }
+                
+                // remove model from any windows that are using it
+                for (WindowIter i=m_windows.begin(); i!=m_windows.end(); i++) {
+                    if ((*i).second->GetWorldModel() == model)
+                        (*i).second->SetWorldModel(NULL);
+                    if ((*i).second->GetScreenModel() == model)
+                        (*i).second->SetScreenModel(NULL);
+                }
+                
+                // delete model
+                m_models.erase(modelid);
+                delete model;
+                
+            } break;
+            
             case ASSIGN_MODEL_COMMAND: {
                 int windowid = ((AssignModelCommand*)&command)->windowid;
                 string kind  =((AssignModelCommand*)&command)->kind;
@@ -218,51 +196,13 @@ public:
                 
                 } break;
             
-            case SET_MODEL_COMMAND: {
-                int modelid  = ((SetModelCommand*)&command)->modelid;
-                DrawModel *model = GetModel(modelid);
-                
-                // ensure model exists
-                if (model) {                       
-                    m_model = model;
-                } else {
-                    Error("cannot find model %d", modelid);
-                }
-                
-                
-                } break;
             
-            case DEL_MODEL_COMMAND: {
-                int modelid  = ((DelModelCommand*)&command)->modelid;
-                DrawModel *model = GetModel(modelid);
-                
-                if (!model) {
-                    Error("cannot find model %d", modelid);
-                    break;
-                }
-                
-                // remove model from any windows that are using it
-                for (WindowIter i=m_windows.begin(); i!=m_windows.end(); i++) {
-                    if ((*i).second->GetWorldModel() == model)
-                        (*i).second->SetWorldModel(NULL);
-                    if ((*i).second->GetScreenModel() == model)
-                        (*i).second->SetScreenModel(NULL);
-                }
-                
-                // delete model
-                m_models.erase(modelid);
-                delete model;
-                
-            } break;
+            
             
             case VERSION_COMMAND: {
                 fprintf(stderr, VERSION_INFO);
                 } break;
-
-            case QUIT_COMMAND: {
-                // TODO: need to work on propper shutdown
-                //Py_Exit(0);
-                } break;                
+            
             
             case TIMER_CALL_COMMAND: {
                 TimerCallCommand *cmd = (TimerCallCommand*) &command;
@@ -309,22 +249,6 @@ public:
         }
     }
     
-    DrawWindow *GetWindow(int id)
-    {
-        if (m_windows.find(id) != m_windows.end())
-            return m_windows[id];
-        else
-            return NULL;
-    }
-    
-    DrawModel *GetModel(int id)
-    {
-        if (m_models.find(id) != m_models.end())
-            return m_models[id];
-        else
-            return NULL;
-    }
-
     int NewWindow()
     {
         int id = m_nextWindowId;
@@ -332,6 +256,15 @@ public:
         m_nextWindowId++;
         m_windows[id]->SetActive();
         return id;
+    }
+        
+    
+    DrawWindow *GetWindow(int id)
+    {
+        if (m_windows.find(id) != m_windows.end())
+            return m_windows[id];
+        else
+            return NULL;
     }
     
     
@@ -343,29 +276,19 @@ public:
         // close the window
         window->Close();
         
+        // put the window on a queue to be deleted
         m_closeWaiting[window->GetView()] = window;
-        // delete the window
-        //delete window;
-
-        // if current window was closed choose a new current window
-        if (window == m_window) {
-            // choose new window or null
-            if (m_windows.begin() != m_windows.end()) {
-                m_window = (*m_windows.begin()).second;
-            } else {
-                m_window = NULL;
-            }
-        }
     }
     
     
     void OnClose(GlutView *view)
     {
+        // it is now safe to delete waiting window 
+        // (GLUT will make no further calls)
         delete m_closeWaiting[view];
         m_closeWaiting.erase(view);
     }
-    
-    
+        
     
     int NewModel(int kind)
     {
@@ -373,22 +296,23 @@ public:
         m_models[id] = new DrawModel(id, kind);
         m_nextModelId++;
         return id;
-    }
+    }    
     
-    void MakeDefaultWindowModel()
+    DrawModel *GetModel(int id)
     {
-        int winId = NewWindow();
-        int modelId = NewModel(MODEL_WORLD);
-        m_window = m_windows[winId];
-        m_window->SetWorldModel(m_models[modelId]);
+        if (m_models.find(id) != m_models.end())
+            return m_models[id];
+        else
+            return NULL;
     }
     
 
+    
+    
     bool Init()
     {    
         ModuleInit();
-        InitDrawEnv();
-        
+        InitDrawEnv();    
         
         return true;
     }
@@ -683,11 +607,7 @@ def __" + name + "_contents(obj): return obj[1:]\n\
     
     
     // a boolean for whether the summon module is ready for processing commands
-    bool m_initialized;    
-
-    // current window and model
-    DrawWindow *m_window;
-    DrawModel *m_model;
+    bool m_initialized;
 
     // indexes
     int m_nextWindowId;
@@ -722,7 +642,7 @@ def __" + name + "_contents(obj): return obj[1:]\n\
 
 
 
-}
+} // namespace Vistools
 
 
 
@@ -747,9 +667,6 @@ SummonMainLoop(PyObject *self, PyObject *tup)
     if (!isGlutInit) {
         isGlutInit = true;
         g_summon->Lock();
-        
-        //if (!g_summon->m_window)
-        //    g_summon->MakeDefaultWindowModel();
         
         // store summon thread ID
         g_summon->m_threadId = PyThread_get_thread_ident();
@@ -861,7 +778,7 @@ initsummon_core()
     glutInit(&argc, argv);
     
     // create hidden window
-    // so that GLUT does not get unset (it always wants one window)
+    // so that GLUT does not get upset (it always wants one window)
     glutInitDisplayMode(GLUT_RGBA);
     
     // NOTE: requires freeglut > 2.4.0-1  (2005)
@@ -873,10 +790,10 @@ initsummon_core()
     
     InitPython();
     
-    // create vismatrix app
+    // create Summon app
     g_summon = new Summon();    
     
-    // run the actual vismatrix app
+    // run the actual Summon app
     if (!g_summon->Init())
         printf("error\n");
 }

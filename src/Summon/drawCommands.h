@@ -33,14 +33,14 @@ enum {
     
     // global commands
     GET_WINDOWS_COMMAND,
-    GET_WINDOW_COMMAND,
+    //GET_WINDOW_COMMAND,
+    //SET_WINDOW_COMMAND,    
     NEW_WINDOW_COMMAND,
-    SET_WINDOW_COMMAND,
     CLOSE_WINDOW_COMMAND,
     GET_MODELS_COMMAND,
-    GET_MODEL_COMMAND,
+    //GET_MODEL_COMMAND,
+    //SET_MODEL_COMMAND,    
     NEW_MODEL_COMMAND,
-    SET_MODEL_COMMAND,
     ASSIGN_MODEL_COMMAND,
     DEL_MODEL_COMMAND,
     TIMER_CALL_COMMAND,
@@ -204,6 +204,7 @@ public:
     { return "gets a list of ids for all open windows"; }
 };
 
+/*
 class GetWindowCommand : public ScriptCommand
 {
 public:
@@ -215,6 +216,7 @@ public:
     virtual const char *GetDescription() 
     { return "gets the id of the current window"; }
 };
+*/
 
 class NewWindowCommand : public ScriptCommand
 {
@@ -228,6 +230,7 @@ public:
     { return "creates a new window and returns its id"; }
 };
 
+/*
 class SetWindowCommand : public ScriptCommand
 {
 public:
@@ -246,7 +249,7 @@ public:
     
     int windowid;
 };
-
+*/
 
 
 class CloseWindowCommand : public ScriptCommand
@@ -286,6 +289,7 @@ public:
     { return "gets a list of ids for all models"; }
 };
 
+/*
 class GetModelCommand : public ScriptCommand
 {
 public:
@@ -305,6 +309,7 @@ public:
     int windowid;
     string kind;
 };
+*/
 
 class NewModelCommand : public ScriptCommand
 {
@@ -318,6 +323,7 @@ public:
     { return "creates a new model and returns its id"; }
 };
 
+/*
 class SetModelCommand : public ScriptCommand
 {
 public:
@@ -337,6 +343,8 @@ public:
     
     int modelid;
 };
+*/
+
 
 class AssignModelCommand : public ScriptCommand
 {
@@ -439,6 +447,7 @@ public:
 };
 
 
+/*
 class QuitCommand : public ScriptCommand
 {
 public:
@@ -451,7 +460,7 @@ public:
     virtual const char *GetDescription() 
     { return "quits summon"; }
 };
-
+*/
 
 
 // -----------------------------------------------------------------------------

@@ -86,7 +86,7 @@ def get_summon_window():
 # be under summon.*
 
 
-_summon_core_export = """\
+_summon_constructs = """\
 color
 color_contents
 dynamic_group
@@ -161,11 +161,14 @@ triangles
 triangles_contents
 vertices
 vertices_contents
-""".split() + """\
+""".split()
+
+
+# Note: these will be removed some day
+# only timer_call is necessary right now
+_summon_funcs = """\
 assign_model
-get_model
 get_models
-get_window
 get_windows
 new_groupid
 new_model
@@ -176,9 +179,12 @@ timer_call
 
 
 _globals = globals()
-for func in _summon_core_export:
+for func in _summon_constructs + _summon_funcs:
     _globals[func] = summon_core.__dict__[func]
 
 
-set_model = summon_core.set_model
-set_window = summon_core.set_window
+# removed commands:
+#   set_model
+#   get_model
+#   set_window
+#   get_window

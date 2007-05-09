@@ -111,7 +111,8 @@ def stop_updating():
 class Window (object):
     """The SUMMON Window"""
 
-    def __init__(self, name="SUMMON", worldid=None, screenid=None):
+    def __init__(self, name="SUMMON", worldid=None, screenid=None,
+                 loadconfig=True):
         # create new window
         self.winid = new_window()
         assert self.winid != None
@@ -130,16 +131,17 @@ class Window (object):
         summon_core.assign_model(self.winid, "world", self.world.id)
         summon_core.assign_model(self.winid, "screen", self.screen.id)
         
-        
+        self.set_name(name)
         self.antialias = True
         self.crosshair = False
         self.crosshair_color = None
         
         # load default configuration
-        self.activate()
-        load_config()
+        if loadconfig:
+            self.activate()
+            load_config()
 
-        self.set_name(name)
+
     
     
     def activate(self):

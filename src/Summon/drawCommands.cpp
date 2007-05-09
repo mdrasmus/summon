@@ -35,7 +35,6 @@ void drawCommandsInit()
 #   define g() AddAttr(g_globalAttr)
 #   define m() AddAttr(g_modelAttr)    
 #   define v() AddAttr(g_viewAttr)    
-#   define v2() AddAttr(g_viewAttr2)
 #   define c() AddAttr(g_controllerAttr)
 #   define gl() AddAttr(g_glAttr)
 
@@ -48,20 +47,20 @@ void drawCommandsInit()
     
     // global commands
     RegisterScriptCommand(GetWindowsCommand)    g()
-    RegisterScriptCommand(GetWindowCommand)     g()
+    //RegisterScriptCommand(GetWindowCommand)     g()
+    //RegisterScriptCommand(SetWindowCommand)     g() gl()    
     RegisterScriptCommand(NewWindowCommand)     g() gl()
-    RegisterScriptCommand(SetWindowCommand)     g() gl()
     RegisterScriptCommand(CloseWindowCommand)   g() gl()
     RegisterScriptCommand(GetModelsCommand)     g()
-    RegisterScriptCommand(GetModelCommand)      g()
+    //RegisterScriptCommand(GetModelCommand)      g()
+    //RegisterScriptCommand(SetModelCommand)      g()    
     RegisterScriptCommand(NewModelCommand)      g()
     RegisterScriptCommand(AssignModelCommand)   g()
-    RegisterScriptCommand(SetModelCommand)      g()
     RegisterScriptCommand(DelModelCommand)      g()
     RegisterScriptCommand(TimerCallCommand)     g()
     RegisterScriptCommand(RedrawCallCommand)    g()
     RegisterScriptCommand(VersionCommand)       g()
-    RegisterScriptCommand(QuitCommand)          g()
+    //RegisterScriptCommand(QuitCommand)          g()
     
     // model commands
     RegisterScriptCommand(AddGroupCommand)      m() gl()
@@ -153,9 +152,7 @@ void drawCommandsInit()
 #   undef g
 #   undef m
 #   undef v
-#   undef v2
 #   undef c
-#   undef c2
 #   undef gl
 
 }
