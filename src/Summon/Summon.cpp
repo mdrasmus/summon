@@ -522,7 +522,7 @@ def __" + name + "_contents(obj): return obj[1:]\n\
                         }
                         break;
                     } else {
-                        SDL_Delay(50);
+                        SDL_Delay(10);
                     }
                 }
             

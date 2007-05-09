@@ -146,7 +146,7 @@ class Window (object):
     
     def activate(self):
         """make this window the current window (deprecated)"""
-        summon_core.set_window(self.winid)
+        #summon_core.set_window(self.winid)
         state.current_window = self
     
     

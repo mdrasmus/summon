@@ -12,7 +12,10 @@ import sys
 from summon.core import *
 import summon
 
-win = summon.Window("13_gameoflife")
+#=============================================================================
+# constants
+#
+# feel free to change
 
 
 width = 400
@@ -20,12 +23,16 @@ height = 400
 ncreatures = int(width*height*.1)
 
 
+#=============================================================================
+# data structures for Game of Life
+
 class Game:
     def __init__(self, width, height, alloc=False):
         self.width = width
         self.height = height
         self.addset = set()
-        self.pause = 0
+        self.killset = set()
+        self.pause = False
         
         if alloc:
             self.board = makeBoard(width, height)
@@ -86,16 +93,22 @@ class Game:
         fate = {}
         
         
-        if len(self.addset) > 0:
-            for x, y in list(game.addset):
-                if board[y][x] == 0:
-                    board[y][x] = 1
-                    self.recordChange(x, y, 1)
-            self.addset.clear()
-            return
+        for x, y in list(self.addset):
+            if 1 <= x <= self.width and 1 <= y <= self.height and \
+               board[y][x] == 0:
+                board[y][x] = 1
+                self.recordChange(x, y, 1)
+        self.addset.clear()
+
+        for x, y in list(self.killset):
+            if 1 <= x <= self.width and 1 <= y <= self.height and \
+               board[y][x] == 1:
+                board[y][x] = 0
+                self.recordChange(x, y, 0)
+        self.killset.clear()
         
-        if self.pause > 0:
-            self.pause -= 1
+        
+        if self.pause:
             return
         
 
@@ -168,13 +181,58 @@ def drawBoard(board):
                             -.5, -.5))
 
 def create():
-    global gid
     x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
-    game.pause = 2
-    
-    if 1 <= x <= game.width and 1 <= y <= game.height:
-        game.addset.add((x,y))
+    game.addset.add((x,y))
 
+
+def kill():
+    x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
+    game.killset.add((x,y))
+
+
+
+def killArea():
+    x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
+    width = 20
+    
+    for i in range(x-20, x+21):
+        for j in range(y-20, y+21):
+            game.killset.add((i, j))
+    
+
+def createWave():
+    x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
+    width = 20
+    
+    for i in range(x-20, x+21):
+        game.addset.add((i, y))
+
+def createCross():
+    x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
+    width = 20
+    
+    for i in range(x-20, x+21):
+        game.addset.add((i, y)) 
+    
+    for i in range(y-20, y+21):
+        game.addset.add((x, i))
+
+def createGlider():
+    x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
+    
+    mat = [[1, 1, 1],
+           [0, 0, 1],
+           [0, 1, 0]]
+    
+    for i in xrange(3):
+        for j in xrange(3):
+            if mat[i][j] == 1:
+                game.addset.add((x+j, y+i))
+    
+
+def pauseGame():
+    game.pause = not game.pause
+    
 
 def make_wave():
     width = len(game.board[0]) - 2
@@ -192,36 +250,53 @@ def make_wave():
 
 def drawFrame():
     global gid
-    
 
-print "press 'a' to place a cell under the mouse pointer"
+
+#=============================================================================
+#    
+
+print "Game of Life"
+print 
+print "press [spacebar] to pause evolution"
+print "press 'c' to create a cell under the mouse pointer"
+print "press 'k' to kill a cell under the mouse pointer"
+print "press 'l' to kill a whole region under the mouse pointer"
+print "press 'w' to create a wave under the mouse pointer"
+print "press 'g' to create a glider under the mouse pointer"
+print "press 't' to create a cross under the mouse pointer"
+print 
 print "initializing..."
 
+# create window
+win = summon.Window("13_gameoflife")
 win.add_group(group(hotspot("click", 0, 0, width, height, create)))
-win.set_binding(input_key("a"), create) 
 win.set_visible(0, 0, width, height)
 win.set_antialias(False)
 
+win.set_binding(input_key("c"), create)
+win.set_binding(input_key("k"), kill)
+win.set_binding(input_key("l"), killArea)
+win.set_binding(input_key("g"), createGlider)
+win.set_binding(input_key("w"), createWave)
+win.set_binding(input_key("t"), createCross)
+win.set_binding(input_key(" "), pauseGame)
 
+
+# create game state
 game = Game(width, height)
 game.initBoard(ncreatures)
 
-"""
-for row in game.board:
-    print row
-print
-for row in game.neighbors:
-    print row
-"""
 
+# parse arguments
 if len(sys.argv) > 1:
     if "wave" in sys.argv:
         make_wave()
 
-pause = False
+
+
 gid = win.add_group(drawBoard(game.board))
 
-
+# animate
 print "animating"
 while True:
     game.evolve()
@@ -233,4 +308,4 @@ while True:
         break
         
     gid = win.replace_group(gid, g)
-    time.sleep(.1)
+    time.sleep(.05)
