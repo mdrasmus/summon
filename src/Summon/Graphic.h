@@ -52,18 +52,6 @@ public:
     Graphic(int id);
     virtual ~Graphic();
 
-    /*    
-    inline void AddPrimitive(Primitive *p)
-    { m_primitives.push_back(p); }
-    
-    typedef list<Primitive*>::iterator PrimitiveIterator;
-    
-    inline PrimitiveIterator PrimitivesBegin()
-    { return m_primitives.begin(); }
-    inline PrimitiveIterator PrimitivesEnd()
-    { return m_primitives.end(); }
-    
-    */
     
     // tags for primitives
     const static char PRIM_VERTICES = 0x01;
@@ -73,6 +61,9 @@ public:
     bool Build(Scm code);
     bool BuildVertices(char *data, int &ptr, Scm &code);
     int GetDataSize(Scm code);
+    
+    void FindBounding(float *top, float *bottom, float *left, float *right,
+                      TransformMatrix *matrix);
     
     inline int NextPrimitive(int ptr)
     {

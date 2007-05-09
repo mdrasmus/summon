@@ -253,26 +253,12 @@ void DrawView::Home()
 {
     if (!m_worldModel)
         return;
-
-    float FLOAT_MIN = -1e307;
-    float FLOAT_MAX = 1e307;
-
-    // find smallest bouding box
-    int rootid = m_worldModel->GetGroupTable()->GetRoot();
-    float top    = FLOAT_MIN, 
-          bottom = FLOAT_MAX, 
-          left   = FLOAT_MAX, 
-          right  = FLOAT_MIN;
     
-    TransformMatrix matrix;
-    MakeIdentityMatrix(matrix.mat);
-    
-    // find smallest bounding box
-    m_worldModel->FindBounding(m_worldModel->GetGroupTable()->GetGroup(rootid), 
-                          &top, &bottom, &left, &right, &matrix);
+    Vertex2f pos1, pos2;
+    m_worldModel->FindBounding(&pos1, &pos2);
     
     // set make smallest bounding box visible
-    SetVisible(left, bottom, right, top);
+    SetVisible(pos1.x, pos1.y, pos2.x, pos2.y);
 }
 
 
@@ -531,35 +517,7 @@ void DrawView::DrawGraphic(Graphic *graphic)
     }
 }
 
-/*
 
-void DrawView::DrawPrimitives(Graphic::PrimitiveIterator begin, 
-                              Graphic::PrimitiveIterator end)
-{
-    for (Graphic::PrimitiveIterator i=begin; i!=end; i++) {
-        switch ((*i)->GetId()) {
-            case VERTICES_CONSTRUCT: {
-                VerticesPrimitive *vertices = (VerticesPrimitive*) (*i);
-                
-                for (int i=0; i<vertices->len - 1; i+=2) {
-                    glVertex2fv(&vertices->data[i]);
-                }
-                
-                } break;
-            
-            case COLOR_CONSTRUCT: {
-                ColorPrimitive *color = (ColorPrimitive*) (*i);
-                glColor4fv(color->data);
-                } break;
-            
-            default:
-                Error("Unkkown primitive %d", (*i)->GetId());
-                assert(0);
-        }
-    }
-}
-
-*/
 
 Vertex2f JustifyBox(int justified, Vertex2f pos1, Vertex2f pos2, 
                     float textWidth, float textHeight, 

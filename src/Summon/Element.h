@@ -11,6 +11,7 @@
 #include "Script.h"
 #include <list>
 #include "drawCommands.h"
+#include "TransformMatrix.h"
 
 namespace Vistools {
 
@@ -74,6 +75,9 @@ public:
     inline bool IsDynamic() { return m_dynamic; }
     inline bool IsVisible() { return m_visible; }
     inline void SetVisible(bool vis) { m_visible = vis; }    
+    
+    virtual void FindBounding(float *top, float *bottom, float *left, float *right,
+                      TransformMatrix *matrix);
     
 protected:
     int m_id;

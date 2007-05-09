@@ -22,13 +22,7 @@ Graphic::Graphic(int id) :
 }
 
 Graphic::~Graphic()
-{
-    /*
-    for (PrimitiveIterator i=PrimitivesBegin(); i!=PrimitivesEnd(); i++) {
-        delete (*i);
-    }
-    */
-    
+{   
     if (m_data)
         delete [] m_data;
 }
@@ -188,6 +182,28 @@ int Graphic::GetDataSize(Scm code)
 }
 
 
+void Graphic::FindBounding(float *top, float *bottom, float *left, float *right,
+                           TransformMatrix *matrix)
+{    
+   for (int ptr = 0; More(ptr); 
+        ptr = NextPrimitive(ptr))
+   {
+       if (IsVertices(ptr)) {
+           int len = 2 * GetVerticesLen(ptr);
+           float *data = GetVertex(VerticesStart(ptr));
 
+           for (int k=0; k<len-1; k+=2) {
+               float x, y;
+               matrix->VecMult(data[k], data[k+1], &x, &y);
+               if (x < *left)   *left   = x;
+               if (x > *right)  *right  = x;
+               if (y < *bottom) *bottom = y;
+               if (y > *top)    *top    = y;
+           }
+       }
+   }
 }
+
+
+} // namespace Vistools
 

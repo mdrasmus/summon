@@ -69,9 +69,7 @@ public:
     
     void SetKind(int kind) { m_kind = kind; }
     
-    void FindBounding(Element *elm, 
-                      float *top, float *bottom, float *left, float *right,
-                      TransformMatrix *matrix);
+    void FindBounding(Vertex2f *pos1, Vertex2f *pos2);
     
     inline GroupTable *GetGroupTable()
     { return &m_table; }

@@ -3,9 +3,11 @@ OBJS = drawCommands.o \
        DrawController.o \
        DrawModel.o \
        DrawView.o \
+       Element.o \
        Graphic.o \
        GroupTable.o \
        Transform.o \
+       TransformMatrix.o \
        Summon.o 
 
 

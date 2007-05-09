@@ -718,53 +718,28 @@ void DrawModel::RemoveHotspots(Element *elm)
 }
 
 
-void DrawModel::FindBounding(Element *element, 
-                         float *top, float *bottom, float *left, float *right,
-                         TransformMatrix *matrix)
+void DrawModel::FindBounding(Vertex2f *pos1, Vertex2f *pos2)
 {
-    // loop through children of this element
-    for (Element::Iterator i=element->Begin(); i!=element->End(); i++) {
-        Element *elm = (*i);
-        
-        if (IsGraphic(elm->GetId())) {
-            Graphic *graphic = (Graphic*) elm;            
-            
-            // if child is graphic find the bounding box of its vertices
-            //for (Graphic::PrimitiveIterator j = 
-            //     ((Graphic*)elm)->PrimitivesBegin();
-            //     j != ((Graphic*)elm)->PrimitivesEnd(); j++)
-            
-            for (int ptr = 0; graphic->More(ptr); 
-                 ptr = graphic->NextPrimitive(ptr))
-            {
-                if (graphic->IsVertices(ptr)) {
-                    int len = 2 * graphic->GetVerticesLen(ptr);
-                    float *data =
-                        graphic->GetVertex(graphic->VerticesStart(ptr));
-                    
-                    for (int k=0; k<len-1; k+=2) {
-                        float x, y;
-                        matrix->VecMult(data[k], data[k+1], &x, &y);
-                        if (x < *left)   *left   = x;
-                        if (x > *right)  *right  = x;
-                        if (y < *bottom) *bottom = y;
-                        if (y > *top)    *top    = y;
-                    }
-                }
-            }
-        } else if (IsTransform(elm->GetId())) {
-            // if child is transform, apply transform and recurse
-            // calculate new transform matrix
-            TransformMatrix matrix2 = *matrix;
-            MultMatrix(matrix->mat, ((Transform*) elm)->GetMatrix(), 
-                       matrix2.mat);
 
-            FindBounding(elm, top, bottom, left, right, &matrix2);
-        } else {
-            // recurse
-            FindBounding(elm, top, bottom, left, right, matrix);
-        }
-    }
+    float FLOAT_MIN = -1e307;
+    float FLOAT_MAX = 1e307;
+
+    // find smallest bouding box
+    float top    = FLOAT_MIN, 
+          bottom = FLOAT_MAX, 
+          left   = FLOAT_MAX, 
+          right  = FLOAT_MIN;
+
+    TransformMatrix matrix;
+    MakeIdentityMatrix(matrix.mat);
+    
+    Group *group = GetGroupTable()->GetRootGroup();
+    group->FindBounding(&top, &bottom, &left, &right, &matrix);
+    
+    pos1->x = left;
+    pos1->y = bottom;
+    pos2->x = right;
+    pos2->y = top;
 }
 
 }
