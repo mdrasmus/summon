@@ -71,7 +71,8 @@ class DrawView;
 class DrawViewListener 
 {
 public:
-    virtual void Redraw(DrawView *view) {}
+    virtual void ViewRedraw(DrawView *view) {}
+    virtual void ViewResize(DrawView *view) {}
 };
 
 
@@ -137,6 +138,8 @@ protected:
     inline DrawTask* GetLastTask() { return m_tasks.back(); }
     void ExecuteTasks();
     inline bool IsExecutingTasks() { return m_executingTasks; }
+    
+    virtual void Reshape(int width, int height);
     
     
     DrawModel *m_worldModel;

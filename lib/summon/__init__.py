@@ -112,6 +112,8 @@ class Window (object):
         summon_core.assign_model(self.winid, "world", self.world.id)
         summon_core.assign_model(self.winid, "screen", self.screen.id)
         
+        summon_core.set_window_on_resize(self.winid, self._on_resize)
+        
         self.set_name(name)
         self.antialias = True
         self.crosshair = False
@@ -150,7 +152,7 @@ class Window (object):
         return summon_core.close_window(self.winid)
     close.__doc__ = summon_core.close_window.__doc__.split("\n")[1]
     
-    #def onClose(self):
+    #def on_close(self):
     #    """Subclass to detect window close events"""
     #    pass
     # TODO: need to also capture events when window is closed by X button
@@ -180,6 +182,14 @@ class Window (object):
     def get_position(self):
         return summon_core.get_window_position(self.winid)
     get_position.__doc__ = summon_core.get_window_position.__doc__.split("\n")[1]
+    
+    def _on_resize(self):
+        return self.on_resize(* self.get_size())
+    
+    def on_resize(self, width, height):
+        """A callback for when the window resizes"""
+        pass
+        
     
     def focus(self, x, y):
         return summon_core.focus(self.winid, int(x), int(y))

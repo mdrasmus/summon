@@ -193,9 +193,15 @@ def createArea():
     x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
     width = 20
     
+    x = int(x // 3) * 3
+    y = int(y // 3) * 3
+    
     for i in range(x-width, x+width+1):
         for j in range(y-width, y+width+1):
-            game.addset.add((i, j))
+            if i % 3 != 0 and j % 3 != 0:
+                game.addset.add((i, j))
+            else:
+                game.killset.add((i, j))
 
 def kill():
     x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
@@ -234,6 +240,17 @@ def createCross():
 def createX():
     x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
     width = 40
+    
+    for i in range(-width, width+1):
+        game.addset.add((x+i, y+i)) 
+    
+    for i in range(-width, width+1):
+        game.addset.add((x+i, y-i))
+
+
+def createBigX():
+    x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
+    width = 1000
     
     for i in range(-width, width+1):
         game.addset.add((x+i, y+i)) 
@@ -306,6 +323,7 @@ win.set_binding(input_key("g"), createGlider)
 win.set_binding(input_key("w"), createWave)
 win.set_binding(input_key("t"), createCross)
 win.set_binding(input_key("x"), createX)
+win.set_binding(input_key("X", "shift"), createBigX)
 win.set_binding(input_key(" "), pauseGame)
 
 

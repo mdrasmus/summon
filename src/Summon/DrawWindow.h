@@ -29,7 +29,7 @@ public:
         m_id(id),
         m_global(global),
         m_view(NULL, width, height, name),
-        m_controller(global, &m_view, NULL),
+        m_controller(global, &m_view),
         m_worldModel(NULL),
         m_screenModel(NULL)
     {
@@ -51,7 +51,7 @@ public:
         
         m_worldModel = model;
         m_view.SetWorldModel(model);
-        m_controller.SetModel(model);
+        m_controller.SetWorldModel(model);
         if (model) {
             model->AddView(&m_view);
             model->SetKind(MODEL_WORLD);
@@ -68,6 +68,7 @@ public:
     
         m_screenModel = model;
         m_view.SetScreenModel(model);
+        m_controller.SetScreenModel(model);
         if (model) {
             model->AddView(&m_view);
             model->SetKind(MODEL_SCREEN);

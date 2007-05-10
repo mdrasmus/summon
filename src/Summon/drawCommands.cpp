@@ -78,7 +78,7 @@ void drawCommandsInit()
     RegisterScriptCommand(SetWindowPositionCommand) v() gl()
     RegisterScriptCommand(GetWindowPositionCommand) v() gl()          
     RegisterScriptCommand(SetWindowSizeCommand)     v() gl()
-    RegisterScriptCommand(GetWindowSizeCommand)     v()    
+    RegisterScriptCommand(GetWindowSizeCommand)     v()
     RegisterScriptCommand(SetTransCommand)          v() gl()
     RegisterScriptCommand(GetTransCommand)          v()
     RegisterScriptCommand(SetZoomCommand)           v() gl()
@@ -103,11 +103,12 @@ void drawCommandsInit()
     RegisterScriptCommand(FocusScriptCommand)       v()
 
     // controller commands    
-    RegisterScriptCommand(SetBindingCommand)       c()
-    RegisterScriptCommand(ClearBindingCommand)     c()
-    RegisterScriptCommand(ClearAllBindingsCommand) c()
-    RegisterScriptCommand(HotspotClickCommand)     c()
-    RegisterScriptCommand(GetMousePosCommand)      c()
+    RegisterScriptCommand(SetBindingCommand)        c()
+    RegisterScriptCommand(ClearBindingCommand)      c()
+    RegisterScriptCommand(ClearAllBindingsCommand)  c()
+    RegisterScriptCommand(HotspotClickCommand)      c()
+    RegisterScriptCommand(GetMousePosCommand)       c()
+    RegisterScriptCommand(SetWindowOnResizeCommand) c()
     
     // constructs
     

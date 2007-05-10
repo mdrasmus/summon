@@ -9,7 +9,7 @@
 # make summon commands available
 from summon.core import *
 import summon
-
+import summon_core
 
 # draw an arrow
 def arrow():
@@ -51,3 +51,4 @@ win3.home()
 print 
 print "Note: use CTRL+d to duplicate any window at any time."
 print
+

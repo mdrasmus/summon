@@ -479,9 +479,9 @@ class MatrixViewer (object):
         zy = height / vheight
 
         if zx > zy:
-            zoomy(zx / zy)
+            self.win.zoomy(zx / zy)
         else:
-            zoomx(zy / zx)
+            self.win.zoomx(zy / zx)
 
 
 class DenseMatrixViewer (MatrixViewer):

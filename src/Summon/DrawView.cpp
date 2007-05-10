@@ -103,7 +103,8 @@ void DrawView::ExecCommand(Command &command)
                 ScmCons(Int2Scm(size.x),
                     ScmCons(Int2Scm(size.y), Scm_EOL)));
             } break;
-
+            
+        
         case SET_TRANS_COMMAND: {
             MakeCurrentWindow();
             SetTransCommand *trans = (SetTransCommand*) &command;
@@ -205,7 +206,8 @@ void DrawView::ExecCommand(Command &command)
             m_crosshairColor = ((SetCrosshairColorCommand*)&command)->color;
             break;
         
-        // basic
+        
+        // basic commands
         case TRANSLATE_SCRIPT_COMMAND: {
             TranslateBy(((TranslateScriptCommand*)(&command))->trans.x, 
                         ((TranslateScriptCommand*)(&command))->trans.y);    
@@ -342,7 +344,7 @@ void DrawView::DrawWorld()
     }
     
     if (m_listener)
-        m_listener->Redraw(this);
+        m_listener->ViewRedraw(this);
 }
 
 
@@ -700,4 +702,17 @@ void DrawView::SetBgColor(Color &color)
 }
 
 
+
+void DrawView::Reshape(int width, int height)
+{
+    // process window reshape
+    Glut2DView::Reshape(width, height);
+    
+    // perform callbacks
+    if (m_listener)
+        m_listener->ViewResize(this);
 }
+
+
+
+} // namespace Vistools

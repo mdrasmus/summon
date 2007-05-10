@@ -64,7 +64,7 @@ enum {
     SET_WINDOW_POSITION_COMMAND,
     GET_WINDOW_POSITION_COMMAND,
     SET_WINDOW_SIZE_COMMAND,
-    GET_WINDOW_SIZE_COMMAND,    
+    GET_WINDOW_SIZE_COMMAND,
     SET_TRANS_COMMAND,
     GET_TRANS_COMMAND,
     SET_ZOOM_COMMAND,
@@ -94,6 +94,7 @@ enum {
     CLEAR_ALL_BINDINGS_COMMAND,
     HOTSPOT_CLICK_COMMAND,
     GET_MOUSE_POS_COMMAND,
+    SET_WINDOW_ON_RESIZE_COMMAND,
     
     // constructs
     
@@ -1392,6 +1393,28 @@ public:
     
     string kind;
 };
+
+
+
+class SetWindowOnResizeCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new SetWindowOnResizeCommand(); }
+    virtual int GetId() { return SET_WINDOW_ON_RESIZE_COMMAND; }
+
+    virtual const char *GetName() { return "set_window_on_resize"; }
+    virtual const char *GetUsage() { return "id, func"; }
+    virtual const char *GetDescription() 
+    { return "registers a callback for window resize"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "dc", &windowid, &proc);
+    }
+    
+    Scm proc;
+};
+
 
 
 // ----------------------------------------------------------------------------
