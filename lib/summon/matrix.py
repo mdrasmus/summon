@@ -473,7 +473,7 @@ class MatrixViewer (object):
         x, y, x2, y2 = self.win.get_visible()
         vwidth = x2 - x
         vheight = y2 - y
-        width, height = self.win.get_window_size()
+        width, height = self.win.get_size()
 
         zx = width / vwidth
         zy = height / vheight

@@ -21,25 +21,7 @@ from summon.core import *
 state = get_summon_state()
 
 
-def load_config():
-    """Load a summon config file"""
-    
-    # look for config in HOME directory
-    if "HOME" in os.environ:
-        config_file = os.path.join(os.environ["HOME"], ".summon_config")
-    else:
-        config_file = ""        
-    if not config_file or not os.path.exists(config_file):
-        # loof for config in python paths
-        try:
-            import summon_config
-            reload(summon_config)
-        except Exception, e:
-            print "could not import summon_config"
-            print e
-    
-    else:
-        execfile(config_file)
+
 
 
 
@@ -87,7 +69,6 @@ def begin_updating():
     
     for i, (func, win) in enumerate(state.updateFuncs):
         if win.winid in windows:
-            win.activate()
             func()
         else:
             dels.add(func)
@@ -138,16 +119,28 @@ class Window (object):
         
         # load default configuration
         if loadconfig:
-            self.activate()
-            load_config()
-
-
+            self.load_config()
     
     
-    def activate(self):
-        """make this window the current window (deprecated)"""
-        #summon_core.set_window(self.winid)
+    def load_config(self):
+        """Load a summon config file for a window"""
         state.current_window = self
+        
+        # look for config in HOME directory
+        if "HOME" in os.environ:
+            config_file = os.path.join(os.environ["HOME"], ".summon_config")
+            if os.path.exists(config_file):
+                execfile(config_file)
+                return
+        
+        # try load config from python path
+        try:
+            import summon_config
+            reload(summon_config)
+        except Exception, e:
+            print "Warning: could not import summon_config"
+            print e
+
     
     
     # view
@@ -393,11 +386,6 @@ class Window (object):
         zoomy2 = (coords[3] - coords[1]) / size[1]
         win.focus(size[0] / 2, size[1] / 2)
         win.zoom(zoomx2 / zoomx, zoomy2 / zoomy)
-        
-        
-        # load up the configuration
-        win.activate()
-        load_config()
         
         return win                
 

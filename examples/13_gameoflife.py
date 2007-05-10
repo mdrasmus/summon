@@ -180,42 +180,67 @@ def drawBoard(board):
                             -.5, height+.5,
                             -.5, -.5))
 
+#=============================================================================
+# interactive functions
+#
+
 def create():
     x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
     game.addset.add((x,y))
 
 
+def createArea():
+    x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
+    width = 20
+    
+    for i in range(x-width, x+width+1):
+        for j in range(y-width, y+width+1):
+            game.addset.add((i, j))
+
 def kill():
     x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
     game.killset.add((x,y))
-
-
 
 def killArea():
     x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
     width = 20
     
-    for i in range(x-20, x+21):
-        for j in range(y-20, y+21):
+    for i in range(x-width, x+width+1):
+        for j in range(y-width, y+width+1):
             game.killset.add((i, j))
-    
+
+def killAll():
+    for i in range(0, game.height):
+        for j in range(0, game.width):
+            game.killset.add((i, j))
 
 def createWave():
     x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
-    width = 20
+    width = 80
     
-    for i in range(x-20, x+21):
+    for i in range(x-width, x+width+1):
         game.addset.add((i, y))
 
 def createCross():
     x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
-    width = 20
+    width = 22
     
-    for i in range(x-20, x+21):
+    for i in range(x-width, x+width+1):
         game.addset.add((i, y)) 
     
-    for i in range(y-20, y+21):
+    for i in range(y-width, y+width+1):
         game.addset.add((x, i))
+
+def createX():
+    x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
+    width = 40
+    
+    for i in range(-width, width+1):
+        game.addset.add((x+i, y+i)) 
+    
+    for i in range(-width, width+1):
+        game.addset.add((x+i, y-i))
+
 
 def createGlider():
     x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
@@ -248,12 +273,9 @@ def make_wave():
         game.recordChange(j, height // 2, 1)
 
 
-def drawFrame():
-    global gid
-
-
 #=============================================================================
-#    
+# setup
+#
 
 print "Game of Life"
 print 
@@ -261,9 +283,11 @@ print "press [spacebar] to pause evolution"
 print "press 'c' to create a cell under the mouse pointer"
 print "press 'k' to kill a cell under the mouse pointer"
 print "press 'l' to kill a whole region under the mouse pointer"
+print "press 'K' to kill all cells"
 print "press 'w' to create a wave under the mouse pointer"
 print "press 'g' to create a glider under the mouse pointer"
 print "press 't' to create a cross under the mouse pointer"
+print "press 'x' to create an 'X' under the mouse pointer"
 print 
 print "initializing..."
 
@@ -274,11 +298,14 @@ win.set_visible(0, 0, width, height)
 win.set_antialias(False)
 
 win.set_binding(input_key("c"), create)
+win.set_binding(input_key("C", "shift"), createArea)
 win.set_binding(input_key("k"), kill)
 win.set_binding(input_key("l"), killArea)
+win.set_binding(input_key("K", "shift"), killAll)
 win.set_binding(input_key("g"), createGlider)
 win.set_binding(input_key("w"), createWave)
 win.set_binding(input_key("t"), createCross)
+win.set_binding(input_key("x"), createX)
 win.set_binding(input_key(" "), pauseGame)
 
 
@@ -292,11 +319,12 @@ if len(sys.argv) > 1:
     if "wave" in sys.argv:
         make_wave()
 
-
-
 gid = win.add_group(drawBoard(game.board))
 
+
+#=============================================================================
 # animate
+
 print "animating"
 while True:
     game.evolve()
