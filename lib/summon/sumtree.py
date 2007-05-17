@@ -74,14 +74,14 @@ class SumTree (object):
             # draw vertical tree
             self.win.add_group(group(
                 color(0,0,0),
-                self.drawTree(self.tree.root)))    
+                rotate(-90,                 
+                    self.drawTree(self.tree.root))))
                 
         else:        
             # draw horizontal tree
             self.win.add_group(group(
-                color(0,0,0),
-                rotate(90, 
-                    self.drawTree(self.tree.root))))
+                    color(0,0,0),
+                    self.drawTree(self.tree.root)))
 
         util.toc()
         
@@ -120,11 +120,11 @@ class SumTree (object):
         # draw children
         if len(node.children) > 0:
             try:
-                x = -node.size/2.0
+                y = -node.size/2.0
                 for child in node.children:
-                    x += child.size/2.0
-                    vis.append(self.drawTree(child, sx + x, sy - node.height))
-                    x += child.size/2.0
+                    y += child.size/2.0
+                    vis.append(self.drawTree(child, sx + node.height, sy - y))
+                    y += child.size/2.0
             except RuntimeError:
                 print sys.exc_type, ": Tree is too deep to draw"
 
@@ -144,51 +144,49 @@ class SumTree (object):
     def drawNode(self, node, sx, sy, height):
         vis = []
         vis.append(lines(color(*node.color), 
-                         sx, sy, sx, sy - height))
+                         sx, sy, sx + height, sy))
 
         # record node position in tree
-        node.x = sx
-        node.y = sy - node.height
+        node.x = sx + node.height
+        node.y = sy
 
         def func():
             self.selnode = node
             self.nodeClick(node)
 
         vis.append(hotspot("click", 
-                           sx - node.size/2.0, sy,
-                           sx + node.size/2.0, sy - height,
+                           sx, sy - node.size/2.0,
+                           sx + height, sy + node.size/2.0,
                            func))
         
         if self.showLabels and node.isLeaf() and type(node.name) == str:
             if self.vertical:
                 label = group(
-                    translate(sx - node.size/2.0, sy - height,
-                        rotate(-90,
+                    translate(sx + height, sy - node.size/2.0,
                             color(0,0,0),
                             text_clip(node.name, 0, node.size*.1, 
                                       node.size*100, node.size*.9, 5, 12,
-                                      "left", "middle", "vertical"))))
+                                      "left", "middle", "vertical")))
             else:
                 label = group(
-                    translate(sx - node.size/2.0, sy - height,
-                        rotate(-90,
+                    translate(sx + height, sy - node.size/2.0,
                             color(0,0,0),
                             text_clip(node.name, 0, node.size*.1, 
                                       node.size*100, node.size*.9, 5, 12,
-                                      "left", "middle"))))
+                                      "left", "middle")))
         
             self.labelids.append(get_group_id(label))
             vis.append(label)
             
         
-        # draw horizontal line
+        # draw vertical line
         if len(node.children) > 0:
-            left = sx - node.size/2.0 + node.children[0].size/2.0
-            right = sx + node.size/2.0 - node.children[-1].size/2.0
-
+            bottom = sy - node.size/2.0 + node.children[-1].size/2.0
+            top = sy + node.size/2.0 - node.children[0].size/2.0
+            
             vis.append(lines(color(*node.color),
-                             left, sy - height, 
-                                      right, sy - height))
+                             sx + height, bottom,
+                             sx + height, top))
         return group(*vis)
 
 
