@@ -32,7 +32,7 @@ DrawView::DrawView(DrawModel *model, int width, int height, const char *name) :
 {
     SetVisible(0, 0, width, height);
 
-    
+
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     

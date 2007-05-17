@@ -357,60 +357,6 @@ def drawPartitions(win, mat):
     win.add_group(group(* vis))
     
     
-def drawMatrix(win, mat, mouseClick=None, 
-                    conf={"color": "solid",
-                          "style": "points"}):
-    util.tic("drawing matrix")
-    mat.colormap.max = mat.maxval
-    mat.colormap.min = mat.minval
-    mat.colormap.range = mat.maxval - mat.minval
-    getcolor = mat.colormap.get
-    vis = []
-    chunksize = 1000
-    rows, cols, vals = (mat.rows, mat.cols, mat.vals)
-    rinv, cinv = (mat.rinv, mat.cinv)
-
-    for chunk in xrange(0, len(rows), chunksize):
-    
-        if conf["style"] == "points":
-            if "color" in conf and conf["color"] == "solid":
-                for k in xrange(chunk, min(len(rows), chunk+chunksize)):
-                    vis.append(cinv[cols[k]])
-                    vis.append(-rinv[rows[k]])
-            else:
-                for k in xrange(chunk, min(len(rows), chunk+chunksize)):
-                    vis.append(color(* getcolor(vals[k])))
-                    vis.append(cinv[cols[k]])
-                    vis.append(-rinv[rows[k]])
-            
-            win.add_group(group(points(* vis)))
-        
-        elif conf["style"] == "quads":
-            
-            for k in xrange(chunk, min(len(rows), chunk+chunksize)):
-                vis.extend([color(* getcolor(vals[k])),
-                            cinv[cols[k]] - .5, -rinv[rows[k]] - .5,
-                            cinv[cols[k]] - .5, -rinv[rows[k]] + .5,
-                            cinv[cols[k]] + .5, -rinv[rows[k]] + .5,
-                            cinv[cols[k]] + .5, -rinv[rows[k]] - .5
-                            ])
-            win.add_group(group(quads(* vis)))
-            
-        else:
-            raise Exception("unknown style '%s'" % conf["style"])
-        
-        vis = []
-
-    if mouseClick != None:
-        win.add_group(group(hotspot('click', -.5, .5, 
-                                    mat.ncols-.5, -mat.nrows+.5, 
-                                    mouseClick)))
-    
-    # draw extra
-    drawBorder(win, mat.nrows, mat.ncols)
-    drawPartitions(win, mat)
-
-    util.toc()
 
 
 
@@ -424,7 +370,10 @@ class MatrixViewer (object):
         
         if onClick != None:
             self.onClick = onClick
-        
+
+    def setMatrix(self, mat):
+        self.mat = mat
+            
         
     def show(self):
         if self.win == None:
@@ -434,14 +383,78 @@ class MatrixViewer (object):
         self.win.set_antialias(False)
         
         self.win.set_binding(input_key("1"), self.one2one)
-        drawMatrix(self.win, self.mat, mouseClick=self.clickCallback, 
+        self.drawMatrix(self.mat, mouseClick=self.clickCallback, 
                    conf=self.conf)
         self.win.home()
     
     def redraw(self):
         self.win.clear_groups()
-        drawMatrix(self.win, self.mat, mouseClick=self.clickCallback, 
+        self.drawMatrix(self.mat, mouseClick=self.clickCallback, 
                    conf=self.conf)
+    
+    
+    def drawMatrix(self, mat, mouseClick=None, 
+                        conf={"color": "solid",
+                              "style": "points"}):
+        
+        util.tic("drawing matrix")
+        win = self.win
+        mat.colormap.max = mat.maxval
+        mat.colormap.min = mat.minval
+        mat.colormap.range = mat.maxval - mat.minval
+        getcolor = mat.colormap.get
+        vis = []
+        chunksize = 1000
+        rows, cols, vals = (mat.rows, mat.cols, mat.vals)
+        rinv, cinv = (mat.rinv, mat.cinv)
+        
+        # draw zeros
+        win.add_group(group(color(*getcolor(0)),
+                            shapes.box(-.5,.5,mat.ncols-.5, -mat.nrows+.5)))
+        
+        # draw non-zeros
+        for chunk in xrange(0, len(rows), chunksize):
+
+            if conf["style"] == "points":
+                if "color" in conf and conf["color"] == "solid":
+                    for k in xrange(chunk, min(len(rows), chunk+chunksize)):
+                        vis.append(cinv[cols[k]])
+                        vis.append(-rinv[rows[k]])
+                else:
+                    for k in xrange(chunk, min(len(rows), chunk+chunksize)):
+                        vis.append(color(* getcolor(vals[k])))
+                        vis.append(cinv[cols[k]])
+                        vis.append(-rinv[rows[k]])
+
+                win.add_group(group(points(* vis)))
+
+            elif conf["style"] == "quads":
+
+                for k in xrange(chunk, min(len(rows), chunk+chunksize)):
+                    vis.extend([color(* getcolor(vals[k])),
+                                cinv[cols[k]] - .5, -rinv[rows[k]] - .5,
+                                cinv[cols[k]] - .5, -rinv[rows[k]] + .5,
+                                cinv[cols[k]] + .5, -rinv[rows[k]] + .5,
+                                cinv[cols[k]] + .5, -rinv[rows[k]] - .5
+                                ])
+                win.add_group(group(quads(* vis)))
+
+            else:
+                raise Exception("unknown style '%s'" % conf["style"])
+
+            vis = []
+
+        if mouseClick != None:
+            win.add_group(group(hotspot('click', -.5, .5, 
+                                        mat.ncols-.5, -mat.nrows+.5, 
+                                        mouseClick)))
+
+        # draw extra
+        drawBorder(win, mat.nrows, mat.ncols)
+        drawPartitions(win, mat)
+
+        util.toc()
+
     
     def clickCallback(self):
         x, y = self.win.get_mouse_pos('world')
@@ -515,9 +528,9 @@ class DenseMatrixViewer (MatrixViewer):
         MatrixViewer.__init__(self, mat, conf, **options)
     
     
-    def setMatrix(self, data, colormap=None,
-                  rlabels=None, clabels=None, cutoff=-util.INF,
-                  rperm=[], cperm=[], rpart=None, cpart=None):
+    def setDenseMatrix(self, data, colormap=None,
+                       rlabels=None, clabels=None, cutoff=-util.INF,
+                       rperm=[], cperm=[], rpart=None, cpart=None):
         
         self.mat = Matrix()
         self.mat.from2DList(data, cutoff=cutoff)

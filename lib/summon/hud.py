@@ -105,6 +105,8 @@ class SideBar (object):
     
     
     def onResize(self, width, height):
-        self.gid = self.win.screen.replace_group(self.gid, self.draw(width, height))
+        if self.shown:
+            self.gid = self.win.screen.replace_group(self.gid, 
+                                                     self.draw(width, height))
 
 

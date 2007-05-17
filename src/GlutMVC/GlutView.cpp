@@ -21,7 +21,10 @@ GlutView::GlutView(int width, int height, const char *name) :
    m_windowSize(width, height)
 {
     // set initial glut settings for window
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_MULTISAMPLE);
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE); // | GLUT_ALPHA | GLUT_MULTISAMPLE);
+    //glutInitDisplayString( "rgba double samples>=4 ");         
+    // NOTE: GLUT_ALPHA had problems on OSX
+
     glutInitWindowSize(width, height);
     
     

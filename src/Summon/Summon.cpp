@@ -779,9 +779,11 @@ initsummon_core()
     
     // create hidden window
     // so that GLUT does not get upset (it always wants one window)
-    glutInitDisplayMode(GLUT_RGBA);
+    //glutInitDisplayMode(GLUT_RGBA);
+    glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA | GLUT_MULTISAMPLE );
     
     // NOTE: requires freeglut > 2.4.0-1  (2005)
+    // or another GLUT implementation with this extension
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
     
     glutInitWindowSize(1, 1);
