@@ -12,7 +12,7 @@ pkg:
 	
 
 dist/$(PACKAGE):
-	rm MANIFEST
+	rm -f MANIFEST
 	python setup.py sdist
 
 
