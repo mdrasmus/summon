@@ -1,0 +1,351 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{SUMMON General Functions}
+
+{\tt add\_group(group) }
+
+adds drawing groups to the current model \\
+
+
+{\tt assign\_model(windowid, 'world'|'screen', modelid) }
+
+assigns a model to a window \\
+
+
+{\tt call\_proc(proc) }
+
+executes a procedure that takes no arguments \\
+
+
+{\tt clear\_all\_bindings() }
+
+clear all bindings for all input \\
+
+
+{\tt clear\_binding(input) }
+
+clear all bindings for an input \\
+
+
+{\tt clear\_groups() }
+
+removes all drawing groups from the current display \\
+
+
+{\tt close\_window([id]) }
+
+closes a window \\
+
+
+{\tt del\_model(modelid) }
+
+deletes a model \\
+
+
+{\tt focus(x, y) }
+
+focus the view on (x,y) \\
+
+
+{\tt get\_bgcolor() }
+
+gets background color \\
+
+
+{\tt get\_group(groupid) }
+
+creates a tuple object that represents a group \\
+
+
+{\tt get\_model(windowid, ['world'|'screen']) }
+
+gets the model id of a window \\
+
+
+{\tt get\_models() }
+
+gets a list of ids for all models \\
+
+
+{\tt get\_mouse\_pos('world'|'screen'|'window') }
+
+gets the current mouse position in the requested coordinates \\
+
+
+{\tt get\_root\_id() }
+
+gets the group id of the root group \\
+
+
+{\tt get\_visible() }
+
+gets visible bounding box \\
+
+
+{\tt get\_window() }
+
+gets the id of the current window \\
+
+
+{\tt get\_window\_name(id) }
+
+get the name of a window \\
+
+
+{\tt get\_window\_size() }
+
+gets current window's size \\
+
+
+{\tt get\_windows() }
+
+gets a list of ids for all open windows \\
+
+
+{\tt home() }
+
+adjust view to show all graphics \\
+
+
+{\tt insert\_group(groupid, group) }
+
+inserts drawing groups under an existing group \\
+
+
+{\tt new\_model() }
+
+creates a new model and returns its id \\
+
+
+{\tt new\_window() }
+
+creates a new window and returns its id \\
+
+
+{\tt redraw\_call(func) }
+
+calls function 'func' on every redraw \\
+
+
+{\tt remove\_group(groups) }
+
+removes drawing groups from the current display \\
+
+
+{\tt replace\_group(groupid, group) }
+
+replaces a drawing group on the current display \\
+
+
+{\tt set\_antialias(True|False) }
+
+sets anti-aliasing status \\
+
+
+{\tt set\_bgcolor(red, green, blue) }
+
+sets background color \\
+
+
+{\tt set\_binding(input, proc|command\_name) }
+
+bind an input to a command or procedure \\
+
+
+{\tt set\_model(modelid) }
+
+sets the current model \\
+
+
+{\tt set\_visible(x1, y1, x2, y2) }
+
+change display to contain region (x1,y1)-(x2,y2) \\
+
+
+{\tt set\_window(id) }
+
+sets the current window \\
+
+
+{\tt set\_window\_name(id name) }
+
+sets the name of a window \\
+
+
+{\tt set\_window\_size(x, y) }
+
+sets current window's size \\
+
+
+{\tt show\_group(groupid, True|False) }
+
+sets the visibilty of a group \\
+
+
+{\tt timer\_call(delay, func) }
+
+calls a function 'func' after a delay in seconds \\
+
+
+{\tt trans(x, y) }
+
+translate the view by (x,y) \\
+
+
+{\tt version() }
+
+prints the current version \\
+
+
+{\tt vertices(x, y, * more) }
+
+creates a list of vertices \\
+
+
+{\tt zoom(factorX, factorY) }
+
+zoom view by a factor \\
+
+
+{\tt zoomx(factor) }
+
+zoom x-axis by a factor \\
+
+
+{\tt zoomy(factor) }
+
+zoom y-axis by a factor \\
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{SUMMON Graphics}
+
+{\tt points(* vertices|colors) }
+
+plots vertices as points \\
+
+
+{\tt lines(* vertices|colors) }
+
+plots vertices as lines \\
+
+
+{\tt line\_strip(* vertices|colors) }
+
+plots vertices as connected lines \\
+
+
+{\tt triangles(* vertices|colors) }
+
+plots vertices as triangles \\
+
+
+{\tt triangle\_strip(* vertices|colors) }
+
+plots vertices as connected triangles \\
+
+
+{\tt triangle\_fan(* vertices|colors) }
+
+plots vertices as triangles in a fan \\
+
+
+{\tt quads(* vertices|colors) }
+
+plots vertices as quads \\
+
+
+{\tt quad\_strip(* vertices|colors) }
+
+plots vertices as connected quads \\
+
+
+{\tt polygon(* vertices|colors) }
+
+plots vertices as a convex polygon \\
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{SUMMON Primitives}
+
+{\tt vertices(x, y, * more) }
+
+creates a list of vertices \\
+
+
+{\tt color(red, green, blue, [alpha]) }
+
+creates a color from 3 or 4 values in [0,1] \\
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{SUMMON Text constructs}
+
+{\tt text(string, x1, y1, x2, y2, ['left'|'center'|'right'], ['top'|'middle'|'bottom']) }
+
+draws text justified within a bounding box \\
+
+
+{\tt text\_scale(string, x1, y1, x2, y2, ['left'|'center'|'right'], ['top'|'middle'|'bottom']) }
+
+draws stroked text within a bounding box \\
+
+
+{\tt text\_clip(string, x1, y1, x2, y2, minheight, maxheight, ['left'|'center'|'right'], ['top'|'middle'|'bottom']) }
+
+draws stroked text within a bounding box and height restrictions \\
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{SUMMON Transforms}
+
+{\tt translate(x, y, * elements) }
+
+translates the coordinate system of enclosed elements \\
+
+
+{\tt rotate(angle, * elements) }
+
+rotates the coordinate system of enclosed elements \\
+
+
+{\tt flip(x, y, * elements) }
+
+flips the coordinate system of enclosed elements over (x,y) \\
+
+
+{\tt scale(x, y, * elements) }
+
+scales the coordinate system of enclosed elements \\
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{SUMMON Input specifications}
+
+{\tt input\_motion('left'|'middle'|'right', 'up'|'down', ['shift'], ['ctrl'], ['alt']) }
+
+specifies a mouse motion input \\
+
+
+{\tt input\_key(key, ['shift'], ['ctrl'], ['alt']) }
+
+specifies a keyboard input \\
+
+
+{\tt input\_click('left'|'middle'|'right', 'up'|'down', ['shift'], ['ctrl'], ['alt']) }
+
+specifies a mouse click input \\
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{SUMMON Miscellaneous}
+
+{\tt hotspot('over'|'out'|'click', x1, y1, x2, y2, proc) }
+
+constructs hotspot for a region that activates a python procedure 'proc' \\
+
+
+{\tt hotspot\_click(cannot be invoked on commandline) }
+
+activates a hotspot with a 'click' action \\
+
+

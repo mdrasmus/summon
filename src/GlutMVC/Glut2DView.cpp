@@ -11,13 +11,16 @@
 #include "glut2DCommands.h"
 
 
+
 namespace Vistools
 {
 
-Glut2DView::Glut2DView(int width, int height) :
-   GlutView(width, height),
+
+
+Glut2DView::Glut2DView(int width, int height, const char *name) :
+   GlutView(width, height, name),
    m_trans(0, 0),
-   m_zoom(1.0)
+   m_zoom(1.0, 1.0)
 {
    SetVisible(0, 0, 10, 10);
 }
@@ -33,14 +36,26 @@ void Glut2DView::ExecCommand(Command &command)
     switch (command.GetId()) {
         case TRANSLATE_COMMAND: {
             TranslateBy(((TranslateCommand*)(&command))->trans.x, 
-                            ((TranslateCommand*)(&command))->trans.y);
-                            
+                        ((TranslateCommand*)(&command))->trans.y);    
             RedisplayCommand redisplay;
             GlutView::ExecCommand(redisplay);
             } break;
     
         case ZOOM_COMMAND: {
-            ZoomBy(((ZoomCommand*) &command)->zoom);
+            ZoomBy(((ZoomCommand*) &command)->zoom.x,
+                   ((ZoomCommand*) &command)->zoom.y);
+            RedisplayCommand redisplay;
+            GlutView::ExecCommand(redisplay);
+            } break;
+        
+        case ZOOM_X_COMMAND: {
+            ZoomBy(((ZoomCommand*) &command)->zoom.x, 1.0);
+            RedisplayCommand redisplay;
+            GlutView::ExecCommand(redisplay);
+            } break;
+        
+        case ZOOM_Y_COMMAND: {
+            ZoomBy(1.0, ((ZoomCommand*) &command)->zoom.y);
             RedisplayCommand redisplay;
             GlutView::ExecCommand(redisplay);
             } break;
@@ -88,7 +103,7 @@ void Glut2DView::TransformWorld()
    
    // perform a zoom with respect to a focus point
    glTranslatef(m_focus.x, m_focus.y, 0);
-   glScalef(m_zoom, m_zoom, m_zoom);
+   glScalef(m_zoom.x, m_zoom.y, 1.0);
    glTranslatef(-m_focus.x, -m_focus.y, 0);
 }
 
@@ -109,7 +124,7 @@ void Glut2DView::Reshape(int w, int h)
    
    // change zoom and translation in order to keep world centered and in view
    m_trans = m_trans + center2 - center;
-   m_zoom = scale * m_zoom;
+   m_zoom = m_zoom * scale;
    
    // set view port and window size
    glViewport(0, 0, w, h);
@@ -125,6 +140,7 @@ void Glut2DView::Reshape(int w, int h)
 // drawing
 void Glut2DView::DrawWorld()
 {
+   // default testing drawing
    glColor3f(1, 1, 1);
    glBegin(GL_LINES);
       glVertex3f(0, 0, 0);
@@ -146,6 +162,7 @@ void Glut2DView::DrawWorld()
 
 void Glut2DView::DrawScreen()
 {
+   // default testing drawing
    glColor3f(1, 1, 0);
    glBegin(GL_LINES);
       glVertex3f(0, -10, 0);
@@ -156,63 +173,6 @@ void Glut2DView::DrawScreen()
 }
 
 
-Vertex2i Glut2DView::WindowToScreen(int x, int y)
-{
-    return Vertex2i(x, m_windowSize.y - y);
-}
-
-
-Vertex2f Glut2DView::ScreenToWorld(int x, int y)
-{
-   GLint    viewport[4];
-   GLdouble model[16], project[16];
-   GLint    gl_y;       // must flip screen y coordinate for openGL
-   GLdouble wx, wy, wz; // unprojected coordinates
-
-   // setup world trasformation
-   glMatrixMode(GL_MODELVIEW);
-   glPushMatrix();
-   glLoadIdentity();
-   TransformWorld();
-
-   // get openGL matrices in world coordinate system
-   glGetIntegerv(GL_VIEWPORT, viewport);
-   glGetDoublev(GL_MODELVIEW_MATRIX, model);
-   glGetDoublev(GL_PROJECTION_MATRIX, project);
-
-   // perform unproject
-   gluUnProject((GLdouble) x, (GLdouble) y, 0.0, 
-                model, project, viewport, &wx, &wy, &wz);
-   glPopMatrix();
-   
-   // return world coords
-   return Vertex2f(float(wx), float(wy));
-}
-
-Vertex2i Glut2DView::WorldToScreen(float x, float y)
-{
-   GLint    viewport[4];
-   GLdouble model[16], project[16];
-   GLdouble winx, winy, winz;
-
-   // setup world trasformation
-   glMatrixMode(GL_MODELVIEW);
-   glPushMatrix();
-   glLoadIdentity();
-   TransformWorld();
-
-   // get openGL matrices
-   glGetIntegerv(GL_VIEWPORT, viewport);
-   glGetDoublev(GL_MODELVIEW_MATRIX, model);
-   glGetDoublev(GL_PROJECTION_MATRIX, project);
-
-   // perform projection
-   gluProject(x, y, 0, model, project, viewport, &winx, &winy, &winz);
-   glPopMatrix();
-   
-   // return screen coords
-   return Vertex2i(int(winx), int(winy));
-}
 
 
 // manipulation
@@ -225,18 +185,18 @@ void Glut2DView::SetVisible(float x, float y, float x2, float y2)
     Vertex2f worldTop(std::max(x, x2), std::max(y, y2));
     Vertex2f worldSize = worldTop - worldBottom;
     Vertex2f worldCenter = (worldTop + worldBottom);
-    worldCenter.x /= 2;
-    worldCenter.y /= 2;
+    worldCenter.x /= 2.0;
+    worldCenter.y /= 2.0;
     
     // can't zoom to fit window on a point
-    if (worldSize.x == 0 || worldSize.y == 0)
+    if (worldSize.x == 0.0 || worldSize.y == 0.0)
         return;
 
     // determine whether the heights of the world and window are tight
     bool heightTight;
     float winAspect = m_windowSize.x / float(m_windowSize.y);
     
-    if (worldSize.y == 0) {
+    if (worldSize.y == 0.0) {
         heightTight = false;
     } else {
        // find proper world rect based on window aspect ratio       
@@ -259,9 +219,11 @@ void Glut2DView::SetVisible(float x, float y, float x2, float y2)
     m_trans = Vertex2f(-worldBottom.x, -worldBottom.y);
     m_focus = worldBottom;
     if (heightTight) {
-        m_zoom  = m_windowSize.y / worldSize.y;
+        m_zoom.x  = m_windowSize.y / worldSize.y;
+        m_zoom.y  = m_windowSize.y / worldSize.y;
     } else {
-        m_zoom  = m_windowSize.x / worldSize.x;    
+        m_zoom.x  = m_windowSize.x / worldSize.x;
+        m_zoom.y  = m_windowSize.x / worldSize.x;    
     }
 }
 
@@ -277,20 +239,22 @@ void Glut2DView::TranslateTo(float x, float y)
 }
 
 
-void Glut2DView::ZoomBy(float zoom)
+void Glut2DView::ZoomBy(float x, float y)
 {
-   m_zoom *= zoom;
+   m_zoom.x *= x;
+   m_zoom.y *= y;
 }
 
 
-void Glut2DView::ZoomTo(float zoom)
+void Glut2DView::ZoomTo(float x, float y)
 {
-   m_zoom = zoom;  
+   m_zoom = Vertex2f(x, y);  
 }
 
 void Glut2DView::SetFocus(float x, float y) { 
    Vertex2f focus2 = Vertex2f(x, y);
-   m_trans = m_trans + (m_focus - focus2) * (1 - m_zoom);
+   m_trans.x = m_trans.x + (m_focus.x - focus2.x) * (1 - m_zoom.x);
+   m_trans.y = m_trans.y + (m_focus.y - focus2.y) * (1 - m_zoom.y);   
    m_focus = focus2;
 }
 

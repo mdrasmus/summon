@@ -1,0 +1,36 @@
+#!/usr/bin/python -i
+#
+# SUMMON script executor
+#
+# This program will execute scripts specially designed for summon.  It provides
+# the basic modules and automatically sets up the simple single-window mode.
+# For examples of scripts using this program see examples/simple/*.py
+#
+#
+
+
+# python libs
+import sys
+
+# summon libs
+import summon
+from summon.core import *
+from summon.simple import *
+
+# setup prompt
+sys.ps1="summon> "
+sys.ps2="    ... "
+
+# load a default window
+win = summon.Window()
+
+
+# execute python file if supplied
+if len(sys.argv) > 1:
+    script = sys.argv[1]
+    
+    # adjust command-line arguments
+    sys.argv = sys.argv[1:]
+    
+    execfile(script)
+

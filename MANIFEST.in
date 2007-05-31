@@ -1,0 +1,13 @@
+include *.txt
+include CHANGES
+recursive-include examples *.*
+recursive-include examples README*
+recursive-include src *.cpp *.h
+include doc/summon_manual.pdf
+recursive-include doc *.html
+include bin/summon
+include bin/summatrix
+include bin/sumtree
+prune src/Common/old
+prune src/notes
+prune lib/summonlib.py

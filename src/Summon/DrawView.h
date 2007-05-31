@@ -67,11 +67,20 @@ public:
     int m_drawlist;
 };
 
+class DrawView;
+class DrawViewListener 
+{
+public:
+    virtual void ViewRedraw(DrawView *view) {}
+    virtual void ViewResize(DrawView *view) {}
+};
+
 
 class DrawView : public Glut2DView 
 {
 public:
-    DrawView(DrawModel *model, int width = 320, int height = 320);
+    DrawView(DrawModel *model, int width = 320, int height = 320, 
+             const char *name="");
     virtual ~DrawView();
 
     virtual void ExecCommand(Command &command);
@@ -82,6 +91,8 @@ public:
     
     inline void SetWorldModel(DrawModel *model) { m_worldModel = model; }
     inline void SetScreenModel(DrawModel *model) { m_screenModel = model; }
+    inline void SetListener(DrawViewListener *listener)
+    { m_listener = listener; }
 
     inline void Redisplay() {
         RedisplayCommand cmd;
@@ -92,16 +103,26 @@ public:
     {
         ClearTasks();
     }
+    
+    bool WithinView(const Vertex2f &pos1, const Vertex2f &pos2);
+
+    void SetMousePos(int x, int y);
+
 
 protected:
 
     // drawing methods
+    virtual void Display();
     virtual void DrawWorld();
     virtual void DrawScreen();
-    
-    void DrawElement(GroupTable *table, Element *elm); 
+    virtual void DrawCrosshair();
+        
+    void DrawElement(GroupTable *table, Element *elm, bool useTasks=true); 
+    void DrawGraphic(Graphic *graphic);
+    /*
     void DrawPrimitives(Graphic::PrimitiveIterator begin, 
                         Graphic::PrimitiveIterator end);
+    */
     void DrawTextElement(TextElement *elm);
     
     void DrawText(void *font, string text, float x, float y);
@@ -110,7 +131,7 @@ protected:
     
     inline void AddTask(DrawTask *task) { m_tasks.push_back(task); }
     inline void ClearTasks() {
-        for (int i=0; i<m_tasks.size(); i++)
+        for (unsigned int i=0; i<m_tasks.size(); i++)
             delete m_tasks[i];
         m_tasks.clear();
     }
@@ -118,12 +139,21 @@ protected:
     void ExecuteTasks();
     inline bool IsExecutingTasks() { return m_executingTasks; }
     
+    virtual void Reshape(int width, int height);
+    
+    
     DrawModel *m_worldModel;
     DrawModel *m_screenModel;
     Color m_bgColor;
     bool m_active;
     vector<DrawTask*> m_tasks;
     bool m_executingTasks;
+    DrawViewListener *m_listener;
+    
+    // crosshair
+    bool m_showCrosshair;
+    Color m_crosshairColor;
+    Vertex2i m_mousePos;
 };
 
 }

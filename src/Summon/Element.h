@@ -11,10 +11,17 @@
 #include "Script.h"
 #include <list>
 #include "drawCommands.h"
+#include "TransformMatrix.h"
 
 namespace Vistools {
 
 using namespace std;
+
+
+enum {
+    MODEL_SCREEN,
+    MODEL_WORLD
+};
 
 
 
@@ -24,8 +31,8 @@ public:
     Element(int id = -1) : 
         m_id(id), 
         m_parent(NULL),
-        m_dynamic(false),
-        m_visible(true)        
+        m_visible(true),
+        m_dynamic(false)                
     {}
     
     virtual ~Element()
@@ -56,6 +63,7 @@ public:
                 return i;
             }
         }
+        return End();
     }
     
     inline int GetId() { return m_id; }
@@ -67,6 +75,9 @@ public:
     inline bool IsDynamic() { return m_dynamic; }
     inline bool IsVisible() { return m_visible; }
     inline void SetVisible(bool vis) { m_visible = vis; }    
+    
+    virtual void FindBounding(float *top, float *bottom, float *left, float *right,
+                      TransformMatrix *matrix);
     
 protected:
     int m_id;

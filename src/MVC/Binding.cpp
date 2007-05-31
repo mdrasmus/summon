@@ -7,6 +7,9 @@
 
 #include "first.h"
 #include "Binding.h"
+#include <algorithm>
+
+
 
 namespace Vistools
 {
@@ -16,13 +19,7 @@ Binding::Binding()
 
 Binding::~Binding()
 {
-    for (int i=0; i<m_bindings.size(); i++)
-        delete m_bindings[i];
-    for (int i=0; i<m_inputs.size(); i++)
-        delete m_inputs[i];
-    for (int i=0; i<m_cmds.size(); i++)
-        delete m_cmds[i];
-    
+    Clear();
 }
 
 
@@ -32,7 +29,7 @@ void Binding::AddBinding(Input *input, Command *command)
     int hash = input->GetHash();
 
     // increase vector if necessary
-    while (input->GetId() >= m_bindings.size()) {
+    while ((unsigned int) input->GetId() >= m_bindings.size()) {
         m_bindings.push_back(new BindType(TABLE_SIZE, (CommandList*) NULL));
     }
     
@@ -54,12 +51,34 @@ void Binding::AddBinding(Input *input, Command *command)
     m_cmds.push_back(command);
 }
 
+
+void Binding::ClearBinding(Input &input)
+{
+    int hash = input.GetHash();
+    
+    if (input.GetId() >= 0 && (unsigned int) input.GetId() < m_bindings.size()) {
+        CommandList *commands = m_bindings[input.GetId()]->Get(hash);
+        
+        if (commands) {
+            for (CommandList::iterator i=commands->begin(); 
+                 i!= commands->end(); i++)
+            {
+                m_cmds.erase(find(m_cmds.begin(), m_cmds.end(), *i));
+                delete (*i);                
+            }
+            commands->clear();
+        }
+    }
+}
+
+
+
 list<Command*> Binding::GetCommand(Input &input)
 {
     int hash = input.GetHash();
     CommandList cmds;
     
-    if (input.GetId() < 0 || input.GetId() >= m_bindings.size()) {
+    if (input.GetId() < 0 || (unsigned int) input.GetId() >= m_bindings.size()) {
         return cmds;
     } else {
         CommandList *commands = m_bindings[input.GetId()]->Get(hash);

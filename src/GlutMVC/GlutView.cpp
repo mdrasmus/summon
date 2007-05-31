@@ -17,16 +17,21 @@ namespace Vistools
 std::vector<GlutView*> g_windows;
 
 
-GlutView::GlutView(int width, int height) :
+GlutView::GlutView(int width, int height, const char *name) :
    m_windowSize(width, height)
 {
     // set initial glut settings for window
-    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | GLUT_ALPHA);
-    glutInitWindowSize(width, height);
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE); // | GLUT_ALPHA | GLUT_MULTISAMPLE);
+    //glutInitDisplayString( "rgba double samples>=4 ");         
+    // NOTE: GLUT_ALPHA had problems on OSX
 
+    glutInitWindowSize(width, height);
+    
+    
+    
     // create glut window and register it
-    m_window = glutCreateWindow("");
-    if (m_window >= g_windows.size()) {
+    m_window = glutCreateWindow(name);
+    if ((unsigned int) m_window >= g_windows.size()) {
         g_windows.resize(m_window+1);
     }
     g_windows[m_window] = this;
@@ -34,15 +39,17 @@ GlutView::GlutView(int width, int height) :
     // register callbacks
     glutDisplayFunc(GlutView::GlutDisplay);
     glutReshapeFunc(GlutView::GlutReshape);
+    glutCloseFunc(GlutView::GlutClose);
 
     // setup opengl
     glEnable(GL_BLEND);
+    glDisable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE);
 }
 
 GlutView::~GlutView()
 {
-    glutDestroyWindow(m_window);
 }
    
 void GlutView::ExecCommand(Command &command)
@@ -56,13 +63,26 @@ void GlutView::ExecCommand(Command &command)
 
 void GlutView::GlutDisplay()
 {
+    PyGILState_STATE gstate = PyGILState_Ensure();
     g_windows[glutGetWindow()]->Display();
+    PyGILState_Release(gstate);
 }
 
 void GlutView::GlutReshape(int width, int height)
 {
+    PyGILState_STATE gstate = PyGILState_Ensure();
     g_windows[glutGetWindow()]->Reshape(width, height);
+    PyGILState_Release(gstate);
 }
+
+
+void GlutView::GlutClose()
+{
+    PyGILState_STATE gstate = PyGILState_Ensure();
+    g_windows[glutGetWindow()]->OnClose();
+    PyGILState_Release(gstate);
+}
+
 
 void GlutView::Display()
 {
@@ -74,5 +94,23 @@ void GlutView::Reshape(int width, int height)
 {
    
 }
+
+
+void GlutView::OnClose()
+{
+    // window has been closed
+    for (ListenerIter iter = m_listeners.begin(); 
+         iter != m_listeners.end(); iter++) {
+        (*iter)->OnClose(this);
+    }
+}
+
+void GlutView::Close()
+{
+    glutDestroyWindow(m_window);
+}
+
+
+
 
 }

@@ -29,14 +29,21 @@ public:
     { AddBinding(input, g_commandRegistry.Create(commandId)); }
     
     void AddBinding(Input *input, Command* commandId);
+    void ClearBinding(Input &input);
     
     CommandList GetCommand(Input &input);
     inline vector<Input*> *GetInputs() { return &m_inputs; }
     inline void Clear() {
-        m_bindings.clear();
-        for (int i=0; i<m_inputs.size(); i++)
+        for (unsigned int i=0; i<m_bindings.size(); i++)
+            delete m_bindings[i];
+        for (unsigned int i=0; i<m_inputs.size(); i++)
             delete m_inputs[i];
+        for (unsigned int i=0; i<m_cmds.size(); i++)
+            delete m_cmds[i];
+        
+        m_bindings.clear();            
         m_inputs.clear();
+        m_cmds.clear();
     }
    
 protected:

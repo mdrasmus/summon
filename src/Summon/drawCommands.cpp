@@ -15,62 +15,104 @@ namespace Vistools
 
 using namespace std;
 
+
+
+CommandAttr g_globalAttr;
 CommandAttr g_constructAttr;
 CommandAttr g_modelAttr;
 CommandAttr g_viewAttr;
 CommandAttr g_controllerAttr;
+CommandAttr g_glAttr;
 
+
+int CallProcCommand::procid = 0;
 
 
 void drawCommandsInit()
 {
-    commonCommandsInit();
     glutCommandsInit();
     
-#define g() AddAttr(g_globalAttr)
-#define m() AddAttr(g_modelAttr)    
-#define v() AddAttr(g_viewAttr)    
-#define c() AddAttr(g_controllerAttr)
+#   define g() AddAttr(g_globalAttr)
+#   define m() AddAttr(g_modelAttr)    
+#   define v() AddAttr(g_viewAttr)    
+#   define c() AddAttr(g_controllerAttr)
+#   define gl() AddAttr(g_glAttr)
+
+    // add glAttr to glut commands
+    g_glAttr.Add(new TranslateCommand());
+    g_glAttr.Add(new ZoomCommand());
+    g_glAttr.Add(new ZoomXCommand());
+    g_glAttr.Add(new ZoomYCommand());
+    g_glAttr.Add(new FocusCommand());
     
     // global commands
     RegisterScriptCommand(GetWindowsCommand)    g()
-    RegisterScriptCommand(GetWindowCommand)     g()
-    RegisterScriptCommand(NewWindowCommand)     g()
-    RegisterScriptCommand(SetWindowCommand)     g()
-    RegisterScriptCommand(CloseWindowCommand)   g()
+    //RegisterScriptCommand(GetWindowCommand)     g()
+    //RegisterScriptCommand(SetWindowCommand)     g() gl()    
+    RegisterScriptCommand(NewWindowCommand)     g() gl()
+    RegisterScriptCommand(CloseWindowCommand)   g() gl()
     RegisterScriptCommand(GetModelsCommand)     g()
-    RegisterScriptCommand(GetModelCommand)      g()
+    //RegisterScriptCommand(GetModelCommand)      g()
+    //RegisterScriptCommand(SetModelCommand)      g()    
     RegisterScriptCommand(NewModelCommand)      g()
     RegisterScriptCommand(AssignModelCommand)   g()
-    RegisterScriptCommand(SetModelCommand)      g()
     RegisterScriptCommand(DelModelCommand)      g()
     RegisterScriptCommand(TimerCallCommand)     g()
+    RegisterScriptCommand(RedrawCallCommand)    g()
+    RegisterScriptCommand(VersionCommand)       g()
+    //RegisterScriptCommand(QuitCommand)          g()
     
     // model commands
-    RegisterScriptCommand(AddGroupCommand)      m()
-    RegisterScriptCommand(InsertGroupCommand)   m()
-    RegisterScriptCommand(RemoveGroupCommand)   m()
-    RegisterScriptCommand(ReplaceGroupCommand)  m()
-    RegisterScriptCommand(ClearGroupsCommand)   m()
-    RegisterScriptCommand(ShowGroupCommand)     m()
+    RegisterScriptCommand(AddGroupCommand)      m() gl()
+    RegisterScriptCommand(InsertGroupCommand)   m() gl()
+    RegisterScriptCommand(RemoveGroupCommand)   m() gl()
+    RegisterScriptCommand(ReplaceGroupCommand)  m() gl()
+    RegisterScriptCommand(ClearGroupsCommand)   m() gl()
+    RegisterScriptCommand(ShowGroupCommand)     m() gl()
     RegisterScriptCommand(GetGroupCommand)      m()
     RegisterScriptCommand(GetRootIdCommand)     m()
     
-    // view commands                      
-    RegisterScriptCommand(HomeCommand)          v()
-    RegisterScriptCommand(SetBgColorCommand)    v()
-    RegisterScriptCommand(GetBgColorCommand)    v()
-    RegisterScriptCommand(SetVisibleCommand)    v()
-    RegisterScriptCommand(GetVisibleCommand)    v()
-    RegisterScriptCommand(SetWindowSizeCommand) v()
-    RegisterScriptCommand(GetWindowSizeCommand) v()
-    RegisterScriptCommand(SetAntialiasCommand)  v()    
+    // view commands
+    RegisterScriptCommand(SetWindowNameCommand)     v() gl()
+    RegisterScriptCommand(GetWindowNameCommand)     v()   
+    RegisterScriptCommand(SetWindowPositionCommand) v() gl()
+    RegisterScriptCommand(GetWindowPositionCommand) v() gl()          
+    RegisterScriptCommand(SetWindowSizeCommand)     v() gl()
+    RegisterScriptCommand(GetWindowSizeCommand)     v()
+    RegisterScriptCommand(SetTransCommand)          v() gl()
+    RegisterScriptCommand(GetTransCommand)          v()
+    RegisterScriptCommand(SetZoomCommand)           v() gl()
+    RegisterScriptCommand(GetZoomCommand)           v()
+    RegisterScriptCommand(SetFocusCommand)          v()
+    RegisterScriptCommand(GetFocusCommand)          v()
+    RegisterScriptCommand(SetBgColorCommand)        v() gl()
+    RegisterScriptCommand(GetBgColorCommand)        v()
+    RegisterScriptCommand(SetVisibleCommand)        v() gl()
+    RegisterScriptCommand(GetVisibleCommand)        v()    
+    RegisterScriptCommand(HomeCommand)              v() gl()
+    RegisterScriptCommand(SetAntialiasCommand)      v() gl()
+    RegisterScriptCommand(ShowCrosshairCommand)     v()
+    RegisterScriptCommand(SetCrosshairColorCommand) v()
+    RegisterCommand(ModelChangedCommand)
+
+    // view basics commands
+    RegisterScriptCommand(TranslateScriptCommand)   v() gl()
+    RegisterScriptCommand(ZoomScriptCommand)        v() gl()
+    RegisterScriptCommand(ZoomXScriptCommand)       v() gl()
+    RegisterScriptCommand(ZoomYScriptCommand)       v() gl()
+    RegisterScriptCommand(FocusScriptCommand)       v()
 
     // controller commands    
-    RegisterScriptCommand(SetBindingCommand)    c()
-    RegisterScriptCommand(HotspotClickCommand)  c()
+    RegisterScriptCommand(SetBindingCommand)        c()
+    RegisterScriptCommand(ClearBindingCommand)      c()
+    RegisterScriptCommand(ClearAllBindingsCommand)  c()
+    RegisterScriptCommand(HotspotClickCommand)      c()
+    RegisterScriptCommand(GetMousePosCommand)       c()
+    RegisterScriptCommand(SetWindowOnResizeCommand) c()
     
     // constructs
+    
+    // structure
     RegisterConstruct(GroupConstruct)
     RegisterConstruct(DynamicGroupConstruct)
     RegisterConstruct(HotspotConstruct)
@@ -87,6 +129,7 @@ void drawCommandsInit()
     RegisterConstruct(PolygonConstruct)
     RegisterConstruct(TextConstruct)
     RegisterConstruct(TextScaleConstruct)    
+    RegisterConstruct(TextClipConstruct)
     
     // primitives
     RegisterConstruct(VerticesConstruct)
@@ -97,16 +140,21 @@ void drawCommandsInit()
     RegisterConstruct(RotateConstruct)
     RegisterConstruct(ScaleConstruct)
     RegisterConstruct(FlipConstruct)
+    RegisterConstruct(NozoomConstruct)
+    RegisterConstruct(SideAlignConstruct)
     
     // inputs
     RegisterConstruct(InputKeyConstruct)
     RegisterConstruct(InputClickConstruct)
     RegisterConstruct(InputMotionConstruct)
 
-#undef g
-#undef m
-#undef v
-#undef c
+    RegisterScriptCommand(CallProcCommand) g()
+
+#   undef g
+#   undef m
+#   undef v
+#   undef c
+#   undef gl
 
 }
 
@@ -205,11 +253,12 @@ bool ParseCommand(Scm procScm, Command **command)
 {        
     if (ScmStringp(procScm)) {
         string name = Scm2String(procScm);
-        vector<StringCommand*> stringCmds = GetAllStringCommands();
-
-        for (int i=0; i<stringCmds.size(); i++) {
-            if (name == stringCmds[i]->GetName()) {
-                *command = stringCmds[i]->Create();
+        
+        for (CommandAttr::Iterator i=g_stringAttr.Begin();
+             i != g_stringAttr.End(); i++)
+        {
+            if (name == ((StringCommand*) *i)->GetName()) {
+                *command = (*i)->Create();
                 return true;
             }
         }

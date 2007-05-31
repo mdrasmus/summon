@@ -1,12 +1,12 @@
 LIB = libCommon.a
-OBJS =  App.o \
-        commonCommands.o \
-        Matrix.o \
+OBJS =  Matrix.o \
         Script.o \
         ScriptCommand.o \
-        ScriptEngine.o \
-	Terminal.o 
 
+# commonCommands.o \
+#       App.o \
+#        ScriptEngine.o \
+#	Terminal.o 
 
 all: $(LIB)
 

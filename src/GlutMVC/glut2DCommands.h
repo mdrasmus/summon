@@ -23,6 +23,8 @@ enum {
     REDISPLAY_COMMAND,
     TRANSLATE_COMMAND,
     ZOOM_COMMAND,
+    ZOOM_X_COMMAND,
+    ZOOM_Y_COMMAND,
     FOCUS_COMMAND,
     GLUT_COMMANDS_END
 };
@@ -53,16 +55,15 @@ public:
 
     virtual const char *GetOptionName() { return "-trans"; }
     virtual const char *GetName() { return "trans"; }
-    virtual const char *GetUsage() { return "<x> <y>"; }
+    virtual const char *GetUsage() { return "x, y"; }
     virtual const char *GetDescription() 
     { return "translate the view by (x,y)"; }
     
     virtual int Setup(int argc, const char **argv)
     {
         if (argc >= 3) {
-            float x = atof(argv[1]);
-            float y = atof(argv[2]);
-            trans = Vertex2f(x, y);
+            trans.x = atof(argv[1]);
+            trans.y = atof(argv[2]);
             return 3;
         }
         return -1;
@@ -75,7 +76,7 @@ public:
 class ZoomCommand : public StringCommand
 {
 public:
-    ZoomCommand() : zoom(1.0) {}
+    ZoomCommand() : zoom(1.0, 1.0) {}
 
     virtual Command* Create() { return new ZoomCommand(); }
     virtual CommandId GetId() { return ZOOM_COMMAND; }
@@ -89,18 +90,64 @@ public:
             if (num > MAX_ZOOM)  num = MAX_ZOOM;
             if (num < -MAX_ZOOM) num = -MAX_ZOOM;
             
-            zoom = 1 + num / (MAX_ZOOM + 1);
+            zoom.x = 1 + num / (MAX_ZOOM + 1);
+            zoom.y = 1 + num / (MAX_ZOOM + 1);
         }
     }
     
     virtual const char *GetOptionName() { return "-zoom"; }
     virtual const char *GetName() { return "zoom"; }
-    virtual const char *GetUsage() { return "<factor>"; }
+    virtual const char *GetUsage() { return "factorX, factorY"; }
     virtual const char *GetDescription() { return "zoom view by a factor"; }
     virtual int Setup(int argc, const char **argv)
     {
+        if (argc >= 3) {
+            zoom.x = atof(argv[1]);
+            zoom.y = atof(argv[2]);            
+            return 3;
+        }
+        return -1;
+    }
+    
+    enum { MAX_ZOOM = 20 };
+    
+    Vertex2f zoom;
+};
+
+
+class ZoomXCommand : public StringCommand
+{
+public:
+    ZoomXCommand() : zoom(1.0, 1.0) {}
+
+    virtual Command* Create() { return new ZoomXCommand(); }
+    virtual CommandId GetId() { return ZOOM_X_COMMAND; }
+    
+    virtual void Setup(Input &input) 
+    {
+        if (input.GetId() == MOUSE_MOTION_INPUT) {
+            float num = (float) ((MouseMotionInput*)(&input))->vel.y;
+            
+            // clamp zoom
+            if (num > MAX_ZOOM)  num = MAX_ZOOM;
+            if (num < -MAX_ZOOM) num = -MAX_ZOOM;
+            
+            zoom.x = 1 + num / (MAX_ZOOM + 1);
+            zoom.y = 1.0;
+        }
+    }
+    
+    virtual const char *GetOptionName() { return ""; }
+    virtual const char *GetName() { return "zoomx"; }
+    virtual const char *GetUsage() { return "factor"; }
+    virtual const char *GetDescription() 
+    { return "zoom x-axis by a factor"; }
+    
+    virtual int Setup(int argc, const char **argv)
+    {
         if (argc >= 2) {
-            zoom = atof(argv[1]);
+            zoom.x = atof(argv[1]);
+            zoom.y =  1.0;
             return 2;
         }
         return -1;
@@ -108,7 +155,51 @@ public:
     
     enum { MAX_ZOOM = 20 };
     
-    float zoom;
+    Vertex2f zoom;    
+};
+
+class ZoomYCommand : public StringCommand
+{
+public:
+    ZoomYCommand() : zoom(1.0, 1.0) {}
+
+    virtual Command* Create() { return new ZoomYCommand(); }
+    virtual CommandId GetId() { return ZOOM_Y_COMMAND; }
+    
+    virtual void Setup(Input &input) 
+    {
+        if (input.GetId() == MOUSE_MOTION_INPUT) {
+            float num = (float) ((MouseMotionInput*)(&input))->vel.y;
+            
+            // clamp zoom
+            if (num > MAX_ZOOM)  num = MAX_ZOOM;
+            if (num < -MAX_ZOOM) num = -MAX_ZOOM;
+
+            zoom.x = 1.0;            
+            zoom.y = 1 + num / (MAX_ZOOM + 1);
+        }
+    }
+    
+    virtual const char *GetOptionName() { return ""; }
+    virtual const char *GetName() { return "zoomy"; }
+    virtual const char *GetUsage() { return "factor"; }
+    virtual const char *GetDescription() 
+    { return "zoom y-axis by a factor"; }
+
+    
+    virtual int Setup(int argc, const char **argv)
+    {
+        if (argc >= 2) {
+            zoom.x =  1.0;       
+            zoom.y = atof(argv[1]);
+            return 2;
+        }
+        return -1;
+    }
+    
+    enum { MAX_ZOOM = 20 };
+    
+    Vertex2f zoom;    
 };
 
 
@@ -129,7 +220,7 @@ public:
     
     virtual const char *GetOptionName() { return "-focus"; }
     virtual const char *GetName() { return "focus"; }
-    virtual const char *GetUsage() { return "<x> <y>"; }
+    virtual const char *GetUsage() { return "x, y"; }
     virtual const char *GetDescription() { return "focus the view on (x,y)"; }
     virtual int Setup(int argc, const char **argv)
     {

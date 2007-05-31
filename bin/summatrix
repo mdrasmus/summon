@@ -1,8 +1,160 @@
-#!/bin/sh
+#!/usr/bin/python -i
+#
+# SUMMATRIX (SUMMON Sparse Matrix Viewer)
+#
+# Example of using summon to visualize large sparse matrices.
+#
+# Example matrices are in summon/examples/summatrix/
+# Matrix file formats:
+#   *.mat   compress row (-r option)
+#   *.imat  index matrix (-i option)
+#   *.lmat  label matrix 
+#
 
-PROG=`readlink $0`
-DIR=`dirname $PROG`
-visdraw $DIR/../lib/summatrix.py $*
+# TODO: implement find, and marking
+
+
+import random
+import sys
+
+from summon.core import *
+from summon import *
+from summon import shapes, util
+from summon.matrix import *
+
+
+# command line options
+options = [
+    "matrix formats",
+    ["r:", "comprow=", "comprow", "<compressed row matrix file>",
+        {"single": True}],
+    ["i:", "imat=", "imat", "<index matrix file>",
+        {"single": True}],
+    ["l:", "lmat=", "lmat", "<labeled sparse matrix file>",
+        {"single": True}],
+    ["d:", "dense=", "dense", "<dense matrix file>",
+        {"single": True}],
+    
+    "labels",
+    ["", "rlab=", "rowlabels", "<row labels>",
+        {"single": True}],
+    ["", "clab=", "collabels", "<col labels>", 
+        {"single": True}],    
+    ["", "rclab=", "rowcollabels", "<row & col labels>", 
+        {"single": True}],
+    
+    "permutation",
+    ["R:", "rperm=", "rperm", "<row permutation>",
+        {"single": True}],
+    ["C:", "cperm=", "cperm", "<col permutation>",
+        {"single": True}],
+    ["B:", "rcperm=", "rcperm", "<row & col permutation>",
+        {"single": True}],
+
+    ["o:", "order=", "order", "<label order>",
+        {"single": True}],
+    
+    "clustering",
+    ["", "rpart=", "rpart", "<row partition ids>",
+        {"single": True}],
+    ["", "cpart=", "cpart", "<col partition ids>",
+        {"single": True}],
+    ["", "rcpart=", "rcpart", "<row & col partition ids>",
+        {"single": True}],
+
+    
+    "misc",
+    ["s:", "sample=", "sample", "<sample fraction>",
+        {"single": True,
+         "parser": float}],
+    ["c:", "color=", "color", "(solid|posneg|rainbow|filename)",
+        {"single": True,
+         "default": "solid"}],
+    ["", "cutoff=", "cutoff", "<value>",
+        {"default": -1e1000,
+         "parser": float,
+         "single": True}]
+]
+
+
+param = util.parseOptions(sys.argv, options, resthelp="<python script>")
 
 
 
+#######################################################################
+# Main Execution
+#
+
+print "SUMMATRIX (SUMMON Matrix Visualizer)"
+print "Matt Rasmussen 2005"
+print
+
+mat = Matrix()
+
+# read permutations
+if "rperm" in param:
+    mat.rperm = util.readInts(param["rperm"])
+elif "cperm" in param:
+    mat.cperm = util.readInts(param["cperm"])
+elif "rcperm" in param:
+    mat.rperm = util.readInts(param["rcperm"])        
+    mat.cperm = util.readInts(param["rcperm"])
+
+# read color
+if param["color"] == "posneg":
+    mat.colormap = PosNegColorMap()
+elif param["color"] == "rainbow":
+    mat.colormap = RainbowColorMap()
+elif param["color"] == "solid":
+    mat.colormap = SolidColorMap()
+else:
+    mat.colormap = readColorMap(param["color"])
+
+
+if "order" in param:
+    mat.order = param["order"]
+
+# read matrix
+if "comprow" in param:
+    openCompRow(param["comprow"], mat, param)
+elif "imat" in param:
+    openImat(param["imat"], mat, param)
+elif "lmat" in param:
+    if "order" in param:
+        openLabeledMatrix(param["lmat"], mat, param)
+    else:
+        openLabeledMatrix(param["lmat"], mat, param)
+elif "dense" in param:
+    openDense(param["dense"], mat)
+else:
+    raise "no matrix specified"
+
+
+# read labels
+if "rowlabels" in param:
+    mat.rowlabels = util.readStrings(param["rowlabels"])
+if "collabels" in param:
+    mat.collabels = util.readStrings(param["collabels"])
+if "rowcollabels" in param:
+    mat.rowlabels = util.readStrings(param["rowcollabels"])
+    mat.collabels = mat.rowlabels
+
+
+# read partitions
+if "rpart" in param:
+    mat.rpart = util.readStrings(param["rpart"])
+if "cpart" in param:
+    mat.cpart = util.readStrings(param["cpart"])
+if "rcpart" in param:
+    mat.rpart = util.readStrings(param["rcpart"])
+    mat.cpart = mat.rpart 
+
+
+# execute python script
+for script in param["REST"]:
+    print "executing", script
+    execfile(script)
+
+
+viewer = MatrixViewer(mat, param)
+viewer.show()

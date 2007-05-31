@@ -1,0 +1,42 @@
+SUMMON Change Log
+-----------------
+
+
+2007/5/6
+- fully implemented object-oriented API
+- added extra functions for manipulating windows (names, position, size)
+- fixed sumtree demo
+- improve summatrix demo
+- made source code fully compatible with Visual Studio 2005
+
+
+2007/4/6
+- fixed potential race condition
+
+
+2007/4/5
+- changed summon into an extension module for python
+- removed Guile backend
+- reorganized summon library
+- added distutils setup.py
+- removed requirements for readline, ncurses, pthread
+
+
+2006/8/30
+summon-1.1 released
+
+- fixed bugs 
+- added text_clip
+
+
+2005/8/26
+summon-1.0 released
+
+main features
+    - embedded python engine
+    - fast OpenGL graphics    
+    - drawing arbitrary points, lines, polygons
+    - binding inputs (keyboard, mouse, hotspots) to any python function 
+    - SVG output (also PNG with ImageMagick)
+    - cross-platform (windows, linux)
+

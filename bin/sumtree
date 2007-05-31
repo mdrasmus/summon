@@ -1,0 +1,93 @@
+#!/usr/bin/python -i
+
+import sys
+from summon.core import *
+from summon import sumtree
+from summon import util
+from summon import treelib
+
+
+options = [
+ ["p:", "ptree=", "ptree", "<ptree file>",
+    {"single": True}],
+ ["l:", "labels=", "labels", "<leaf labels file>",
+    {"single": True}],
+ ["n:", "newick=", "newick", "<newick file>",
+    {"single": True}],
+ ["t:", "usedist=", "usedist", "<distance factor>",
+    {"single": True,
+     "default": 1.0,
+     "parser": float}],
+ ["L", "noshowlabels", "noshowlabels", "",
+    {"single": True}],
+ ["V", "vertical", "vertical", "",
+    {"single": True}],
+ ["w:", "winsize=", "winsize", "<window width>x<window height>",
+    {"single": True}],
+    
+]
+
+
+
+# parse args
+conf = util.parseOptions(sys.argv, options)
+
+
+#======================================================================
+# Reading and Initialization
+#
+
+
+
+def readTree(conf):
+    util.tic("reading input")
+
+    tree = treelib.Tree()
+
+    if "ptree" in conf:
+        tree.readParentTree(conf["ptree"], conf["labels"])
+        print "%s: %d nodes, %d leaves\n" % \
+            (conf["ptree"], len(tree.nodes), len(tree.leaves()))
+
+    elif "newick" in conf:
+        tree.readNewick(conf["newick"])
+        print "%s: %d nodes, %d leaves\n" % \
+            (conf["newick"], len(tree.nodes), len(tree.leaves()))
+
+    util.toc()    
+    return tree
+
+
+#=============================================================================
+# title
+print "SUMTREE (SUMMON Tree Visualizer)"
+print "Matt Rasmussen 2005"
+print
+
+# read
+tree = readTree(conf)
+
+# display tree
+if "newick" in conf:
+    filename = conf["newick"]
+elif "ptree" in conf:
+    filename = conf["ptree"]
+vis = sumtree.SumTree(tree, name=filename, xscale=conf["usedist"], 
+                      showLabels=not conf["noshowlabels"],
+                      vertical=conf["vertical"])
+vis.show()
+
+if "winsize" in conf:
+    w, h = map(int, conf["winsize"].split("x"))
+    vis.win.set_window_size(w, h)
+
+
+# export a few functions to the global scope
+def find(name):
+    return vis.find(name)
+
+def mark(boxColor = color(1,0,0)):
+    return vis.mark(boxColor)
+
+def clear_marks():
+    vis.clearMarks()

@@ -21,6 +21,7 @@ public:
    virtual ~GlutController();
 
    void AddKeyBinding(char key, CommandId cmd);
+   Vertex2i GetMousePos();
    
    // glut callbacks
    static void GlutKey(unsigned char key, int x, int y);
@@ -36,9 +37,9 @@ protected:
    virtual void MouseClick(int button, int state, int x, int y);
 
    Vertex2i m_lastMouse;
-   int m_button;
-   int m_state;
-   int m_mod;
+   int m_button;  // TODO: not used?
+   int m_state;   // TODO: not used?
+   int m_mod;     // TODO: not used?
 };
 
 }

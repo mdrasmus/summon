@@ -17,18 +17,24 @@
 
 namespace Vistools {
 
+
+
 class TextElement : public Element
 {
 public:
     TextElement() : 
-        Element(TEXT_CONSTRUCT) 
+        Element(TEXT_CONSTRUCT),
+        minHeight(0.0),
+        maxHeight(0.0),
+        modelKind(MODEL_WORLD)
     {
         m_dynamic = true;
     }
     
     enum {
         KIND_BITMAP,
-        KIND_SCALE
+        KIND_SCALE,
+        KIND_CLIP
     };
     
     enum {
@@ -37,7 +43,8 @@ public:
         RIGHT   = 4,
         TOP     = 8,
         MIDDLE  = 16,
-        BOTTOM  = 32
+        BOTTOM  = 32,
+        VERTICAL = 64
     };
     
     void SetRect(Vertex2f &p1, Vertex2f &p2) {
@@ -50,8 +57,14 @@ public:
     string text;
     Vertex2f pos1;
     Vertex2f pos2;
+    Vertex2f envpos1;
+    Vertex2f envpos2;
+    Vertex2f scale;
     int justified;
     int kind;
+    float minHeight;
+    float maxHeight;
+    int modelKind;
 };
 
 

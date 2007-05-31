@@ -32,12 +32,13 @@ protected:
 };
 
 
-bool IsScriptCommand(int cmdId);
-extern set<int> g_scriptCommands;
+// script attribute
+extern CommandAttr g_scriptAttr;
+
 
 #define RegisterScriptCommand(cmd) \
     RegisterStringCommand(cmd) \
-    g_scriptCommands.insert(cmd ## _c.GetId());
+    AddAttr(g_scriptAttr)
 
 }
 

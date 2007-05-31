@@ -7,37 +7,65 @@
 
 #include "first.h"
 #include "StringCommand.h"
-
+#include "common.h"
 
 namespace Vistools
 {
 
 using namespace std;
 
-set<int> g_stringCommands;
+CommandAttr g_stringAttr;
+
 vector<StringCommand*> g_usageList;
-
-
-bool IsStringCommand(int cmdId)
-{
-    return g_stringCommands.find(cmdId) != g_stringCommands.end();
-}
 
 vector<StringCommand*> GetAllStringCommands()
 {
     vector<StringCommand*> cmds;
-    typedef map<CommandId, Command*> Map;
-    
-    Map commands = g_commandRegistry.GetProducts();
-    
-    for (Map::iterator i=commands.begin(); i!=commands.end(); i++) {
-        if (IsStringCommand((*i).first)) {
-            cmds.push_back((StringCommand*) ((*i).second));
-        }
+   
+    for (CommandAttr::Iterator i=g_stringAttr.Begin();
+         i != g_stringAttr.End(); i++)
+    {
+        cmds.push_back((StringCommand*) *i);
     }
     
     return cmds;
 }
+
+
+
+StringCommand *GetCommand(vector<StringCommand*> &cmds, 
+                          int argc, char **argv, int *consume, 
+                          bool option, bool showError)
+{
+    if (argc == 0)
+        return new StringCommand();
+
+    // search for command in stringCommandRegistry
+    for (vector<StringCommand*>::iterator j=cmds.begin(); 
+         j!=cmds.end(); j++)
+    {
+        if ((option && !strcmp(argv[0], (*j)->GetOptionName())) ||
+            (!option && !strcmp(argv[0], (*j)->GetName()))) {
+            StringCommand *cmd = (StringCommand*) (*j)->Create();
+
+            *consume = cmd->Setup(argc, (const char**) argv);
+            if (*consume > 0) {
+                return cmd;
+            } else {
+                // exit if bad syntax for argument
+                delete cmd;
+                Error("Error parsing argument '%s'", argv[0]);
+                return NULL;
+            }
+        }
+    }
+
+    if (showError)
+        Error("Unknown command '%s'", argv[0]);
+
+    return NULL;
+}
+
 
 }
 

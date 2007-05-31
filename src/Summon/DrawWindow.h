@@ -24,11 +24,12 @@ namespace Vistools
 class DrawWindow
 {
 public:
-    DrawWindow(int id, CommandExecutor *global) :
+    DrawWindow(int id, CommandExecutor *global,
+               int width=400, int height=400, const char *name="") :
         m_id(id),
         m_global(global),
-        m_view(NULL),
-        m_controller(global, &m_view, NULL),
+        m_view(NULL, width, height, name),
+        m_controller(global, &m_view),
         m_worldModel(NULL),
         m_screenModel(NULL)
     {
@@ -50,9 +51,10 @@ public:
         
         m_worldModel = model;
         m_view.SetWorldModel(model);
-        m_controller.SetModel(model);
+        m_controller.SetWorldModel(model);
         if (model) {
             model->AddView(&m_view);
+            model->SetKind(MODEL_WORLD);
         }
         m_view.Redisplay();
     }
@@ -66,11 +68,13 @@ public:
     
         m_screenModel = model;
         m_view.SetScreenModel(model);
+        m_controller.SetScreenModel(model);
         if (model) {
             model->AddView(&m_view);
+            model->SetKind(MODEL_SCREEN);
         }
         m_view.Redisplay();
-    }
+    }    
     
     inline DrawModel *GetWorldModel() { return m_worldModel; }
     inline DrawModel *GetScreenModel() { return m_screenModel; }    
@@ -78,6 +82,17 @@ public:
     
     inline DrawView *GetView() { return &m_view; }
     inline DrawController *GetController() { return &m_controller; }
+    
+    inline void SetName(string name)
+    { m_view.SetName((char*) name.c_str()); }
+    
+    inline string GetName()
+    { return m_view.GetName(); }
+    
+    void Close()
+    {
+        m_view.Close();
+    }
     
 protected:
     int m_id;
