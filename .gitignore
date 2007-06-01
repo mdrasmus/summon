@@ -1,0 +1,12 @@
+*.a
+*.o
+*.so
+*.pyc
+*.html
+*.aux
+*.log
+*.toc
+build
+dist
+.msg
+MANIFEST
