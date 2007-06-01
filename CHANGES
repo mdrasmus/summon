@@ -3,9 +3,10 @@ SUMMON Change Log
 
 2007/5/31
 - added small edits to make OSX compilation go more smoothly
-- trying out changed to git for SCM
+- trying out git for version control
 - code cleanup
-- try to work towards python objects.
+- fixed screen model support
+- added first version of Heads Up Display (HUD)
 
 
 2007/5/6 - summon-1.7

@@ -20,7 +20,7 @@ pub: dist/$(PACKAGE)
 	scp dist/$(PACKAGE) $(WWWHOST):$(WWWDIR)
 	ssh $(WWWHOST) chmod o+r $(WWWDIR)/$(PACKAGE)
 	ssh $(WWWHOST) tar zxvf $(WWWDIR)/$(PACKAGE) -C $(WWWDIR)
-
+	ssh $(WWWHOST) chmod -R o+rx $(WWWDIR)/summon-$(VERSION)
 
 clean:
 	$(MAKE) -C src/Summon/ cleanall
