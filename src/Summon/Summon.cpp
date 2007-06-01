@@ -28,7 +28,7 @@
 
 #define VERSION_INFO "\
 -----------------------------------------------------------------------------\n\
-                                   SUMMON 1.6\n\
+                                   SUMMON 1.7.1\n\
                        Large Scale Visualization Scripting\n\
                                  Matt Rasmussen \n\
                              (http://mit.edu/rasmus)\n\

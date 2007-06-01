@@ -1,4 +1,4 @@
-VERSION=1.7
+VERSION=1.7.1
 PACKAGE=summon-$(VERSION).tar.gz
 WWWDIR=/scratch-sm/www/pub/summon
 WWWHOST=rasmus@compbio.mit.edu
