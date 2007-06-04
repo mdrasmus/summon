@@ -42,6 +42,7 @@ public:
 
 class CommandExecutor {
 public:
+    virtual ~CommandExecutor() {}
     virtual void ExecCommand(Command &command) {}
 };
 

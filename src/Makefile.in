@@ -15,7 +15,7 @@ MY_LIBS = \
 #  -DNDEBUG
 
 COMPILE = -c -g \
-    -Wall -g -fno-strict-aliasing -O2 -fPIC -Wstrict-prototypes  \
+    -Wall -g -fno-strict-aliasing -O2 -fPIC  \
     $(INCLUDE) 
 
 # Profiling code
@@ -26,7 +26,7 @@ endif
 #
 # Python COMPILE flags
 #
-COMPILE := $(COMPILE) -I/usr/include/python2.4 -I/usr/include/python2.3
+COMPILE := $(COMPILE) -I/usr/include/python2.4
 
 # test compiling
 test:

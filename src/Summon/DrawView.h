@@ -71,6 +71,7 @@ class DrawView;
 class DrawViewListener 
 {
 public:
+    virtual ~DrawViewListener() {}
     virtual void ViewRedraw(DrawView *view) {}
     virtual void ViewResize(DrawView *view) {}
 };

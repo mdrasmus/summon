@@ -34,19 +34,19 @@ public:
     inline Vertex2f GetZoom() { return m_zoom; }
     
     // coordinate system conversions
-    inline Vertex2i Glut2DView::WindowToScreen(int x, int y)
+    inline Vertex2i WindowToScreen(int x, int y)
     {
         return Vertex2i(x, m_windowSize.y - y);
     }
 
     
-    inline Vertex2f Glut2DView::ScreenToWorld(int x, int y)
+    inline Vertex2f ScreenToWorld(int x, int y)
     {
         return Vertex2f((x - m_trans.x - m_focus.x) / m_zoom.x + m_focus.x,
                         (y - m_trans.y - m_focus.y) / m_zoom.y + m_focus.y);
     }
 
-    inline Vertex2i Glut2DView::WorldToScreen(float x, float y)
+    inline Vertex2i WorldToScreen(float x, float y)
     {
         return Vertex2i(int(m_trans.x + m_focus.x + m_zoom.x * (x - m_focus.x)),
                         int(m_trans.y + m_focus.y + m_zoom.y * (y - m_focus.y)));
