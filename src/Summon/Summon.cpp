@@ -334,33 +334,33 @@ public:
             }
         }
         
-        static PyMethodDef *g_vistoolsMethods = new PyMethodDef [m_summonCommands.size() + 1];
+        static PyMethodDef *summonMethods = new PyMethodDef [m_summonCommands.size() + 1];
 
         // install main command
         int table = 0;
         char *mainFunc = "__gatewayFunc";
-        g_vistoolsMethods[table].ml_name  = mainFunc;
-        g_vistoolsMethods[table].ml_meth  = Exec;
-        g_vistoolsMethods[table].ml_flags = METH_VARARGS;
-        g_vistoolsMethods[table].ml_doc   = "";
+        summonMethods[table].ml_name  = mainFunc;
+        summonMethods[table].ml_meth  = Exec;
+        summonMethods[table].ml_flags = METH_VARARGS;
+        summonMethods[table].ml_doc   = "";
         table++;
 
         // summon main loop
-        g_vistoolsMethods[table].ml_name  = "summon_main_loop";
-        g_vistoolsMethods[table].ml_meth  = SummonMainLoop;
-        g_vistoolsMethods[table].ml_flags = METH_VARARGS;
-        g_vistoolsMethods[table].ml_doc   = "";
+        summonMethods[table].ml_name  = "summon_main_loop";
+        summonMethods[table].ml_meth  = SummonMainLoop;
+        summonMethods[table].ml_flags = METH_VARARGS;
+        summonMethods[table].ml_doc   = "";
         table++;
 
         // cap the methods table with ending method
-        g_vistoolsMethods[table].ml_name  = NULL;
-        g_vistoolsMethods[table].ml_meth  = NULL;
-        g_vistoolsMethods[table].ml_flags = 0;
-        g_vistoolsMethods[table].ml_doc   = NULL;
+        summonMethods[table].ml_name  = NULL;
+        summonMethods[table].ml_meth  = NULL;
+        summonMethods[table].ml_flags = 0;
+        summonMethods[table].ml_doc   = NULL;
 
         // register all methods with python
         PyObject *module = Py_InitModule(MODULE_NAME_STRICT, 
-                                         g_vistoolsMethods);
+                                         summonMethods);
         
 
         for (unsigned int i=0; i<m_summonCommands.size(); i++) {
