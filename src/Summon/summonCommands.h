@@ -1,7 +1,7 @@
 /***************************************************************************
 * Summon
 * Matt Rasmussen
-* drawCommands.h
+* summonCommands.h
 *
 ***************************************************************************/
 
@@ -144,7 +144,7 @@ enum {
 
 
 
-void drawCommandsInit();
+void summonCommandsInit();
 
 // common parsing functions
 bool ParseScm(string errorMsg, Scm lst, const char *fmt, ...);
