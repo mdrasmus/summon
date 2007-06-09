@@ -1,21 +1,21 @@
 /***************************************************************************
 * Summon
 * Matt Rasmussen
-* DrawController.cpp
+* SummonController.cpp
 *
 ***************************************************************************/
 
 #include "first.h"
 #include "Color.h"
-#include "DrawController.h"
-#include "DrawWindow.h"
+#include "SummonController.h"
+#include "SummonWindow.h"
 
 namespace Summon
 {
 
 
-DrawController::DrawController(CommandExecutor *global, DrawView *view, 
-                               DrawModel *world, DrawModel *screen) :
+SummonController::SummonController(CommandExecutor *global, SummonView *view, 
+                               SummonModel *world, SummonModel *screen) :
     Glut2DController(view),
     m_global(global),
     m_view(view),
@@ -28,14 +28,14 @@ DrawController::DrawController(CommandExecutor *global, DrawView *view,
 }
 
 
-DrawController::~DrawController()
+SummonController::~SummonController()
 {}
 
 
 
 
 
-void DrawController::ExecCommand(Command &command)
+void SummonController::ExecCommand(Command &command)
 {
     // route view commands to connected view
     // XXX: why did I have this greater than GLUT_COMMANDS_BEGIN
@@ -109,7 +109,7 @@ void DrawController::ExecCommand(Command &command)
 }
 
 
-void DrawController::HotspotClick(Vertex2i pos)
+void SummonController::HotspotClick(Vertex2i pos)
 {
     // process hotspots in world
     if (m_world) {
@@ -142,7 +142,7 @@ void DrawController::HotspotClick(Vertex2i pos)
 }
 
 
-void DrawController::Motion(int x, int y)
+void SummonController::Motion(int x, int y)
 {
     // notify view that mouse has moved
     m_view->SetMousePos(x, y);
@@ -152,7 +152,7 @@ void DrawController::Motion(int x, int y)
 }
 
 
-void DrawController::ViewResize(DrawView *view)
+void SummonController::ViewResize(SummonView *view)
 {
     if (m_resizeProc != Scm_UNDEFINED) {
         CallProcCommand proc(m_resizeProc);

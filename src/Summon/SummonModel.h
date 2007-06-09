@@ -1,7 +1,7 @@
 /***************************************************************************
 * Summon
 * Matt Rasmussen
-* DrawModel.h
+* SummonModel.h
 *
 ***************************************************************************/
 
@@ -10,7 +10,7 @@
 
 #include "Script.h"
 #include "Model.h"
-#include "drawCommands.h"
+#include "summonCommands.h"
 #include "Graphic.h"
 #include "GroupTable.h"
 #include "Hotspot.h"
@@ -36,10 +36,10 @@ struct BuildEnv
 };
 
 
-class DrawModel : public Model
+class SummonModel : public Model
 {
 public:
-    DrawModel(int id, int kind=MODEL_WORLD) :
+    SummonModel(int id, int kind=MODEL_WORLD) :
         m_id(id),
         m_kind(kind)
     {

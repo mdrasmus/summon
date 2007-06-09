@@ -1,7 +1,7 @@
 /***************************************************************************
 * Summon
 * Matt Rasmussen
-* DrawController.h
+* SummonController.h
 *
 ***************************************************************************/
 
@@ -10,38 +10,38 @@
 
 #include "Script.h"
 #include "Glut2DController.h"
-#include "drawCommands.h"
-#include "DrawModel.h"
-#include "DrawView.h"
+#include "summonCommands.h"
+#include "SummonModel.h"
+#include "SummonView.h"
 
 
 namespace Summon
 {
 
-class DrawController : public Glut2DController, DrawViewListener
+class SummonController : public Glut2DController, SummonViewListener
 {
 public:
-    DrawController(CommandExecutor *global, DrawView *view, 
-                   DrawModel *world=NULL,
-                   DrawModel *screen=NULL);
-    virtual ~DrawController();
+    SummonController(CommandExecutor *global, SummonView *view, 
+                   SummonModel *world=NULL,
+                   SummonModel *screen=NULL);
+    virtual ~SummonController();
    
     void ExecCommand(Command &command);
     void HotspotClick(Vertex2i pos);
    
-    inline void SetWorldModel(DrawModel *model) { m_world = model; }
-    inline void SetScreenModel(DrawModel *model) { m_screen = model; }    
+    inline void SetWorldModel(SummonModel *model) { m_world = model; }
+    inline void SetScreenModel(SummonModel *model) { m_screen = model; }    
    
     virtual void Motion(int x, int y);
    
 protected:
 
-    virtual void ViewResize(DrawView *view);
+    virtual void ViewResize(SummonView *view);
 
     CommandExecutor *m_global;
-    DrawView *m_view;
-    DrawModel *m_world;
-    DrawModel *m_screen;    
+    SummonView *m_view;
+    SummonModel *m_world;
+    SummonModel *m_screen;    
     Scm m_resizeProc;
 };
 

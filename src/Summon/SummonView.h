@@ -1,7 +1,7 @@
 /***************************************************************************
 * Summon
 * Matt Rasmussen
-* DrawView.h
+* SummonView.h
 *
 ***************************************************************************/
 
@@ -14,8 +14,8 @@
 #include "Color.h"
 #include "Command.h"
 #include "Glut2DView.h"
-#include "DrawModel.h"
-#include "drawCommands.h"
+#include "SummonModel.h"
+#include "summonCommands.h"
 #include "GroupTable.h"
 #include "Graphic.h"
 #include "TextElement.h"
@@ -67,22 +67,22 @@ public:
     int m_drawlist;
 };
 
-class DrawView;
-class DrawViewListener 
+class SummonView;
+class SummonViewListener 
 {
 public:
-    virtual ~DrawViewListener() {}
-    virtual void ViewRedraw(DrawView *view) {}
-    virtual void ViewResize(DrawView *view) {}
+    virtual ~SummonViewListener() {}
+    virtual void ViewRedraw(SummonView *view) {}
+    virtual void ViewResize(SummonView *view) {}
 };
 
 
-class DrawView : public Glut2DView 
+class SummonView : public Glut2DView 
 {
 public:
-    DrawView(DrawModel *model, int width = 320, int height = 320, 
+    SummonView(SummonModel *model, int width = 320, int height = 320, 
              const char *name="");
-    virtual ~DrawView();
+    virtual ~SummonView();
 
     virtual void ExecCommand(Command &command);
 
@@ -90,9 +90,9 @@ public:
     void SetBgColor(Color &color);
     void Home();
     
-    inline void SetWorldModel(DrawModel *model) { m_worldModel = model; }
-    inline void SetScreenModel(DrawModel *model) { m_screenModel = model; }
-    inline void SetListener(DrawViewListener *listener)
+    inline void SetWorldModel(SummonModel *model) { m_worldModel = model; }
+    inline void SetScreenModel(SummonModel *model) { m_screenModel = model; }
+    inline void SetListener(SummonViewListener *listener)
     { m_listener = listener; }
 
     inline void Redisplay() {
@@ -143,13 +143,13 @@ protected:
     virtual void Reshape(int width, int height);
     
     
-    DrawModel *m_worldModel;
-    DrawModel *m_screenModel;
+    SummonModel *m_worldModel;
+    SummonModel *m_screenModel;
     Color m_bgColor;
     bool m_active;
     vector<DrawTask*> m_tasks;
     bool m_executingTasks;
-    DrawViewListener *m_listener;
+    SummonViewListener *m_listener;
     
     // crosshair
     bool m_showCrosshair;

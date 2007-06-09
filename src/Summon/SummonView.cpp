@@ -10,15 +10,15 @@
 #include <sstream>
 #include <time.h>
 #include "common.h"
-#include "drawCommands.h"
-#include "DrawView.h"
+#include "summonCommands.h"
+#include "SummonView.h"
 
 
 
 namespace Summon
 {
 
-DrawView::DrawView(DrawModel *model, int width, int height, const char *name) :
+SummonView::SummonView(SummonModel *model, int width, int height, const char *name) :
     Glut2DView(width, height, name),
     m_worldModel(model),
     m_screenModel(NULL),
@@ -48,12 +48,12 @@ DrawView::DrawView(DrawModel *model, int width, int height, const char *name) :
 }
 
 
-DrawView::~DrawView()
+SummonView::~SummonView()
 {
 }
 
 
-void DrawView::ExecCommand(Command &command)
+void SummonView::ExecCommand(Command &command)
 {
     // don't execute anything without a model
     if (!m_worldModel) {
@@ -251,7 +251,7 @@ void DrawView::ExecCommand(Command &command)
 }
 
 
-void DrawView::Home()
+void SummonView::Home()
 {
     if (!m_worldModel)
         return;
@@ -266,7 +266,7 @@ void DrawView::Home()
 
 // TODO: everytime the model is changed all tasks are discarded.  Instead only
 // those tasks affect by the change should ideally be altered.
-void DrawView::ExecuteTasks()
+void SummonView::ExecuteTasks()
 {
     m_executingTasks = true;
 
@@ -289,7 +289,7 @@ void DrawView::ExecuteTasks()
 }
 
 
-void DrawView::Display()
+void SummonView::Display()
 {
     glClearColor(m_bgColor.r, m_bgColor.g, m_bgColor.b, m_bgColor.a);
 
@@ -316,7 +316,7 @@ void DrawView::Display()
 }
 
 
-void DrawView::DrawWorld()
+void SummonView::DrawWorld()
 {
     // don't execute anything without a model
     if (!m_worldModel) {
@@ -348,7 +348,7 @@ void DrawView::DrawWorld()
 }
 
 
-void DrawView::DrawScreen()
+void SummonView::DrawScreen()
 {
     // don't execute anything without a model
     if (!m_screenModel) {
@@ -362,7 +362,7 @@ void DrawView::DrawScreen()
 }
 
 
-void DrawView::SetMousePos(int x, int y) {
+void SummonView::SetMousePos(int x, int y) {
     m_mousePos.x = x;
     m_mousePos.y = y;
     
@@ -370,7 +370,7 @@ void DrawView::SetMousePos(int x, int y) {
         Redisplay();
 }
 
-void DrawView::DrawCrosshair()
+void SummonView::DrawCrosshair()
 {
     // get dimensions
     Vertex2i pos = WindowToScreen(m_mousePos.x, m_mousePos.y);
@@ -394,7 +394,7 @@ void DrawView::DrawCrosshair()
 }
 
 
-void DrawView::DrawElement(GroupTable *table, Element *element, bool useTasks)
+void SummonView::DrawElement(GroupTable *table, Element *element, bool useTasks)
 {
     // ignore non-visible elements
     if (!element->IsVisible())
@@ -498,7 +498,7 @@ void DrawView::DrawElement(GroupTable *table, Element *element, bool useTasks)
 }
 
 
-void DrawView::DrawGraphic(Graphic *graphic)
+void SummonView::DrawGraphic(Graphic *graphic)
 {
     for (int ptr = 0; graphic->More(ptr); ptr = graphic->NextPrimitive(ptr)) {
         switch (graphic->GetTag(ptr)) {
@@ -546,7 +546,7 @@ Vertex2f JustifyBox(int justified, Vertex2f pos1, Vertex2f pos2,
 }
 
 
-bool DrawView::WithinView(const Vertex2f &pos1, const Vertex2f &pos2)
+bool SummonView::WithinView(const Vertex2f &pos1, const Vertex2f &pos2)
 {
     Vertex2i size = GetWindowSize();    
     Vertex2i spos1 = WorldToScreen(pos1.x, pos1.y);
@@ -559,7 +559,7 @@ bool DrawView::WithinView(const Vertex2f &pos1, const Vertex2f &pos2)
 
 
 
-void DrawView::DrawTextElement(TextElement *elm)
+void SummonView::DrawTextElement(TextElement *elm)
 {
     const unsigned char *text = (const unsigned char*) elm->text.c_str();
 
@@ -687,7 +687,7 @@ void DrawView::DrawTextElement(TextElement *elm)
 }
 
 
-void DrawView::DrawText(void *font, string text, float x, float y)
+void SummonView::DrawText(void *font, string text, float x, float y)
 {
     glRasterPos2f(x, y);
     for(unsigned int i=0; i<text.size(); i++ )
@@ -695,7 +695,7 @@ void DrawView::DrawText(void *font, string text, float x, float y)
 }
 
 
-void DrawView::SetBgColor(Color &color)
+void SummonView::SetBgColor(Color &color)
 {
     m_bgColor = color;
     m_bgColor.a = 0.0;
@@ -703,7 +703,7 @@ void DrawView::SetBgColor(Color &color)
 
 
 
-void DrawView::Reshape(int width, int height)
+void SummonView::Reshape(int width, int height)
 {
     // process window reshape
     Glut2DView::Reshape(width, height);

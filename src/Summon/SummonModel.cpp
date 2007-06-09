@@ -1,21 +1,21 @@
 /***************************************************************************
 * Summon
 * Matt Rasmussen
-* DrawModel.cpp
+* SummonModel.cpp
 *
 ***************************************************************************/
 
 #include "first.h"
 #include <list>
 
-#include "DrawModel.h"
+#include "SummonModel.h"
 #include "TextElement.h"
 
 
 namespace Summon
 {
 
-void DrawModel::ExecCommand(Command &command)
+void SummonModel::ExecCommand(Command &command)
 {
     switch (command.GetId()) {
         case ADD_GROUP_COMMAND: {
@@ -144,7 +144,7 @@ void DrawModel::ExecCommand(Command &command)
 
 // This function is called when a HotspotClick command is executed
 // Checks to see if any hotspots have been activated
-list<Command*> DrawModel::HotspotClick(Vertex2f pos)
+list<Command*> SummonModel::HotspotClick(Vertex2f pos)
 {
     list<Command*> cmds;
     
@@ -165,7 +165,7 @@ list<Command*> DrawModel::HotspotClick(Vertex2f pos)
 // Gets the environment of a group.
 // env is the starting environment
 // start is the starting element of the descent
-BuildEnv DrawModel::GetEnv(BuildEnv &env, Element *start, Element *end)
+BuildEnv SummonModel::GetEnv(BuildEnv &env, Element *start, Element *end)
 {
     list<Element*> elms;
     BuildEnv env2 = env;
@@ -200,7 +200,7 @@ BuildEnv DrawModel::GetEnv(BuildEnv &env, Element *start, Element *end)
 }
 
 
-int DrawModel::AddGroup(BuildEnv &env, int parent, Scm code)
+int SummonModel::AddGroup(BuildEnv &env, int parent, Scm code)
 {
     // do nothing if not a list
     if (!ScmConsp(code))
@@ -240,7 +240,7 @@ int DrawModel::AddGroup(BuildEnv &env, int parent, Scm code)
 }
 
 
-Group *DrawModel::BuildGroup(BuildEnv &env, Scm code)
+Group *SummonModel::BuildGroup(BuildEnv &env, Scm code)
 {
     Group *group = NULL;
 
@@ -269,7 +269,7 @@ Group *DrawModel::BuildGroup(BuildEnv &env, Scm code)
 
 
 
-bool DrawModel::PopulateElement(BuildEnv &env, Element *parent, Scm code)
+bool SummonModel::PopulateElement(BuildEnv &env, Element *parent, Scm code)
 {
     // process children
     for (Scm children = code; 
@@ -293,7 +293,7 @@ bool DrawModel::PopulateElement(BuildEnv &env, Element *parent, Scm code)
 }
 
 
-Element *DrawModel::BuildElement(BuildEnv &env, Scm code)
+Element *SummonModel::BuildElement(BuildEnv &env, Scm code)
 {
     Element *elm = NULL;
 
@@ -416,7 +416,7 @@ Element *DrawModel::BuildElement(BuildEnv &env, Scm code)
 
 
 
-Element *DrawModel::BuildHotspot(BuildEnv &env, Scm code)
+Element *SummonModel::BuildHotspot(BuildEnv &env, Scm code)
 {   
     int kindid;
     string kind;
@@ -468,7 +468,7 @@ Element *DrawModel::BuildHotspot(BuildEnv &env, Scm code)
 }
 
 
-Element *DrawModel::BuildText(BuildEnv &env, Scm code, int kind)
+Element *SummonModel::BuildText(BuildEnv &env, Scm code, int kind)
 {
     string text;
     float x1, y1, x2, y2, minHeight, maxHeight;
@@ -540,7 +540,7 @@ Element *DrawModel::BuildText(BuildEnv &env, Scm code, int kind)
 }
 
 
-Scm DrawModel::GetGroup(BuildEnv &env, Element *elm)
+Scm SummonModel::GetGroup(BuildEnv &env, Element *elm)
 {
     Scm children = Scm_EOL;
     
@@ -695,7 +695,7 @@ Scm DrawModel::GetGroup(BuildEnv &env, Element *elm)
 }
 
 
-void DrawModel::RemoveGroup(int id)
+void SummonModel::RemoveGroup(int id)
 {
     Group *group = m_table.GetGroup(id);
     if (group) {
@@ -705,7 +705,7 @@ void DrawModel::RemoveGroup(int id)
 }
 
 
-void DrawModel::RemoveHotspots(Element *elm)
+void SummonModel::RemoveHotspots(Element *elm)
 {
     if (elm->GetId() == HOTSPOT_CONSTRUCT) {
         m_hotspotClicks.remove((Hotspot*) elm);
@@ -718,7 +718,7 @@ void DrawModel::RemoveHotspots(Element *elm)
 }
 
 
-void DrawModel::FindBounding(Vertex2f *pos1, Vertex2f *pos2)
+void SummonModel::FindBounding(Vertex2f *pos1, Vertex2f *pos2)
 {
 
     float FLOAT_MIN = -1e307;

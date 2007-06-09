@@ -1,7 +1,7 @@
 /***************************************************************************
 * Summon
 * Matt Rasmussen
-* DrawWindow.h
+* SummonWindow.h
 *
 ***************************************************************************/
 
@@ -10,21 +10,21 @@
 
 #include "Script.h"
 #include "Window.h"
-#include "DrawController.h"
-#include "DrawModel.h"
-#include "DrawView.h"
+#include "SummonController.h"
+#include "SummonModel.h"
+#include "SummonView.h"
 
 
 namespace Summon
 {
 
-//typedef Window<DrawModel, DrawView, DrawController> DrawWindow;
+//typedef Window<SummonModel, SummonView, SummonController> SummonWindow;
 
 
-class DrawWindow
+class SummonWindow
 {
 public:
-    DrawWindow(int id, CommandExecutor *global,
+    SummonWindow(int id, CommandExecutor *global,
                int width=400, int height=400, const char *name="") :
         m_id(id),
         m_global(global),
@@ -35,14 +35,14 @@ public:
     {
     }
     
-    virtual ~DrawWindow() {}
+    virtual ~SummonWindow() {}
    
     void ExecCommand(Command &cmd)
     {}
 
     inline void SetActive(bool b = true) { m_view.SetActive(b); }
     
-    void SetWorldModel(DrawModel *model)
+    void SetWorldModel(SummonModel *model)
     {
         // detach old model from view
         if (m_worldModel) {
@@ -59,7 +59,7 @@ public:
         m_view.Redisplay();
     }
 
-    void SetScreenModel(DrawModel *model)
+    void SetScreenModel(SummonModel *model)
     {
         // detach old model from view
         if (m_screenModel) {
@@ -76,12 +76,12 @@ public:
         m_view.Redisplay();
     }    
     
-    inline DrawModel *GetWorldModel() { return m_worldModel; }
-    inline DrawModel *GetScreenModel() { return m_screenModel; }    
+    inline SummonModel *GetWorldModel() { return m_worldModel; }
+    inline SummonModel *GetScreenModel() { return m_screenModel; }    
     inline int GetId() { return m_id; }
     
-    inline DrawView *GetView() { return &m_view; }
-    inline DrawController *GetController() { return &m_controller; }
+    inline SummonView *GetView() { return &m_view; }
+    inline SummonController *GetController() { return &m_controller; }
     
     inline void SetName(string name)
     { m_view.SetName((char*) name.c_str()); }
@@ -97,10 +97,10 @@ public:
 protected:
     int m_id;
     CommandExecutor *m_global;
-    DrawView m_view;
-    DrawController m_controller;
-    DrawModel *m_worldModel;
-    DrawModel *m_screenModel;
+    SummonView m_view;
+    SummonController m_controller;
+    SummonModel *m_worldModel;
+    SummonModel *m_screenModel;
 };
 
 }

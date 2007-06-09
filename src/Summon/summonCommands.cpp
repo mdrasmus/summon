@@ -1,12 +1,12 @@
 /***************************************************************************
 * Summon
 * Matt Rasmussen
-* drawCommands.cpp
+* summonCommands.cpp
 *
 ***************************************************************************/
 
 #include "first.h"
-#include "drawCommands.h"
+#include "summonCommands.h"
 #include "glut2DCommands.h"
 
 
@@ -28,7 +28,7 @@ CommandAttr g_glAttr;
 int CallProcCommand::procid = 0;
 
 
-void drawCommandsInit()
+void summonCommandsInit()
 {
     glutCommandsInit();
     
