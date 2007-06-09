@@ -1,16 +1,15 @@
 CC = g++
 AR = ar
-PREFIX = ..
 
 INCLUDE = \
-    -I$(PREFIX)/Common \
-    -I$(PREFIX)/GlutMVC \
-    -I$(PREFIX)/MVC 
+    -I$(SRCPREFIX)/Common \
+    -I$(SRCPREFIX)/GlutMVC \
+    -I$(SRCPREFIX)/MVC 
 
 MY_LIBS = \
-        $(PREFIX)/Common/libCommon.a \
-        $(PREFIX)/GlutMVC/libGlutMVC.a \
-        $(PREFIX)/MVC/libMVC.a 
+        $(SRCPREFIX)/Common/libCommon.a \
+        $(SRCPREFIX)/GlutMVC/libGlutMVC.a \
+        $(SRCPREFIX)/MVC/libMVC.a 
 
 #  -DNDEBUG
 
@@ -26,7 +25,7 @@ endif
 #
 # Python COMPILE flags
 #
-COMPILE := $(COMPILE) -I/usr/include/python2.4
+COMPILE := $(COMPILE) -I/usr/include/python2.4 -I/usr/include/python2.5
 
 # test compiling
 test:
@@ -34,21 +33,20 @@ test:
 
 
 # rules for subsystems
-$(PREFIX)/Common/libCommon.a:
-	make -C $(PREFIX)/Common
+$(SRCPREFIX)/Common/libCommon.a:
+	make -C $(SRCPREFIX)/Common CFLAGS=$(CFLAGS)
     
-$(PREFIX)/GlutMVC/libGlutMVC.a:
-	make -C $(PREFIX)/GlutMVC
+$(SRCPREFIX)/GlutMVC/libGlutMVC.a:
+	make -C $(SRCPREFIX)/GlutMVC CFLAGS=$(CFLAGS)
 
-$(PREFIX)/MVC/libMVC.a:
-	make -C $(PREFIX)/MVC
-
+$(SRCPREFIX)/MVC/libMVC.a:
+	make -C $(SRCPREFIX)/MVC CFLAGS=$(CFLAGS)
 
 
 
 # basic compile rule
 $(OBJS): %.o: %.cpp
-	$(CC) $(COMPILE) -o $@ $<
+	$(CC) $(CFLAGS) $(COMPILE) -o $@ $<
 
 # basic library building
 $(LIB): $(OBJS)
@@ -62,14 +60,14 @@ cleanobj:
 	rm -rf $(OBJS) $(LIB)
 
 cleanall:
-	make clean -C $(PREFIX)/Common
-	make clean -C $(PREFIX)/GlutMVC
-	make clean -C $(PREFIX)/MVC
-	make clean -C $(PREFIX)/Summon
+	make clean -C $(SRCPREFIX)/Common
+	make clean -C $(SRCPREFIX)/GlutMVC
+	make clean -C $(SRCPREFIX)/MVC
+	make clean -C $(SRCPREFIX)/Summon
 
 cleanallobj:
-	make cleanobj -C $(PREFIX)/Common
-	make cleanobj -C $(PREFIX)/GlutMVC
-	make cleanobj -C $(PREFIX)/MVC
-	make cleanobj -C $(PREFIX)/Summon
+	make cleanobj -C $(SRCPREFIX)/Common
+	make cleanobj -C $(SRCPREFIX)/GlutMVC
+	make cleanobj -C $(SRCPREFIX)/MVC
+	make cleanobj -C $(SRCPREFIX)/Summon
 

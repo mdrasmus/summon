@@ -1,3 +1,4 @@
+SRCPREFIX = ..
 LIB=libMVC.a
 OBJS = \
         Binding.o \

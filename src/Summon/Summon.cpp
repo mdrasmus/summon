@@ -784,7 +784,9 @@ initsummon_core()
     
     // NOTE: requires freeglut > 2.4.0-1  (2005)
     // or another GLUT implementation with this extension
+#ifndef NOGLUTEXT    
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
+#endif
     
     glutInitWindowSize(1, 1);
     int hidden_window = glutCreateWindow("SUMMON");

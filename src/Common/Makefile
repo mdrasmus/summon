@@ -1,3 +1,4 @@
+SRCPREFIX = ..
 LIB = libCommon.a
 OBJS =  Matrix.o \
         Script.o \

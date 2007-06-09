@@ -39,7 +39,10 @@ GlutView::GlutView(int width, int height, const char *name) :
     // register callbacks
     glutDisplayFunc(GlutView::GlutDisplay);
     glutReshapeFunc(GlutView::GlutReshape);
+    
+#ifndef NOGLUTEXT
     glutCloseFunc(GlutView::GlutClose);
+#endif
 
     // setup opengl
     glEnable(GL_BLEND);

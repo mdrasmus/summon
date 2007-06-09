@@ -1,3 +1,4 @@
+SRCPREFIX = ..
 LIB=libGlutMVC.a
 OBJS = \
         Glut2DController.o \

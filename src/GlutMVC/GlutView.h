@@ -18,7 +18,8 @@
 
 
 // Use GLUT extensions
-#ifndef __WXMSW__
+//#ifndef __WXMSW__
+#ifndef NOGLUTEXT
 #  include <GL/freeglut_ext.h>
 #endif
 
