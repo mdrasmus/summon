@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * types.h
 *
@@ -11,7 +11,7 @@
 
 #include <math.h>
 
-namespace Vistools
+namespace Summon
 {
 
 template <class T>

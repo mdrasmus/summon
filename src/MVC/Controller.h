@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * Controller.h
 *
@@ -12,7 +12,7 @@
 #include "Command.h"
 #include "Input.h"
 
-namespace Vistools
+namespace Summon
 {
 
 class Controller : public CommandExecutor {

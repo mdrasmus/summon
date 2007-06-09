@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * ScriptCommand.h
 *
@@ -12,7 +12,7 @@
 #include "StringCommand.h"
 #include "Script.h"
 
-namespace Vistools
+namespace Summon
 {
 
 

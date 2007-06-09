@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * Glut2DView.h
 *
@@ -11,7 +11,7 @@
 #include "GlutView.h"
 #include "types.h"
 
-namespace Vistools
+namespace Summon
 {
 
 class Glut2DView : public GlutView {

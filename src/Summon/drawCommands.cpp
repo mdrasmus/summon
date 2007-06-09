@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * drawCommands.cpp
 *
@@ -10,7 +10,7 @@
 #include "glut2DCommands.h"
 
 
-namespace Vistools
+namespace Summon
 {
 
 using namespace std;

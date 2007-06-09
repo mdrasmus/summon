@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * Glut2DController.cpp
 *
@@ -9,7 +9,7 @@
 #include "Glut2DController.h"
 #include "glutInputs.h"
 
-namespace Vistools
+namespace Summon
 {
 
 

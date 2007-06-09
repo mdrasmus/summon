@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * RectTree.h
 *
@@ -15,7 +15,7 @@
 #include "types.h"
 
 
-namespace Vistools {
+namespace Summon {
 
 using namespace std;
 

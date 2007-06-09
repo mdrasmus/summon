@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * GlutView.h
 *
@@ -24,7 +24,7 @@
 #endif
 
 
-namespace Vistools
+namespace Summon
 {
 
 using namespace std;

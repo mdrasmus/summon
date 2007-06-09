@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * Input.h
 *
@@ -9,7 +9,7 @@
 #include "Input.h"
 
 
-namespace Vistools
+namespace Summon
 {
 
 InputRegistry g_inputRegistry;

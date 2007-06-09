@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * HashTable.h
 *
@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-namespace Vistools
+namespace Summon
 {
 
 using namespace std;

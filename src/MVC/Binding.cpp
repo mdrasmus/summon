@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * Binding.cpp
 *
@@ -11,7 +11,7 @@
 
 
 
-namespace Vistools
+namespace Summon
 {
 
 Binding::Binding()

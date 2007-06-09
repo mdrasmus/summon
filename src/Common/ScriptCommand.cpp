@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * ScriptCommand.cpp
 *
@@ -9,7 +9,7 @@
 #include "ScriptCommand.h"
 
 
-namespace Vistools
+namespace Summon
 {
 
 CommandAttr g_scriptAttr;

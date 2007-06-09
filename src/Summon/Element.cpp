@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * TransformMatrix.cpp
 *
@@ -9,7 +9,7 @@
 #include "Element.h"
 
 
-namespace Vistools {
+namespace Summon {
 
 
 void Element::FindBounding(float *top, float *bottom, 
@@ -24,4 +24,4 @@ void Element::FindBounding(float *top, float *bottom,
 
 
 
-} // namespace Vistools
+} // namespace Summon

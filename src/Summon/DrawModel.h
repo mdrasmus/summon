@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * DrawModel.h
 *
@@ -16,7 +16,7 @@
 #include "Hotspot.h"
 #include "Transform.h"
 
-namespace Vistools
+namespace Summon
 {
 
 

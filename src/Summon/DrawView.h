@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * DrawView.h
 *
@@ -22,7 +22,7 @@
 #include "Transform.h"
 
 
-namespace Vistools
+namespace Summon
 {
 
 using namespace std;

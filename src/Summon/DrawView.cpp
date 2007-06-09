@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * MatrixView.cpp
 *
@@ -15,7 +15,7 @@
 
 
 
-namespace Vistools
+namespace Summon
 {
 
 DrawView::DrawView(DrawModel *model, int width, int height, const char *name) :
@@ -715,4 +715,4 @@ void DrawView::Reshape(int width, int height)
 
 
 
-} // namespace Vistools
+} // namespace Summon

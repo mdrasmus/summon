@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * DrawController.h
 *
@@ -15,7 +15,7 @@
 #include "DrawView.h"
 
 
-namespace Vistools
+namespace Summon
 {
 
 class DrawController : public Glut2DController, DrawViewListener

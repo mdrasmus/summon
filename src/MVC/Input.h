@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * Input.h
 *
@@ -10,7 +10,7 @@
 
 #include "Factory.h"
 
-namespace Vistools
+namespace Summon
 {
 
 typedef int InputId;

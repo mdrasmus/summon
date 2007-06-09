@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * Command.cpp
 *
@@ -11,7 +11,7 @@
 #include <vector>
 
 
-namespace Vistools
+namespace Summon
 {
 
 CommandRegistry g_commandRegistry;

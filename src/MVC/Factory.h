@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * Factory.h
 *
@@ -13,7 +13,7 @@
 #include <map>
 #include <iostream>
 
-namespace Vistools
+namespace Summon
 {
 
 using namespace std;

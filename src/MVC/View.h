@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * View.h
 *
@@ -10,7 +10,7 @@
 
 #include "Command.h"
 
-namespace Vistools
+namespace Summon
 {
 
 class View : public CommandExecutor {

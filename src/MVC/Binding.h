@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * Binding.h
 *
@@ -13,7 +13,7 @@
 #include "Input.h"
 #include "HashTable.h"
 
-namespace Vistools
+namespace Summon
 {
 
 

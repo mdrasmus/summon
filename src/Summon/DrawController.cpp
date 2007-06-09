@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * DrawController.cpp
 *
@@ -10,7 +10,7 @@
 #include "DrawController.h"
 #include "DrawWindow.h"
 
-namespace Vistools
+namespace Summon
 {
 
 

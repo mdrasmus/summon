@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * GroupTable.cpp
 *
@@ -9,7 +9,7 @@
 #include "GroupTable.h"
 
 
-namespace Vistools {
+namespace Summon {
 
 using namespace std;
 

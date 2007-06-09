@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * glutInputs.cpp
 *
@@ -8,7 +8,7 @@
 #include "first.h"
 #include "glutInputs.h"
 
-namespace Vistools
+namespace Summon
 {
 
 void glutInputsInit()

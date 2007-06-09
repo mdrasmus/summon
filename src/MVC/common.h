@@ -5,7 +5,7 @@
 
 #define MAX_LINE 40000
 
-namespace Vistools {
+namespace Summon {
 
 enum {
     LOG1,

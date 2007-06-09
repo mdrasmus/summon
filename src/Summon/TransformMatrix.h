@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * TransformMatrix.h
 *
@@ -10,7 +10,7 @@
 
 
 
-namespace Vistools {
+namespace Summon {
 
 using namespace std;
 

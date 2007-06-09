@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * Transform.cpp
 *
@@ -9,7 +9,7 @@
 #include <assert.h>
 #include "Transform.h"
 
-namespace Vistools {
+namespace Summon {
 
 
 Transform::Transform(int kind, float param1, float param2) :

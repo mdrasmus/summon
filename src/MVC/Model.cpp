@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * Model.cpp
 *
@@ -8,7 +8,7 @@
 #include "first.h"
 #include "Model.h"
 
-namespace Vistools
+namespace Summon
 {
 
 

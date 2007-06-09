@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* SUMMON
 * Matt Rasmussen
 * Summon.cpp
 *
@@ -43,7 +43,7 @@ static PyObject *SummonMainLoop(PyObject *self, PyObject *tup);
 }
 
 
-namespace Vistools {
+namespace Summon {
 
 using namespace std;
 
@@ -642,7 +642,7 @@ def __" + name + "_contents(obj): return obj[1:]\n\
 
 
 
-} // namespace Vistools
+} // namespace Summon
 
 
 
@@ -651,7 +651,7 @@ def __" + name + "_contents(obj): return obj[1:]\n\
 // Python visible functions
 //
 
-using namespace Vistools;
+using namespace Summon;
 
 extern "C" {
 
@@ -673,7 +673,7 @@ SummonMainLoop(PyObject *self, PyObject *tup)
         g_summon->m_initialized = true;
         
         // setup glut timer
-        glutTimerFunc(10, Summon::Timer, 0);
+        glutTimerFunc(10, Summon::Summon::Timer, 0);
         
         Py_BEGIN_ALLOW_THREADS
         glutMainLoop();
@@ -795,7 +795,7 @@ initsummon_core()
     InitPython();
     
     // create Summon app
-    g_summon = new Summon();    
+    g_summon = new Summon::Summon();    
     
     // run the actual Summon app
     if (!g_summon->Init())

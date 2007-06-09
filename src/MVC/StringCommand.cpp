@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * StringCommand.cpp
 *
@@ -9,7 +9,7 @@
 #include "StringCommand.h"
 #include "common.h"
 
-namespace Vistools
+namespace Summon
 {
 
 using namespace std;

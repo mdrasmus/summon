@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * GroupTable.h
 *
@@ -13,7 +13,7 @@
 #include "HashTable.h"
 
 
-namespace Vistools {
+namespace Summon {
 
 using namespace std;
 

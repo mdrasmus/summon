@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * DrawWindow.h
 *
@@ -15,7 +15,7 @@
 #include "DrawView.h"
 
 
-namespace Vistools
+namespace Summon
 {
 
 //typedef Window<DrawModel, DrawView, DrawController> DrawWindow;

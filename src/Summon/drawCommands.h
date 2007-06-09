@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * drawCommands.h
 *
@@ -20,7 +20,7 @@
 
 
 
-namespace Vistools
+namespace Summon
 {
 
 using namespace std;

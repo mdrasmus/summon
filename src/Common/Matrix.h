@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * Matrix.h
 *
@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 
-namespace Vistools {
+namespace Summon {
 
 class Matrix
 {

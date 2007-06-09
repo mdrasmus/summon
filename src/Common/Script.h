@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * Script.h
 *
@@ -17,7 +17,7 @@
 #include <vector>
 
 
-namespace Vistools {
+namespace Summon {
 
 using namespace std;
 

@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * glutInputs.h
 *
@@ -13,7 +13,7 @@
 #include "Input.h"
 #include "types.h"
 
-namespace Vistools
+namespace Summon
 {
 
 enum {

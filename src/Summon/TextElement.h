@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * TextElement.h
 *
@@ -15,7 +15,7 @@
 #include "Element.h"
 
 
-namespace Vistools {
+namespace Summon {
 
 
 

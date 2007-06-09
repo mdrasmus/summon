@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * Glut2DView.cpp
 *
@@ -12,7 +12,7 @@
 
 
 
-namespace Vistools
+namespace Summon
 {
 
 

@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * GlutController.cpp
 *
@@ -12,7 +12,7 @@
 #include "glutInputs.h"
 #include "Command.h"
 
-namespace Vistools
+namespace Summon
 {
 
 std::vector<GlutController*> g_controllers;
@@ -147,4 +147,4 @@ void GlutController::MouseClick(int button, int state, int x, int y)
 
 
 
-} // namespace Vistools
+} // namespace Summon

@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * Hotspot.h
 *
@@ -12,7 +12,7 @@
 #include "types.h"
 #include "Element.h"
 
-namespace Vistools {
+namespace Summon {
 
 using namespace std;
 

@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * DrawModel.cpp
 *
@@ -12,7 +12,7 @@
 #include "TextElement.h"
 
 
-namespace Vistools
+namespace Summon
 {
 
 void DrawModel::ExecCommand(Command &command)

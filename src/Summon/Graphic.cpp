@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * Graphic.cpp
 *
@@ -8,7 +8,7 @@
 #include "first.h"
 #include "Graphic.h"
 
-namespace Vistools {
+namespace Summon {
 
 using namespace std;
 
@@ -205,5 +205,5 @@ void Graphic::FindBounding(float *top, float *bottom, float *left, float *right,
 }
 
 
-} // namespace Vistools
+} // namespace Summon
 

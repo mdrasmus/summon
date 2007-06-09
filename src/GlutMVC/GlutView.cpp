@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * GlutView.cpp
 *
@@ -10,7 +10,7 @@
 #include "GlutView.h"
 #include "glut2DCommands.h"
 
-namespace Vistools
+namespace Summon
 {
 
 // globals

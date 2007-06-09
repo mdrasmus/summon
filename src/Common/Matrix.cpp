@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * Matrix.cpp
 *
@@ -9,7 +9,7 @@
 #include "common.h"
 #include "Matrix.h"
 
-namespace Vistools {
+namespace Summon {
 
 
 Matrix::Matrix() :

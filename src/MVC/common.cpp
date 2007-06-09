@@ -8,7 +8,7 @@
 #include <string>
 #include "common.h"
 
-namespace Vistools {
+namespace Summon {
 
 using namespace std;
 

@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * Window.h
 *
@@ -10,7 +10,7 @@
 
 #include "Command.h"
 
-namespace Vistools
+namespace Summon
 {
 
 template<class ModelT, class ViewT, class ControllerT>

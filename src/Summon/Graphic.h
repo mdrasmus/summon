@@ -1,5 +1,5 @@
 /***************************************************************************
-* Vistools
+* Summon
 * Matt Rasmussen
 * Graphic.h
 *
@@ -11,7 +11,7 @@
 #include "Script.h"
 #include "Element.h"
 
-namespace Vistools {
+namespace Summon {
 
 using namespace std;
 
