@@ -19,7 +19,7 @@
 #include <SDL/SDL_timer.h>
 
 #include "common.h"
-#include "DrawWindow.h"
+#include "SummonWindow.h"
 
 
 
@@ -123,7 +123,7 @@ public:
                         
             case CLOSE_WINDOW_COMMAND: {
                 int windowid = ((CloseWindowCommand*)&command)->windowid;
-                DrawWindow *window = GetWindow(windowid);
+                SummonWindow *window = GetWindow(windowid);
                 
                 if (window) {
                     CloseWindow(window);
@@ -148,7 +148,7 @@ public:
             
             case DEL_MODEL_COMMAND: {
                 int modelid  = ((DelModelCommand*)&command)->modelid;
-                DrawModel *model = GetModel(modelid);
+                SummonModel *model = GetModel(modelid);
                 
                 if (!model) {
                     Error("cannot find model %d", modelid);
@@ -173,8 +173,8 @@ public:
                 int windowid = ((AssignModelCommand*)&command)->windowid;
                 string kind  =((AssignModelCommand*)&command)->kind;
                 int modelid  = ((AssignModelCommand*)&command)->modelid;
-                DrawWindow *window = GetWindow(windowid);
-                DrawModel *model = GetModel(modelid);
+                SummonWindow *window = GetWindow(windowid);
+                SummonModel *model = GetModel(modelid);
                 
                 // ensure window and model exists
                 if (window) {
@@ -219,7 +219,7 @@ public:
                 
                 } else if (g_modelAttr.Has(&command)) {
                     // model
-                    DrawModel *model = 
+                    SummonModel *model = 
                         GetModel(((ModelCommand*) &command)->modelid);
                     if (model)
                         model->ExecCommand(command);
@@ -228,7 +228,7 @@ public:
                     // view
                     int windowid = ((WindowCommand*) &command)->windowid;
                     
-                    DrawWindow *window = GetWindow(windowid);
+                    SummonWindow *window = GetWindow(windowid);
                     if (window) {
                         window->GetView()->ExecCommand(command);
                     } else {
@@ -239,7 +239,7 @@ public:
                     // controller
                     int windowid = ((WindowCommand*) &command)->windowid;
                     
-                    DrawWindow *window = GetWindow(windowid);
+                    SummonWindow *window = GetWindow(windowid);
                     if (window) {
                         window->GetController()->ExecCommand(command);
                     } else {
@@ -252,14 +252,14 @@ public:
     int NewWindow()
     {
         int id = m_nextWindowId;
-        m_windows[id] = new DrawWindow(id, this, 400, 400, "SUMMON");
+        m_windows[id] = new SummonWindow(id, this, 400, 400, "SUMMON");
         m_nextWindowId++;
         m_windows[id]->SetActive();
         return id;
     }
         
     
-    DrawWindow *GetWindow(int id)
+    SummonWindow *GetWindow(int id)
     {
         if (m_windows.find(id) != m_windows.end())
             return m_windows[id];
@@ -268,7 +268,7 @@ public:
     }
     
     
-    void CloseWindow(DrawWindow* window)
+    void CloseWindow(SummonWindow* window)
     {
         // remove window from window list
         m_windows.erase(window->GetId());
@@ -293,12 +293,12 @@ public:
     int NewModel(int kind)
     {
         int id = m_nextModelId;
-        m_models[id] = new DrawModel(id, kind);
+        m_models[id] = new SummonModel(id, kind);
         m_nextModelId++;
         return id;
     }    
     
-    DrawModel *GetModel(int id)
+    SummonModel *GetModel(int id)
     {
         if (m_models.find(id) != m_models.end())
             return m_models[id];
@@ -321,7 +321,7 @@ public:
     void ModuleInit()
     {
         // init commands
-        drawCommandsInit();
+        summonCommandsInit();
         m_summonCommands.clear();
         
         for (CommandAttr::Iterator i=g_scriptAttr.Begin();
@@ -632,12 +632,12 @@ def __" + name + "_contents(obj): return obj[1:]\n\
     vector<StringCommand*> m_summonCommands;
     
     // all windows and models
-    typedef map<int, DrawWindow*>::iterator WindowIter;
-    typedef map<int, DrawModel*>::iterator ModelIter;
-    map<int, DrawWindow*> m_windows;
-    map<int, DrawModel*> m_models;
+    typedef map<int, SummonWindow*>::iterator WindowIter;
+    typedef map<int, SummonModel*>::iterator ModelIter;
+    map<int, SummonWindow*> m_windows;
+    map<int, SummonModel*> m_models;
    
-    map<GlutView*, DrawWindow*> m_closeWaiting;
+    map<GlutView*, SummonWindow*> m_closeWaiting;
 };
 
 

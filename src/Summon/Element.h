@@ -10,7 +10,7 @@
 
 #include "Script.h"
 #include <list>
-#include "drawCommands.h"
+#include "summonCommands.h"
 #include "TransformMatrix.h"
 
 namespace Summon {

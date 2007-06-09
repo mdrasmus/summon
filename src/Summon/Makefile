@@ -1,8 +1,8 @@
 SRCPREFIX = ..
-OBJS = drawCommands.o \
-       DrawController.o \
-       DrawModel.o \
-       DrawView.o \
+OBJS = summonCommands.o \
+       SummonController.o \
+       SummonModel.o \
+       SummonView.o \
        Element.o \
        Graphic.o \
        GroupTable.o \
