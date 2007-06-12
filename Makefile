@@ -10,10 +10,12 @@ WWWHOST=rasmus@compbio.mit.edu
 PROG=summon_core.so
 SRCPREFIX=src
 
+all: lib/$(PROG)
+
+
 include src/Makefile.in
 
 
-all: lib/$(PROG)
 
 
 # linking

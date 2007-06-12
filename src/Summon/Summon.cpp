@@ -49,15 +49,15 @@ using namespace std;
 
 
 // global prototypes
-class Summon;
-static Summon *g_summon;
+class SummonModule;
+static SummonModule *g_summon;
 
 
 
-class Summon : public CommandExecutor, GlutViewListener
+class SummonModule : public CommandExecutor, GlutViewListener
 {
 public:
-    Summon() :
+    SummonModule() :
         m_initialized(false),
         m_nextWindowId(1),
         m_nextModelId(1),
@@ -74,7 +74,7 @@ public:
     {
     }
     
-    virtual ~Summon()
+    virtual ~SummonModule()
     {
         SDL_DestroyMutex(m_lock);
         SDL_DestroyCond(m_cond);
@@ -673,7 +673,7 @@ SummonMainLoop(PyObject *self, PyObject *tup)
         g_summon->m_initialized = true;
         
         // setup glut timer
-        glutTimerFunc(10, Summon::Summon::Timer, 0);
+        glutTimerFunc(10, Summon::SummonModule::Timer, 0);
         
         Py_BEGIN_ALLOW_THREADS
         glutMainLoop();
@@ -795,7 +795,7 @@ initsummon_core()
     InitPython();
     
     // create Summon app
-    g_summon = new Summon::Summon();    
+    g_summon = new Summon::SummonModule();    
     
     // run the actual Summon app
     if (!g_summon->Init())
