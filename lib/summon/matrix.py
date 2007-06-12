@@ -161,6 +161,11 @@ def openCompRow(filename, mat, conf={}):
     util.tic("reading '%s'" % filename)
     infile = file(filename)
     
+    if "loadvals" in conf:
+        loadvals = conf["loadvals"]
+    else:
+        loadvals = False    
+    
     # read header
     fields = infile.next().split()
     if len(fields) == 2:
@@ -195,6 +200,8 @@ def openCompRow(filename, mat, conf={}):
             vals.append(val)
             if val > maxval: maxval = val
             if val < minval: minval = val
+            if loadvals:
+                mat[r][c] = val
         row += 1
     util.toc()
     
@@ -207,6 +214,11 @@ def openCompRow(filename, mat, conf={}):
 def openImat(filename, mat, conf={}):
     util.tic("reading '%s'" % filename)
     infile = file(filename)
+    
+    if "loadvals" in conf:
+        loadvals = conf["loadvals"]
+    else:
+        loadvals = False
     
     # read header
     (nrows, ncols, nnz) = map(int, infile.next().split())
@@ -223,12 +235,16 @@ def openImat(filename, mat, conf={}):
             continue
         
         (row, col, val) = line.split()
-        score = float(val)
-        rows.append(int(row))
-        cols.append(int(col))
-        vals.append(score)
-        if score > maxval: maxval = score
-        if score < minval: minval = score
+        r, c = int(row), int(col)
+        v = float(val)
+        rows.append(r)
+        cols.append(c)
+        vals.append(v)
+        if v > maxval: maxval = v
+        if v < minval: minval = v
+        if loadvals:
+            mat[r][c] = v
+            
     util.toc()
     
     mat.maxval = maxval

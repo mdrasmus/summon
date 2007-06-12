@@ -73,7 +73,12 @@ options = [
     ["", "cutoff=", "cutoff", "<value>",
         {"default": -1e1000,
          "parser": float,
-         "single": True}]
+         "single": True}],
+    ["", "style=", "style", "(points|quads)",
+        {"single": True,
+         "default": "quads"}],
+    ["", "loadvals", "loadvals", "",
+        {"single": True}]
 ]
 
 
