@@ -3,31 +3,26 @@
 #
 
 VERSION=1.7.1
-PACKAGE=summon-$(VERSION).tar.gz
-RPM=summon-$(VERSION)-1.i386.rpm
-WWWDIR=/scratch-sm/www/pub/summon
-WWWHOST=rasmus@compbio.mit.edu
 PROG=summon_core.so
-SRCPREFIX=src
+
 
 all: lib/$(PROG)
 
-
+# include basic rules
+SRCPREFIX=src
 include src/Makefile.in
 
 
-
-
-# linking
+# profiling
 ifdef PROFILE
     LIBS := $(LIBS) -pg
 endif
 
-
+# linking for summon module on Linux
 LIBS := $(LIBS) -lglut -lGL -lSDL -lutil -lpython2.4 -pthread 
 
 
-
+# make rule for summon module on Linux
 lib/$(PROG): 
 	make -C src/Summon PROG=$(PROG) CFLAGS="$(CFLAGS)" LIBS="$(LIBS)"
 
@@ -35,7 +30,14 @@ clean: cleanall
 	rm -rf lib/$(PROG)	
 
 
-# create python package
+#=============================================================================
+# packaging 
+PACKAGE=summon-$(VERSION).tar.gz
+RPM=summon-$(VERSION)-1.i386.rpm
+WWWDIR=/scratch-sm/www/pub/summon
+WWWHOST=rasmus@compbio.mit.edu
+
+# python package
 pkg: 
 	make dist/$(PACKAGE)
 

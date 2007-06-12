@@ -11,8 +11,6 @@ MY_LIBS = \
         $(SRCPREFIX)/GlutMVC/libGlutMVC.a \
         $(SRCPREFIX)/MVC/libMVC.a 
 
-#  -DNDEBUG
-
 COMPILE = -c -g \
     -Wall -g -fno-strict-aliasing -O2 -fPIC  \
     $(INCLUDE) 
@@ -27,9 +25,6 @@ endif
 #
 COMPILE := $(COMPILE) -I/usr/include/python2.4 -I/usr/include/python2.5
 
-# test compiling
-test:
-	echo $(COMPILE)
 
 
 # rules for subsystems
@@ -52,10 +47,11 @@ $(OBJS): %.o: %.cpp
 $(LIB): $(OBJS)
 	$(AR) -r $(LIB) $(OBJS)
 
-# basic clean rule
-clean:
-	rm -rf $(OBJS) $(LIB) $(PROG)
+# test compiling
+test:
+	echo $(COMPILE)
 
+# clean rules
 cleanobj:
 	rm -rf $(OBJS) $(LIB)
 

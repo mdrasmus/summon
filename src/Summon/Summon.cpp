@@ -23,12 +23,12 @@
 
 
 
-#define MODULE_NAME_STRICT "summon_core"
 #define MODULE_NAME "summon_core"
+#define SUMMON_VERSION "1.7.1"
 
 #define VERSION_INFO "\
 -----------------------------------------------------------------------------\n\
-                                   SUMMON 1.7.1\n\
+                                   SUMMON "SUMMON_VERSION"\n\
                        Large Scale Visualization Scripting\n\
                                  Matt Rasmussen \n\
                              (http://mit.edu/rasmus)\n\
@@ -359,7 +359,7 @@ public:
         summonMethods[table].ml_doc   = NULL;
 
         // register all methods with python
-        PyObject *module = Py_InitModule(MODULE_NAME_STRICT, 
+        PyObject *module = Py_InitModule(MODULE_NAME, 
                                          summonMethods);
         
 
