@@ -107,13 +107,13 @@ elif "rcperm" in param:
 
 # read color
 if param["color"] == "posneg":
-    mat.colormap = PosNegColorMap()
+    mat.colormap = summon.PosNegColorMap()
 elif param["color"] == "rainbow":
-    mat.colormap = RainbowColorMap()
+    mat.colormap = summon.RainbowColorMap()
 elif param["color"] == "solid":
-    mat.colormap = SolidColorMap()
+    mat.colormap = summon.SolidColorMap()
 else:
-    mat.colormap = readColorMap(param["color"])
+    mat.colormap = summon.readColorMap(param["color"])
 
 
 if "order" in param:

@@ -72,3 +72,51 @@ class ColorMap:
     
     def getInt(self, value):
         return [int(x*255) for x in self.get(value)]
+
+
+
+class RainbowColorMap:
+    def __init__(self, maxv=1.0, minv=0.0):
+        self.max = maxv
+        self.min = minv
+        self.range = maxv - minv
+    
+    def get(self, val):
+        x = (val - self.min) / self.range
+        return [-2 + 4*x, 2 - 4*abs(.5-x), 2 - 4*x]
+    
+
+class PosNegColorMap:
+    def __init__(self, minv=-1.0, maxv=1.0):
+        self.max = maxv
+        self.min = minv
+    
+    def get(self, val):
+        if val >= 0:
+            return [1, 0, 0, val/self.max]
+        else:
+            return [0, 1, 0, val/self.min]
+
+class SolidColorMap:
+    def __init__(self, maxv=1.0, minv=0.0):
+        self.max = maxv
+        self.min = minv
+        self.range = maxv - minv
+    
+    def get(self, val):
+        return [1, 1, 1]
+
+
+def readColorMap(filename):
+    mat = []
+
+    for line in file(filename):
+        value, red, green, blue = map(float, line.rstrip().split())
+        mat.append([value, [red, green, blue, 1.0]])
+        
+    try:
+        return ColorMap(mat)
+    except:
+        print "error reading colormap, using default"
+        return RainbowColorMap()
+        
