@@ -294,16 +294,16 @@ class SumTree (object):
         vis = [flagColor]
         found = 0
         
-        bottom = self.tree.root.y
+        far = self.tree.root.x
         for node in self.tree.nodes.values():
-            bottom = min(bottom, node.y)
-        bottom = bottom * 2
+            far = max(far, node.x)
+        far = far * 2
         
         for name in names:
             if name in self.tree.nodes:
                 found += 1
                 node = self.tree.nodes[name]
-                vis.append(lines(node.x, node.y, node.x, bottom))
+                vis.append(lines(node.x, node.y, far, node.y))
             else:        
                 print "could not find '%s' in tree" % name
         

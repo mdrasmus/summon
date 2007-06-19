@@ -23,6 +23,10 @@ from summon import shapes, util
 from summon.matrix import *
 
 
+def parseColor(colorstr):
+    return map(float, colorstr.split(','))
+    
+
 # command line options
 options = [
     "matrix formats",
@@ -70,19 +74,26 @@ options = [
     ["c:", "color=", "color", "(solid|posneg|rainbow|filename)",
         {"single": True,
          "default": "solid"}],
+    ["", "bgcolor=", "bgcolor", "r,g,b   0<=r<=1",
+        {"single": True,
+         "parser": parseColor,
+         "default": (0,0,0)}],
+    ["", "drawzeros", "drawzeros", "",
+        {"single": True,
+         "help": "a bool whether to explicitly draw zeros with the colormap"}],
     ["", "cutoff=", "cutoff", "<value>",
         {"default": -1e1000,
          "parser": float,
          "single": True}],
     ["", "style=", "style", "(points|quads)",
         {"single": True,
-         "default": "quads"}],
+         "default": "points"}],
     ["", "loadvals", "loadvals", "",
         {"single": True}]
 ]
 
 
-param = util.parseOptions(sys.argv, options, resthelp="<python script>")
+conf = util.parseOptions(sys.argv, options, resthelp="<python script>")
 
 
 
@@ -97,69 +108,70 @@ print
 mat = Matrix()
 
 # read permutations
-if "rperm" in param:
-    mat.rperm = util.readInts(param["rperm"])
-elif "cperm" in param:
-    mat.cperm = util.readInts(param["cperm"])
-elif "rcperm" in param:
-    mat.rperm = util.readInts(param["rcperm"])        
-    mat.cperm = util.readInts(param["rcperm"])
+if "rperm" in conf:
+    mat.rperm = util.readInts(conf["rperm"])
+elif "cperm" in conf:
+    mat.cperm = util.readInts(conf["cperm"])
+elif "rcperm" in conf:
+    mat.rperm = util.readInts(conf["rcperm"])        
+    mat.cperm = util.readInts(conf["rcperm"])
 
 # read color
-if param["color"] == "posneg":
+if conf["color"] == "posneg":
     mat.colormap = summon.PosNegColorMap()
-elif param["color"] == "rainbow":
+elif conf["color"] == "rainbow":
     mat.colormap = summon.RainbowColorMap()
-elif param["color"] == "solid":
+elif conf["color"] == "solid":
     mat.colormap = summon.SolidColorMap()
 else:
-    mat.colormap = summon.readColorMap(param["color"])
+    mat.colormap = summon.readColorMap(conf["color"])
 
 
-if "order" in param:
-    mat.order = param["order"]
+if "order" in conf:
+    mat.order = conf["order"]
 
 # read matrix
-if "comprow" in param:
-    openCompRow(param["comprow"], mat, param)
-elif "imat" in param:
-    openImat(param["imat"], mat, param)
-elif "lmat" in param:
-    if "order" in param:
-        openLabeledMatrix(param["lmat"], mat, param)
+if "comprow" in conf:
+    openCompRow(conf["comprow"], mat, conf)
+elif "imat" in conf:
+    openImat(conf["imat"], mat, conf)
+elif "lmat" in conf:
+    if "order" in conf:
+        openLabeledMatrix(conf["lmat"], mat, conf)
     else:
-        openLabeledMatrix(param["lmat"], mat, param)
-elif "dense" in param:
-    openDense(param["dense"], mat)
+        openLabeledMatrix(conf["lmat"], mat, conf)
+elif "dense" in conf:
+    openDense(conf["dense"], mat)
 else:
     raise "no matrix specified"
 
 
 # read labels
-if "rowlabels" in param:
-    mat.rowlabels = util.readStrings(param["rowlabels"])
-if "collabels" in param:
-    mat.collabels = util.readStrings(param["collabels"])
-if "rowcollabels" in param:
-    mat.rowlabels = util.readStrings(param["rowcollabels"])
+if "rowlabels" in conf:
+    mat.rowlabels = util.readStrings(conf["rowlabels"])
+if "collabels" in conf:
+    mat.collabels = util.readStrings(conf["collabels"])
+if "rowcollabels" in conf:
+    mat.rowlabels = util.readStrings(conf["rowcollabels"])
     mat.collabels = mat.rowlabels
 
 
 # read partitions
-if "rpart" in param:
-    mat.rpart = util.readStrings(param["rpart"])
-if "cpart" in param:
-    mat.cpart = util.readStrings(param["cpart"])
-if "rcpart" in param:
-    mat.rpart = util.readStrings(param["rcpart"])
+if "rpart" in conf:
+    mat.rpart = util.readStrings(conf["rpart"])
+if "cpart" in conf:
+    mat.cpart = util.readStrings(conf["cpart"])
+if "rcpart" in conf:
+    mat.rpart = util.readStrings(conf["rcpart"])
     mat.cpart = mat.rpart 
 
 
 # execute python script
-for script in param["REST"]:
+for script in conf["REST"]:
     print "executing", script
     execfile(script)
 
 
-viewer = MatrixViewer(mat, param)
+viewer = MatrixViewer(mat, conf, bgcolor=conf["bgcolor"], 
+                      drawzeros=conf["drawzeros"])
 viewer.show()

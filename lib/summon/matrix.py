@@ -39,7 +39,7 @@ class Matrix (util.Dict):
         self.rpart = None
         self.cpart = None
         
-        self.colormap = summon.PosNegColorMap()
+        self.colormap = None
         self.rows = []
         self.cols = []
         self.vals = []
@@ -302,50 +302,24 @@ def openDense(filename, mat, conf={"cutoff": -util.INF}):
 #
 
 
-def drawBorder(win, nrows, ncols):
-    # draw boundary 
-    win.add_group(group(color(1,1,1), 
-                  shapes.boxStroke(-.5,.5,ncols-.5, -nrows+.5)))
-
-def drawPartitions(win, mat):
-    vis = [color(1,1,1)]
-    
-    # draw row partitions
-    if mat.rpart != None:
-        part = -1
-        for i in xrange(mat.nrows):
-            if mat.rpart[mat.rperm[i]] != part:
-                vis.append(lines(-.5, -i+.5, mat.ncols, -i+.5))
-                part = mat.rpart[mat.rperm[i]]
-    
-    # draw col partitions
-    if mat.cpart != None:
-        part = -1
-        for i in xrange(mat.ncols):
-            if mat.cpart[mat.cperm[i]] != part:
-                vis.append(lines(i-.5, .5, i-.5, -mat.nrows+.5))
-                part = mat.cpart[mat.cperm[i]]
-    
-    win.add_group(group(* vis))
-    
-    
-
-
-
-
 class MatrixViewer (object):
-    def __init__(self, mat=None, conf={}, onClick=None):
+    def __init__(self, mat=None, onClick=None, 
+                 bgcolor=(0,0,0), drawzeros=False, style="points",
+                 showLabels=True):
         self.win = None
         self.mat = mat
-        self.conf = conf
-        self.conf.setdefault("style", "points")
+        self.bgcolor = bgcolor
+        self.drawzeros = drawzeros
+        self.style = style
+        self.showLabels = showLabels
         
         if onClick != None:
             self.onClick = onClick
-
+    
+    
     def setMatrix(self, mat):
         self.mat = mat
-            
+        
         
     def show(self):
         if self.win == None:
@@ -353,21 +327,18 @@ class MatrixViewer (object):
         else:
             self.win.clear_groups()
         self.win.set_antialias(False)
+        self.win.set_bgcolor(* self.bgcolor)
         
         self.win.set_binding(input_key("1"), self.one2one)
-        self.drawMatrix(self.mat, mouseClick=self.clickCallback, 
-                   conf=self.conf)
+        self.drawMatrix(self.mat, mouseClick=self.clickCallback)
         self.win.home()
     
     def redraw(self):
         self.win.clear_groups()
-        self.drawMatrix(self.mat, mouseClick=self.clickCallback, 
-                   conf=self.conf)
+        self.drawMatrix(self.mat, mouseClick=self.clickCallback)
     
     
-    def drawMatrix(self, mat, mouseClick=None, 
-                        conf={"color": "solid",
-                              "style": "points"}):
+    def drawMatrix(self, mat, mouseClick=None):
         
         util.tic("drawing matrix")
         win = self.win
@@ -381,14 +352,15 @@ class MatrixViewer (object):
         rinv, cinv = (mat.rinv, mat.cinv)
         
         # draw zeros
-        win.add_group(group(color(*getcolor(0)),
-                            shapes.box(-.5,.5,mat.ncols-.5, -mat.nrows+.5)))
+        if self.drawzeros:
+            win.add_group(group(color(*getcolor(0)),
+                          shapes.box(-.5,.5,mat.ncols-.5, -mat.nrows+.5)))
         
         # draw non-zeros
         for chunk in xrange(0, len(rows), chunksize):
 
-            if conf["style"] == "points":
-                if "color" in conf and conf["color"] == "solid":
+            if self.style == "points":
+                if getcolor == None:
                     for k in xrange(chunk, min(len(rows), chunk+chunksize)):
                         vis.append(cinv[cols[k]])
                         vis.append(-rinv[rows[k]])
@@ -400,7 +372,7 @@ class MatrixViewer (object):
 
                 win.add_group(group(points(* vis)))
 
-            elif conf["style"] == "quads":
+            elif self.style == "quads":
 
                 for k in xrange(chunk, min(len(rows), chunk+chunksize)):
                     vis.extend([color(* getcolor(vals[k])),
@@ -412,21 +384,57 @@ class MatrixViewer (object):
                 win.add_group(group(quads(* vis)))
 
             else:
-                raise Exception("unknown style '%s'" % conf["style"])
+                raise Exception("unknown style '%s'" % self.style)
 
             vis = []
-
+        
         if mouseClick != None:
             win.add_group(group(hotspot('click', -.5, .5, 
                                         mat.ncols-.5, -mat.nrows+.5, 
                                         mouseClick)))
 
         # draw extra
-        drawBorder(win, mat.nrows, mat.ncols)
-        drawPartitions(win, mat)
+        self.drawBorder(mat.nrows, mat.ncols)
+        self.drawPartitions(mat)
+        if self.showLabels:
+            self.drawLabels()
 
         util.toc()
+    
+    
 
+    def drawBorder(self, nrows, ncols):
+        # draw boundary 
+        self.win.add_group(group(color(1,1,1), 
+                           shapes.boxStroke(-.5,.5,ncols-.5, -nrows+.5)))
+
+    
+    def drawPartitions(self, mat):
+        vis = [color(1,1,1)]
+
+        # draw row partitions
+        if mat.rpart != None:
+            part = -1
+            for i in xrange(mat.nrows):
+                if mat.rpart[mat.rperm[i]] != part:
+                    vis.append(lines(-.5, -i+.5, mat.ncols, -i+.5))
+                    part = mat.rpart[mat.rperm[i]]
+
+        # draw col partitions
+        if mat.cpart != None:
+            part = -1
+            for i in xrange(mat.ncols):
+                if mat.cpart[mat.cperm[i]] != part:
+                    vis.append(lines(i-.5, .5, i-.5, -mat.nrows+.5))
+                    part = mat.cpart[mat.cperm[i]]
+
+        self.win.add_group(group(* vis))
+
+
+    
+    def drawLabels(self):
+        pass
+    
     
     def clickCallback(self):
         x, y = self.win.get_mouse_pos('world')
@@ -473,7 +481,8 @@ class DenseMatrixViewer (MatrixViewer):
     
     def __init__(self, data, colormap=None, 
                  rlabels=None, clabels=None, cutoff=-util.INF,
-                 rperm=[], cperm=[], rpart=None, cpart=None, **options):
+                 rperm=[], cperm=[], rpart=None, cpart=None, 
+                 style="quads", **options):
                  
                  #xdir=1, ydir=1, 
                  #labelPadding=2,
@@ -489,15 +498,11 @@ class DenseMatrixViewer (MatrixViewer):
         mat.cperm = cperm
         mat.rpart = rpart
         mat.cpart = cpart
+        mat.colormap = colormap
         
         mat.setup()
         
-        if colormap != None:
-            mat.colormap = colormap
-        
-        
-        conf = {"style": "quads"}
-        MatrixViewer.__init__(self, mat, conf, **options)
+        MatrixViewer.__init__(self, mat, style=style, **options)
     
     
     def setDenseMatrix(self, data, colormap=None,
