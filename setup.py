@@ -101,7 +101,7 @@ setup(
              "src/Summon/Summon.cpp",
              "src/Summon/Transform.cpp",
              "src/Summon/TransformMatrix.cpp",
-             "src/Summon/drawCommands.cpp"],
+             "src/Summon/summonCommands.cpp"],
             include_dirs=["src/MVC",
                           "src/GlutMVC",
                           "src/Common",
