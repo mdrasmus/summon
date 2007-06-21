@@ -774,7 +774,8 @@ initsummon_core()
 {
     // init glut
     int argc = 1;
-    char *argv[1] = {"summon"};
+    char **argv = new char* [1];
+    argv[0] = "summon";
     glutInit(&argc, argv);
     
     // create hidden window

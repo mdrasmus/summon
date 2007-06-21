@@ -1,11 +1,18 @@
+#
+# SUMMON - Multiple Window Management
+#
 
 from summon.core import *
 from summon import util
 import summon
 
 
+# TODO: make an object
 def tie_windows(windows, tiex=False, tiey=False, pinx=False, piny=False,
-                         coordsx=None, coordsy=None):
+                coordsx=None, coordsy=None, master=None):
+
+    if master == None:
+        master = windows[0]    
     
     if len(windows) < 2:
         return
@@ -82,7 +89,11 @@ def tie_windows(windows, tiex=False, tiey=False, pinx=False, piny=False,
         win.add_binding(input_motion("right", "down"), t1)
         win.add_binding(input_motion("right", "down", "ctrl"), t1)
         win.add_binding(input_motion("right", "down", "shift"), t1)
-
+        
+        if master == win:
+            print "here"
+            t1()
+            t2()
 
 
 class WindowEnsembl (summon.VisObject):
