@@ -131,17 +131,22 @@ if "order" in conf:
     mat.order = conf["order"]
 
 # read matrix
+matfile = "summatrix"
 if "comprow" in conf:
     openCompRow(conf["comprow"], mat, conf)
+    matfile = conf["comprow"]
 elif "imat" in conf:
     openImat(conf["imat"], mat, conf)
+    matfile = conf["imat"]
 elif "lmat" in conf:
     if "order" in conf:
         openLabeledMatrix(conf["lmat"], mat, conf)
     else:
         openLabeledMatrix(conf["lmat"], mat, conf)
+    matfile = conf["lmat"]
 elif "dense" in conf:
     openDense(conf["dense"], mat)
+    matfile = conf["dense"]
 else:
     raise "no matrix specified"
 
@@ -175,3 +180,4 @@ for script in conf["REST"]:
 viewer = MatrixViewer(mat, conf, bgcolor=conf["bgcolor"], 
                       drawzeros=conf["drawzeros"])
 viewer.show()
+viewer.win.set_name(matfile)
