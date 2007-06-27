@@ -1,0 +1,18 @@
+#!/bin/sh
+# Matt Rasmussen 2007
+#
+# This script starts python in interactive mode without having to specify '-i'
+# This allows one to start a script with 
+#    #!/usr/bin/env python-i
+#
+# Without this script one would have to fully specify the path of python
+#    #!/usr/bin/python -i
+#
+# This is because only one argument is allowed in the #! line 
+# Trying to use 
+#   #!/usr/bin/env python -i
+#
+# will result in execl('/usr/bin/env', 'python -i') and will fail.
+#
+
+`which python` -i $*
