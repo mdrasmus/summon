@@ -1,5 +1,6 @@
 #!/bin/sh
-
+# use summatrix to visualize a dense matrix
+#
 
 summatrix \
     -d confusion-matrix.mat \
