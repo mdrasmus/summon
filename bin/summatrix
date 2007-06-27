@@ -1,4 +1,4 @@
-#!/usr/bin/python -i
+#!/usr/bin/env python-i
 #
 # SUMMATRIX (SUMMON Sparse Matrix Viewer)
 #
@@ -73,7 +73,7 @@ options = [
          "parser": float}],
     ["c:", "color=", "color", "(solid|posneg|rainbow|filename)",
         {"single": True,
-         "default": "solid"}],
+         "default": "rainbow"}],
     ["", "bgcolor=", "bgcolor", "r,g,b   0<=r<=1",
         {"single": True,
          "parser": parseColor,
@@ -177,7 +177,8 @@ for script in conf["REST"]:
     execfile(script)
 
 
-viewer = MatrixViewer(mat, conf, bgcolor=conf["bgcolor"], 
-                      drawzeros=conf["drawzeros"])
+viewer = MatrixViewer(mat, bgcolor=conf["bgcolor"], 
+                           drawzeros=conf["drawzeros"], 
+                           style=conf["style"])
 viewer.show()
 viewer.win.set_name(matfile)

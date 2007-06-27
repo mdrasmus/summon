@@ -302,6 +302,13 @@ def openDense(filename, mat, conf={"cutoff": -util.INF}):
 #
 
 
+def getDrawColor(bgcolor=(0,0,0)):
+    if bgcolor == (0,0,0):
+        return (1,1,1)
+    else:
+        return (0,0,0)
+
+
 class MatrixViewer (object):
     def __init__(self, mat=None, onClick=None, 
                  bgcolor=(0,0,0), drawzeros=False, style="points",
@@ -405,7 +412,7 @@ class MatrixViewer (object):
 
     def drawBorder(self, nrows, ncols):
         # draw boundary 
-        self.win.add_group(group(color(1,1,1), 
+        self.win.add_group(group(color(* getDrawColor(self.bgcolor)), 
                            shapes.boxStroke(-.5,.5,ncols-.5, -nrows+.5)))
 
     
@@ -433,7 +440,46 @@ class MatrixViewer (object):
 
     
     def drawLabels(self):
-        pass
+        mat = self.mat
+        
+        nrows = mat.nrows
+        ncols = mat.ncols
+
+        xstart = 0
+        ystart = 0
+        labelPadding = .1
+        labelSpacing = .1
+        height = 1
+        width = 1
+        
+        
+        # draw labels
+        if mat.rowlabels != None:
+            vis = []
+            labelWidth = max(map(len, mat.rowlabels)) * 100
+            for i in xrange(nrows):
+                x = -.5 - labelPadding
+                y = .5 - i*height + labelSpacing/2.
+                vis.append(text_clip(mat.rowlabels[i],
+                                     x, y, x-labelWidth, y-height+labelSpacing/2.0,
+                                     4, 20, 'right', 'middle'))
+            self.win.add_group(group(color(* getDrawColor(self.bgcolor)), 
+                                     translate(xstart, ystart, * vis)))
+        
+        if mat.collabels != None:
+            vis2 = []
+            labelWidth = max(map(len, mat.collabels)) * 100
+            for i in xrange(ncols):
+                x = .5 + labelPadding
+                y = .5 - i*height + labelSpacing/2.
+                vis2.append(text_clip(mat.collabels[i],
+                                     x, y, x+labelWidth, y-height+labelSpacing/2.0,
+                                     4, 20, 'left', 'middle', 'vertical'))
+            self.win.add_group(group(color(* getDrawColor(self.bgcolor)), 
+                                     translate(xstart, ystart, 
+                                               rotate(90.0, * vis2))))
+        
+        
     
     
     def clickCallback(self):
