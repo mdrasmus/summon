@@ -1,0 +1,36 @@
+SUMMON - visualization protyping python module
+Matt Rasmussen
+2007/6/20
+
+
+=============================================================================
+CROSSPLATFORM INSTALLATION (Ideally)
+
+
+To install summon with python distutils use the following command:
+
+    python setup.py install
+
+
+
+or to install in your home directory use:
+
+    python setup.py install --prefix=$HOME
+
+
+=============================================================================
+CYGWIN INSTALLATION
+
+There is a Makefile designed specifically for installing on CYGWIN.  Use the
+following to install on CYGWIN
+
+
+    make -f Makefile.cygwin
+
+
+
+
+
+
+
+
