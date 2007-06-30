@@ -12,7 +12,7 @@
 #
 
 # TODO: implement find, and marking
-
+# TODO: implement row/col label windows
 
 import random
 import sys
@@ -169,6 +169,15 @@ if "cpart" in conf:
 if "rcpart" in conf:
     mat.rpart = util.readStrings(conf["rcpart"])
     mat.cpart = mat.rpart 
+
+# setup default permutation from cluster ids
+if mat.rpart and not mat.rperm:
+    mat.rperm = range(len(mat.rpart))
+    mat.rperm.sort(key=lambda x: mat.rpart[x])
+if mat.cpart and not mat.cperm:
+    mat.cperm = range(len(mat.cpart))
+    mat.cperm.sort(key=lambda x: mat.cpart[x])
+
 
 
 # execute python script

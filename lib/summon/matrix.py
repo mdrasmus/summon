@@ -31,7 +31,7 @@ class Matrix (util.Dict):
         self.rowlabels = None
         self.collabels = None
         
-        self.rperm = []
+        self.rperm = [] # maybe these should be None
         self.cperm = []
         self.rinv  = []
         self.cinv  = []
@@ -312,13 +312,15 @@ def getDrawColor(bgcolor=(0,0,0)):
 class MatrixViewer (object):
     def __init__(self, mat=None, onClick=None, 
                  bgcolor=(0,0,0), drawzeros=False, style="points",
-                 showLabels=True):
+                 showLabels=True, showLabelWindows=True):
         self.win = None
         self.mat = mat
         self.bgcolor = bgcolor
         self.drawzeros = drawzeros
         self.style = style
         self.showLabels = showLabels
+        self.labelWindows = None
+        self.showLabelWindows = showLabelWindows
         
         if onClick != None:
             self.onClick = onClick
@@ -403,6 +405,10 @@ class MatrixViewer (object):
         # draw extra
         self.drawBorder(mat.nrows, mat.ncols)
         self.drawPartitions(mat)
+        
+        if self.showLabelWindows:
+            pass
+        
         if self.showLabels:
             self.drawLabels()
 
@@ -439,7 +445,7 @@ class MatrixViewer (object):
 
 
     
-    def drawLabels(self):
+    def drawLabels(self):    
         mat = self.mat
         
         nrows = mat.nrows
@@ -452,6 +458,11 @@ class MatrixViewer (object):
         height = 1
         width = 1
         
+        if self.labelWindows != None:
+            rowwin, colwin = self.labelWindows
+        else:
+            rowwin = colwin = self.win
+        
         
         # draw labels
         if mat.rowlabels != None:
@@ -463,7 +474,7 @@ class MatrixViewer (object):
                 vis.append(text_clip(mat.rowlabels[i],
                                      x, y, x-labelWidth, y-height+labelSpacing/2.0,
                                      4, 20, 'right', 'middle'))
-            self.win.add_group(group(color(* getDrawColor(self.bgcolor)), 
+            rowwin.add_group(group(color(* getDrawColor(self.bgcolor)), 
                                      translate(xstart, ystart, * vis)))
         
         if mat.collabels != None:
@@ -475,7 +486,7 @@ class MatrixViewer (object):
                 vis2.append(text_clip(mat.collabels[i],
                                      x, y, x+labelWidth, y-height+labelSpacing/2.0,
                                      4, 20, 'left', 'middle', 'vertical'))
-            self.win.add_group(group(color(* getDrawColor(self.bgcolor)), 
+            colwin.add_group(group(color(* getDrawColor(self.bgcolor)), 
                                      translate(xstart, ystart, 
                                                rotate(90.0, * vis2))))
         
