@@ -7,7 +7,7 @@ from summon.core import *
 import summon
 from summon import shapes
 from summon import util
-
+from summon import multiwindow
 
 
 
@@ -406,10 +406,28 @@ class MatrixViewer (object):
         self.drawBorder(mat.nrows, mat.ncols)
         self.drawPartitions(mat)
         
-        if self.showLabelWindows:
-            pass
         
         if self.showLabels:
+            if self.showLabelWindows and self.labelWindows == None:
+                top = summon.Window("cols")
+                left = summon.Window("rows")
+                self.labelWindows = [left, top]
+                top.set_bgcolor(*self.win.get_bgcolor())
+                left.set_bgcolor(*self.win.get_bgcolor())
+                left.set_size(* self.win.get_size())
+                top.set_size(* self.win.get_size())
+                left.set_visible(* self.win.get_visible())
+                top.set_visible(* self.win.get_visible())
+                
+                multiwindow.tie_windows([left, self.win], tiey=True, piny=True) 
+                multiwindow.tie_windows([top, self.win], tiex=True, pinx=True)                
+                
+                self.ensembl1 = multiwindow.WindowEnsembl([left, self.win], 
+                                              stacky=True, sameh=True)
+                self.ensembl2 = multiwindow.WindowEnsembl([top, self.win], 
+                                              stackx=True, samew=True)
+                summon.begin_updating()
+                
             self.drawLabels()
 
         util.toc()
@@ -466,7 +484,7 @@ class MatrixViewer (object):
         
         # draw labels
         if mat.rowlabels != None:
-            vis = []
+            vis = [lines(0, 0, 0, -nrows)]
             labelWidth = max(map(len, mat.rowlabels)) * 100
             for i in xrange(nrows):
                 x = -.5 - labelPadding
