@@ -409,8 +409,8 @@ class MatrixViewer (object):
         
         if self.showLabels:
             if self.showLabelWindows and self.labelWindows == None:
-                top = summon.Window("cols")
-                left = summon.Window("rows")
+                top = summon.Window("cols2")
+                left = summon.Window("rows2")
                 self.labelWindows = [left, top]
                 top.set_bgcolor(*self.win.get_bgcolor())
                 left.set_bgcolor(*self.win.get_bgcolor())
