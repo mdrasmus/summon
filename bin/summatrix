@@ -110,9 +110,9 @@ mat = Matrix()
 # read permutations
 if "rperm" in conf:
     mat.rperm = util.readInts(conf["rperm"])
-elif "cperm" in conf:
+if "cperm" in conf:
     mat.cperm = util.readInts(conf["cperm"])
-elif "rcperm" in conf:
+if "rcperm" in conf:
     mat.rperm = util.readInts(conf["rcperm"])        
     mat.cperm = util.readInts(conf["rcperm"])
 
