@@ -423,7 +423,7 @@ class MatrixViewer (object):
 
     
     def drawPartitions(self, mat):
-        vis = [color(1,1,1)]
+        vis = [color(* getDrawColor(self.bgcolor))]
 
         # draw row partitions
         if mat.rpart != None:
