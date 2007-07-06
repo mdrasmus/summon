@@ -12,7 +12,7 @@ from summon.core import *
 import summon
 
 
-win = get_summon_window()
+win = summon.get_summon_window()
 win.clear_all_bindings()
 
 

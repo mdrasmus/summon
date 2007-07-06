@@ -15,13 +15,10 @@
 """
 
 import os, sys
+import heapq
+
 from summon.core import *
-
-
-state = get_summon_state()
-
-
-
+from summon import util
 
 
 
@@ -29,59 +26,198 @@ state = get_summon_state()
 # Dynamic updating interface
 #
 
-"""
-SUMMON provides a timer that calls a python function of your choice at regular
-intervals.  The following functions provide an interface to the SUMMON timer.
 
-"""
 
-def add_update_func(func, win):
+class FunctionTimer:
+    def __init__(self, func, win, interval=None, repeat=True):
+        self.func = func
+        self.win = win
+        self.interval = interval
+        self.repeat = True
+        self.delay = interval
+
+
+class SummonTimer:
+    """
+    SUMMON provides a timer that calls a python function of your choice at
+    regular intervals.  The following functions provide an interface to the
+    SUMMON timer.
+
+    """
+
+    def __init__(self):
+        self.updateFuncs = []
+        self.updateInterval = .5
+        self.timestep = 0
+        
+    
+    def add_update_func(self, func, win, interval=None):
+        """
+        adds a function of no arguments to the list of functions called by SUMMON
+        at regular intervals
+        """
+        if interval == None:
+            interval = self.updateInterval
+        self.updateFuncs.append(FunctionTimer(func, win, interval))
+
+    def remove_update_func(self, func):
+        """
+        removes a function from the list of SUMMON timer functions
+        """
+        self.updateFuncs = filter(lambda x: x.func != func, self.updateFuncs)
+    
+    
+    def is_update_func(self, func):
+        """returns True if 'func' is currently registered as a SUMMON timer function"""
+        return func in (x.func for x in self.updateFuncs)
+
+
+    def get_update_funcs(self):
+        """returns all functions registered as SUMMON timer functions"""
+        return self.updateFuncs
+
+    
+    def set_update_interval(self, secs):
+        """sets the timer interval between calls the to the timer function"""
+        self.updateInterval = secs
+
+    
+    def begin_updating(self):
+        """starts the SUMMON timer"""
+        
+        windows = set(get_windows())
+        dels = set()
+        
+        # call each timer that has past
+        mindelay = util.INF
+        for timer in self.updateFuncs:
+            if timer.win.winid in windows:
+                timer.delay -= self.timestep
+                
+                if timer.delay <= 0:
+                    timer.func()
+                    if timer.repeat:
+                        timer.delay = timer.interval
+                    else:
+                        dels.add(timer)
+                
+                mindelay = min(mindelay, timer.delay)
+            else:
+                # remove functions of closed windows
+                dels.add(timer)
+
+        # remove closed windows
+        if len(dels) > 0:
+            self.updateFuncs = filter(lambda x: x not in dels, self.updateFuncs)
+        
+        
+        # setup next call
+        #self.timestep = self.updateInterval
+        #timer_call(self.updateInterval, self.begin_updating)
+        
+        if mindelay < util.INF:
+            self.timestep = mindelay
+            timer_call(self.timestep, self.begin_updating)
+    
+    
+    def stop_updating(self):
+        """stops the SUMMON timer"""
+        timer_call(0, lambda :None)
+
+
+
+##
+# module function interface
+#    
+
+def add_update_func(func, win, interval=None):
     """
     adds a function of no arguments to the list of functions called by SUMMON
     at regular intervals
     """
-    state.updateFuncs.append((func, win))
+    state.timer.add_update_func(func, win, interval)
+
 
 def remove_update_func(func):
     """
     removes a function from the list of SUMMON timer functions
     """
-    state.updateFuncs = filter(lambda x: x[0] != func, state.updateFuncs)
+    state.timer.remove_update_func(func)
+
 
 def is_update_func(func):
     """returns True if 'func' is currently registered as a SUMMON timer function"""
-    return func in (x[0] for x in state.updateFuncs)
+    return state.timer.is_update_func(func)
+
 
 def get_update_funcs():
     """returns all functions registered as SUMMON timer functions"""
-    return state.updateFuncs
+    return state.timer.updateFuncs
 
 def set_update_interval(secs):
     """sets the timer interval between calls the to the timer function"""
-    state.updateInterval = secs
+    state.timer.set_update_interval(secs)
 
 
 def begin_updating():
     """starts the SUMMON timer"""
-    
-    windows = set(get_windows())
-    dels = set()
-    
-    for i, (func, win) in enumerate(state.updateFuncs):
-        if win.winid in windows:
-            func()
-        else:
-            dels.add(func)
-    
-    # remove closed windows
-    if len(dels) > 0:
-        state.updateFuncs = filter(lambda x: x[0] not in dels, state.updateFuncs)
-    
-    timer_call(state.updateInterval, begin_updating)
+    state.timer.begin_updating()
     
 def stop_updating():
     """stops the SUMMON timer"""
-    timer_call(0, lambda :None)
+    state.timer.stop_updating()
+
+
+
+#=============================================================================S
+# python state of SUMMON
+#
+class SummonState (object):
+    def __init__(self):
+        self.current_window = None
+        self.windows = {}
+        self.models = {}
+        self.timer = SummonTimer()
+        
+    
+    def add_window(self, win):
+        self.windows[win.winid] = win
+    
+    def remove_window(self, win):
+        if win.winid in self.windows:
+            del self.windows[win.winid]
+    
+    def get_window(self, winid):
+        if winid in self.windows:
+            return self.windows[winid]
+        else:
+            return None
+    
+    def add_model(self, model):
+        self.models[model.id] = model
+    
+    def remove_model(self, model):
+        summon_core.del_model(model.id)
+        if model.id in self.models:
+            del self.models[model.id]
+
+    def get_model(self, modelid):
+        if modelid in self.models:
+            return self.models[modelid]
+        else:
+            return None
+
+# global singleton
+state = SummonState()
+
+
+def get_summon_state():
+    return _summon_state
+
+
+def get_summon_window():
+    """Return the currently active window"""
+    return state.current_window
 
 
 
@@ -467,12 +603,12 @@ class VisObject (object):
     def show(self):
         pass
     
-    def enableUpdating(self, visible=True):
+    def enableUpdating(self, visible=True, interval=None):
         """add/remove this object's update function to/from the SUMMON timer"""
         if visible:    
             if not is_update_func(self.update):
                 assert self.win != None, "must set window"
-                add_update_func(self.update, self.win)
+                add_update_func(self.update, self.win, interval)
         else:
             if is_update_func(self.update):
                 remove_update_func(self.update)

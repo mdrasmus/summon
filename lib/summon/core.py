@@ -27,57 +27,6 @@ __summon_thread.start()
 while summon_core.get_windows() == None: pass
 
 
-#
-# python state of SUMMON
-#
-class SummonState (object):
-    def __init__(self):
-        self.current_window = None
-
-        self.updateFuncs = []
-        self.updateInterval = .5
-        
-        self.windows = {}
-        self.models = {}
-    
-    
-    def add_window(self, win):
-        self.windows[win.winid] = win
-    
-    def remove_window(self, win):
-        if win.winid in self.windows:
-            del self.windows[win.winid]
-    
-    def get_window(self, winid):
-        if winid in self.windows:
-            return self.windows[winid]
-        else:
-            return None
-    
-    def add_model(self, model):
-        self.models[model.id] = model
-    
-    def remove_model(self, model):
-        summon_core.del_model(model.id)
-        if model.id in self.models:
-            del self.models[model.id]
-
-    def get_model(self, modelid):
-        if modelid in self.models:
-            return self.models[modelid]
-        else:
-            return None
-
-
-
-_summon_state = SummonState()
-
-def get_summon_state():
-    return _summon_state
-
-def get_summon_window():
-    """Return the currently active window"""
-    return _summon_state.current_window
 
 
 # All functions exported from summon_core 

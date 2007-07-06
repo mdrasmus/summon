@@ -432,9 +432,11 @@ class MatrixViewer (object):
                 multiwindow.tie_windows([top, self.win], tiex=True, pinx=True)                
                 
                 self.ensembl1 = multiwindow.WindowEnsembl([left, self.win], 
-                                              stacky=True, sameh=True)
+                                              stacky=True, sameh=True,
+                                              basewin=self.win)
                 self.ensembl2 = multiwindow.WindowEnsembl([top, self.win], 
-                                              stackx=True, samew=True)
+                                              stackx=True, samew=True,
+                                              basewin=self.win)
                 summon.begin_updating()
                 
             self.drawLabels()

@@ -88,11 +88,10 @@ class SumTree (object):
         
         # draw branch length legend
         if not self.vertical and self.xscale != 0:
-            maxwidth = max(-node.y for node in self.tree.nodes.itervalues())
+            maxwidth = max(node.x for node in self.tree.nodes.itervalues())
 
             # automatically choose a scale
             length = maxwidth / self.xscale
-            print length
             order = math.floor(math.log10(length))
             length = 10 ** order
     
@@ -208,8 +207,8 @@ class SumTree (object):
         else:
             for child in node.children:
                 self.printNode(child)
-
-
+    
+    
     def colorMix(self, colors):
         sumcolor = [0, 0, 0]
         for c in colors:

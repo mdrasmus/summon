@@ -91,14 +91,14 @@ def tie_windows(windows, tiex=False, tiey=False, pinx=False, piny=False,
         win.add_binding(input_motion("right", "down", "shift"), t1)
         
         if master == win:
-            print "here"
             t1()
             t2()
 
 
 class WindowEnsembl (summon.VisObject):
     def __init__(self, windows, stackx=False, stacky=False, 
-                                samew=False, sameh=False):
+                                samew=False, sameh=False,
+                                basewin=None):
         self.windows = windows[:]
         self.pos = {}
         self.sizes = {}
@@ -107,22 +107,34 @@ class WindowEnsembl (summon.VisObject):
         self.samew = samew
         self.sameh = sameh
         
+        if basewin != None:
+            self.basewin = basewin
+        else:
+            self.basewin = windows[0]
+        
+        
         # determine window decoration offset
-        pos1 = windows[0].get_position()
-        windows[0].set_position(*pos1)
+        pos1 = self.basewin.get_position()
+        self.basewin.set_position(*pos1)
+        
         # wait for position to change
         pos2 = pos1
         while pos2 == pos1:
-            pos2 = windows[0].get_position()
+            pos2 = self.basewin.get_position()
         
         self.offset = [pos1[0] - pos2[0], pos1[1] - pos2[1]]
         
-        windows[0].set_position(pos1[0] + self.offset[0], 
-                                pos1[1] + self.offset[1])
+        pos1 = (pos1[0] + self.offset[0], pos1[1] + self.offset[1])        
+        self.basewin.set_position(* pos1)
+        
+        # wait for position to change
+        pos2 = pos1
+        while pos2 == pos1:
+            pos2 = self.basewin.get_position()
         
         # setup stacking
         if stackx or stacky:
-            self.stack(self.windows[0])
+            self.stack(self.basewin)
 
         # record window positions and sizes
         for win in windows:
@@ -131,8 +143,8 @@ class WindowEnsembl (summon.VisObject):
             self.sizes[win] = win.get_size()
         
         # enable updating
-        self.win = windows[0]
-        self.enableUpdating()
+        self.win = self.basewin
+        self.enableUpdating(interval=.2)
     
     
     def stack(self, win):
