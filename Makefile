@@ -21,10 +21,11 @@ endif
 # linking for summon module on Linux
 LIBS := $(LIBS) -lglut -lGL -lSDL -lutil -lpython2.4 -pthread 
 
+export PROG CFLAGS LIBS
 
 # make rule for summon module on Linux
 lib/$(PROG): 
-	make -C src/Summon PROG=$(PROG) CFLAGS="$(CFLAGS)" LIBS="$(LIBS)"
+	make -C src/Summon 
 
 clean: cleanall
 	rm -rf lib/$(PROG)	

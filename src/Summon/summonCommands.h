@@ -41,8 +41,6 @@ enum {
     DEL_MODEL_COMMAND,
     TIMER_CALL_COMMAND,
     REDRAW_CALL_COMMAND,
-    VERSION_COMMAND,
-    QUIT_COMMAND,
     
     // model commands
     ADD_GROUP_COMMAND,
@@ -353,19 +351,6 @@ public:
     Scm proc;
 };
 
-
-class VersionCommand : public ScriptCommand
-{
-public:
-    virtual Command* Create() { return new VersionCommand(); }
-    virtual int GetId() { return VERSION_COMMAND; }
-
-    virtual const char *GetOptionName() { return "-v"; }
-    virtual const char *GetName() { return "version"; }
-    virtual const char *GetUsage() { return ""; }
-    virtual const char *GetDescription() 
-    { return "prints the current version"; }
-};
 
 
 

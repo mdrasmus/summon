@@ -45,7 +45,7 @@ win.set_binding(input_click("left", "up", "ctrl"), "hotspot_click")
 
 
 # misc
-win.set_binding(input_key("h"), "home")
+win.set_binding(input_key("h"), win.home)
 win.set_binding(input_key("q"), win.close)
 win.set_binding(input_key("l", "ctrl"), win.toggle_aliasing)
 win.set_binding(input_key("x", "ctrl"), win.toggle_crosshair)

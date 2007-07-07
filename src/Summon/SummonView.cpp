@@ -132,10 +132,8 @@ void SummonView::ExecCommand(Command &command)
             } break;
     
         case SET_FOCUS_COMMAND: {
-            MakeCurrentWindow();
             SetFocusCommand *focus = (SetFocusCommand*) &command;
             SetFocus(focus->x, focus->y);
-            Redisplay();
             } break;
             
         case GET_FOCUS_COMMAND: {

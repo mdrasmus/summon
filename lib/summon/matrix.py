@@ -409,8 +409,8 @@ class MatrixViewer (object):
         
         if self.showLabels:
             if self.showLabelWindows and self.labelWindows == None:
-                top = summon.Window(" ")
-                left = summon.Window(" ")
+                top = summon.Window("cols")
+                left = summon.Window("rows")
                 self.labelWindows = [left, top]
                 
                 
@@ -428,15 +428,20 @@ class MatrixViewer (object):
                 top.set_bgcolor(*self.win.get_bgcolor())
                 left.set_bgcolor(*self.win.get_bgcolor())                
                 
-                multiwindow.tie_windows([left, self.win], tiey=True, piny=True) 
-                multiwindow.tie_windows([top, self.win], tiex=True, pinx=True)                
                 
-                self.ensembl1 = multiwindow.WindowEnsembl([left, self.win], 
+                
+                self.ensembl1 = multiwindow.WindowEnsemble([left, self.win], 
                                               stacky=True, sameh=True,
-                                              basewin=self.win)
-                self.ensembl2 = multiwindow.WindowEnsembl([top, self.win], 
+                                              tiey=True, piny=True,
+                                              master=self.win)
+                self.ensembl2 = multiwindow.WindowEnsemble([top, self.win], 
                                               stackx=True, samew=True,
-                                              basewin=self.win)
+                                              tiex=True, pinx=True,
+                                              master=self.win)
+                #multiwindow.tie_windows([left, self.win], tiey=True, piny=True,
+                #                        master=self.win)
+                #multiwindow.tie_windows([top, self.win], tiex=True, pinx=True,
+                #                        master=self.win)
                 summon.begin_updating()
                 
             self.drawLabels()

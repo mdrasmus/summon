@@ -198,12 +198,6 @@ public:
             
             
             
-            
-            case VERSION_COMMAND: {
-                fprintf(stderr, VERSION_INFO);
-                } break;
-            
-            
             case TIMER_CALL_COMMAND: {
                 TimerCallCommand *cmd = (TimerCallCommand*) &command;
                 SetTimerCommand(cmd->delay, new CallProcCommand(cmd->proc));

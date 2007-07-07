@@ -15,7 +15,6 @@
 """
 
 import os, sys
-import heapq
 
 from summon.core import *
 from summon import util
@@ -255,6 +254,11 @@ class Window (object):
         self.crosshair = False
         self.crosshair_color = None
         
+        # listeners
+        self.viewChangeListeners = set()
+        self.focusChangeListeners = set()
+        self.closeListeners = set()
+        
         # load default configuration
         if loadconfig:
             self.load_config()
@@ -280,19 +284,34 @@ class Window (object):
             print e
 
     
+    def is_open(self):
+        """Return whether underling SUMMON window is open"""
+        
+        return self.winid in state.windows
+    
     
     # view
     def close(self):
         #self.onClose()
         state.remove_window(self)
-        return summon_core.close_window(self.winid)
+        ret = summon_core.close_window(self.winid)
+        self._on_close()
+        return ret
     close.__doc__ = summon_core.close_window.__doc__.split("\n")[1]
     
-    #def on_close(self):
-    #    """Subclass to detect window close events"""
-    #    pass
-    # TODO: need to also capture events when window is closed by X button
-    #
+    def _on_close(self):
+        """A callback for window close events"""
+        
+        for listener in list(self.closeListeners):
+            listener()
+        # TODO: need to also capture events when window is closed by X button
+    
+    def add_close_listener(self, listener):
+        self.closeListeners.add(listener)
+    
+    def remove_close_listener(self, listener):
+        self.closeListeners.remove(listener)
+    
     
     def set_name(self, name):
         self.name = name
@@ -326,21 +345,50 @@ class Window (object):
         """A callback for when the window resizes"""
         pass
         
+    def _on_view_change(self):
+        """A callback for when view changes"""
+        
+        for listener in self.viewChangeListeners:
+            listener()
+    
+    def _on_focus_change(self):
+        for listener in self.focusChangeListeners:
+            listener()
+    
+    def add_view_change_listener(self, listener):
+        self.viewChangeListeners.add(listener)
+    
+    def remove_view_change_listener(self, listener):
+        self.viewChangeListeners.remove(listener)
+    
+    def add_focus_change_listener(self, listener):
+        self.focusChangeListeners.add(listener)
+    
+    def remove_focus_change_listener(self, listener):
+        self.focusChangeListeners.remove(listener)
     
     def focus(self, x, y):
-        return summon_core.focus(self.winid, int(x), int(y))
+        ret = summon_core.focus(self.winid, int(x), int(y))
+        self._on_focus_change() # notify focus has changed
+        return ret
     focus.__doc__ = summon_core.focus.__doc__.split("\n")[1]
     
     def zoom(self, x, y):
-        return summon_core.zoom(self.winid, x, y)
+        ret = summon_core.zoom(self.winid, x, y)    
+        self._on_view_change() # notify view has changed
+        return ret
     zoom.__doc__ = summon_core.zoom.__doc__.split("\n")[1]
 
     def zoomx(self, x):
-        return summon_core.zoomx(self.winid, x)
+        ret = summon_core.zoomx(self.winid, x)
+        self._on_view_change() # notify view has changed
+        return ret
     zoomx.__doc__ = summon_core.zoomx.__doc__.split("\n")[1]
     
     def zoomy(self, y):
-        return summon_core.zoomy(self.winid, y)
+        ret = summon_core.zoomy(self.winid, y)
+        self._on_view_change() # notify view has changed
+        return ret
     zoomy.__doc__ = summon_core.zoomy.__doc__.split("\n")[1]
     
     def zoom_camera(self, factor, factor2=None):
@@ -361,7 +409,9 @@ class Window (object):
         return func
     
     def set_trans(self, x, y):
-        return summon_core.set_trans(self.winid, x, y)
+        ret = summon_core.set_trans(self.winid, x, y)
+        self._on_view_change() # notify view has changed
+        return ret
     set_trans.__doc__ = summon_core.set_trans.__doc__.split("\n")[1]
     
     def get_trans(self):
@@ -369,7 +419,9 @@ class Window (object):
     get_trans.__doc__ = summon_core.get_trans.__doc__.split("\n")[1]
     
     def set_zoom(self, x, y):
-        return summon_core.set_zoom(self.winid, x, y)
+        ret = summon_core.set_zoom(self.winid, x, y)
+        self._on_view_change() # notify view has changed
+        return ret        
     set_zoom.__doc__ = summon_core.set_zoom.__doc__.split("\n")[1]
 
     def get_zoom(self):
@@ -381,11 +433,15 @@ class Window (object):
     get_focus.__doc__ = summon_core.get_focus.__doc__.split("\n")[1]
     
     def set_focus(self, x, y):
-        return summon_core.set_focus(self.winid, x, y)
+        ret = summon_core.set_focus(self.winid, x, y)
+        self._on_focus_change() # notify focus has changed
+        return ret
     set_focus.__doc__ = summon_core.set_focus.__doc__.split("\n")[1]
     
     def trans(self, x, y):
-        return summon_core.trans(self.winid, x, y)
+        ret = summon_core.trans(self.winid, x, y)
+        self._on_view_change() # notify view has changed
+        return ret        
     trans.__doc__ = summon_core.trans.__doc__.split("\n")[1]
     
     def trans_camera(self, x, y):
@@ -393,8 +449,25 @@ class Window (object):
         return lambda: self.trans(x, y)
     
     def home(self):
-        return summon_core.home(self.winid)
+        ret = summon_core.home(self.winid)
+        self._on_focus_change() # notify view has changed        
+        self._on_view_change()  # notify view has changed
+        return ret        
     home.__doc__ = summon_core.home.__doc__.split("\n")[1]
+
+    def set_visible(self, x1, y1, x2, y2):
+        ret = summon_core.set_visible(self.winid, x1, y1, x2, y2)
+        self._on_focus_change() # notify view has changed        
+        self._on_view_change() # notify view has changed
+        return ret        
+    set_visible.__doc__ = summon_core.set_visible.__doc__.split("\n")[1]
+    
+    def get_visible(self):
+        return summon_core.get_visible(self.winid)
+    get_visible.__doc__ = summon_core.get_visible.__doc__.split("\n")[1]
+        
+    
+    #====================================================================
     
     def set_bgcolor(self, r, g, b):
         return summon_core.set_bgcolor(self.winid, r, g, b)
@@ -403,14 +476,6 @@ class Window (object):
     def get_bgcolor(self):
         return summon_core.get_bgcolor(self.winid)
     get_bgcolor.__doc__ = summon_core.get_bgcolor.__doc__.split("\n")[1]
-    
-    def set_visible(self, x1, y1, x2, y2):
-        return summon_core.set_visible(self.winid, x1, y1, x2, y2)
-    set_visible.__doc__ = summon_core.set_visible.__doc__.split("\n")[1]
-    
-    def get_visible(self):
-        return summon_core.get_visible(self.winid)
-    get_visible.__doc__ = summon_core.get_visible.__doc__.split("\n")[1]
     
     def set_antialias(self, enabled):
         self.antialias = enabled
@@ -442,18 +507,31 @@ class Window (object):
     # controller
     def add_binding(self, input_obj, func):
         """add a function to the list of functions bounded to an input"""
-        return summon_core.set_binding(self.winid, input_obj, func)
+        
+        ret = summon_core.set_binding(self.winid, input_obj, func)
+        
+        if isinstance(func, str):
+            if func == "focus" or \
+               func == "home":
+                summon_core.set_binding(self.winid, input_obj, self._on_focus_change)        
+        
+            if func == "zoom" or \
+               func == "zoomx" or \
+               func == "zoomy" or \
+               func == "trans" or \
+               func == "home":
+                summon_core.set_binding(self.winid, input_obj, self._on_view_change)
+        
+        return ret
         
     def clear_binding(self, input_obj):
         return summon_core.clear_binding(self.winid, input_obj)
     clear_binding.__doc__ = summon_core.clear_binding.__doc__.split("\n")[1]
 
     def set_binding(self, input_obj, func):
-        summon_core.clear_binding(self.winid, input_obj)
-        return summon_core.set_binding(self.winid, input_obj, func)
-    set_binding.__doc__ = summon_core.set_binding.__doc__.split("\n")[1]        
-    reset_binding = set_binding
-
+        """bind a function 'func' to an input 'input_obj'"""
+        self.clear_binding(input_obj)
+        return self.add_binding(input_obj, func)
     
     def clear_all_bindings(self):
         return summon_core.clear_all_bindings(self.winid)
