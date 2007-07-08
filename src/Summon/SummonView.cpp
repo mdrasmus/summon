@@ -79,10 +79,12 @@ void SummonView::ExecCommand(Command &command)
             
             MakeCurrentWindow();
             SetPosition(x, y);
+            Redisplay();
             } break;
             
         case GET_WINDOW_POSITION_COMMAND: {
             MakeCurrentWindow();
+            UpdatePosition();
             Vertex2i pos = GetPosition();
             ((ScriptCommand*) &command)->SetReturn(
                 ScmCons(Int2Scm(pos.x),

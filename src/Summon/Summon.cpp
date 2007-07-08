@@ -41,7 +41,7 @@ using namespace std;
 // global prototypes
 class SummonModule;
 static SummonModule *g_summon;
-
+static int g_hidden_window;
 
 
 class SummonModule : public CommandExecutor, GlutViewListener
@@ -60,7 +60,8 @@ public:
         m_condlock(SDL_CreateMutex()),
 
         m_timerCommand(NULL),
-        m_timerDelay(0)
+        m_timerDelay(0),
+        m_windowOffset(0,0)
     {
     }
     
@@ -186,7 +187,12 @@ public:
                 
                 } break;
             
-            
+            case GET_WINDOW_DECORATION_COMMAND: {
+                ((ScriptCommand*) &command)->SetReturn(
+                    ScmCons(Int2Scm(m_windowOffset.x),
+                            ScmCons(Int2Scm(m_windowOffset.y),
+                                    Scm_EOL)));
+                } break;
             
             case TIMER_CALL_COMMAND: {
                 TimerCallCommand *cmd = (TimerCallCommand*) &command;
@@ -237,6 +243,7 @@ public:
     {
         int id = m_nextWindowId;
         m_windows[id] = new SummonWindow(id, this, 400, 400, "SUMMON");
+        m_windows[id]->GetView()->SetOffset(m_windowOffset);
         m_nextWindowId++;
         m_windows[id]->SetActive();
         return id;
@@ -466,12 +473,38 @@ def __" + name + "_contents(obj): return obj[1:]\n\
         m_timerDelay = GetTime() + int(delay * 1000);
         m_timerCommand = command;
     }
-
+    
+    // glut first timer
+    static void FirstTimer(int value)
+    {
+        // do initialization that can only be done after first pump of the 
+        // GLUT event loop
+        
+        
+        // get window offset
+        glutSetWindow(g_hidden_window);
+        g_summon->m_windowOffset.x = glutGet(GLUT_WINDOW_X) - 10;
+        g_summon->m_windowOffset.y = glutGet(GLUT_WINDOW_Y) - 10;
+        glutHideWindow();
+        printf("window offset: %d %d\n", g_summon->m_windowOffset.x,
+                                         g_summon->m_windowOffset.y);
+        
+        g_summon->m_initialized = true;
+        
+        glutTimerFunc(0, Timer, 0);
+    }
+    
     // glut timer callback
     static void Timer(int value)
     {
         static int delay = 0;
-                
+        
+        
+        // update window positions
+        for (WindowIter i=g_summon->m_windows.begin(); i!=g_summon->m_windows.end(); i++) {
+            (*i).second->GetView()->UpdatePosition();
+        }
+        
 
         if (g_summon->IsCommandWaiting()) {
             if (g_summon->m_graphicsExec) {
@@ -622,6 +655,7 @@ def __" + name + "_contents(obj): return obj[1:]\n\
     map<int, SummonModel*> m_models;
    
     map<GlutView*, SummonWindow*> m_closeWaiting;
+    Vertex2i m_windowOffset;
 };
 
 
@@ -647,17 +681,18 @@ SummonMainLoop(PyObject *self, PyObject *tup)
 {
     static bool isGlutInit = false;
     
-    // NOTE: not totally thread safe
+    // NOTE: not totally thread safe if multiple quick calls are made
     if (!isGlutInit) {
         isGlutInit = true;
         g_summon->Lock();
         
         // store summon thread ID
         g_summon->m_threadId = PyThread_get_thread_ident();
-        g_summon->m_initialized = true;
+        //g_summon->m_initialized = true;
         
         // setup glut timer
-        glutTimerFunc(10, Summon::SummonModule::Timer, 0);
+        //glutTimerFunc(0, Summon::SummonModule::Timer, 0);
+        glutTimerFunc(0, Summon::SummonModule::FirstTimer, 0);
         
         Py_BEGIN_ALLOW_THREADS
         glutMainLoop();
@@ -773,12 +808,10 @@ initsummon_core()
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 #endif
     
-    glutInitWindowSize(1, 1);
-    glutInitWindowPosition(0, 0);
-    int hidden_window = glutCreateWindow("SUMMON");
+    glutInitWindowSize(10, 10);
+    glutInitWindowPosition(10, 10);
+    g_hidden_window = glutCreateWindow("SUMMON");
     
-    
-    glutHideWindow();
     
     InitPython();
     

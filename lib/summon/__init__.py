@@ -305,6 +305,9 @@ class Window (object):
         
         return self.winid in state.windows
     
+    def get_decoration(self):
+        return summon_core.get_window_decoration()
+    get_decoration.__doc__ = summon_core.get_window_decoration.__doc__.split("\n")[1]
     
     # view
     def close(self):

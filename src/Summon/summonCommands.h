@@ -39,6 +39,7 @@ enum {
     NEW_MODEL_COMMAND,
     ASSIGN_MODEL_COMMAND,
     DEL_MODEL_COMMAND,
+    GET_WINDOW_DECORATION_COMMAND,
     TIMER_CALL_COMMAND,
     REDRAW_CALL_COMMAND,
     
@@ -306,6 +307,21 @@ public:
     }
     
     int modelid;
+};
+
+
+
+class GetWindowDecorationCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new GetWindowDecorationCommand(); }
+    virtual int GetId() { return GET_WINDOW_DECORATION_COMMAND; }
+
+    virtual const char *GetName() { return "get_window_decoration"; }
+    virtual const char *GetUsage() 
+    { return ""; }
+    virtual const char *GetDescription() 
+    { return "get a window decoration size"; }
 };
 
 

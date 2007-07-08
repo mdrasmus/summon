@@ -15,9 +15,9 @@ win = summon.Window("09_key_bindings")
 
 # color background boxes
 #   save the group id of each box so we can manipulate it later
-groupa = add_group(group(color(1,0,0), shapes.box(0,0,200,-50)))
-groupb = add_group(group(color(0,1,0), shapes.box(0,-50,200,-100)))
-groupc = add_group(group(color(0,0,1), shapes.box(0,-100,200,-150)))
+groupa = win.add_group(group(color(1,0,0), shapes.box(0,0,200,-50)))
+groupb = win.add_group(group(color(0,1,0), shapes.box(0,-50,200,-100)))
+groupc = win.add_group(group(color(0,0,1), shapes.box(0,-100,200,-150)))
 
 # text
 win.add_group(group(color(1,1,1), text_scale("press 'a'", 0, 0, 200, -50)))

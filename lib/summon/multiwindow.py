@@ -6,39 +6,7 @@ from summon.core import *
 from summon import util
 import summon
 
-
-WINDOW_OFFSET = None
-
-def get_window_offset(win):
-    """determine window decoration offset"""
-    global WINDOW_OFFSET
-    
-    # if WINDOW_OFFSET is already known, return it
-    if WINDOW_OFFSET != None:
-        return WINDOW_OFFSET[:]
-    
-    pos1 = win.get_position()
-    win.set_position(*pos1)
-    
-    # wait for position to change
-    pos2 = pos1
-    while pos2 == pos1:
-        pos2 = win.get_position()
-
-    offset = [pos1[0] - pos2[0], pos1[1] - pos2[1]]
-    WINDOW_OFFSET = offset[:]
-
-    pos1 = (pos1[0] + offset[0], pos1[1] + offset[1])        
-    win.set_position(*pos1)
-
-    # TODO: this will fail if window decoration is size zero!
-    # wait for last set position to take affect
-    pos2 = pos1
-    while pos2 == pos1:
-        pos2 = win.get_position()
-    
-    return offset
-    
+   
 
 
 class WindowEnsemble (summon.VisObject):
@@ -64,7 +32,7 @@ class WindowEnsemble (summon.VisObject):
             self.master = windows[0]
         
         # determine window decoration offset
-        self.offset = get_window_offset(self.master)
+        #self.offset = get_window_offset(self.master)
         
         
         # setup window stacking
@@ -87,8 +55,7 @@ class WindowEnsemble (summon.VisObject):
         
         # record window positions and sizes
         for win in windows:
-            pos = win.get_position()
-            self.pos[win] = [pos[0] + self.offset[0], pos[1] + self.offset[1]]
+            self.pos[win] = win.get_position()
             self.sizes[win] = win.get_size()
         
         
@@ -121,44 +88,13 @@ class WindowEnsemble (summon.VisObject):
         # make sure window ties remove their callbacks
         for tie in self.ties.itervalues():
             tie.remove_window(win)
-        
-    
-    def window_offset(self):
-        """determine window decoration offset"""
-        global WINDOW_OFFSET
-        
-        if WINDOW_OFFSET != None:
-            self.offset = WINDOW_OFFSET[:]
-            return
-        
-        pos1 = self.master.get_position()
-        self.master.set_position(*pos1)
-        
-        # wait for position to change
-        pos2 = pos1
-        while pos2 == pos1:
-            pos2 = self.master.get_position()
-        
-        self.offset = [pos1[0] - pos2[0], pos1[1] - pos2[1]]
-        WINDOW_OFFSET = self.offset[:]
-        
-        pos1 = (pos1[0] + self.offset[0], pos1[1] + self.offset[1])        
-        self.master.set_position(* pos1)
-        
-        # TODO: this will fail if window decoration is size zero!
-        # wait for last set position to take affect
-        pos2 = pos1
-        while pos2 == pos1:
-            pos2 = self.master.get_position()
-    
+            
     
     def stack(self, win):
         others = self.windows[:]
         others.remove(win)
         
         target_pos = win.get_position()
-        target_pos = [target_pos[0] + self.offset[0],
-                      target_pos[1] + self.offset[1]]
         target_size = win.get_size()
         
         # get window sizes
@@ -188,8 +124,9 @@ class WindowEnsemble (summon.VisObject):
             heights.append(h)
             x.append(totalx)
             y.append(totaly)
-            totalx += w - self.offset[0]
-            totaly += h - self.offset[1]
+            deco = win2.get_decoration()
+            totalx += w + deco[0]
+            totaly += h + deco[1]
         
         # set window positions
         for i, win2 in enumerate(self.windows):
@@ -207,7 +144,7 @@ class WindowEnsemble (summon.VisObject):
             
     def align(self, win):
         now = win.get_position()
-        now = [now[0] + self.offset[0], now[1] + self.offset[1]]
+        now = [now[0], now[1]]
         pos1 = self.pos[win]
         
         # move all other windows to match moved window
@@ -272,7 +209,6 @@ class WindowEnsemble (summon.VisObject):
         # check for moved windows
         for win in self.windows:
             pos1 = win.get_position()
-            pos1 = [pos1[0] + self.offset[0], pos1[1] + self.offset[1]]
             pos2 = self.pos[win]
             size1 = win.get_size()
             size2 = self.sizes[win]
@@ -370,3 +306,46 @@ class WindowTie:
             if newpos != oldpos:
                 w2.set_focus(* newpos)
         self.lock = False
+
+
+
+# DEPRECATED
+'''
+WINDOW_OFFSET = None
+
+def get_window_offset(win):
+    """determine window decoration offset"""
+    global WINDOW_OFFSET
+    
+    return [0, 0]
+    
+    print "get offset"
+    
+    # if WINDOW_OFFSET is already known, return it
+    if WINDOW_OFFSET != None:
+        return WINDOW_OFFSET[:]
+    
+    pos1 = win.get_position()
+    win.set_position(*pos1)
+    
+    # wait for position to change
+    pos2 = pos1
+    while pos2 == pos1:
+        pos2 = win.get_position()
+
+    offset = [pos1[0] - pos2[0], pos1[1] - pos2[1]]
+    WINDOW_OFFSET = offset[:]
+
+    pos1 = (pos1[0] + offset[0], pos1[1] + offset[1])        
+    win.set_position(*pos1)
+
+    # TODO: this will fail if window decoration is size zero!
+    # wait for last set position to take affect
+    pos2 = pos1
+    while pos2 == pos1:
+        pos2 = win.get_position()
+    
+    print "got offset"
+    
+    return offset
+''' 
