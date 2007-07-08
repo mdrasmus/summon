@@ -68,6 +68,9 @@ options = [
 
     
     "misc",
+    ["L", "showlabelwindows", "showlabelwindows", "",
+        {"single": True,
+         "help": "display row/col labels in separate windows"}],
     ["s:", "sample=", "sample", "<sample fraction>",
         {"single": True,
          "parser": float}],
@@ -188,6 +191,7 @@ for script in conf["REST"]:
 
 viewer = MatrixViewer(mat, bgcolor=conf["bgcolor"], 
                            drawzeros=conf["drawzeros"], 
-                           style=conf["style"])
+                           style=conf["style"],
+                           showLabelWindows=conf["showlabelwindows"])
 viewer.show()
 viewer.win.set_name(matfile)

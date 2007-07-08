@@ -7,7 +7,38 @@ from summon import util
 import summon
 
 
+WINDOW_OFFSET = None
 
+def get_window_offset(win):
+    """determine window decoration offset"""
+    global WINDOW_OFFSET
+    
+    # if WINDOW_OFFSET is already known, return it
+    if WINDOW_OFFSET != None:
+        return WINDOW_OFFSET[:]
+    
+    pos1 = win.get_position()
+    win.set_position(*pos1)
+    
+    # wait for position to change
+    pos2 = pos1
+    while pos2 == pos1:
+        pos2 = win.get_position()
+
+    offset = [pos1[0] - pos2[0], pos1[1] - pos2[1]]
+    WINDOW_OFFSET = offset[:]
+
+    pos1 = (pos1[0] + offset[0], pos1[1] + offset[1])        
+    win.set_position(*pos1)
+
+    # TODO: this will fail if window decoration is size zero!
+    # wait for last set position to take affect
+    pos2 = pos1
+    while pos2 == pos1:
+        pos2 = win.get_position()
+    
+    return offset
+    
 
 
 class WindowEnsemble (summon.VisObject):
@@ -24,7 +55,7 @@ class WindowEnsemble (summon.VisObject):
         self.samew = samew
         self.sameh = sameh
         self.closeListeners = {}
-        self.ties = []
+        self.ties = {}
         
         
         if master != None:
@@ -33,13 +64,13 @@ class WindowEnsemble (summon.VisObject):
             self.master = windows[0]
         
         # determine window decoration offset
-        self.window_offset()
+        self.offset = get_window_offset(self.master)
         
         
         # setup window stacking
         if stackx or stacky:
             self.stack(self.master)
-
+        
         
         # setup scrolling ties
         if tiex or tiey:
@@ -63,14 +94,14 @@ class WindowEnsemble (summon.VisObject):
         
         # enable updating
         self.win = self.master
-        self.enableUpdating(interval=.2)
+        self.enableUpdating(interval=.5)
     
     
     def stop(self):
         """stop the window ensemble from coordinating window movements"""
         
         # pretend all the windows have closed
-        for win in self.windows:
+        for win in list(self.windows):
             self._on_window_close(win)
         self.enableUpdating(False)
     
@@ -79,14 +110,26 @@ class WindowEnsemble (summon.VisObject):
         """callback for when a window in the ensemble closes"""
         
         self.windows.remove(win)
-        win.remove_close_listener(self.closeListeners[win])
         
-        for tie in self.ties:
+        # remove all callbacks
+        win.remove_close_listener(self.closeListeners[win])
+        win.remove_view_change_listener(self.ties[win].update_scroll)
+        win.remove_focus_change_listener(self.ties[win].update_focus)
+        del self.closeListeners[win]
+        del self.ties[win]
+        
+        # make sure window ties remove their callbacks
+        for tie in self.ties.itervalues():
             tie.remove_window(win)
         
     
     def window_offset(self):
         """determine window decoration offset"""
+        global WINDOW_OFFSET
+        
+        if WINDOW_OFFSET != None:
+            self.offset = WINDOW_OFFSET[:]
+            return
         
         pos1 = self.master.get_position()
         self.master.set_position(*pos1)
@@ -97,13 +140,12 @@ class WindowEnsemble (summon.VisObject):
             pos2 = self.master.get_position()
         
         self.offset = [pos1[0] - pos2[0], pos1[1] - pos2[1]]
+        WINDOW_OFFSET = self.offset[:]
         
         pos1 = (pos1[0] + self.offset[0], pos1[1] + self.offset[1])        
         self.master.set_position(* pos1)
         
         # TODO: this will fail if window decoration is size zero!
-        # wait for position to change
-        
         # wait for last set position to take affect
         pos2 = pos1
         while pos2 == pos1:
@@ -159,6 +201,7 @@ class WindowEnsemble (summon.VisObject):
                 newy = target_pos[1]
             
             self.pos[win2] = [newx, newy]
+            
             win2.set_position(newx, newy)
         
             
@@ -209,11 +252,10 @@ class WindowEnsemble (summon.VisObject):
 
         # set callbacks for each window
         for win in windows:
-            others = windows[:]
-            others.remove(win)
-
+            others = util.remove(windows, win)
+            
             tie = WindowTie(win, others, self)
-            self.ties.append(tie)
+            self.ties[win] = tie
             
             win.add_view_change_listener(tie.update_scroll)
             win.add_focus_change_listener(tie.update_focus)

@@ -30,6 +30,8 @@ lib/$(PROG):
 clean: cleanall
 	rm -rf lib/$(PROG)	
 
+cleanlib:
+	rm -rf lib/$(PROG)
 
 #=============================================================================
 # packaging 

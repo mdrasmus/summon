@@ -24,16 +24,6 @@
 
 
 #define MODULE_NAME "summon_core"
-#define SUMMON_VERSION "1.7.1"
-
-#define VERSION_INFO "\
------------------------------------------------------------------------------\n\
-                                   SUMMON "SUMMON_VERSION"\n\
-                       Large Scale Visualization Scripting\n\
-                                 Matt Rasmussen \n\
-                             (http://mit.edu/rasmus)\n\
-                                 Copyright 2007\n\
------------------------------------------------------------------------------\n"
 
 
 // python visible prototypes
@@ -784,7 +774,10 @@ initsummon_core()
 #endif
     
     glutInitWindowSize(1, 1);
+    glutInitWindowPosition(0, 0);
     int hidden_window = glutCreateWindow("SUMMON");
+    
+    
     glutHideWindow();
     
     InitPython();

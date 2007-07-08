@@ -312,7 +312,7 @@ def getDrawColor(bgcolor=(0,0,0)):
 class MatrixViewer (object):
     def __init__(self, mat=None, onClick=None, 
                  bgcolor=(0,0,0), drawzeros=False, style="points",
-                 showLabels=True, showLabelWindows=True):
+                 showLabels=True, showLabelWindows=False):
         self.win = None
         self.mat = mat
         self.bgcolor = bgcolor
@@ -321,6 +321,9 @@ class MatrixViewer (object):
         self.showLabels = showLabels
         self.labelWindows = None
         self.showLabelWindows = showLabelWindows
+        
+        self.ensemble1 = None
+        self.ensemble2 = None
         
         if onClick != None:
             self.onClick = onClick
@@ -339,8 +342,9 @@ class MatrixViewer (object):
         self.win.set_bgcolor(* self.bgcolor)
         
         self.win.set_binding(input_key("1"), self.one2one)
+        self.win.set_binding(input_key("l"), self.toggleLabelWindows)
         self.drawMatrix(self.mat, mouseClick=self.clickCallback)
-        #self.win.home()
+        self.win.home()
     
     def redraw(self):
         self.win.clear_groups()
@@ -405,51 +409,87 @@ class MatrixViewer (object):
         # draw extra
         self.drawBorder(mat.nrows, mat.ncols)
         self.drawPartitions(mat)
-        self.win.home()
         
         if self.showLabels:
-            if self.showLabelWindows and self.labelWindows == None:
-                top = summon.Window("cols")
-                left = summon.Window("rows")
-                self.labelWindows = [left, top]
-                
-                
-                # set visible
-                maxLabelWidth = max(map(len, mat.rowlabels))
-                maxLabelHeight = max(map(len, mat.collabels))                
-                x1, y1, x2, y2 = self.win.get_visible()
-                w, h = self.win.get_size()
-                
-                left.set_size(maxLabelWidth*12, h)                
-                left.set_visible(x1, y1, x1-maxLabelWidth, y2)
-                top.set_size(w, maxLabelHeight*12)
-                top.set_visible(x1, y2, x2, y2+maxLabelHeight)
-                
-                top.set_bgcolor(*self.win.get_bgcolor())
-                left.set_bgcolor(*self.win.get_bgcolor())                
-                
-                
-                
-                self.ensembl1 = multiwindow.WindowEnsemble([left, self.win], 
-                                              stacky=True, sameh=True,
-                                              tiey=True, piny=True,
-                                              master=self.win)
-                self.ensembl2 = multiwindow.WindowEnsemble([top, self.win], 
-                                              stackx=True, samew=True,
-                                              tiex=True, pinx=True,
-                                              master=self.win)
-                #multiwindow.tie_windows([left, self.win], tiey=True, piny=True,
-                #                        master=self.win)
-                #multiwindow.tie_windows([top, self.win], tiex=True, pinx=True,
-                #                        master=self.win)
-                summon.begin_updating()
-                
+            if self.showLabelWindows:
+                self.openLabelWindows()
             self.drawLabels()
-        self.win.home()
 
         util.toc()
     
     
+    def toggleLabelWindows(self):
+        self.setLabelWindows(not self.showLabelWindows)
+    
+    def setLabelWindows(self, show=True):
+        self.showLabelWindows = show
+        
+        if not show:
+            self.closeLabelWindows()
+        
+        self.redraw()
+    
+    
+    def closeLabelWindows(self):
+        """close down label windows"""
+        if self.ensemble1 != None:
+            self.ensemble1.stop()
+        if self.ensemble2 != None:
+            self.ensemble2.stop()
+        self.ensemble1 = None
+        self.ensemble2 = None
+        
+        if self.labelWindows != None:
+            if self.labelWindows[0].is_open():
+                self.labelWindows[0].close()
+            if self.labelWindows[1].is_open():
+                self.labelWindows[1].close()
+        
+            self.labelWindows = None
+    
+    
+    def openLabelWindows(self):
+        """startup label windows"""
+        
+        # close windows if they are already open
+        if self.labelWindows != None:
+            self.closeLabelWindows()
+        
+        # make new windows
+        top = summon.Window("cols")
+        left = summon.Window("rows")
+        self.labelWindows = [left, top]
+
+
+        # set visible
+        maxLabelWidth = max(map(len, self.mat.rowlabels))
+        maxLabelHeight = max(map(len, self.mat.collabels))                
+        #x1, y1, x2, y2 = self.win.get_visible()
+        w, h = self.win.get_size()
+        
+        topcoord = .5
+        leftcoord = -.5
+        
+        left.set_size(maxLabelWidth*12, h)                
+        left.set_visible(leftcoord, 0, leftcoord-maxLabelWidth, 1)
+        top.set_size(w, maxLabelHeight*12)
+        top.set_visible(0, topcoord, 1, topcoord+maxLabelHeight)
+
+        top.set_bgcolor(*self.win.get_bgcolor())
+        left.set_bgcolor(*self.win.get_bgcolor())                
+
+        summon.stop_updating()
+        
+        self.ensemble1 = multiwindow.WindowEnsemble([left, self.win], 
+                                      stacky=True, sameh=True,
+                                      tiey=True, piny=True,
+                                      master=self.win)
+        self.ensemble2 = multiwindow.WindowEnsemble([top, self.win], 
+                                      stackx=True, samew=True,
+                                      tiex=True, pinx=True,
+                                      master=self.win)
+        
+        summon.begin_updating()
 
     def drawBorder(self, nrows, ncols):
         # draw boundary 
@@ -503,7 +543,7 @@ class MatrixViewer (object):
         
         # draw labels
         if mat.rowlabels != None:
-            vis = [lines(0, 0, 0, -nrows)]
+            vis = [lines(-.5, .5, -.5, -nrows+.5)]
             labelWidth = max(map(len, mat.rowlabels)) * 100
             for i in xrange(nrows):
                 x = -.5 - labelPadding
@@ -516,7 +556,7 @@ class MatrixViewer (object):
                                      translate(xstart, ystart, * vis)))
         
         if mat.collabels != None:
-            vis2 = []
+            vis2 = [lines(.5, .5, .5, -ncols+.5)]
             labelWidth = max(map(len, mat.collabels)) * 100
             for i in xrange(ncols):
                 x = .5 + labelPadding
