@@ -1,6 +1,11 @@
 SUMMON Change Log
 -----------------
 
+
+2007/7/6
+- fixed race condition for multiwindow stacking
+
+
 2007/5/31
 - added small edits to make OSX compilation go more smoothly
 - trying out git for version control

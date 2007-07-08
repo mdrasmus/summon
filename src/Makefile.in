@@ -11,9 +11,13 @@ MY_LIBS = \
         $(SRCPREFIX)/GlutMVC/libGlutMVC.a \
         $(SRCPREFIX)/MVC/libMVC.a 
 
-COMPILE = -c -g \
-    -Wall -g -fno-strict-aliasing -O2 -fPIC  \
+COMPILE = -c \
+    -Wall -fno-strict-aliasing -O3 -fPIC  \
     $(INCLUDE) 
+
+ifdef DEBUG
+	COMPILE := $(COMPILE) -g
+endif
 
 # Profiling code
 ifdef PROFILE
@@ -54,6 +58,9 @@ test:
 # clean rules
 cleanobj:
 	rm -rf $(OBJS) $(LIB)
+
+clean:
+	rm -rf $(OBJS)
 
 cleanall:
 	make clean -C $(SRCPREFIX)/Common

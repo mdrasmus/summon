@@ -12,7 +12,7 @@ from summon.core import *
 import summon
 
 
-win = get_summon_window()
+win = summon.get_summon_window()
 win.clear_all_bindings()
 
 
@@ -45,7 +45,7 @@ win.set_binding(input_click("left", "up", "ctrl"), "hotspot_click")
 
 
 # misc
-win.set_binding(input_key("h"), "home")
+win.set_binding(input_key("h"), win.home)
 win.set_binding(input_key("q"), win.close)
 win.set_binding(input_key("l", "ctrl"), win.toggle_aliasing)
 win.set_binding(input_key("x", "ctrl"), win.toggle_crosshair)

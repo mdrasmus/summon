@@ -33,20 +33,15 @@ enum {
     
     // global commands
     GET_WINDOWS_COMMAND,
-    //GET_WINDOW_COMMAND,
-    //SET_WINDOW_COMMAND,    
     NEW_WINDOW_COMMAND,
     CLOSE_WINDOW_COMMAND,
     GET_MODELS_COMMAND,
-    //GET_MODEL_COMMAND,
-    //SET_MODEL_COMMAND,    
     NEW_MODEL_COMMAND,
     ASSIGN_MODEL_COMMAND,
     DEL_MODEL_COMMAND,
+    GET_WINDOW_DECORATION_COMMAND,
     TIMER_CALL_COMMAND,
     REDRAW_CALL_COMMAND,
-    VERSION_COMMAND,
-    QUIT_COMMAND,
     
     // model commands
     ADD_GROUP_COMMAND,
@@ -205,19 +200,6 @@ public:
     { return "gets a list of ids for all open windows"; }
 };
 
-/*
-class GetWindowCommand : public ScriptCommand
-{
-public:
-    virtual Command* Create() { return new GetWindowCommand(); }
-    virtual int GetId() { return GET_WINDOW_COMMAND; }
-
-    virtual const char *GetName() { return "get_window"; }
-    virtual const char *GetUsage() { return ""; }
-    virtual const char *GetDescription() 
-    { return "gets the id of the current window"; }
-};
-*/
 
 class NewWindowCommand : public ScriptCommand
 {
@@ -230,27 +212,6 @@ public:
     virtual const char *GetDescription() 
     { return "creates a new window and returns its id"; }
 };
-
-/*
-class SetWindowCommand : public ScriptCommand
-{
-public:
-    virtual Command* Create() { return new SetWindowCommand(); }
-    virtual int GetId() { return SET_WINDOW_COMMAND; }
-
-    virtual const char *GetName() { return "set_window"; }
-    virtual const char *GetUsage() { return "id"; }
-    virtual const char *GetDescription() 
-    { return "sets the current window"; }
-    
-    virtual bool Setup(Scm lst)
-    {
-        return ParseScm(ErrorHelp(), lst, "d", &windowid);
-    }
-    
-    int windowid;
-};
-*/
 
 
 class CloseWindowCommand : public ScriptCommand
@@ -290,27 +251,6 @@ public:
     { return "gets a list of ids for all models"; }
 };
 
-/*
-class GetModelCommand : public ScriptCommand
-{
-public:
-    virtual Command* Create() { return new GetModelCommand(); }
-    virtual int GetId() { return GET_MODEL_COMMAND; }
-
-    virtual const char *GetName() { return "get_model"; }
-    virtual const char *GetUsage() { return "windowid, ['world'|'screen']"; }
-    virtual const char *GetDescription() 
-    { return "gets the model id of a window"; }
-    
-    virtual bool Setup(Scm lst)
-    {
-        return ParseScm(ErrorHelp(), lst, "ds", &windowid, &kind);
-    }
-    
-    int windowid;
-    string kind;
-};
-*/
 
 class NewModelCommand : public ScriptCommand
 {
@@ -324,27 +264,6 @@ public:
     { return "creates a new model and returns its id"; }
 };
 
-/*
-class SetModelCommand : public ScriptCommand
-{
-public:
-    virtual Command* Create() { return new SetModelCommand(); }
-    virtual int GetId() { return SET_MODEL_COMMAND; }
-
-    virtual const char *GetName() { return "set_model"; }
-    virtual const char *GetUsage() 
-    { return "modelid"; }
-    virtual const char *GetDescription() 
-    { return "sets the current model"; }
-    
-    virtual bool Setup(Scm lst)
-    {
-        return ParseScm(ErrorHelp(), lst, "d", &modelid);
-    }
-    
-    int modelid;
-};
-*/
 
 
 class AssignModelCommand : public ScriptCommand
@@ -391,6 +310,21 @@ public:
 };
 
 
+
+class GetWindowDecorationCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new GetWindowDecorationCommand(); }
+    virtual int GetId() { return GET_WINDOW_DECORATION_COMMAND; }
+
+    virtual const char *GetName() { return "get_window_decoration"; }
+    virtual const char *GetUsage() 
+    { return ""; }
+    virtual const char *GetDescription() 
+    { return "get a window decoration size"; }
+};
+
+
 class TimerCallCommand : public ScriptCommand
 {
 public:
@@ -434,34 +368,6 @@ public:
 };
 
 
-class VersionCommand : public ScriptCommand
-{
-public:
-    virtual Command* Create() { return new VersionCommand(); }
-    virtual int GetId() { return VERSION_COMMAND; }
-
-    virtual const char *GetOptionName() { return "-v"; }
-    virtual const char *GetName() { return "version"; }
-    virtual const char *GetUsage() { return ""; }
-    virtual const char *GetDescription() 
-    { return "prints the current version"; }
-};
-
-
-/*
-class QuitCommand : public ScriptCommand
-{
-public:
-    virtual Command* Create() { return new QuitCommand(); }
-    virtual int GetId() { return QUIT_COMMAND; }
-
-    virtual const char *GetOptionName() { return ""; }
-    virtual const char *GetName() { return "quit"; }
-    virtual const char *GetUsage() { return ""; }
-    virtual const char *GetDescription() 
-    { return "quits summon"; }
-};
-*/
 
 
 // -----------------------------------------------------------------------------

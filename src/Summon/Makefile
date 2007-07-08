@@ -17,4 +17,4 @@ include ../Makefile.in
 
 $(PROG): $(OBJS) $(MY_LIBS)
 	$(CC) -shared $(OBJS) $(MY_LIBS) $(LIBS) -o $(PROG)
-	cp $(PROG) ../../lib
+

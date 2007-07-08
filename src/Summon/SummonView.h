@@ -120,10 +120,6 @@ protected:
         
     void DrawElement(GroupTable *table, Element *elm, bool useTasks=true); 
     void DrawGraphic(Graphic *graphic);
-    /*
-    void DrawPrimitives(Graphic::PrimitiveIterator begin, 
-                        Graphic::PrimitiveIterator end);
-    */
     void DrawTextElement(TextElement *elm);
     
     void DrawText(void *font, string text, float x, float y);

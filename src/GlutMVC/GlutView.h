@@ -74,10 +74,24 @@ public:
     { return m_name; }
     
     inline void SetPosition(int x, int y)
-    { glutPositionWindow(x, y); }
+    {
+        glutPositionWindow(x, y);
+        m_windowPos.x = x;
+        m_windowPos.y = y;
+    }
     
     inline Vertex2i GetPosition()
-    { return Vertex2i(glutGet(GLUT_WINDOW_X), glutGet(GLUT_WINDOW_Y)); }
+    { return m_windowPos; }
+    //{ return Vertex2i(glutGet(GLUT_WINDOW_X), glutGet(GLUT_WINDOW_Y)); }
+    
+    inline void UpdatePosition()
+    {
+        m_windowPos.x = glutGet(GLUT_WINDOW_X) - m_windowOffset.x;
+        m_windowPos.y = glutGet(GLUT_WINDOW_Y) - m_windowOffset.y;
+    }
+    
+    inline void SetOffset(Vertex2i &offset)
+    { m_windowOffset = offset; }
     
     inline void AddListener(GlutViewListener *view) {
         m_listeners.push_back(view);
@@ -99,6 +113,8 @@ protected:
 
     int m_window;
     Vertex2i m_windowSize;
+    Vertex2i m_windowPos;
+    Vertex2i m_windowOffset;    // GLUT sometimes places the window offset
     string m_name;
     ListenerList m_listeners;
 };

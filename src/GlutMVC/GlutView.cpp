@@ -18,7 +18,8 @@ std::vector<GlutView*> g_windows;
 
 
 GlutView::GlutView(int width, int height, const char *name) :
-   m_windowSize(width, height)
+   m_windowSize(width, height),
+   m_windowOffset(0, 0)
 {
     // set initial glut settings for window
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE); // | GLUT_ALPHA | GLUT_MULTISAMPLE);
@@ -81,8 +82,9 @@ void GlutView::GlutReshape(int width, int height)
 
 void GlutView::GlutClose()
 {
+    int winid = glutGetWindow();
     PyGILState_STATE gstate = PyGILState_Ensure();
-    g_windows[glutGetWindow()]->OnClose();
+    g_windows[winid]->OnClose();
     PyGILState_Release(gstate);
 }
 

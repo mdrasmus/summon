@@ -7,7 +7,7 @@ from summon.core import *
 import summon
 from summon import shapes
 from summon import util
-
+from summon import multiwindow
 
 
 
@@ -312,7 +312,7 @@ def getDrawColor(bgcolor=(0,0,0)):
 class MatrixViewer (object):
     def __init__(self, mat=None, onClick=None, 
                  bgcolor=(0,0,0), drawzeros=False, style="points",
-                 showLabels=True, showLabelWindows=True):
+                 showLabels=True, showLabelWindows=False):
         self.win = None
         self.mat = mat
         self.bgcolor = bgcolor
@@ -321,6 +321,10 @@ class MatrixViewer (object):
         self.showLabels = showLabels
         self.labelWindows = None
         self.showLabelWindows = showLabelWindows
+        
+        self.ensemble1 = None
+        self.ensemble2 = None
+        self.firstOpen = True
         
         if onClick != None:
             self.onClick = onClick
@@ -339,10 +343,14 @@ class MatrixViewer (object):
         self.win.set_bgcolor(* self.bgcolor)
         
         self.win.set_binding(input_key("1"), self.one2one)
-        self.drawMatrix(self.mat, mouseClick=self.clickCallback)
+        self.win.set_binding(input_key("l"), self.toggleLabelWindows)
+        self.drawMatrix(self.mat, mouseClick=self.clickCallback)        
         self.win.home()
+        
+        summon.begin_updating()
     
     def redraw(self):
+        self.firstOpen = False
         self.win.clear_groups()
         self.drawMatrix(self.mat, mouseClick=self.clickCallback)
     
@@ -406,14 +414,86 @@ class MatrixViewer (object):
         self.drawBorder(mat.nrows, mat.ncols)
         self.drawPartitions(mat)
         
-        if self.showLabelWindows:
-            pass
-        
         if self.showLabels:
+            if self.showLabelWindows:
+                self.openLabelWindows()
             self.drawLabels()
 
         util.toc()
     
+    
+    def toggleLabelWindows(self):
+        self.setLabelWindows(not self.showLabelWindows)
+    
+    def setLabelWindows(self, show=True):
+        self.showLabelWindows = show
+        
+        if not show:
+            self.closeLabelWindows()
+        
+        self.redraw()
+    
+    
+    def closeLabelWindows(self):
+        """close down label windows"""
+        if self.ensemble1 != None:
+            self.ensemble1.stop()
+        if self.ensemble2 != None:
+            self.ensemble2.stop()
+        self.ensemble1 = None
+        self.ensemble2 = None
+        
+        if self.labelWindows != None:
+            if self.labelWindows[0].is_open():
+                self.labelWindows[0].close()
+            if self.labelWindows[1].is_open():
+                self.labelWindows[1].close()
+        
+            self.labelWindows = None
+    
+    
+    def openLabelWindows(self):
+        """startup label windows"""
+        
+        # close windows if they are already open
+        if self.labelWindows != None:
+            self.closeLabelWindows()
+        
+        # make new windows
+        top = summon.Window(" ")
+        left = summon.Window(" ")
+        self.labelWindows = [left, top]
+
+
+        # set visible
+        maxLabelWidth = max(map(len, self.mat.rowlabels))
+        maxLabelHeight = max(map(len, self.mat.collabels))                
+        w, h = self.win.get_size()
+        
+        topcoord = .5
+        leftcoord = -.5
+        
+        left.set_size(maxLabelWidth*12, h)                
+        left.set_visible(leftcoord, 0, leftcoord-maxLabelWidth, 1)
+        top.set_size(w, maxLabelHeight*12)
+        top.set_visible(0, topcoord, 1, topcoord+maxLabelHeight)
+
+        top.set_bgcolor(*self.win.get_bgcolor())
+        left.set_bgcolor(*self.win.get_bgcolor())                
+
+        summon.stop_updating()
+        
+        self.ensemble1 = multiwindow.WindowEnsemble([left, self.win], 
+                                      stacky=True, sameh=True,
+                                      tiey=True, piny=True,
+                                      master=self.win)
+        self.ensemble2 = multiwindow.WindowEnsemble([top, self.win], 
+                                      stackx=True, samew=True,
+                                      tiex=True, pinx=True,
+                                      master=self.win)
+        
+        if not self.firstOpen:
+            summon.begin_updating()
     
 
     def drawBorder(self, nrows, ncols):
@@ -457,6 +537,8 @@ class MatrixViewer (object):
         labelSpacing = .1
         height = 1
         width = 1
+        maxTextSize = 12
+        minTextSize = 4
         
         if self.labelWindows != None:
             rowwin, colwin = self.labelWindows
@@ -466,26 +548,28 @@ class MatrixViewer (object):
         
         # draw labels
         if mat.rowlabels != None:
-            vis = []
+            vis = [lines(-.5, .5, -.5, -nrows+.5)]
             labelWidth = max(map(len, mat.rowlabels)) * 100
             for i in xrange(nrows):
                 x = -.5 - labelPadding
                 y = .5 - i*height + labelSpacing/2.
                 vis.append(text_clip(mat.rowlabels[i],
                                      x, y, x-labelWidth, y-height+labelSpacing/2.0,
-                                     4, 20, 'right', 'middle'))
+                                     minTextSize, maxTextSize, 
+                                     'right', 'middle'))
             rowwin.add_group(group(color(* getDrawColor(self.bgcolor)), 
                                      translate(xstart, ystart, * vis)))
         
         if mat.collabels != None:
-            vis2 = []
+            vis2 = [lines(.5, .5, .5, -ncols+.5)]
             labelWidth = max(map(len, mat.collabels)) * 100
             for i in xrange(ncols):
                 x = .5 + labelPadding
                 y = .5 - i*height + labelSpacing/2.
                 vis2.append(text_clip(mat.collabels[i],
-                                     x, y, x+labelWidth, y-height+labelSpacing/2.0,
-                                     4, 20, 'left', 'middle', 'vertical'))
+                                  x, y, x+labelWidth, y-height+labelSpacing/2.0,
+                                  minTextSize, maxTextSize, 
+                                  'left', 'middle', 'vertical'))
             colwin.add_group(group(color(* getDrawColor(self.bgcolor)), 
                                      translate(xstart, ystart, 
                                                rotate(90.0, * vis2))))

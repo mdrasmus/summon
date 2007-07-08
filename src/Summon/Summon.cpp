@@ -24,22 +24,13 @@
 
 
 #define MODULE_NAME "summon_core"
-#define SUMMON_VERSION "1.7.1"
-
-#define VERSION_INFO "\
------------------------------------------------------------------------------\n\
-                                   SUMMON "SUMMON_VERSION"\n\
-                       Large Scale Visualization Scripting\n\
-                                 Matt Rasmussen \n\
-                             (http://mit.edu/rasmus)\n\
-                                 Copyright 2007\n\
------------------------------------------------------------------------------\n"
 
 
 // python visible prototypes
 extern "C" {
 static PyObject *Exec(PyObject *self, PyObject *tup);
 static PyObject *SummonMainLoop(PyObject *self, PyObject *tup);
+static PyObject *PythonShutdown(PyObject *self, PyObject *tup);
 }
 
 
@@ -51,7 +42,7 @@ using namespace std;
 // global prototypes
 class SummonModule;
 static SummonModule *g_summon;
-
+static int g_hidden_window;
 
 
 class SummonModule : public CommandExecutor, GlutViewListener
@@ -59,6 +50,7 @@ class SummonModule : public CommandExecutor, GlutViewListener
 public:
     SummonModule() :
         m_initialized(false),
+        m_runtimer(true),
         m_nextWindowId(1),
         m_nextModelId(1),
         
@@ -70,7 +62,8 @@ public:
         m_condlock(SDL_CreateMutex()),
 
         m_timerCommand(NULL),
-        m_timerDelay(0)
+        m_timerDelay(0),
+        m_windowOffset(0,0)
     {
     }
     
@@ -196,13 +189,12 @@ public:
                 
                 } break;
             
-            
-            
-            
-            case VERSION_COMMAND: {
-                fprintf(stderr, VERSION_INFO);
+            case GET_WINDOW_DECORATION_COMMAND: {
+                ((ScriptCommand*) &command)->SetReturn(
+                    ScmCons(Int2Scm(m_windowOffset.x),
+                            ScmCons(Int2Scm(m_windowOffset.y),
+                                    Scm_EOL)));
                 } break;
-            
             
             case TIMER_CALL_COMMAND: {
                 TimerCallCommand *cmd = (TimerCallCommand*) &command;
@@ -253,6 +245,7 @@ public:
     {
         int id = m_nextWindowId;
         m_windows[id] = new SummonWindow(id, this, 400, 400, "SUMMON");
+        m_windows[id]->GetView()->SetOffset(m_windowOffset);
         m_nextWindowId++;
         m_windows[id]->SetActive();
         return id;
@@ -348,6 +341,13 @@ public:
         // summon main loop
         summonMethods[table].ml_name  = "summon_main_loop";
         summonMethods[table].ml_meth  = SummonMainLoop;
+        summonMethods[table].ml_flags = METH_VARARGS;
+        summonMethods[table].ml_doc   = "";
+        table++;
+
+        // python shutdown
+        summonMethods[table].ml_name  = "python_shutdown";
+        summonMethods[table].ml_meth  = PythonShutdown;
         summonMethods[table].ml_flags = METH_VARARGS;
         summonMethods[table].ml_doc   = "";
         table++;
@@ -482,12 +482,41 @@ def __" + name + "_contents(obj): return obj[1:]\n\
         m_timerDelay = GetTime() + int(delay * 1000);
         m_timerCommand = command;
     }
-
+    
+    // glut first timer
+    static void FirstTimer(int value)
+    {
+        // do initialization that can only be done after first pump of the 
+        // GLUT event loop
+        
+        
+        // get window offset
+        glutSetWindow(g_hidden_window);
+        g_summon->m_windowOffset.x = glutGet(GLUT_WINDOW_X) - 10;
+        g_summon->m_windowOffset.y = glutGet(GLUT_WINDOW_Y) - 10;
+        glutHideWindow();
+                
+        g_summon->m_initialized = true;
+        
+        glutTimerFunc(0, Timer, 0);
+    }
+    
     // glut timer callback
     static void Timer(int value)
     {
         static int delay = 0;
-                
+        
+        
+        if (!Py_IsInitialized()) {
+            // do nothing if python is not initialized
+            return;
+        }
+        
+        // update window positions
+        for (WindowIter i=g_summon->m_windows.begin(); i!=g_summon->m_windows.end(); i++) {
+            (*i).second->GetView()->UpdatePosition();
+        }
+        
 
         if (g_summon->IsCommandWaiting()) {
             if (g_summon->m_graphicsExec) {
@@ -551,7 +580,11 @@ def __" + name + "_contents(obj): return obj[1:]\n\
             delete cmd;
         }
         
-        glutTimerFunc(delay, Timer, 0);
+        // set the next
+        if (g_summon->m_initialized)
+            glutTimerFunc(delay, Timer, 0);
+        else
+            g_summon->m_runtimer = false;
         
         if (delay < 10)
             delay++;
@@ -608,6 +641,7 @@ def __" + name + "_contents(obj): return obj[1:]\n\
     
     // a boolean for whether the summon module is ready for processing commands
     bool m_initialized;
+    bool m_runtimer;
 
     // indexes
     int m_nextWindowId;
@@ -638,6 +672,7 @@ def __" + name + "_contents(obj): return obj[1:]\n\
     map<int, SummonModel*> m_models;
    
     map<GlutView*, SummonWindow*> m_closeWaiting;
+    Vertex2i m_windowOffset;
 };
 
 
@@ -663,23 +698,40 @@ SummonMainLoop(PyObject *self, PyObject *tup)
 {
     static bool isGlutInit = false;
     
-    // NOTE: not totally thread safe
+    // NOTE: not totally thread safe if multiple quick calls are made
     if (!isGlutInit) {
         isGlutInit = true;
         g_summon->Lock();
         
         // store summon thread ID
         g_summon->m_threadId = PyThread_get_thread_ident();
-        g_summon->m_initialized = true;
+        //g_summon->m_initialized = true;
         
         // setup glut timer
-        glutTimerFunc(10, Summon::SummonModule::Timer, 0);
+        //glutTimerFunc(0, Summon::SummonModule::Timer, 0);
+        glutTimerFunc(0, Summon::SummonModule::FirstTimer, 0);
         
         Py_BEGIN_ALLOW_THREADS
         glutMainLoop();
         Py_END_ALLOW_THREADS
     }
     
+    Py_RETURN_NONE;
+}
+
+
+// This function is called when python is shutting down
+static PyObject *
+PythonShutdown(PyObject *self, PyObject *tup)
+{
+    if (g_summon) {
+        // turn off initizalied flag
+        g_summon->m_initialized = false;
+        
+        // wait for timer to stop
+        while (g_summon->m_runtimer)
+            SDL_Delay(10);
+    }
     Py_RETURN_NONE;
 }
 
@@ -789,9 +841,10 @@ initsummon_core()
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 #endif
     
-    glutInitWindowSize(1, 1);
-    int hidden_window = glutCreateWindow("SUMMON");
-    glutHideWindow();
+    glutInitWindowSize(10, 10);
+    glutInitWindowPosition(10, 10);
+    g_hidden_window = glutCreateWindow("SUMMON");
+    
     
     InitPython();
     
