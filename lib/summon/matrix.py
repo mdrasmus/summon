@@ -324,6 +324,7 @@ class MatrixViewer (object):
         
         self.ensemble1 = None
         self.ensemble2 = None
+        self.firstOpen = True
         
         if onClick != None:
             self.onClick = onClick
@@ -343,10 +344,13 @@ class MatrixViewer (object):
         
         self.win.set_binding(input_key("1"), self.one2one)
         self.win.set_binding(input_key("l"), self.toggleLabelWindows)
-        self.drawMatrix(self.mat, mouseClick=self.clickCallback)
+        self.drawMatrix(self.mat, mouseClick=self.clickCallback)        
         self.win.home()
+        
+        summon.begin_updating()
     
     def redraw(self):
+        self.firstOpen = False
         self.win.clear_groups()
         self.drawMatrix(self.mat, mouseClick=self.clickCallback)
     
@@ -456,15 +460,14 @@ class MatrixViewer (object):
             self.closeLabelWindows()
         
         # make new windows
-        top = summon.Window("cols")
-        left = summon.Window("rows")
+        top = summon.Window(" ")
+        left = summon.Window(" ")
         self.labelWindows = [left, top]
 
 
         # set visible
         maxLabelWidth = max(map(len, self.mat.rowlabels))
         maxLabelHeight = max(map(len, self.mat.collabels))                
-        #x1, y1, x2, y2 = self.win.get_visible()
         w, h = self.win.get_size()
         
         topcoord = .5
@@ -489,7 +492,9 @@ class MatrixViewer (object):
                                       tiex=True, pinx=True,
                                       master=self.win)
         
-        summon.begin_updating()
+        if not self.firstOpen:
+            summon.begin_updating()
+    
 
     def drawBorder(self, nrows, ncols):
         # draw boundary 

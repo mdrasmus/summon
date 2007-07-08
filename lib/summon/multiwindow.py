@@ -34,6 +34,10 @@ class WindowEnsemble (summon.VisObject):
         # determine window decoration offset
         #self.offset = get_window_offset(self.master)
         
+        # record window positions and sizes
+        for win in windows:
+            self.pos[win] = win.get_position()
+            self.sizes[win] = win.get_size()        
         
         # setup window stacking
         if stackx or stacky:
@@ -53,15 +57,9 @@ class WindowEnsemble (summon.VisObject):
             self.closeListeners[win] = make_close_listener(win)
             win.add_close_listener(self.closeListeners[win])
         
-        # record window positions and sizes
-        for win in windows:
-            self.pos[win] = win.get_position()
-            self.sizes[win] = win.get_size()
-        
-        
         # enable updating
         self.win = self.master
-        self.enableUpdating(interval=.5)
+        self.enableUpdating(interval=.1)
     
     
     def stop(self):
@@ -91,9 +89,6 @@ class WindowEnsemble (summon.VisObject):
             
     
     def stack(self, win):
-        others = self.windows[:]
-        others.remove(win)
-        
         target_pos = win.get_position()
         target_size = win.get_size()
         
@@ -107,6 +102,7 @@ class WindowEnsemble (summon.VisObject):
         target = []
         
         for win2 in self.windows:
+            # update size
             w, h = win2.get_size()
             
             if self.samew:
@@ -117,6 +113,8 @@ class WindowEnsemble (summon.VisObject):
             win2.set_size(w, h)
             self.sizes[win2] = (w, h)
             
+            
+            # determine destination positions
             if win2 == win:
                 target = [totalx, totaly]
             
@@ -137,9 +135,12 @@ class WindowEnsemble (summon.VisObject):
                 newx = target_pos[0] + x[i] - target[0]
                 newy = target_pos[1]
             
-            self.pos[win2] = [newx, newy]
+            self.pos[win2] = (newx, newy)
             
-            win2.set_position(newx, newy)
+            if win2 != win:
+                win2.set_position(newx, newy)
+            else:
+                assert target_pos == (newx, newy), (target_pos, (newx, newy))
         
             
     def align(self, win):
@@ -223,6 +224,7 @@ class WindowEnsemble (summon.VisObject):
                     break
 
 
+
 class WindowTie:
     def __init__(self, win, others, ensemble):
         self.win = win
@@ -266,7 +268,7 @@ class WindowTie:
 
                 if self.ensemble.pinx:
                     trans2[0] += pos1[0] - pos2[0]
-
+            
             if self.ensemble.tiey:
                 trans2[1] = trans1[1] - coords[w2].y + coords[w1].y
                 zoom2[1] = zoom1[1]

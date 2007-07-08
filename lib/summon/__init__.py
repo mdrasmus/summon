@@ -274,6 +274,8 @@ class Window (object):
         self.viewChangeListeners = set()
         self.focusChangeListeners = set()
         self.closeListeners = set()
+        self.viewLock = False
+        self.focusLock = False
         
         # load default configuration
         if loadconfig:
@@ -367,12 +369,25 @@ class Window (object):
     def _on_view_change(self):
         """A callback for when view changes"""
         
+        if self.viewLock: return
+        self.viewLock = True
+        
         for listener in self.viewChangeListeners:
             listener()
+         
+        self.viewLock = False
+    
     
     def _on_focus_change(self):
+        
+        if self.focusLock: return
+        self.focusLock = True
+    
         for listener in self.focusChangeListeners:
             listener()
+        
+        self.focusLock = False
+
     
     def add_view_change_listener(self, listener):
         self.viewChangeListeners.add(listener)
