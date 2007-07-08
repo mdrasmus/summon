@@ -30,6 +30,7 @@
 extern "C" {
 static PyObject *Exec(PyObject *self, PyObject *tup);
 static PyObject *SummonMainLoop(PyObject *self, PyObject *tup);
+static PyObject *PythonShutdown(PyObject *self, PyObject *tup);
 }
 
 
@@ -49,6 +50,7 @@ class SummonModule : public CommandExecutor, GlutViewListener
 public:
     SummonModule() :
         m_initialized(false),
+        m_runtimer(true),
         m_nextWindowId(1),
         m_nextModelId(1),
         
@@ -343,6 +345,13 @@ public:
         summonMethods[table].ml_doc   = "";
         table++;
 
+        // python shutdown
+        summonMethods[table].ml_name  = "python_shutdown";
+        summonMethods[table].ml_meth  = PythonShutdown;
+        summonMethods[table].ml_flags = METH_VARARGS;
+        summonMethods[table].ml_doc   = "";
+        table++;
+
         // cap the methods table with ending method
         summonMethods[table].ml_name  = NULL;
         summonMethods[table].ml_meth  = NULL;
@@ -500,6 +509,11 @@ def __" + name + "_contents(obj): return obj[1:]\n\
         static int delay = 0;
         
         
+        if (!Py_IsInitialized()) {
+            // do nothing if python is not initialized
+            return;
+        }
+        
         // update window positions
         for (WindowIter i=g_summon->m_windows.begin(); i!=g_summon->m_windows.end(); i++) {
             (*i).second->GetView()->UpdatePosition();
@@ -568,7 +582,11 @@ def __" + name + "_contents(obj): return obj[1:]\n\
             delete cmd;
         }
         
-        glutTimerFunc(delay, Timer, 0);
+        // set the next
+        if (g_summon->m_initialized)
+            glutTimerFunc(delay, Timer, 0);
+        else
+            g_summon->m_runtimer = false;
         
         if (delay < 10)
             delay++;
@@ -625,6 +643,7 @@ def __" + name + "_contents(obj): return obj[1:]\n\
     
     // a boolean for whether the summon module is ready for processing commands
     bool m_initialized;
+    bool m_runtimer;
 
     // indexes
     int m_nextWindowId;
@@ -699,6 +718,22 @@ SummonMainLoop(PyObject *self, PyObject *tup)
         Py_END_ALLOW_THREADS
     }
     
+    Py_RETURN_NONE;
+}
+
+
+// This function is called when python is shutting down
+static PyObject *
+PythonShutdown(PyObject *self, PyObject *tup)
+{
+    if (g_summon) {
+        // turn off initizalied flag
+        g_summon->m_initialized = false;
+        
+        // wait for timer to stop
+        while (g_summon->m_runtimer)
+            SDL_Delay(10);
+    }
     Py_RETURN_NONE;
 }
 

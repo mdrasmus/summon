@@ -24,9 +24,11 @@ LIBS := $(LIBS) -lglut -lGL -lSDL -lutil -lpython2.4 -pthread
 export PROG CFLAGS LIBS
 
 # make rule for summon module on Linux
-lib/$(PROG): src/Summon/$(PROG)
+lib/$(PROG): src/Summon/$(PROG)	
+	cp src/Summon/$(PROG) lib
+
+src/Summon/$(PROG):
 	make -C src/Summon 
-	cp $(PROG) ../../lib
 
 clean: cleanall
 	rm -rf lib/$(PROG)	

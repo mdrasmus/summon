@@ -13,15 +13,20 @@
 # python libs
 import threading
 import time
+import atexit
 
 # SUMMON extension module
 import summon_core
+
+
 
 
 # start summon thread
 __summon_thread = threading.Thread(target=summon_core.summon_main_loop)
 __summon_thread.setDaemon(True)
 __summon_thread.start()
+
+atexit.register(lambda: summon_core.python_shutdown)
 
 # wait for summon to startup
 while summon_core.get_windows() == None: pass
