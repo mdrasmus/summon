@@ -495,9 +495,7 @@ def __" + name + "_contents(obj): return obj[1:]\n\
         g_summon->m_windowOffset.x = glutGet(GLUT_WINDOW_X) - 10;
         g_summon->m_windowOffset.y = glutGet(GLUT_WINDOW_Y) - 10;
         glutHideWindow();
-        printf("window offset: %d %d\n", g_summon->m_windowOffset.x,
-                                         g_summon->m_windowOffset.y);
-        
+                
         g_summon->m_initialized = true;
         
         glutTimerFunc(0, Timer, 0);
