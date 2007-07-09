@@ -24,6 +24,7 @@ class WindowEnsemble (summon.VisObject):
         self.sameh = sameh
         self.closeListeners = {}
         self.ties = {}
+        self.lock = False
         
         
         if master != None:
@@ -59,7 +60,7 @@ class WindowEnsemble (summon.VisObject):
         
         # enable updating
         self.win = self.master
-        self.enableUpdating(interval=.1)
+        self.enableUpdating(interval=.5)
     
     
     def stop(self):
@@ -229,7 +230,6 @@ class WindowTie:
     def __init__(self, win, others, ensemble):
         self.win = win
         self.others = others
-        self.lock = False
         self.ensemble = ensemble
 
     def remove_window(self, win):
@@ -240,23 +240,29 @@ class WindowTie:
     
     def update_scroll(self):
         """call back that sets translation and zoom"""
+
+        # prevent infinite loops
+        if self.ensemble.lock:
+            return
+        self.ensemble.lock = True
+                
         
         w1 = self.win
         others = self.others
         coords = self.ensemble.coords
-
-        # prevent infinite loops
-        if self.lock:
-            return
-        self.lock = True
         
-        pos1 = w1.get_position()
+        needpin = self.ensemble.pinx or self.ensemble.piny
+        
+        if needpin:
+            pos1 = w1.get_position()
         trans1 = w1.get_trans()
         zoom1 = w1.get_zoom()
         
         
         for w2 in others:
-            pos2 = w2.get_position()
+            if needpin:
+                pos2 = w2.get_position()
+            
             oldtrans2 = list(w2.get_trans())
             oldzoom2 = list(w2.get_zoom())
             trans2 = oldtrans2[:]
@@ -281,33 +287,31 @@ class WindowTie:
                 w2.set_trans(*trans2)
             if zoom2 != oldzoom2:
                 w2.set_zoom(*zoom2)
-        self.lock = False
+        self.ensemble.lock = False
 
 
         
     def update_focus(self):
         """callback that sets focus"""
         
-        w1 = self.win
-        others = self.others
-        coords = self.ensemble.coords
-        
         # prevent infinite loops     
-        if self.lock:
+        if self.ensemble.lock:
             return
-        self.lock = True
+        self.ensemble.lock = True
         
-        fx1, fy1 = w1.get_focus()
-        fx1 -= coords[w1].x
-        fy1 -= coords[w1].y
+        coords = self.ensemble.coords        
+        
+        fx1, fy1 = self.win.get_focus()
+        fx1 -= coords[self.win].x
+        fy1 -= coords[self.win].y
 
-        for w2 in others:
+        for w2 in self.others:
             newpos = (fx1 + coords[w2].x, fy1 + coords[w2].y)
             oldpos = w2.get_focus()
 
             if newpos != oldpos:
                 w2.set_focus(* newpos)
-        self.lock = False
+        self.ensemble.lock = False
 
 
 
