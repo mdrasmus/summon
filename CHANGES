@@ -3,7 +3,15 @@ SUMMON Change Log
 
 
 2007/7/6
+More stability and more complete demos
+- added features and fixed bugs for summatrix
+- added features and fixed bugs for sumtree
+- improved some example scripts
+- added propper window closing callbacks in C++ module
 - fixed race condition for multiwindow stacking
+- fixed race condition for C++ timer and python shutdown
+- Makefile cleanup
+- working towards summon-1.7.2
 
 
 2007/5/31
@@ -34,15 +42,13 @@ SUMMON Change Log
 - removed requirements for readline, ncurses, pthread
 
 
-2006/8/30
-summon-1.1 released
+2006/8/30 - summon-1.1
 
 - fixed bugs 
 - added text_clip
 
 
-2005/8/26
-summon-1.0 released
+2005/8/26 - summon-1.0
 
 main features
     - embedded python engine
