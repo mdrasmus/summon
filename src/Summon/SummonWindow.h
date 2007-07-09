@@ -18,7 +18,6 @@
 namespace Summon
 {
 
-//typedef Window<SummonModel, SummonView, SummonController> SummonWindow;
 
 
 class SummonWindow

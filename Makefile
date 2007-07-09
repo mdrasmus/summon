@@ -2,7 +2,7 @@
 # SUMMON - Linux Makefile
 #
 
-VERSION=1.7.1
+VERSION=1.7.2
 MODULE=summon_core.so
 
 all: lib/$(MODULE)
@@ -27,10 +27,8 @@ lib/$(MODULE): src/Summon/$(MODULE)
 	cp src/Summon/$(MODULE) lib
 
 clean: cleanall
-	rm -rf lib/$(MODULE)	
+	rm -rf lib/$(MODULE)
 
-cleanlib:
-	rm -rf lib/$(MODULE) src/Summon/$(MODULE)
 
 #=============================================================================
 # packaging 

@@ -12,7 +12,7 @@ MY_LIBS = \
         $(SRCPREFIX)/MVC/libMVC.a 
 
 COMPILE = -c \
-    -Wall -fno-strict-aliasing  -fPIC  \
+    -Wall -fno-strict-aliasing -O3 -fPIC  \
     $(INCLUDE) 
 
 ifdef DEBUG
@@ -58,9 +58,6 @@ test:
 	echo $(COMPILE)
 
 # clean rules
-cleanobj:
-	rm -rf $(OBJS) $(LIB)
-
 clean:
 	rm -rf $(OBJS)
 
@@ -69,10 +66,3 @@ cleanall:
 	make clean -C $(SRCPREFIX)/GlutMVC
 	make clean -C $(SRCPREFIX)/MVC
 	make clean -C $(SRCPREFIX)/Summon
-
-cleanallobj:
-	make cleanobj -C $(SRCPREFIX)/Common
-	make cleanobj -C $(SRCPREFIX)/GlutMVC
-	make cleanobj -C $(SRCPREFIX)/MVC
-	make cleanobj -C $(SRCPREFIX)/Summon
-

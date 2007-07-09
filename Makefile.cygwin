@@ -2,13 +2,13 @@
 # SUMMON - Cygwin Makefile
 #
 
-PROG = summon_core.dll
+MODULE = summon_core.dll
 SRCPREFIX=src
 
 # no glut extension for cygwin
 CFLAGS=-DNOGLUTEXT
 
-all: lib/$(PROG)
+all: lib/$(MODULE)
 
 include src/Makefile.in
 
@@ -19,8 +19,12 @@ LIBS = -L/lib/w32api -L/usr/local/lib -lglut32 -lopengl32 \
 	-lSDL -L/lib/python2.5/config -lpython2.5
 
 
-lib/$(PROG):
-	make -C src/Summon $(PROG) PROG=$(PROG) CFLAGS="$(CFLAGS)" LIBS="$(LIBS)"
+export MODULE CFLAGS LIBS
+
+
+# make rule for summon module
+lib/$(MODULE): src/Summon/$(MODULE)	
+	cp src/Summon/$(MODULE) lib
 
 clean: cleanall
-	rm -rf lib/$(PROG)
+	rm -rf lib/$(MODULE)
