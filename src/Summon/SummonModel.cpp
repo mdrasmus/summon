@@ -47,7 +47,8 @@ void SummonModel::ExecCommand(Command &command)
                 ((InsertGroupCommand*)(&command))->SetReturn(Int2Scm(id));
                 //change.changedGroups.push_back(group);
                 
-                Redisplay();                
+                ModelChanged();
+                //Redisplay();                
             } else {
                 Error("unknown group %d", pid);
                 ((InsertGroupCommand*)(&command))->SetReturn(Int2Scm(-1));
