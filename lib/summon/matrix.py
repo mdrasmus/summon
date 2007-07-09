@@ -312,7 +312,7 @@ def getDrawColor(bgcolor=(0,0,0)):
 class MatrixViewer (object):
     def __init__(self, mat=None, onClick=None, 
                  bgcolor=(0,0,0), drawzeros=False, style="points",
-                 showLabels=True, showLabelWindows=False):
+                 showLabels=False, showLabelWindows=False):
         self.win = None
         self.mat = mat
         self.bgcolor = bgcolor
@@ -347,7 +347,8 @@ class MatrixViewer (object):
         self.drawMatrix(self.mat, mouseClick=self.clickCallback)        
         self.win.home()
         
-        summon.begin_updating()
+        if self.showLabelWindows:
+            summon.begin_updating()
     
     def redraw(self):
         self.firstOpen = False

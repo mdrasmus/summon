@@ -55,6 +55,9 @@ win.set_binding(input_key("d", "ctrl"), win.duplicate)
 # add print screen bindings
 import summon.svg
 
-win.set_binding(input_key("p", "ctrl"), lambda: summon.svg.printScreen(win))
-win.set_binding(input_key("p", "ctrl", "shift"), lambda: summon.svg.printScreenPng(win))
+def make_call(func, *args):
+    return lambda: func(*args)
+
+win.set_binding(input_key("p", "ctrl"), make_call(summon.svg.printScreen, win))
+win.set_binding(input_key("p", "ctrl", "shift"), make_call(summon.svg.printScreenPng, win))
 

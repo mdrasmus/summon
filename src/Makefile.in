@@ -59,7 +59,7 @@ test:
 
 # clean rules
 clean:
-	rm -rf $(OBJS)
+	rm -rf $(OBJS) $(LIB) $(MODULE)
 
 cleanall:
 	make clean -C $(SRCPREFIX)/Common

@@ -208,23 +208,27 @@ void SummonView::ExecCommand(Command &command)
         
         // basic commands
         case TRANSLATE_SCRIPT_COMMAND: {
+            MakeCurrentWindow();
             TranslateBy(((TranslateScriptCommand*)(&command))->trans.x, 
                         ((TranslateScriptCommand*)(&command))->trans.y);    
             Redisplay();
             } break;
     
         case ZOOM_SCRIPT_COMMAND: {
+            MakeCurrentWindow();
             ZoomBy(((ZoomScriptCommand*) &command)->zoom.x,
                    ((ZoomScriptCommand*) &command)->zoom.y);
             Redisplay();
             } break;
         
         case ZOOM_X_SCRIPT_COMMAND: {
+            MakeCurrentWindow();        
             ZoomBy(((ZoomScriptCommand*) &command)->zoom.x, 1.0);
             Redisplay();
             } break;
         
         case ZOOM_Y_SCRIPT_COMMAND: {
+            MakeCurrentWindow();
             ZoomBy(1.0, ((ZoomScriptCommand*) &command)->zoom.y);
             Redisplay();
             } break;
@@ -237,20 +241,20 @@ void SummonView::ExecCommand(Command &command)
             } break;
         
         case REDISPLAY_COMMAND:
-            //NoteModelChange();
+            //NoteModelChange(); // TODO: need to FIX Model changes
             MakeCurrentWindow();
             glutPostRedisplay();
             //Glut2DView::ExecCommand(command);
             break;
         
-        case MODEL_CHANGED_COMMAND: {
-            NoteModelChange();
+        case MODEL_CHANGED_COMMAND:
             MakeCurrentWindow();
+            NoteModelChange();
             glutPostRedisplay();
             //Glut2DView::ExecCommand(command);
             break;
             
-        } default:
+        default:
             MakeCurrentWindow();
             Glut2DView::ExecCommand(command);
     }

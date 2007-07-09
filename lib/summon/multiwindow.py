@@ -60,7 +60,7 @@ class WindowEnsemble (summon.VisObject):
         
         # enable updating
         self.win = self.master
-        self.enableUpdating(interval=.5)
+        self.enableUpdating(interval=.2)
     
     
     def stop(self):
