@@ -97,7 +97,7 @@ void GlutView::Display()
 
 void GlutView::Reshape(int width, int height)
 {
-    // window has been closed
+    // window has resized
     for (ListenerIter iter = m_listeners.begin(); 
          iter != m_listeners.end(); iter++) {
         (*iter)->ViewResize(this);

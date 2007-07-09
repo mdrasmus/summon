@@ -25,8 +25,8 @@ void SummonModel::ExecCommand(Command &command)
             ((AddGroupCommand*)(&command))->SetReturn(Int2Scm(id));
             
             //change.changedGroups.push_back(m_table.GetGroup(id));
-            
-            Redisplay();
+            ModelChanged();
+            //Redisplay();
             } break;
         
         case INSERT_GROUP_COMMAND: {
@@ -64,7 +64,8 @@ void SummonModel::ExecCommand(Command &command)
                 RemoveGroup(remove->groupids[i]);
             }
             
-            Redisplay();
+            ModelChanged();
+            //Redisplay();
             } break;
         
         case REPLACE_GROUP_COMMAND: {
@@ -91,7 +92,8 @@ void SummonModel::ExecCommand(Command &command)
                 } else {
                     replace->SetReturn(Int2Scm(-1));
                 }
-                Redisplay();                
+                ModelChanged();
+                //Redisplay();                
             } else {
                 Error("unknown group %d", replace->groupid);
                 replace->SetReturn(Int2Scm(-1));
@@ -103,7 +105,8 @@ void SummonModel::ExecCommand(Command &command)
             // remove root group, GroupTable will create new root
             RemoveHotspots(m_table.GetRootGroup());
             m_table.Clear();
-            Redisplay();
+            ModelChanged();
+            //Redisplay();
             } break;
         
         case SHOW_GROUP_COMMAND: {
@@ -116,8 +119,9 @@ void SummonModel::ExecCommand(Command &command)
                 group->SetVisible(show->visible);
                 //change.changedGroups.push_back(group);
             }
-        
-            Redisplay();
+            
+            ModelChanged();
+            //Redisplay();
             } break;
         
         case GET_GROUP_COMMAND: {

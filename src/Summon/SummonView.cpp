@@ -237,13 +237,20 @@ void SummonView::ExecCommand(Command &command)
             } break;
         
         case REDISPLAY_COMMAND:
-            NoteModelChange();
-            
-            MakeCurrentWindow();            
-            Glut2DView::ExecCommand(command);
+            //NoteModelChange();
+            MakeCurrentWindow();
+            glutPostRedisplay();
+            //Glut2DView::ExecCommand(command);
             break;
-                
-        default:
+        
+        case MODEL_CHANGED_COMMAND: {
+            NoteModelChange();
+            MakeCurrentWindow();
+            glutPostRedisplay();
+            //Glut2DView::ExecCommand(command);
+            break;
+            
+        } default:
             MakeCurrentWindow();
             Glut2DView::ExecCommand(command);
     }

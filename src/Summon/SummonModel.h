@@ -81,6 +81,12 @@ public:
         RedisplayCommand redisplay;
         UpdateViews(redisplay);
     }
+    
+    inline void ModelChanged()
+    {
+        ModelChangedCommand cmd;
+        UpdateViews(cmd);
+    }
 
     
 protected:
