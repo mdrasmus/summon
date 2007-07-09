@@ -2,7 +2,7 @@
 # SUMMON examples
 # 15_dup_window.py 
 #
-# illustrate multiple windows
+# illustrate use of multiple windows
 #
 
 
@@ -49,6 +49,7 @@ win3.home()
 
 
 print 
-print "Note: use CTRL+d to duplicate any window at any time."
+print "Note: use CTRL+d (while focused on a SUMMON window) to duplicate"
+print "the window at any time."
 print
 

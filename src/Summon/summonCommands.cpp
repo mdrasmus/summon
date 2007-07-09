@@ -54,6 +54,7 @@ void summonCommandsInit()
     RegisterScriptCommand(AssignModelCommand)   g()
     RegisterScriptCommand(DelModelCommand)      g()
     RegisterScriptCommand(GetWindowDecorationCommand) g()
+    RegisterScriptCommand(SetWindowCloseCallbackCommand) g()
     RegisterScriptCommand(TimerCallCommand)     g()
     RegisterScriptCommand(RedrawCallCommand)    g()
     

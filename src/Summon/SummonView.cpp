@@ -25,7 +25,6 @@ SummonView::SummonView(SummonModel *model, int width, int height, const char *na
     m_bgColor(0,0,0,0),
     m_active(false),
     m_executingTasks(false),
-    m_listener(NULL),
     m_showCrosshair(false),
     m_crosshairColor(1,1,1,1),
     m_mousePos(0,0)
@@ -343,8 +342,8 @@ void SummonView::DrawWorld()
         ExecuteTasks();
     }
     
-    if (m_listener)
-        m_listener->ViewRedraw(this);
+    //if (m_listener)
+    //    m_listener->ViewRedraw(this);
 }
 
 
@@ -702,16 +701,16 @@ void SummonView::SetBgColor(Color &color)
 }
 
 
-
+/*
 void SummonView::Reshape(int width, int height)
 {
     // process window reshape
     Glut2DView::Reshape(width, height);
     
     // perform callbacks
-    if (m_listener)
-        m_listener->ViewResize(this);
-}
+    //if (m_listener)
+    //    m_listener->ViewResize(this);
+}*/
 
 
 

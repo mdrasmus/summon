@@ -3,10 +3,9 @@
 #
 
 VERSION=1.7.1
-PROG=summon_core.so
+MODULE=summon_core.so
 
-
-all: lib/$(PROG)
+all: lib/$(MODULE)
 
 # include basic rules
 SRCPREFIX=src
@@ -21,20 +20,17 @@ endif
 # linking for summon module on Linux
 LIBS := $(LIBS) -lglut -lGL -lSDL -lutil -lpython2.4 -pthread 
 
-export PROG CFLAGS LIBS
+export MODULE CFLAGS LIBS
 
 # make rule for summon module on Linux
-lib/$(PROG): src/Summon/$(PROG)	
-	cp src/Summon/$(PROG) lib
-
-src/Summon/$(PROG):
-	make -C src/Summon 
+lib/$(MODULE): src/Summon/$(MODULE)	
+	cp src/Summon/$(MODULE) lib
 
 clean: cleanall
-	rm -rf lib/$(PROG)	
+	rm -rf lib/$(MODULE)	
 
 cleanlib:
-	rm -rf lib/$(PROG) src/Summon/$(PROG)
+	rm -rf lib/$(MODULE) src/Summon/$(MODULE)
 
 #=============================================================================
 # packaging 

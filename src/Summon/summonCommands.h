@@ -40,6 +40,7 @@ enum {
     ASSIGN_MODEL_COMMAND,
     DEL_MODEL_COMMAND,
     GET_WINDOW_DECORATION_COMMAND,
+    SET_WINDOW_CLOSE_CALLBACK_COMMAND,
     TIMER_CALL_COMMAND,
     REDRAW_CALL_COMMAND,
     
@@ -322,6 +323,29 @@ public:
     { return ""; }
     virtual const char *GetDescription() 
     { return "get a window decoration size"; }
+};
+
+
+
+
+class SetWindowCloseCallbackCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new SetWindowCloseCallbackCommand(); }
+    virtual int GetId() { return SET_WINDOW_CLOSE_CALLBACK_COMMAND; }
+
+    virtual const char *GetName() { return "set_window_close_callback"; }
+    virtual const char *GetUsage() 
+    { return ""; }
+    virtual const char *GetDescription() 
+    { return "set the callback for a window close"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "p", &callback);
+    }
+    
+    Scm callback;
 };
 
 

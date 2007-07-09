@@ -235,6 +235,10 @@ def get_summon_window():
     return state.current_window
 
 
+def _window_close_callback(winid):
+    state.windows[winid]._on_close()
+summon_core.set_window_close_callback(_window_close_callback)
+
 
 #=============================================================================
 # Visdraw window objects
@@ -301,7 +305,7 @@ class Window (object):
             print "Warning: could not import summon_config"
             print e
 
-    
+    # view
     def is_open(self):
         """Return whether underling SUMMON window is open"""
         
@@ -311,21 +315,24 @@ class Window (object):
         return summon_core.get_window_decoration()
     get_decoration.__doc__ = summon_core.get_window_decoration.__doc__.split("\n")[1]
     
-    # view
+
     def close(self):
-        #self.onClose()
-        state.remove_window(self)
         ret = summon_core.close_window(self.winid)
-        self._on_close()
+        # self._on_close() will get called back through the C++ module
+        # letting us know the window is truely closed
+        
         return ret
     close.__doc__ = summon_core.close_window.__doc__.split("\n")[1]
     
     def _on_close(self):
         """A callback for window close events"""
         
+        # let the global summon state know, that this window is closed
+        state.remove_window(self)
+        
+        # let all listeners know this window is closed
         for listener in list(self.closeListeners):
             listener()
-        # TODO: need to also capture events when window is closed by X button
     
     def add_close_listener(self, listener):
         self.closeListeners.add(listener)

@@ -27,11 +27,11 @@ def fractal(depth, offset):
             lines(color(1, c, 0), 0,0, color(1, c2, 0), cos(angle), sin(angle)),
             translate(cos(angle), sin(angle),
                       scale(shrink, shrink, fractal(depth - 1, offset + step)))))
-    return list2group(vis)
+    return group(*vis)
     
 
 
 util.tic("draw")
 win.add_group(fractal(6, 0))
-home()
+win.home()
 util.toc()

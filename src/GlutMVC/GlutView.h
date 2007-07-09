@@ -34,7 +34,10 @@ class GlutView;
 
 class GlutViewListener {
 public:
-    void OnClose(GlutView *view) {}
+    virtual ~GlutViewListener() {}
+    virtual void ViewRedraw(GlutView *view) {}
+    virtual void ViewResize(GlutView *view) {}
+    virtual void ViewClose(GlutView *view) {}
 };
 
 

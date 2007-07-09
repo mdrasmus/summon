@@ -1,4 +1,7 @@
 #!/usr/bin/python -i
+# NOTE: These features are still experimental
+#
+
 
 import sys
 from summon.core import *
@@ -44,9 +47,9 @@ win4.set_size(100, 400)
 win5.set_size(100, 400)
 
        
-tie_windows([win1, win2, win3], tiex=True, pinx=True)
-tie_windows([win4, win2, win5], tiey=True, piny=True)
-e = WindowEnsembl([win1, win2, win3], stackx=True, samew=True)
-e = WindowEnsembl([win4, win2, win5], stacky=True, sameh=True)
+e = WindowEnsemble([win1, win2, win3], 
+                   stackx=True, samew=True, tiex=True)#, pinx=True)
+e = WindowEnsemble([win4, win2, win5], 
+                   stacky=True, sameh=True, tiey=True)#, piny=True)
 
 summon.begin_updating()

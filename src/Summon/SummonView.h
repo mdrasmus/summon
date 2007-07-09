@@ -67,15 +67,6 @@ public:
     int m_drawlist;
 };
 
-class SummonView;
-class SummonViewListener 
-{
-public:
-    virtual ~SummonViewListener() {}
-    virtual void ViewRedraw(SummonView *view) {}
-    virtual void ViewResize(SummonView *view) {}
-};
-
 
 class SummonView : public Glut2DView 
 {
@@ -92,9 +83,7 @@ public:
     
     inline void SetWorldModel(SummonModel *model) { m_worldModel = model; }
     inline void SetScreenModel(SummonModel *model) { m_screenModel = model; }
-    inline void SetListener(SummonViewListener *listener)
-    { m_listener = listener; }
-
+    
     inline void Redisplay() {
         RedisplayCommand cmd;
         ExecCommand(cmd);
@@ -136,7 +125,7 @@ protected:
     void ExecuteTasks();
     inline bool IsExecutingTasks() { return m_executingTasks; }
     
-    virtual void Reshape(int width, int height);
+    //virtual void Reshape(int width, int height);
     
     
     SummonModel *m_worldModel;
@@ -145,8 +134,7 @@ protected:
     bool m_active;
     vector<DrawTask*> m_tasks;
     bool m_executingTasks;
-    SummonViewListener *m_listener;
-    
+        
     // crosshair
     bool m_showCrosshair;
     Color m_crosshairColor;

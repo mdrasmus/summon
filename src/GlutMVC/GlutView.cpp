@@ -97,7 +97,11 @@ void GlutView::Display()
 
 void GlutView::Reshape(int width, int height)
 {
-   
+    // window has been closed
+    for (ListenerIter iter = m_listeners.begin(); 
+         iter != m_listeners.end(); iter++) {
+        (*iter)->ViewResize(this);
+    }
 }
 
 
@@ -106,7 +110,8 @@ void GlutView::OnClose()
     // window has been closed
     for (ListenerIter iter = m_listeners.begin(); 
          iter != m_listeners.end(); iter++) {
-        (*iter)->OnClose(this);
+        GlutViewListener *listener = (*iter);
+        listener->ViewClose(this);
     }
 }
 

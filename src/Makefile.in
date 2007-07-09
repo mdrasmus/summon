@@ -12,7 +12,7 @@ MY_LIBS = \
         $(SRCPREFIX)/MVC/libMVC.a 
 
 COMPILE = -c \
-    -Wall -fno-strict-aliasing -O3 -fPIC  \
+    -Wall -fno-strict-aliasing  -fPIC  \
     $(INCLUDE) 
 
 ifdef DEBUG
@@ -32,15 +32,17 @@ COMPILE := $(COMPILE) -I/usr/include/python2.4 -I/usr/include/python2.5
 
 
 # rules for subsystems
-$(SRCPREFIX)/Common/libCommon.a:
-	make -C $(SRCPREFIX)/Common CFLAGS=$(CFLAGS)
+$(SRCPREFIX)/Common/libCommon.a::
+	make -C $(SRCPREFIX)/Common
     
-$(SRCPREFIX)/GlutMVC/libGlutMVC.a:
-	make -C $(SRCPREFIX)/GlutMVC CFLAGS=$(CFLAGS)
+$(SRCPREFIX)/GlutMVC/libGlutMVC.a::
+	make -C $(SRCPREFIX)/GlutMVC
 
-$(SRCPREFIX)/MVC/libMVC.a:
-	make -C $(SRCPREFIX)/MVC CFLAGS=$(CFLAGS)
+$(SRCPREFIX)/MVC/libMVC.a::
+	make -C $(SRCPREFIX)/MVC
 
+$(SRCPREFIX)/Summon/$(MODULE)::
+	make -C $(SRCPREFIX)/Summon
 
 
 # basic compile rule

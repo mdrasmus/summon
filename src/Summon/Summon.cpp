@@ -45,7 +45,7 @@ static SummonModule *g_summon;
 static int g_hidden_window;
 
 
-class SummonModule : public CommandExecutor, GlutViewListener
+class SummonModule : public CommandExecutor, public GlutViewListener
 {
 public:
     SummonModule() :
@@ -63,7 +63,8 @@ public:
 
         m_timerCommand(NULL),
         m_timerDelay(0),
-        m_windowOffset(0,0)
+        m_windowOffset(0,0),
+        m_windowCloseCallback(Scm_EOL)
     {
     }
     
@@ -196,6 +197,12 @@ public:
                                     Scm_EOL)));
                 } break;
             
+            case SET_WINDOW_CLOSE_CALLBACK_COMMAND: {
+                m_windowCloseCallback = ((SetWindowCloseCallbackCommand*)
+                                         &command)->callback;
+                
+                } break;
+            
             case TIMER_CALL_COMMAND: {
                 TimerCallCommand *cmd = (TimerCallCommand*) &command;
                 SetTimerCommand(cmd->delay, new CallProcCommand(cmd->proc));
@@ -246,6 +253,8 @@ public:
         int id = m_nextWindowId;
         m_windows[id] = new SummonWindow(id, this, 400, 400, "SUMMON");
         m_windows[id]->GetView()->SetOffset(m_windowOffset);
+        m_windows[id]->GetView()->AddListener(this);
+        m_closeWaiting[m_windows[id]->GetView()] = m_windows[id];
         m_nextWindowId++;
         m_windows[id]->SetActive();
         return id;
@@ -263,24 +272,48 @@ public:
     
     void CloseWindow(SummonWindow* window)
     {
-        // remove window from window list
-        m_windows.erase(window->GetId());
-        
         // close the window
         window->Close();
+    }
+    
+    
+    void ViewClose(GlutView *view)
+    {    
+        // GLUT is done working with the window
+        // it is now safe to delete the window after this function returns
+        SummonWindow *window = m_closeWaiting[view];
         
-        // put the window on a queue to be deleted
-        m_closeWaiting[window->GetView()] = window;
-    }
-    
-    
-    void OnClose(GlutView *view)
-    {
-        // it is now safe to delete waiting window 
-        // (GLUT will make no further calls)
-        delete m_closeWaiting[view];
+        // remove window from window list
+        m_windows.erase(window->GetId());
         m_closeWaiting.erase(view);
+        m_deleteWaiting.push_back(window);
+        
+        // call the callback, if it exists
+        if (m_windowCloseCallback != Scm_EOL) {
+            Scm ret = ScmApply(m_windowCloseCallback, 
+                               ScmCons(Int2Scm(window->GetId()),
+                                       Scm_EOL));
+                    
+            if (Scm2Py(ret) == NULL)
+                //display exceptions, return None
+                PyErr_Print();
+        }
     }
+    
+    
+    void DeleteClosedWindows()
+    {
+        if (m_deleteWaiting.size() > 0) {
+            for (vector<SummonWindow*>::iterator i = m_deleteWaiting.begin();
+                 i != m_deleteWaiting.end(); i++)
+            {
+                delete (*i);
+            }
+        
+            m_deleteWaiting.clear();
+        }
+    }
+    
         
     
     int NewModel(int kind)
@@ -512,6 +545,9 @@ def __" + name + "_contents(obj): return obj[1:]\n\
             return;
         }
         
+        // delete closed windows
+        g_summon->DeleteClosedWindows();
+        
         // update window positions
         for (WindowIter i=g_summon->m_windows.begin(); i!=g_summon->m_windows.end(); i++) {
             (*i).second->GetView()->UpdatePosition();
@@ -672,7 +708,10 @@ def __" + name + "_contents(obj): return obj[1:]\n\
     map<int, SummonModel*> m_models;
    
     map<GlutView*, SummonWindow*> m_closeWaiting;
+    vector<SummonWindow*> m_deleteWaiting;
     Vertex2i m_windowOffset;
+    
+    Scm m_windowCloseCallback;
 };
 
 

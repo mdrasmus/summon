@@ -18,7 +18,7 @@
 namespace Summon
 {
 
-class SummonController : public Glut2DController, SummonViewListener
+class SummonController : public Glut2DController, public GlutViewListener
 {
 public:
     SummonController(CommandExecutor *global, SummonView *view, 
@@ -33,10 +33,13 @@ public:
     inline void SetScreenModel(SummonModel *model) { m_screen = model; }    
    
     virtual void Motion(int x, int y);
+
+    virtual void ViewRedraw(GlutView *view) {}
+    virtual void ViewResize(GlutView *view);
+    virtual void ViewClose(GlutView *view) {}
+
    
 protected:
-
-    virtual void ViewResize(SummonView *view);
 
     CommandExecutor *m_global;
     SummonView *m_view;

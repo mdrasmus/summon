@@ -134,6 +134,12 @@ void Glut2DView::Reshape(int w, int h)
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
    glOrtho(0, w, 0, h, -1.0, 1.0);
+  
+    // window has been closed
+    for (ListenerIter iter = m_listeners.begin(); 
+         iter != m_listeners.end(); iter++) {
+        (*iter)->ViewResize(this);
+    }
 }
 
 

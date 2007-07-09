@@ -23,6 +23,6 @@ bar.addItem(hud.MenuItem("My Func4", lambda: func(4),
 bar.show()
 
 
-win.set_position(0,0)
-win.set_size(400,100)
+win.set_size(400,400)
 win.set_visible(0,0, 300, 300)
+
