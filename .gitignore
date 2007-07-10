@@ -1,6 +1,7 @@
 *.a
 *.o
 *.so
+*.dll
 *.pyc
 *.html
 *.aux

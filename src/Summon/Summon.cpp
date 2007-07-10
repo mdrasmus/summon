@@ -733,6 +733,10 @@ using namespace Summon;
 
 extern "C" {
 
+void HiddenDisplay()
+{}
+
+
 // Begin Summon main loop
 // This should be called in a separate thread, because this function will
 // never return
@@ -768,6 +772,7 @@ SummonMainLoop(PyObject *self, PyObject *tup)
     glutInitWindowSize(1, 1);
     glutInitWindowPosition(10, 10);
     g_hidden_window = glutCreateWindow("SUMMON");
+    glutDisplayFunc(HiddenDisplay);
     
     g_summon->Lock();
 
