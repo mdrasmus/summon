@@ -335,10 +335,14 @@ void SummonView::DrawWorld()
     
     // set point size to max of zooms
     Vertex2f zoom = GetZoom();
+    float pointsize;
     if (zoom.y > zoom.x)
-        glPointSize(zoom.y);
+        pointsize = zoom.y;
     else
-        glPointSize(zoom.x);
+        pointsize = zoom.x;
+    //if (pointsize < 1.5) 
+    //    pointsize = 1.5;
+    glPointSize(pointsize);
         
     
     if (m_tasks.size() == 0) {

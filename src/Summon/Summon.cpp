@@ -43,6 +43,8 @@ using namespace std;
 class SummonModule;
 static SummonModule *g_summon;
 static int g_hidden_window;
+static const int INIT_WINDOW_X = 100;
+static const int INIT_WINDOW_Y = 100;
 
 
 class SummonModule : public CommandExecutor, public GlutViewListener
@@ -517,7 +519,7 @@ def __" + name + "_contents(obj): return obj[1:]\n\
     }
     
     // glut first timer
-    static void FirstTimer() //int value)
+    static void FirstTimer(int value)
     {
         // do initialization that can only be done after first pump of the 
         // GLUT event loop
@@ -525,10 +527,10 @@ def __" + name + "_contents(obj): return obj[1:]\n\
         
         // get window offset
         glutSetWindow(g_hidden_window);
-        g_summon->m_windowOffset.x = glutGet(GLUT_WINDOW_X) - 10;
-        g_summon->m_windowOffset.y = glutGet(GLUT_WINDOW_Y) - 10;
+        g_summon->m_windowOffset.x = glutGet(GLUT_WINDOW_X) - INIT_WINDOW_X;
+        g_summon->m_windowOffset.y = glutGet(GLUT_WINDOW_Y) - INIT_WINDOW_Y;
         glutHideWindow();
-        glutIdleFunc(NULL);
+        //glutIdleFunc(NULL);
         
         // let the window manager decide window placement
         glutInitWindowSize(-1, -1);
@@ -770,7 +772,7 @@ SummonMainLoop(PyObject *self, PyObject *tup)
 #endif
 
     glutInitWindowSize(1, 1);
-    glutInitWindowPosition(10, 10);
+    glutInitWindowPosition(INIT_WINDOW_X, INIT_WINDOW_Y);
     g_hidden_window = glutCreateWindow("SUMMON");
     glutDisplayFunc(HiddenDisplay);
     
@@ -778,12 +780,9 @@ SummonMainLoop(PyObject *self, PyObject *tup)
 
     // store summon thread ID
     g_summon->m_threadId = PyThread_get_thread_ident();
-    //g_summon->m_initialized = true;
 
     // setup glut timer
-    //glutTimerFunc(0, Summon::SummonModule::Timer, 0);
-    glutIdleFunc(Summon::SummonModule::FirstTimer);
-    //glutTimerFunc(0, Summon::SummonModule::FirstTimer, 0);
+    glutTimerFunc(0, Summon::SummonModule::FirstTimer, 0);
 
     Py_BEGIN_ALLOW_THREADS
     glutMainLoop();
@@ -897,30 +896,7 @@ Exec(PyObject *self, PyObject *tup)
 
 PyMODINIT_FUNC
 initsummon_core()
-{
-/*
-    // init glut
-    int argc = 1;
-    char **argv = new char* [1];
-    argv[0] = "summon";
-    glutInit(&argc, argv);
-    
-    // create hidden window
-    // so that GLUT does not get upset (it always wants one window)
-    //glutInitDisplayMode(GLUT_RGBA);
-    glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA | GLUT_MULTISAMPLE );
-    
-    // NOTE: requires freeglut > 2.4.0-1  (2005)
-    // or another GLUT implementation with this extension
-#ifndef NOGLUTEXT    
-    glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
-#endif
-    
-    glutInitWindowSize(1, 1);
-    glutInitWindowPosition(10, 10);
-    g_hidden_window = glutCreateWindow("SUMMON");
-*/    
-    
+{  
     InitPython();
     
     // create Summon app
@@ -928,7 +904,7 @@ initsummon_core()
     
     // run the actual Summon app
     if (!g_summon->Init())
-        printf("error\n");
+        printf("summon init error\n");
 }
  
  

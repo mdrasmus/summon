@@ -6,6 +6,7 @@ MODULE = summon_core.dll
 SRCPREFIX=src
 
 # no glut extension for cygwin
+# Closing windows is therefore not handled properly
 CFLAGS=-DNOGLUTEXT
 
 all: lib/$(MODULE)

@@ -243,6 +243,14 @@ def _window_close_callback(winid):
     state.windows[winid]._on_close()
 summon_core.set_window_close_callback(_window_close_callback)
 
+_window_decoration = summon_core.get_window_decoration()
+def get_window_decoration():
+    return _window_decoration
+
+def set_window_decoration(xoffset, yoffset):
+    global _window_decoration
+    _window_decoration = (xoffset, yoffset)
+
 
 #=============================================================================
 # Visdraw window objects
@@ -272,6 +280,7 @@ class Window (object):
         summon_core.assign_model(self.winid, "screen", self.screen.id)
         
         summon_core.set_window_on_resize(self.winid, self._on_resize)
+        
         
         self.set_name(name)
         self.antialias = True
@@ -316,8 +325,9 @@ class Window (object):
         return self.winid in state.windows
     
     def get_decoration(self):
-        return summon_core.get_window_decoration()
+        return _window_decoration
     get_decoration.__doc__ = summon_core.get_window_decoration.__doc__.split("\n")[1]
+    
     
 
     def close(self):
