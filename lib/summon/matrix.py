@@ -262,7 +262,13 @@ def openDense(filename, mat, conf={"cutoff": -util.INF}):
     infile = file(filename)
     
     # read header
-    (nrows, ncols) = map(int, infile.next().split())
+    tokens = map(int, infile.next().split())
+    if len(tokens) == 2:
+        nrows, ncols = tokens
+    elif len(tokens) == 1:
+        nrows = ncols = tokens[0]
+    else:
+        raise Exception("Error on line 1")
     nnz = nrows * ncols
     util.log("%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz))
     
@@ -429,7 +435,9 @@ class MatrixViewer (object):
     def setLabelWindows(self, show=True):
         self.showLabelWindows = show
         
-        if not show:
+        if show:
+            self.showLabels = True
+        else:
             self.closeLabelWindows()
         
         self.redraw()
