@@ -25,11 +25,13 @@ from summon.matrix import *
 
 def parseColor(colorstr):
     return map(float, colorstr.split(','))
-    
+
+def parseSize(sizestr):
+    return map(int, sizestr.split('x'))
 
 # command line options
 options = [
-    "matrix formats",
+    "Matrix formats",
     ["r:", "comprow=", "comprow", "<compressed row matrix file>",
         {"single": True}],
     ["i:", "imat=", "imat", "<index matrix file>",
@@ -39,7 +41,7 @@ options = [
     ["d:", "dense=", "dense", "<dense matrix file>",
         {"single": True}],
     
-    "labels",
+    "Labels",
     ["", "rlab=", "rowlabels", "<row labels>",
         {"single": True}],
     ["", "clab=", "collabels", "<col labels>", 
@@ -47,18 +49,19 @@ options = [
     ["", "rclab=", "rowcollabels", "<row & col labels>", 
         {"single": True}],
     
-    "permutation",
+    "Permutation",
     ["R:", "rperm=", "rperm", "<row permutation>",
         {"single": True}],
     ["C:", "cperm=", "cperm", "<col permutation>",
         {"single": True}],
     ["B:", "rcperm=", "rcperm", "<row & col permutation>",
         {"single": True}],
-
-    ["o:", "order=", "order", "<label order>",
-        {"single": True}],
     
-    "clustering",
+    ["o:", "order=", "order", "<label order>",
+        {"single": True,
+         "help": "only used with label matrix"}],
+    
+    "Clustering",
     ["", "rpart=", "rpart", "<row partition ids>",
         {"single": True}],
     ["", "cpart=", "cpart", "<col partition ids>",
@@ -67,32 +70,44 @@ options = [
         {"single": True}],
 
     
-    "misc",
-    ["L", "showlabelwindows", "showlabelwindows", "",
+    "Display",
+    ["L:", "showlabels=", "showlabels", "(inline,panels,none)",
         {"single": True,
-         "help": "display row/col labels in separate windows"}],
-    ["s:", "sample=", "sample", "<sample fraction>",
-        {"single": True,
-         "parser": float}],
+         "default": "inline"}],
     ["c:", "color=", "color", "(solid|posneg|rainbow|filename)",
         {"single": True,
-         "default": "rainbow"}],
+         "default": "rainbow",
+         "help": "specify a colormap using a predefined map or " +
+                 "a custom map from a file"}],
     ["", "bgcolor=", "bgcolor", "r,g,b   0<=r<=1",
         {"single": True,
          "parser": parseColor,
-         "default": (0,0,0)}],
+         "default": (0,0,0),
+         "help": "specify the background color (default: black)"}],
     ["", "drawzeros", "drawzeros", "",
         {"single": True,
          "help": "a bool whether to explicitly draw zeros with the colormap"}],
+    ["", "style=", "style", "(points|quads)",
+        {"single": True,
+         "default": "points",
+         "help": "draw non-zeros using points (default) or quadrilaterals"}],
+    ["", "winsize=", "winsize", "<width>x<height>",
+        {"single": True,
+         "default": (400, 400),
+         "parser": parseSize}],
+    
+    "Miscellaneous",
+    ["s:", "sample=", "sample", "<sample fraction>",
+        {"single": True,
+         "parser": float,
+         "help": "choose a random subset of non-zeros to display"}],
     ["", "cutoff=", "cutoff", "<value>",
         {"default": -1e1000,
          "parser": float,
-         "single": True}],
-    ["", "style=", "style", "(points|quads)",
-        {"single": True,
-         "default": "points"}],
+         "single": True}],             
     ["", "loadvals", "loadvals", "",
-        {"single": True}]
+        {"single": True,
+         "help": "load all non-zeros into memory for easy interactive display"}]
 ]
 
 
@@ -105,7 +120,7 @@ conf = util.parseOptions(sys.argv, options, resthelp="<python script>")
 #
 
 print "SUMMATRIX (SUMMON Matrix Visualizer)"
-print "Matt Rasmussen 2005"
+print "Matt Rasmussen 2005-2007"
 print
 
 mat = Matrix()
@@ -151,7 +166,7 @@ elif "dense" in conf:
     openDense(conf["dense"], mat)
     matfile = conf["dense"]
 else:
-    raise "no matrix specified"
+    raise Exception("no matrix specified")
 
 
 # read labels
@@ -181,7 +196,18 @@ if mat.cpart and not mat.cperm:
     mat.cperm = range(len(mat.cpart))
     mat.cperm.sort(key=lambda x: mat.cpart[x])
 
-
+# determine label settings
+if conf["showlabels"] == "inline":
+    showLabels = True
+    showLabelWindows = False
+elif conf["showlabels"] == "panels":
+    showLabels = True
+    showLabelWindows = True
+elif conf["showlabels"] == "none":
+    showLabels = False
+    showLabelWindows = False
+else:
+    raise Exception("unknown showlabels setting '%s'" % conf["showlabels"])
 
 # execute python script
 for script in conf["REST"]:
@@ -192,6 +218,8 @@ for script in conf["REST"]:
 viewer = MatrixViewer(mat, bgcolor=conf["bgcolor"], 
                            drawzeros=conf["drawzeros"], 
                            style=conf["style"],
-                           showLabelWindows=conf["showlabelwindows"])
+                           showLabels=showLabels,
+                           showLabelWindows=showLabelWindows,
+                           winsize=conf["winsize"])
 viewer.show()
 viewer.win.set_name(matfile)

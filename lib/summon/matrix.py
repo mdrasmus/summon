@@ -8,7 +8,7 @@ import summon
 from summon import shapes
 from summon import util
 from summon import multiwindow
-
+from summon import colors
 
 
 #############################################################################
@@ -63,21 +63,8 @@ class Matrix (util.Dict):
 
         self.rinv = util.invPerm(self.rperm)
         self.cinv = util.invPerm(self.cperm)
-
-    def setColor(colormap, low, top):
-        self.colormin = float(low)
-        self.colormax = float(top)
-        self.colorrange = float(top - low)
-        self.colormap = colormap
-        self.colorlen = colorlen
-        
-
-    def getColor(self, val):
-        i = int((val - self.colormin) / self.colorrange)
-        i = min(max(i, 0), self.colorlen)
-        return self.colormap[i]
-
-
+    
+    
     def from2DList(self, mat, cutoff=-util.INF):
         assert util.equal(* map(len, mat)), "matrix has unequal row sizes"
     
@@ -318,16 +305,18 @@ def getDrawColor(bgcolor=(0,0,0)):
 class MatrixViewer (object):
     def __init__(self, mat=None, onClick=None, 
                  bgcolor=(0,0,0), drawzeros=False, style="points",
-                 showLabels=False, showLabelWindows=False):
+                 showLabels=False, showLabelWindows=False,
+                 winsize=(400,400)):
         self.win = None
         self.mat = mat
         self.bgcolor = bgcolor
         self.drawzeros = drawzeros
         self.style = style
         self.showLabels = showLabels
-        self.labelWindows = None
         self.showLabelWindows = showLabelWindows
+        self.winsize = winsize[:]
         
+        self.labelWindows = None        
         self.ensemble1 = None
         self.ensemble2 = None
         self.firstOpen = True
@@ -343,6 +332,7 @@ class MatrixViewer (object):
     def show(self):
         if self.win == None:
             self.win = summon.Window()
+            self.win.set_size(* self.winsize)
         else:
             self.win.clear_groups()
         self.win.set_antialias(False)
@@ -366,6 +356,10 @@ class MatrixViewer (object):
         
         util.tic("drawing matrix")
         win = self.win
+        
+        if mat.colormap == None:
+            mat.colormap = colors.RainbowColorMap()
+        
         mat.colormap.max = mat.maxval
         mat.colormap.min = mat.minval
         mat.colormap.range = mat.maxval - mat.minval
@@ -453,9 +447,9 @@ class MatrixViewer (object):
         self.ensemble2 = None
         
         if self.labelWindows != None:
-            if self.labelWindows[0].is_open():
+            if self.labelWindows[0] and self.labelWindows[0].is_open():
                 self.labelWindows[0].close()
-            if self.labelWindows[1].is_open():
+            if self.labelWindows[1] and self.labelWindows[1].is_open():
                 self.labelWindows[1].close()
         
             self.labelWindows = None
@@ -468,38 +462,43 @@ class MatrixViewer (object):
         if self.labelWindows != None:
             self.closeLabelWindows()
         
-        # make new windows
-        top = summon.Window(" ")
-        left = summon.Window(" ")
-        self.labelWindows = [left, top]
+        summon.stop_updating()
+
+        w, h = self.win.get_size()
+        topcoord = .5
+        leftcoord = -.5
 
 
         # set visible
-        maxLabelWidth = max(map(len, self.mat.rowlabels))
-        maxLabelHeight = max(map(len, self.mat.collabels))                
-        w, h = self.win.get_size()
-        
-        topcoord = .5
-        leftcoord = -.5
-        
-        left.set_size(maxLabelWidth*12, h)                
-        left.set_visible(leftcoord, 0, leftcoord-maxLabelWidth, 1)
-        top.set_size(w, maxLabelHeight*12)
-        top.set_visible(0, topcoord, 1, topcoord+maxLabelHeight)
-
-        top.set_bgcolor(*self.win.get_bgcolor())
-        left.set_bgcolor(*self.win.get_bgcolor())                
-
-        summon.stop_updating()
-        
-        self.ensemble1 = multiwindow.WindowEnsemble([left, self.win], 
+        if self.mat.rowlabels != None:
+            left = summon.Window(" ")        
+            left.set_bgcolor(*self.win.get_bgcolor())
+            maxLabelWidth = max(map(len, self.mat.rowlabels))
+            left.set_size(maxLabelWidth*12, h)                
+            left.set_visible(leftcoord, 0, leftcoord-maxLabelWidth, 1)
+            
+            self.ensemble1 = multiwindow.WindowEnsemble([left, self.win], 
                                       stacky=True, sameh=True,
                                       tiey=True, piny=True,
                                       master=self.win)
-        self.ensemble2 = multiwindow.WindowEnsemble([top, self.win], 
+        else:
+            left = None
+        
+        if self.mat.collabels != None:
+            top = summon.Window(" ")        
+            top.set_bgcolor(*self.win.get_bgcolor())
+            maxLabelHeight = max(map(len, self.mat.collabels))
+            top.set_size(w, maxLabelHeight*12)            
+            top.set_visible(0, topcoord, 1, topcoord+maxLabelHeight)        
+        
+            self.ensemble2 = multiwindow.WindowEnsemble([top, self.win], 
                                       stackx=True, samew=True,
                                       tiex=True, pinx=True,
                                       master=self.win)
+        else:
+            top = None
+        
+        self.labelWindows = [left, top]
         
         if not self.firstOpen:
             summon.begin_updating()
@@ -519,7 +518,7 @@ class MatrixViewer (object):
             part = -1
             for i in xrange(mat.nrows):
                 if mat.rpart[mat.rperm[i]] != part:
-                    vis.append(lines(-.5, -i+.5, mat.ncols, -i+.5))
+                    vis.append(lines(-.5, -i+.5, mat.ncols-.5, -i+.5))
                     part = mat.rpart[mat.rperm[i]]
 
         # draw col partitions
@@ -549,8 +548,13 @@ class MatrixViewer (object):
         maxTextSize = 12
         minTextSize = 4
         
+        # determine which window to draw labels in
         if self.labelWindows != None:
             rowwin, colwin = self.labelWindows
+            if rowwin == None:
+                rowwin = self.win
+            if colwin == None:
+                colwin = self.win
         else:
             rowwin = colwin = self.win
         
@@ -562,7 +566,7 @@ class MatrixViewer (object):
             for i in xrange(nrows):
                 x = -.5 - labelPadding
                 y = .5 - i*height + labelSpacing/2.
-                vis.append(text_clip(mat.rowlabels[i],
+                vis.append(text_clip(mat.rowlabels[mat.rinv[i]],
                                      x, y, x-labelWidth, y-height+labelSpacing/2.0,
                                      minTextSize, maxTextSize, 
                                      'right', 'middle'))
@@ -575,7 +579,7 @@ class MatrixViewer (object):
             for i in xrange(ncols):
                 x = .5 + labelPadding
                 y = .5 - i*height + labelSpacing/2.
-                vis2.append(text_clip(mat.collabels[i],
+                vis2.append(text_clip(mat.collabels[mat.cinv[i]],
                                   x, y, x+labelWidth, y-height+labelSpacing/2.0,
                                   minTextSize, maxTextSize, 
                                   'left', 'middle', 'vertical'))
