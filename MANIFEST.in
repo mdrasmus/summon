@@ -1,8 +1,13 @@
 include *.txt
 include CHANGES
+include INSTALL
+include Makefile
+include Makefile.cygwin
+include Makefile.win
+include winsh.bat
 recursive-include examples *.*
 recursive-include examples README*
-recursive-include src *.cpp *.h
+recursive-include src *.cpp *.h Makefile*
 include doc/summon_manual.pdf
 recursive-include doc *.html
 include bin/summon

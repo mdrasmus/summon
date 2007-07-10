@@ -8,7 +8,7 @@
 
 from distutils.core import setup, Extension
 
-SUMMON_VERSION = '1.7.1'
+SUMMON_VERSION = '1.7.2'
 
 setup(
     name='summon',
