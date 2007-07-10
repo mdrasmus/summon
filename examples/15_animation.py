@@ -10,6 +10,17 @@ from summon import shapes
 import summon
 
 
+# parameters (feel free to change these here and WHILE the animation is running!)
+rate = 0
+winsize = 300
+maxballsize = 20
+balls = []
+nballs = 30
+gravity = [0, -.1]
+bounce = -.9
+
+
+
 win = summon.Window("15_animation")
 
 
@@ -25,15 +36,6 @@ class Ball:
         self.ay = 0
         self.size = size
         self.activate = 0
-
-# parameters (feel free to change these here and WHILE the animation is running!)
-rate = 0
-winsize = 300
-maxballsize = 20
-balls = []
-nballs = 30
-gravity = [0, -.1]
-bounce = -.9
 
 
 # create balls

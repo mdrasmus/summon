@@ -70,3 +70,8 @@ win.add_group(group(color(0,0,0), drawTree(6, 100, 10)))
 
 # center the "camera" so that all shapes are in view
 win.home()
+
+
+print "Note: Use middle click or Ctrl+click to toggle the visibility of "
+print "      each node in the tree."
+      

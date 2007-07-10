@@ -36,6 +36,10 @@ VERSION_INFO = """\
 def version():
     print VERSION_INFO
 
+def timer_call(delay, func):
+    """calls a function 'func' after 'delay' seconds have past"""
+    summon_core.timer_call(delay, func)
+
 
 #=============================================================================
 # Dynamic updating interface
@@ -100,7 +104,7 @@ class SummonTimer:
     def begin_updating(self):
         """starts the SUMMON timer"""
         
-        windows = set(get_windows())
+        windows = set(summon_core.get_windows())
         dels = set()
         
         # call each timer that has past
@@ -137,7 +141,7 @@ class SummonTimer:
     
     def stop_updating(self):
         """stops the SUMMON timer"""
-        timer_call(0, lambda :None)
+        summon_core.timer_call(0, lambda :None)
 
 
 
@@ -234,7 +238,7 @@ def get_summon_window():
     """Return the currently active window"""
     return state.current_window
 
-
+# install summon window close callback for communication between C++ and python
 def _window_close_callback(winid):
     state.windows[winid]._on_close()
 summon_core.set_window_close_callback(_window_close_callback)
@@ -250,7 +254,7 @@ class Window (object):
     def __init__(self, name="SUMMON", worldid=None, screenid=None,
                  loadconfig=True):
         # create new window
-        self.winid = new_window()
+        self.winid = summon_core.new_window()
         assert self.winid != None
         state.add_window(self)
 
@@ -386,6 +390,7 @@ class Window (object):
     
     
     def _on_focus_change(self):
+        """A callback for when zoom focus changes"""
         
         if self.focusLock: return
         self.focusLock = True
@@ -544,7 +549,7 @@ class Window (object):
     show_crosshair.__doc__ = summon_core.show_crosshair.__doc__.split("\n")[1]
     
     
-    
+    #=============================================================
     # controller
     def add_binding(self, input_obj, func):
         """add a function to the list of functions bounded to an input"""
@@ -589,7 +594,7 @@ class Window (object):
         return summon_core.get_mouse_pos(self.winid, coord)
     
     
-        
+    #====================================================================
     # model manipulation (forward to world)
     def clear_groups(self):
         return self.world.clear_groups()
@@ -626,7 +631,7 @@ class Window (object):
         return self.world.get_root_id()
     get_root_id.__doc__ = summon_core.get_root_id.__doc__.split("\n")[1]
     
-    
+    #===================================================================
     # misc
     def duplicate(self):
         """returns a new window with same model and properties as this window"""

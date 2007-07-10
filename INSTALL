@@ -21,16 +21,13 @@ or to install in your home directory use:
 =============================================================================
 CYGWIN INSTALLATION
 
-There is a Makefile designed specifically for installing on CYGWIN.  Use the
-following to install on CYGWIN
+I have had trouble using setup.py for installing on CYGWIN, so I made a Makefile
+specifically for installing on CYGWIN  Use the following to install on CYGWIN.  
+Note: make sure that the development packages of freeglut and SDL are installed
+first.
 
 
     make -f Makefile.cygwin
-
-
-
-
-
 
 
 

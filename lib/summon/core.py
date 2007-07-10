@@ -1,8 +1,8 @@
 """
     SUMMON - core module
 
-    This is the core summon module that is most often imported as
-    from summon.core import *
+    This is the core summon module that is most often imported as:
+        from summon.core import *
     
 """
 
@@ -26,10 +26,11 @@ __summon_thread = threading.Thread(target=summon_core.summon_main_loop)
 __summon_thread.setDaemon(True)
 __summon_thread.start()
 
+# register a function for clean shutdown
 atexit.register(lambda: summon_core.python_shutdown)
 
 # wait for summon to startup
-while summon_core.get_windows() == None: pass
+while summon_core.get_windows() == None: time.sleep(.1)
 
 
 
@@ -120,25 +121,10 @@ vertices_contents
 
 # Note: these will be removed some day
 # only timer_call is necessary right now
-_summon_funcs = """\
-assign_model
-get_models
-get_windows
-new_groupid
-new_model
-new_window
-redraw_call
-timer_call
-""".split()
+#_summon_funcs = """\
+#""".split()
 
 
 _globals = globals()
-for func in _summon_constructs + _summon_funcs:
+for func in _summon_constructs: # + _summon_funcs:
     _globals[func] = summon_core.__dict__[func]
-
-
-# removed commands:
-#   set_model
-#   get_model
-#   set_window
-#   get_window
