@@ -202,8 +202,8 @@ def openLabeledMatrix(filename, mat, conf={}):
     
     # read all data
     nnz = 0
-    maxval = -1e1000
-    minval = 1e1000
+    maxval = -util.INF
+    minval = util.INF
     for line in file(filename):
         tokens = line.split()
         score = float(tokens[2])
@@ -215,27 +215,45 @@ def openLabeledMatrix(filename, mat, conf={}):
     mat.maxval = maxval
     mat.minval = minval
     
+    # determine labels
+    rowlabelset = set()
+    collabelset = set()
+    rowlabels = []
+    collabels = []
+
+    for i in mat:
+        if i not in rowlabelset:
+            rowlabels.append(i)
+            rowlabelset.add(i)
+
+        for j in mat[i]:
+            if j not in collabelset:
+                collabels.append(j)
+                collabelset.add(j)
+    
     # determine order
     if mat.order != None:
-        labels = util.readStrings(mat.order)
+        order = util.readStrings(mat.order)
+        rowlookup = util.list2lookup(order)
+        collookup = util.list2lookup(order)
     else:
-        set = {}
-        for i in mat:
-            set[i] = 1
-            for j in mat[i]:
-                set[j] = 1
-        labels = util.unique(set.keys())
-        labels.sort()
-    lookup = util.list2lookup(labels)
+        rowlookup = util.list2lookup(rowlabels)
+        collookup = util.list2lookup(collabels)        
     
-    mat.setup(len(labels), len(labels), nnz)
+    rowlabels.sort(key=lambda x: rowlookup[x])
+    collabels.sort(key=lambda x: collookup[x])
+    
+    mat.rowlabels = rowlabels
+    mat.collabels = collabels
+    
+    mat.setup(len(rowlabels), len(collabels), nnz)
     rows, cols, vals = (mat.rows, mat.cols, mat.vals)
     
     # store data
     for i in mat:
         for j in mat[i]:
-            rows.append(lookup[i])
-            cols.append(lookup[j])
+            rows.append(rowlookup[i])
+            cols.append(collookup[j])
             vals.append(mat[i][j])
     
     util.toc()

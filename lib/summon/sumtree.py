@@ -32,7 +32,7 @@ class SumTree (object):
         self.selnode = None
         self.markGroup = None
         self.labelids = []
-        self.showlabels = showLabels
+        self.showLabels = showLabels
         self.xscale = float(xscale)
         self.win = None
         self.vertical = vertical
@@ -191,7 +191,7 @@ class SumTree (object):
 
    
     
-    def showLabels(self, visible):
+    def enableLabels(self, visible):
         for label in self.labelids:
             self.win.show_group(label, visible)
     
