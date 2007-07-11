@@ -73,7 +73,8 @@ setup(
     py_modules=['summon_config'],
     scripts=['bin/summon',
              'bin/summatrix',
-             'bin/sumtree'],
+             'bin/sumtree',
+             'bin/python-i'],
     ext_modules=[
         Extension(
             'summon_core', 
