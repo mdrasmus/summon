@@ -943,8 +943,26 @@ Exec(PyObject *self, PyObject *tup)
 static PyObject *
 MakeConstruct(PyObject *self, PyObject *args)
 {
-    Graphic *graphic = new Graphic(LINES_CONSTRUCT);
+    long elmid;
+    PyObject *lst;
+    int ok = PyArg_ParseTuple(args, "lO", &elmid, &lst);
+        
+    if (!ok)
+        return NULL;
+    Scm code = Py2Scm(lst);    
     
+    
+    if (IsGraphic(elmid)) {
+        // build graphic
+        Graphic *graphic = new Graphic(elmid);
+        if (!graphic->Build(code))
+            return NULL;
+    } else {
+        // build construct
+        return NULL;
+    }
+    
+    // return element address
     PyObject *addr = PyInt_FromLong((long) graphic);
     return addr;
 }
@@ -956,7 +974,7 @@ DeleteConstruct(PyObject *self, PyObject *args)
     long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
     Element *elm = (Element*) addr;
     
-    if (elm->m_parent == NULL)
+    if (elm->GetParent() == NULL)
         delete elm;
     
     Py_RETURN_NONE;
