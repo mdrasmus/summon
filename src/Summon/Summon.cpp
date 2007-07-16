@@ -30,7 +30,9 @@
 extern "C" {
 static PyObject *Exec(PyObject *self, PyObject *tup);
 static PyObject *SummonMainLoop(PyObject *self, PyObject *tup);
-static PyObject *PythonShutdown(PyObject *self, PyObject *tup);
+static PyObject *SummonShutdown(PyObject *self, PyObject *tup);
+static PyObject *MakeConstruct(PyObject *self, PyObject *args);
+static PyObject *DeleteConstruct(PyObject *self, PyObject *args);
 }
 
 
@@ -72,15 +74,174 @@ public:
     
     virtual ~SummonModule()
     {
+        // clean up SDL thread management 
         SDL_DestroyMutex(m_lock);
         SDL_DestroyCond(m_cond);
         SDL_DestroyMutex(m_condlock);        
     }
-        
     
+    
+    // initialization
+    bool Init()
+    {    
+        ModuleInit();
+        InitDrawEnv();    
+        
+        return true;
+    }
+    
+    
+    void ModuleInit()
+    {
+        // init commands
+        summonCommandsInit();
+        m_summonCommands.clear();
+        
+        for (CommandAttr::Iterator i=g_scriptAttr.Begin();
+             i != g_scriptAttr.End(); i++)
+        {
+            if (!g_constructAttr.Has((*i)->GetId()) &&
+                strlen(((ScriptCommand*) *i)->GetName()) > 0)
+            {
+                m_summonCommands.push_back((ScriptCommand*) *i);
+            }
+        }
+        
+        static PyMethodDef *summonMethods = new PyMethodDef [6];
+
+        // install main command
+        int table = 0;
+        char *mainFunc = "__gatewayFunc";
+        summonMethods[table].ml_name  = mainFunc;
+        summonMethods[table].ml_meth  = Exec;
+        summonMethods[table].ml_flags = METH_VARARGS;
+        summonMethods[table].ml_doc   = "";
+        table++;
+
+        // summon main loop
+        summonMethods[table].ml_name  = "summon_main_loop";
+        summonMethods[table].ml_meth  = SummonMainLoop;
+        summonMethods[table].ml_flags = METH_VARARGS;
+        summonMethods[table].ml_doc   = "";
+        table++;
+
+        // gracefully shutdown glut from python
+        summonMethods[table].ml_name  = "summon_shutdown";
+        summonMethods[table].ml_meth  = SummonShutdown;
+        summonMethods[table].ml_flags = METH_VARARGS;
+        summonMethods[table].ml_doc   = "";
+        table++;
+
+        // make construct
+        summonMethods[table].ml_name  = "make_construct";
+        summonMethods[table].ml_meth  = MakeConstruct;
+        summonMethods[table].ml_flags = METH_VARARGS;
+        summonMethods[table].ml_doc   = "";
+        table++;
+        
+        // gracefully shutdown glut from python
+        summonMethods[table].ml_name  = "delete_construct";
+        summonMethods[table].ml_meth  = DeleteConstruct;
+        summonMethods[table].ml_flags = METH_VARARGS;
+        summonMethods[table].ml_doc   = "";
+        table++;
+
+        // cap the methods table with ending method
+        summonMethods[table].ml_name  = NULL;
+        summonMethods[table].ml_meth  = NULL;
+        summonMethods[table].ml_flags = 0;
+        summonMethods[table].ml_doc   = NULL;
+
+        // register all methods with python
+        PyObject *module = Py_InitModule(MODULE_NAME, 
+                                         summonMethods);
+        
+
+        for (unsigned int i=0; i<m_summonCommands.size(); i++) {
+            // get command id
+            string idstr = int2string(m_summonCommands[i]->GetId());
+
+            // create python name for command
+            string name = m_summonCommands[i]->GetName();
+            string help = string("(") + string(m_summonCommands[i]->GetUsage()) + 
+                          ")\\n" + m_summonCommands[i]->GetDescription();
+
+            // create wrapper function
+            string pyCommands =  "import " MODULE_NAME "\n"
+                "def " + name +  "(* args): " +
+                "  return " MODULE_NAME "." + mainFunc + "(" + 
+                    (m_summonCommands[i]->HasAttr(&g_scriptAttr) ?
+                        idstr :  string("'") + m_summonCommands[i]->GetName() + "'") +
+                ", args)\n" + 
+                name + ".func_doc = \"" + help + "\"\n"
+                MODULE_NAME "." + name + " = " + name + "\n" +
+                "del " + name + "\n";
+                //"__helper_" + name + ".func_name = \"" + name + "\"\n";
+            ScmEvalStr(pyCommands.c_str());
+        }
+    }
+    
+    // TODO: make less ugly
+    void InitDrawEnv()
+    {
+        // install group id generator
+        ScmEvalStr("import " MODULE_NAME);
+        ScmEvalStr(
+MODULE_NAME ".__groupid = 1 \n\
+def __new_groupid(): \n\
+    "MODULE_NAME".__groupid = "MODULE_NAME".__groupid + 1 \n\
+    return "MODULE_NAME".__groupid\n\
+"MODULE_NAME".new_groupid = __new_groupid\n");
+
+
+        // register constructs
+        for (CommandAttr::Iterator i=g_constructAttr.Begin(); 
+             i != g_constructAttr.End(); i++)
+        {
+            Construct *cmd = (Construct*) *i;
+            string str;
+
+            string name = string(cmd->GetName());
+            string id = int2string(cmd->GetId());
+            string help = string("(") + string(cmd->GetUsage()) + 
+                  ")\\n" + cmd->GetDescription();
+
+            if (cmd->GetId() == GROUP_CONSTRUCT) {
+                str = string("") + "\
+def __group(* args): return (" + id + ", __new_groupid()) + args\n\
+__group.func_doc = \"" + help + "\"\n\
+def __list2group(lst):\n\
+    return ("+ id +", __new_groupid()) + tuple(lst)\n\
+def __is_group(obj): return (obj[0] == " + id + ")\n\
+def __group_contents(obj): return obj[2:]\n\
+def __get_group_id(obj): return obj[1]\n\
+"MODULE_NAME".group = __group\n\
+"MODULE_NAME".list2group = __list2group\n\
+"MODULE_NAME".is_group = __is_group\n\
+"MODULE_NAME".group_contents = __group_contents\n\
+"MODULE_NAME".get_group_id = __get_group_id\n";
+            } else {
+                str = string("") + "\
+def __" + name + "(* args): return (" + id + ",) + args\n\
+__" + name + ".func_doc = \"" + help + "\"\n\
+def __is_" + name + "(obj): return (obj[0] == " + id + ")\n\
+def __" + name + "_contents(obj): return obj[1:]\n\
+"MODULE_NAME"." + name + " = __" + name + "\n\
+"MODULE_NAME".is_" + name + " = __is_" + name + "\n\
+"MODULE_NAME"." + name + "_contents = __" + name + "_contents\n\
+";
+            }
+
+            ScmEvalStr(str.c_str());
+        }
+    }
+    
+        
+    // Main command execution function
     virtual void ExecCommand(Command &command) {
         switch (command.GetId()) {
             case CALL_PROC_COMMAND: {
+                // execute a python function
                 CallProcCommand *cmd = (CallProcCommand*) &command;
                 
                 if (cmd->defined) {
@@ -96,14 +257,15 @@ public:
                 
                 } break;
             
+            /*
             case REDRAW_CALL_COMMAND: {
                 RedrawCallCommand *cmd = (RedrawCallCommand*) &command;
-                
-                Scm proc = cmd->proc;
-                                
+                Scm proc = cmd->proc;                  
                 } break;
+            */
             
             case GET_WINDOWS_COMMAND: {
+                // get a list of all open windows
                 Scm lst = Scm_EOL;
                 for (WindowIter i=m_windows.begin(); i!=m_windows.end(); i++) {
                     lst = ScmCons(Int2Scm((*i).first), lst);
@@ -113,11 +275,13 @@ public:
             
 
             case NEW_WINDOW_COMMAND:
+                // create a new window
                 ((ScriptCommand*) &command)->SetReturn(Int2Scm(NewWindow()));
                 break;
                 
                         
             case CLOSE_WINDOW_COMMAND: {
+                // close a window
                 int windowid = ((CloseWindowCommand*)&command)->windowid;
                 SummonWindow *window = GetWindow(windowid);
                 
@@ -130,6 +294,7 @@ public:
             
             
             case GET_MODELS_COMMAND: {
+                // get a list of all models
                 Scm lst = Scm_EOL;
                 for (ModelIter i=m_models.begin(); i!=m_models.end(); i++) {
                     lst = ScmCons(Int2Scm((*i).first), lst);
@@ -139,10 +304,12 @@ public:
             
                 
             case NEW_MODEL_COMMAND:
+                // create a new model
                 ((ScriptCommand*) &command)->SetReturn(Int2Scm(NewModel(MODEL_WORLD)));
                 break;
             
             case DEL_MODEL_COMMAND: {
+                // delete a model
                 int modelid  = ((DelModelCommand*)&command)->modelid;
                 SummonModel *model = GetModel(modelid);
                 
@@ -166,6 +333,7 @@ public:
             } break;
             
             case ASSIGN_MODEL_COMMAND: {
+                // attach a model to a window
                 int windowid = ((AssignModelCommand*)&command)->windowid;
                 string kind  =((AssignModelCommand*)&command)->kind;
                 int modelid  = ((AssignModelCommand*)&command)->modelid;
@@ -193,6 +361,7 @@ public:
                 } break;
             
             case GET_WINDOW_DECORATION_COMMAND: {
+                // get the size of window decoration
                 ((ScriptCommand*) &command)->SetReturn(
                     ScmCons(Int2Scm(m_windowOffset.x),
                             ScmCons(Int2Scm(m_windowOffset.y),
@@ -200,12 +369,14 @@ public:
                 } break;
             
             case SET_WINDOW_CLOSE_CALLBACK_COMMAND: {
+                // set the callback for window close events
                 m_windowCloseCallback = ((SetWindowCloseCallbackCommand*)
                                          &command)->callback;
                 
                 } break;
             
             case TIMER_CALL_COMMAND: {
+                // set the function to call when the timer goes off
                 TimerCallCommand *cmd = (TimerCallCommand*) &command;
                 SetTimerCommand(cmd->delay, new CallProcCommand(cmd->proc));
                 } break;
@@ -213,20 +384,21 @@ public:
                 
             default:
                 // do command routing
+                
                 if (g_globalAttr.Has(&command)) {
                     // global
                     // all global commands should be executed by SUMMON
                     assert(0);
                 
                 } else if (g_modelAttr.Has(&command)) {
-                    // model
+                    // route to model
                     SummonModel *model = 
                         GetModel(((ModelCommand*) &command)->modelid);
                     if (model)
                         model->ExecCommand(command);
                 
                 } else if (g_viewAttr.Has(&command)) {
-                    // view
+                    // route to view
                     int windowid = ((WindowCommand*) &command)->windowid;
                     
                     SummonWindow *window = GetWindow(windowid);
@@ -237,7 +409,7 @@ public:
                     }
                     
                 } else if (g_controllerAttr.Has(&command)) {
-                    // controller
+                    // route to controller
                     int windowid = ((WindowCommand*) &command)->windowid;
                     
                     SummonWindow *window = GetWindow(windowid);
@@ -337,145 +509,6 @@ public:
 
     
     
-    bool Init()
-    {    
-        ModuleInit();
-        InitDrawEnv();    
-        
-        return true;
-    }
-    
-    
-    void ModuleInit()
-    {
-        // init commands
-        summonCommandsInit();
-        m_summonCommands.clear();
-        
-        for (CommandAttr::Iterator i=g_scriptAttr.Begin();
-             i != g_scriptAttr.End(); i++)
-        {
-            if (!g_constructAttr.Has((*i)->GetId()) &&
-                strlen(((ScriptCommand*) *i)->GetName()) > 0)
-            {
-                m_summonCommands.push_back((ScriptCommand*) *i);
-            }
-        }
-        
-        static PyMethodDef *summonMethods = new PyMethodDef [m_summonCommands.size() + 1];
-
-        // install main command
-        int table = 0;
-        char *mainFunc = "__gatewayFunc";
-        summonMethods[table].ml_name  = mainFunc;
-        summonMethods[table].ml_meth  = Exec;
-        summonMethods[table].ml_flags = METH_VARARGS;
-        summonMethods[table].ml_doc   = "";
-        table++;
-
-        // summon main loop
-        summonMethods[table].ml_name  = "summon_main_loop";
-        summonMethods[table].ml_meth  = SummonMainLoop;
-        summonMethods[table].ml_flags = METH_VARARGS;
-        summonMethods[table].ml_doc   = "";
-        table++;
-
-        // python shutdown
-        summonMethods[table].ml_name  = "python_shutdown";
-        summonMethods[table].ml_meth  = PythonShutdown;
-        summonMethods[table].ml_flags = METH_VARARGS;
-        summonMethods[table].ml_doc   = "";
-        table++;
-
-        // cap the methods table with ending method
-        summonMethods[table].ml_name  = NULL;
-        summonMethods[table].ml_meth  = NULL;
-        summonMethods[table].ml_flags = 0;
-        summonMethods[table].ml_doc   = NULL;
-
-        // register all methods with python
-        PyObject *module = Py_InitModule(MODULE_NAME, 
-                                         summonMethods);
-        
-
-        for (unsigned int i=0; i<m_summonCommands.size(); i++) {
-            // get command id
-            string idstr = int2string(m_summonCommands[i]->GetId());
-
-            // create python name for command
-            string name = m_summonCommands[i]->GetName();
-            string help = string("(") + string(m_summonCommands[i]->GetUsage()) + 
-                          ")\\n" + m_summonCommands[i]->GetDescription();
-
-            // create wrapper function
-            string pyCommands =  "import " MODULE_NAME "\n"
-                "def " + name +  "(* args): " +
-                "  return " MODULE_NAME "." + mainFunc + "(" + 
-                    (m_summonCommands[i]->HasAttr(&g_scriptAttr) ?
-                        idstr :  string("'") + m_summonCommands[i]->GetName() + "'") +
-                ", args)\n" + 
-                name + ".func_doc = \"" + help + "\"\n"
-                MODULE_NAME "." + name + " = " + name + "\n" +
-                "del " + name + "\n";
-                //"__helper_" + name + ".func_name = \"" + name + "\"\n";
-            ScmEvalStr(pyCommands.c_str());
-        }
-    }
-    
-    // TODO: make less ugly
-    void InitDrawEnv()
-    {
-        // install group id generator
-        ScmEvalStr("import " MODULE_NAME);
-        ScmEvalStr(
-MODULE_NAME ".__groupid = 1 \n\
-def __new_groupid(): \n\
-    "MODULE_NAME".__groupid = "MODULE_NAME".__groupid + 1 \n\
-    return "MODULE_NAME".__groupid\n\
-"MODULE_NAME".new_groupid = __new_groupid\n");
-
-
-        // register constructs
-        for (CommandAttr::Iterator i=g_constructAttr.Begin(); 
-             i != g_constructAttr.End(); i++)
-        {
-            Construct *cmd = (Construct*) *i;
-            string str;
-
-            string name = string(cmd->GetName());
-            string id = int2string(cmd->GetId());
-            string help = string("(") + string(cmd->GetUsage()) + 
-                  ")\\n" + cmd->GetDescription();
-
-            if (cmd->GetId() == GROUP_CONSTRUCT) {
-                str = string("") + "\
-def __group(* args): return (" + id + ", __new_groupid()) + args\n\
-__group.func_doc = \"" + help + "\"\n\
-def __list2group(lst):\n\
-    return ("+ id +", __new_groupid()) + tuple(lst)\n\
-def __is_group(obj): return (obj[0] == " + id + ")\n\
-def __group_contents(obj): return obj[2:]\n\
-def __get_group_id(obj): return obj[1]\n\
-"MODULE_NAME".group = __group\n\
-"MODULE_NAME".list2group = __list2group\n\
-"MODULE_NAME".is_group = __is_group\n\
-"MODULE_NAME".group_contents = __group_contents\n\
-"MODULE_NAME".get_group_id = __get_group_id\n";
-            } else {
-                str = string("") + "\
-def __" + name + "(* args): return (" + id + ",) + args\n\
-__" + name + ".func_doc = \"" + help + "\"\n\
-def __is_" + name + "(obj): return (obj[0] == " + id + ")\n\
-def __" + name + "_contents(obj): return obj[1:]\n\
-"MODULE_NAME"." + name + " = __" + name + "\n\
-"MODULE_NAME".is_" + name + " = __is_" + name + "\n\
-"MODULE_NAME"." + name + "_contents = __" + name + "_contents\n\
-";
-            }
-
-            ScmEvalStr(str.c_str());
-        }
-    }
     
     
     
@@ -508,6 +541,8 @@ def __" + name + "_contents(obj): return obj[1:]\n\
         assert(SDL_CondBroadcast(m_cond) == 0);
     }
     
+    
+    
     // get number of milliseconds since program started
     inline int GetTime()
     { return SDL_GetTicks(); }
@@ -518,7 +553,9 @@ def __" + name + "_contents(obj): return obj[1:]\n\
         m_timerCommand = command;
     }
     
-    // glut first timer
+    
+    // GLUT first timer
+    // initialize window decoration size
     static void FirstTimer(int value)
     {
         // do initialization that can only be done after first pump of the 
@@ -540,7 +577,9 @@ def __" + name + "_contents(obj): return obj[1:]\n\
         glutTimerFunc(0, Timer, 0);
     }
     
+    
     // glut timer callback
+    // This timer is necessary for frequent processing of queued commands
     static void Timer(int value)
     {
         static int delay = 0;
@@ -632,7 +671,8 @@ def __" + name + "_contents(obj): return obj[1:]\n\
             delay++;
     }
 
-
+    
+    // execute a commond in a thread safe manner
     inline void ThreadSafeExecCommand(Command *command)
     {
         if (!m_initialized)
@@ -680,7 +720,7 @@ def __" + name + "_contents(obj): return obj[1:]\n\
         }
     }
     
-    
+    //======================================================================
     // a boolean for whether the summon module is ready for processing commands
     bool m_initialized;
     bool m_runtimer;
@@ -735,6 +775,7 @@ using namespace Summon;
 
 extern "C" {
 
+// dummy function needed for hidden window display
 void HiddenDisplay()
 {}
 
@@ -770,7 +811,8 @@ SummonMainLoop(PyObject *self, PyObject *tup)
 #ifndef NOGLUTEXT    
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 #endif
-
+    
+    // initialize hidden window
     glutInitWindowSize(1, 1);
     glutInitWindowPosition(INIT_WINDOW_X, INIT_WINDOW_Y);
     g_hidden_window = glutCreateWindow("SUMMON");
@@ -783,7 +825,9 @@ SummonMainLoop(PyObject *self, PyObject *tup)
 
     // setup glut timer
     glutTimerFunc(0, Summon::SummonModule::FirstTimer, 0);
-
+    
+    
+    // begin processing of GLUT events
     Py_BEGIN_ALLOW_THREADS
     glutMainLoop();
     Py_END_ALLOW_THREADS
@@ -793,9 +837,10 @@ SummonMainLoop(PyObject *self, PyObject *tup)
 }
 
 
-// This function is called when python is shutting down
+// This function is called when python is shutting down (atexit)
+// Gracefully wait for summon to finish its timers and callbacks.
 static PyObject *
-PythonShutdown(PyObject *self, PyObject *tup)
+SummonShutdown(PyObject *self, PyObject *tup)
 {
     if (g_summon) {
         // turn off initizalied flag
@@ -810,6 +855,7 @@ PythonShutdown(PyObject *self, PyObject *tup)
 
 
 
+// all thread safe command executions are done through this gateway
 static PyObject *
 Exec(PyObject *self, PyObject *tup)
 {
@@ -864,8 +910,7 @@ Exec(PyObject *self, PyObject *tup)
                 args.push_back(Scm2String(arg));
             } else {
                 Error("unknown argument type");
-                Py_INCREF(Py_None);
-                return Py_None;
+                Py_RETURN_NONE;
             }
         }
 
@@ -894,15 +939,43 @@ Exec(PyObject *self, PyObject *tup)
 }
 
 
+
+static PyObject *
+MakeConstruct(PyObject *self, PyObject *args)
+{
+    Graphic *graphic = new Graphic(LINES_CONSTRUCT);
+    
+    PyObject *addr = PyInt_FromLong((long) graphic);
+    return addr;
+}
+
+
+static PyObject *
+DeleteConstruct(PyObject *self, PyObject *args)
+{
+    long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
+    Element *elm = (Element*) addr;
+    
+    if (elm->m_parent == NULL)
+        delete elm;
+    
+    Py_RETURN_NONE;
+}
+
+
+
+
+// gateway function to python
 PyMODINIT_FUNC
 initsummon_core()
-{  
+{
+    // prepare the python environment for summon
     InitPython();
     
-    // create Summon app
+    // create Summon module
     g_summon = new Summon::SummonModule();    
     
-    // run the actual Summon app
+    // initialize summon
     if (!g_summon->Init())
         printf("summon init error\n");
 }

@@ -18,7 +18,6 @@ Graphic::Graphic(int id) :
     m_data(NULL),
     m_datasize(0)
 {
-    
 }
 
 Graphic::~Graphic()

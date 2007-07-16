@@ -27,7 +27,7 @@ __summon_thread.setDaemon(True)
 __summon_thread.start()
 
 # register a function for clean shutdown
-atexit.register(lambda: summon_core.python_shutdown)
+atexit.register(lambda: summon_core.summon_shutdown)
 
 # wait for summon to startup
 while summon_core.get_windows() == None: time.sleep(.1)
