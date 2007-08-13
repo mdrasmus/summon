@@ -37,7 +37,10 @@ inline bool IsTransform(int header)
 class Transform : public Element
 {
 public:
-    Transform(int kind, float param1, float param2 = 0.0);
+    Transform(int kind=-1, float param1 = 0.0, float param2 = 0.0);
+    
+    virtual Element *Create()
+    { return new Transform(); }
     
     inline int GetKind() { return m_kind; }
     inline float GetParam1() { return m_param1; }    
@@ -47,7 +50,11 @@ public:
     {
         CopyMatrix(m_matrix, mat);
     }
-
+    
+    void Set(int kind, float param1, float param2 = 0.0);
+    
+    virtual bool Build(const Scm &code);
+    
     void FindBounding(float *top, float *bottom, float *left, float *right,
                       TransformMatrix *matrix);
     

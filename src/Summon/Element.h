@@ -24,7 +24,6 @@ enum {
 };
 
 
-
 class Element
 {
 public:
@@ -41,6 +40,12 @@ public:
         for (Iterator i=Begin(); i!=End(); i++)
             delete (*i);
     }
+    
+    virtual Element *Create() {
+        return new Element();
+    }
+    
+    virtual bool Build(const Scm &code);
     
     typedef list<Element*>::iterator Iterator;
     
@@ -67,6 +72,7 @@ public:
     }
     
     inline int GetId() { return m_id; }
+    inline void SetId(int id) { m_id = id; }
     
     inline Iterator Begin() { return m_children.begin(); }
     inline Iterator End() { return m_children.end(); }
@@ -86,6 +92,16 @@ protected:
     bool m_visible;    
     bool m_dynamic;
 };
+
+
+
+
+// element factory and registration
+class Element;
+typedef Factory<int, Element> ElementFactory;
+
+extern ElementFactory g_elementFactory;
+
 
 
 }

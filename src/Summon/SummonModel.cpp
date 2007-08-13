@@ -12,6 +12,8 @@
 #include "TextElement.h"
 
 
+// TODO: separate model construction from, book-keeping (BuildEnv)
+
 namespace Summon
 {
 
@@ -314,106 +316,109 @@ Element *SummonModel::BuildElement(BuildEnv &env, Scm code)
     // build element based on header
     int header = Scm2Int(ScmCar(code));
     
-    if (IsGraphic(header)) {
-        // process element if it is a graphic
-        elm = new Graphic(header);
-            
-        if (!((Graphic*)elm)->Build(ScmCdr(code))) {
-            delete elm;
-            return NULL;
-        }
-    } else {
-        // element must be something other than a graphic
-        switch (header) 
-        {
-            case GROUP_CONSTRUCT: 
-                elm = BuildGroup(env, ScmCdr(code));
-                break;
-            
-            case DYNAMIC_GROUP_CONSTRUCT: 
-                elm = new DynamicGroup(ScmCadr(code));
-                break;
-            
-            case HOTSPOT_CONSTRUCT:
-                elm = BuildHotspot(env, ScmCdr(code));
-                break;
-            
-            case TEXT_CONSTRUCT: 
-                elm = BuildText(env, ScmCdr(code), TextElement::KIND_BITMAP);
-                break;
-            
-            case TEXT_SCALE_CONSTRUCT: 
-                elm = BuildText(env, ScmCdr(code), TextElement::KIND_SCALE);
-                break;
-            
-            case TEXT_CLIP_CONSTRUCT: 
-                elm = BuildText(env, ScmCdr(code), TextElement::KIND_CLIP);
-                break;
-            
-            case COLOR_CONSTRUCT: {
-                // allow a color construct outside of graphics
-                Graphic *graphic = new Graphic(POINTS_CONSTRUCT);
-                if (graphic->Build(ScmCons(code, Scm_EOL))) {
-                    elm = graphic;
-                } else {
-                    delete graphic;
-                    return NULL;
-                }
+    
+    // element must be something other than a graphic
+    switch (header) 
+    {
+        case GROUP_CONSTRUCT: 
+            elm = BuildGroup(env, ScmCdr(code));
+            break;
 
-                } break;
+        case DYNAMIC_GROUP_CONSTRUCT: 
+            elm = new DynamicGroup(ScmCadr(code));
+            break;
 
-            case TRANSLATE_CONSTRUCT:
-            case SCALE_CONSTRUCT:
-            case FLIP_CONSTRUCT: {
-                Scm first  = ScmCadr(code);
-                Scm second = ScmCaddr(code);
+        case HOTSPOT_CONSTRUCT:
+            elm = BuildHotspot(env, ScmCdr(code));
+            break;
 
-                if (!ScmFloatp(first) || !ScmFloatp(second)) {
+        case TEXT_CONSTRUCT: 
+            elm = BuildText(env, ScmCdr(code), TextElement::KIND_BITMAP);
+            break;
+
+        case TEXT_SCALE_CONSTRUCT: 
+            elm = BuildText(env, ScmCdr(code), TextElement::KIND_SCALE);
+            break;
+
+        case TEXT_CLIP_CONSTRUCT: 
+            elm = BuildText(env, ScmCdr(code), TextElement::KIND_CLIP);
+            break;
+
+        case COLOR_CONSTRUCT: {
+            // allow a color construct outside of graphics
+            Graphic *graphic = new Graphic(POINTS_CONSTRUCT);
+            Scm code2 = ScmCons(code, Scm_EOL);
+            if (graphic->Build(code2)) {
+                elm = graphic;
+            } else {
+                delete graphic;
+                return NULL;
+            }
+
+            } break;
+
+        case TRANSLATE_CONSTRUCT:
+        case SCALE_CONSTRUCT:
+        case FLIP_CONSTRUCT: {
+            Scm first  = ScmCadr(code);
+            Scm second = ScmCaddr(code);
+
+            if (!ScmFloatp(first) || !ScmFloatp(second)) {
+                delete elm;
+                return NULL;
+            }
+
+            Transform *trans = new Transform(header, 
+                                       Scm2Float(first), Scm2Float(second));
+
+            // modify environment for children elements
+            BuildEnv env2 = env;
+            MultMatrix(env.trans.mat, trans->GetMatrix(), env2.trans.mat);
+
+            elm = trans;
+            if (!PopulateElement(env2, elm, ScmCdddr(code))) {
+                delete elm;
+                return NULL;
+            }
+
+            } break;
+
+        case ROTATE_CONSTRUCT: {
+            Scm first  = ScmCadr(code);
+
+            if (!ScmFloatp(first)) {
+                delete elm;
+                return NULL;
+            }
+
+            Transform *trans = new Transform(header, Scm2Float(first));
+
+            // modify environment for children elements
+            BuildEnv env2 = env;
+            MultMatrix(env.trans.mat, trans->GetMatrix(), env2.trans.mat);
+
+            elm = trans;            
+            if (!PopulateElement(env2, elm, ScmCddr(code))) {
+                delete elm;
+                return NULL;
+            }
+
+            } break;
+
+        default:
+            if (IsGraphic(header)) {
+                // process element if it is a graphic
+                elm = new Graphic(header);
+                Scm code2 = ScmCdr(code);
+                if (!((Graphic*)elm)->Build(code)) {
                     delete elm;
                     return NULL;
                 }
-                
-                Transform *trans = new Transform(header, 
-                                           Scm2Float(first), Scm2Float(second));
-                
-                // modify environment for children elements
-                BuildEnv env2 = env;
-                MultMatrix(env.trans.mat, trans->GetMatrix(), env2.trans.mat);
-
-                elm = trans;
-                if (!PopulateElement(env2, elm, ScmCdddr(code))) {
-                    delete elm;
-                    return NULL;
-                }
-
-                } break;
-
-            case ROTATE_CONSTRUCT: {
-                Scm first  = ScmCadr(code);
-
-                if (!ScmFloatp(first)) {
-                    delete elm;
-                    return NULL;
-                }
-                
-                Transform *trans = new Transform(header, Scm2Float(first));
-
-                // modify environment for children elements
-                BuildEnv env2 = env;
-                MultMatrix(env.trans.mat, trans->GetMatrix(), env2.trans.mat);
-
-                elm = trans;            
-                if (!PopulateElement(env2, elm, ScmCddr(code))) {
-                    delete elm;
-                    return NULL;
-                }
-
-                } break;
-
-            default:
+            } else {
                 Error("Unknown element '%d'", Scm2Int(ScmCar(code)));
-        }
+            }
     }
+
     
     
     return elm;

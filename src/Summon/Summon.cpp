@@ -949,21 +949,27 @@ MakeConstruct(PyObject *self, PyObject *args)
         
     if (!ok)
         return NULL;
-    Scm code = Py2Scm(lst);    
+    Scm code = ScmCons(Int2Scm(elmid), Py2Scm(lst));
     
+    printf("elmid2: %d %d\n", elmid, LINES_CONSTRUCT);
     
-    if (IsGraphic(elmid)) {
-        // build graphic
-        Graphic *graphic = new Graphic(elmid);
-        if (!graphic->Build(code))
-            return NULL;
-    } else {
-        // build construct
+    // add factory call
+    //Element *elm = SummonModel::BuildElement(Scm code);
+    Element *elm = g_elementFactory.Create(elmid);
+    //elm->SetId(elmid);
+    
+    printf("passed %d %d %d %d\n", elmid, elm->GetId(), TRANSLATE_CONSTRUCT,
+                                                  TRANSFORM_CONSTRUCT);
+    
+    if (elm == NULL || !elm->Build(code)) {
+        PyErr_Format(PyExc_Exception, "error constructing element");
         return NULL;
     }
     
+    printf("new: %p\n", elm);
+    
     // return element address
-    PyObject *addr = PyInt_FromLong((long) graphic);
+    PyObject *addr = PyInt_FromLong((long) elm);
     return addr;
 }
 
@@ -974,8 +980,12 @@ DeleteConstruct(PyObject *self, PyObject *args)
     long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
     Element *elm = (Element*) addr;
     
-    if (elm->GetParent() == NULL)
+    // if element has a parent, then parent owns element and
+    // element will be deleted by parent
+    if (elm->GetParent() == NULL) {
+        printf("delete: %p\n", elm);
         delete elm;
+    }
     
     Py_RETURN_NONE;
 }

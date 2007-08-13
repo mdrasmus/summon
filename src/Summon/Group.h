@@ -20,13 +20,23 @@ using namespace std;
 class Group : public Element
 {
 public:
-    Group(int groupid) : 
+    Group(int groupid=-1) : 
         Element(GROUP_CONSTRUCT),
         m_groupid(groupid)
     {}
     virtual ~Group() {}
     
+    virtual Element *Create() {
+        return new Group();
+    };
+    
+    virtual bool Build(const Scm &code) {
+        SetGroupId((int) this);
+        return Element::Build(ScmCdr(code));
+    }
+    
     inline int GetGroupId() { return m_groupid; }
+    inline void SetGroupId(int groupid) { m_groupid = groupid; }
     
 protected:    
     int m_groupid;

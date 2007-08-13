@@ -13,14 +13,24 @@ namespace Summon {
 
 
 Transform::Transform(int kind, float param1, float param2) :
-    Element(TRANSFORM_CONSTRUCT),
-    m_kind(kind),
-    m_param1(param1),
-    m_param2(param2)
+    Element(TRANSFORM_CONSTRUCT)
 {
+    Set(kind, param1, param2);
+}
+
+
+void Transform::Set(int kind, float param1, float param2)
+{
+    m_kind = kind;
+    m_param1 = param1;
+    m_param2 = param2;
+    
     float vec[3];
     
     switch (kind) {
+        case -1:
+            break;
+            
         case TRANSLATE_CONSTRUCT:
             vec[0] = param1;
             vec[1] = param2;
@@ -53,6 +63,48 @@ Transform::Transform(int kind, float param1, float param2) :
             Error("Unknown transform");
             assert(0);
     }
+}
+
+
+bool Transform::Build(const Scm &code)
+{
+    PyObject_Print(code.GetPy(), stdout, 0);
+    m_kind = Scm2Int(ScmCar(code));
+    
+    switch (m_kind) {
+        case TRANSLATE_CONSTRUCT:
+        case SCALE_CONSTRUCT:
+        case FLIP_CONSTRUCT: {
+            Scm first  = ScmCadr(code);
+            Scm second = ScmCaddr(code);
+
+            if (!ScmFloatp(first) || !ScmFloatp(second))
+                return false;
+
+            Set(m_kind, Scm2Float(first), Scm2Float(second));
+
+            Scm code2 = ScmCdddr(code);
+            return Element::Build(code2);
+            }
+
+        case ROTATE_CONSTRUCT: {
+            Scm first  = ScmCadr(code);
+
+            if (!ScmFloatp(first))
+                return false;
+            
+            Set(m_kind, Scm2Float(first));
+
+            Scm code2 = ScmCddr(code);
+            return Element::Build(code2);
+            }
+            
+        default:
+            Error("Unknown transform");
+            assert(0);
+    }
+    
+    return false;
 }
 
 

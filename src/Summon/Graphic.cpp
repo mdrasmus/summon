@@ -27,8 +27,15 @@ Graphic::~Graphic()
 }
 
 
-bool Graphic::Build(Scm code)
+bool Graphic::Build(const Scm &code2)
 {
+    //PyObject_Print(code2.GetPy(), stdout, 0);
+
+    SetId(Scm2Int(ScmCar(code2)));
+    Scm code = ScmCdr(code2);
+    
+    printf("graphic: %d\n", m_id);
+    
     // determine data size
     m_datasize = GetDataSize(code);
     if (m_datasize == -1) {
@@ -165,7 +172,7 @@ int Graphic::GetDataSize(Scm code)
             else if (tag == COLOR_CONSTRUCT) {
                 datasize += 5; // (tag, r, g, b, a)
             } else {
-                Error("Unknown primitive");
+                Error("Unknown primitive: %d", tag);
                 return -1;
             }
             
