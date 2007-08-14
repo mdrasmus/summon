@@ -31,6 +31,11 @@ public:
         m_dynamic = true;
     }
     
+    virtual Element *Create()
+    { return new TextElement(); }
+    
+    virtual bool Build(const Scm &code);
+    
     enum {
         KIND_BITMAP,
         KIND_SCALE,

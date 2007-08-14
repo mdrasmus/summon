@@ -453,6 +453,10 @@ void SummonView::DrawElement(GroupTable *table, Element *element, bool useTasks)
             glEnd();
             break;
         
+        case COLOR_CONSTRUCT:
+            DrawGraphic((Graphic*) element);
+            break;
+        
         case TEXT_CONSTRUCT:
             DrawTextElement((TextElement*) element);
             break;

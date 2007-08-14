@@ -33,6 +33,7 @@ bool Element::Build(const Scm &code)
             PyObject* ptr = PyObject_GetAttrString(obj, "ptr");
             long addr = PyLong_AsLong(ptr);
             elm = (Element*) addr;
+            Py_DECREF(ptr);
         } else {
             // python code
             

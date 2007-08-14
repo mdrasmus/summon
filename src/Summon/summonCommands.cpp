@@ -181,7 +181,7 @@ void summonCommandsInit()
     
     // primitives
     //g_elementFactory.Register(new (VerticesConstruct)
-    //g_elementFactory.Register(new (ColorConstruct)
+    g_elementFactory.Register(new Graphic(), COLOR_CONSTRUCT);
     
     // transforms
     g_elementFactory.Register(new Transform(), TRANSLATE_CONSTRUCT);

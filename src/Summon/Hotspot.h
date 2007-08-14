@@ -19,12 +19,21 @@ using namespace std;
 class Hotspot : public Element
 {
 public:
-    Hotspot() : Element(HOTSPOT_CONSTRUCT), m_proc(NULL) {}
+    Hotspot() : 
+        Element(HOTSPOT_CONSTRUCT), 
+        m_proc(NULL) 
+    {}
+    
     virtual ~Hotspot()
     {
         if (m_proc)
             delete m_proc;
     }
+    
+    virtual Element* Create()
+    { return new Hotspot(); }
+    
+    virtual bool Build(const Scm &code);
     
     inline void SetProc(CallProcCommand *proc)
     { m_proc = proc; }
