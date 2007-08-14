@@ -93,7 +93,7 @@ protected:
     bool m_dynamic;
 };
 
-
+Element *GetElementFromObject(PyObject *obj);
 
 
 // element factory and registration

@@ -587,6 +587,7 @@ void SummonView::DrawTextElement(TextElement *elm)
     
     // do not draw text that is not visible
     // get bounding visible view
+    
     if (elm->modelKind == MODEL_WORLD && 
         !WithinView(elm->envpos1, elm->envpos2)) 
     {
@@ -645,6 +646,8 @@ void SummonView::DrawTextElement(TextElement *elm)
         glPopMatrix();
         
     } else if (elm->kind == TextElement::KIND_CLIP) {
+        // TODO: must properly use elm->scale
+    
         void *font = GLUT_STROKE_MONO_ROMAN;
         float fontSize = 119.05;
                 
@@ -675,6 +678,7 @@ void SummonView::DrawTextElement(TextElement *elm)
 
         textWidth *= scale;
         textHeight *= scale;
+        
         
         // clip text if it falls outside its height restrictions
         if (textHeight < elm->minHeight)

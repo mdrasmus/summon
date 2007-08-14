@@ -68,7 +68,6 @@ void Transform::Set(int kind, float param1, float param2)
 
 bool Transform::Build(const Scm &code)
 {
-    PyObject_Print(code.GetPy(), stdout, 0);
     m_kind = Scm2Int(ScmCar(code));
     
     switch (m_kind) {

@@ -18,12 +18,12 @@ bool Hotspot::Build(const Scm &code)
     int header;
     int kindid;
     string kindstr;
-    float x1, y1, x2, y2;
     Scm procCode;
     
     // parse the scm code for a hotspot
     if (!ParseScm("Bad format for Hotspot", code,
-                  "dsffffp", &header, &kindstr, &x1, &y1, &x2, &y2, &procCode))
+                  "dsffffp", &header, &kindstr, 
+                   &pos1.x, &pos1.y, &pos2.x, &pos2.y, &procCode))
         return false;
 
     // parse hotspot kind

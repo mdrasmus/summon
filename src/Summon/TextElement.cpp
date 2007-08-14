@@ -18,24 +18,15 @@ bool TextElement::Build(const Scm &code2)
     int header;
     float x1, y1, x2, y2;
     if (!ParseScm("Bad format for text construct", code2,
-                  "sffff", &header, &text, &x1, &y1, &x2, &y2))
+                  "dsffff", &header, &text, &x1, &y1, &x2, &y2))
         return false;
     
-    Scm code = ScmCddr(ScmCdddr(code2));
+    Scm code = ScmCdddr(ScmCdddr(code2));
     
     switch (header) {
-        case TEXT_CONSTRUCT: 
-            kind = KIND_BITMAP;
-            break;
-
-        case TEXT_SCALE_CONSTRUCT: 
-            kind = KIND_SCALE;
-            break;
-
-        case TEXT_CLIP_CONSTRUCT: 
-            kind = KIND_CLIP;
-            break;
-        
+        case TEXT_CONSTRUCT:        kind = KIND_BITMAP; break;
+        case TEXT_SCALE_CONSTRUCT:  kind = KIND_SCALE;  break;
+        case TEXT_CLIP_CONSTRUCT:   kind = KIND_CLIP;   break;
         default:
             Error("unknown TextElement kind: %d", header);
             return false;

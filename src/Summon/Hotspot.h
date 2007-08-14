@@ -51,6 +51,9 @@ public:
     Vertex2f pos1;
     Vertex2f pos2;
     
+    Vertex2f envpos1;
+    Vertex2f envpos2;
+    
 protected:
     CallProcCommand *m_proc;
 };

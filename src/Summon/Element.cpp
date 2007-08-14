@@ -11,11 +11,25 @@
 
 namespace Summon {
 
+Element *GetElementFromObject(PyObject *obj)
+{
+    if (PyObject_HasAttrString(obj, "ptr")) {
+        PyObject* ptr = PyObject_GetAttrString(obj, "ptr");
+        long addr = PyLong_AsLong(ptr);
+        Py_DECREF(ptr);
+        
+        return (Element*) addr;
+    } else {
+        return NULL;
+    }
+}
+
 
 // recursively build child elements and if sucessful, add them as children
 bool Element::Build(const Scm &code)
 {
     printf("element build\n");
+    
 
     // process children
     for (Scm children = code; 
@@ -25,16 +39,12 @@ bool Element::Build(const Scm &code)
         printf("build child\n");
         
         Scm child = ScmCar(children);
-        Element *elm;
+        PyObject_Print(child.GetPy(), stdout, 0);
         
         PyObject *obj = child.GetPy();
-        if (PyObject_HasAttrString(obj, "ptr")) {
-            // preconstructed object
-            PyObject* ptr = PyObject_GetAttrString(obj, "ptr");
-            long addr = PyLong_AsLong(ptr);
-            elm = (Element*) addr;
-            Py_DECREF(ptr);
-        } else {
+        Element *elm = GetElementFromObject(obj);
+        
+        if (!elm) {
             // python code
             
             // do nothing if not a list
@@ -43,14 +53,19 @@ bool Element::Build(const Scm &code)
                 return false;
         
             // build element based on header
-            int elmid = Scm2Int(ScmCar(code));
-            printf("elmid: %d\n", elmid);
+            int elmid = Scm2Int(ScmCar(child));
+            printf("elmid: %d %d\n", elmid, COLOR_CONSTRUCT);
         
             elm = g_elementFactory.Create(elmid);
-            if (!elm && elm->Build(code)) {
+            if (!elm->Build(child)) {
                 delete elm;
                 return false;
             }
+        }
+        
+        if (elm->GetParent() != NULL) {
+            Error("element already has parent.");
+            return false;
         }
         
         AddChild(elm);

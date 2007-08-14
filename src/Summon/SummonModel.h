@@ -13,8 +13,11 @@
 #include "summonCommands.h"
 #include "Graphic.h"
 #include "GroupTable.h"
+#include "HashTable.h"
 #include "Hotspot.h"
 #include "Transform.h"
+#include "TextElement.h"
+
 
 namespace Summon
 {
@@ -25,11 +28,14 @@ namespace Summon
 struct BuildEnv
 {
     BuildEnv(bool identity = false, int kind=MODEL_WORLD) :
-        modelKind(kind) {
+        modelKind(kind)
+    {
         if (identity) {
             trans.SetIdentity();
         }
     }
+    
+    
     
     TransformMatrix trans;
     int modelKind;
@@ -41,7 +47,8 @@ class SummonModel : public Model
 public:
     SummonModel(int id, int kind=MODEL_WORLD) :
         m_id(id),
-        m_kind(kind)
+        m_kind(kind),
+        m_hotspotClickSet(1000)
     {
     }
     
@@ -54,12 +61,11 @@ public:
     
     // model construction
     int AddGroup(BuildEnv &env, int parent, Scm code);
-    Group *BuildGroup(BuildEnv &env, Scm code);
-    Element *BuildElement(BuildEnv &env, Scm code);
-    bool PopulateElement(BuildEnv &env, Element *elm, Scm code);
-    Element *BuildHotspot(BuildEnv &env, Scm code);
-    Element *BuildText(BuildEnv &env, Scm code, int kind);
     
+    void Update();
+    void Update(Element *element, BuildEnv *env);
+    void UpdateHotspot(Hotspot *hotspot, BuildEnv *env);
+    void UpdateTextElement(TextElement *textElm, BuildEnv *env);
     
     
     void RemoveGroup(int id);
@@ -94,6 +100,7 @@ protected:
     int m_kind;
     GroupTable m_table;
     list<Hotspot*> m_hotspotClicks;
+    HashTable<Hotspot*, bool, HashPointer> m_hotspotClickSet;
 };
 
 }
