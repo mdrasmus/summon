@@ -14,6 +14,7 @@
 import inspect
 
 import summon
+from summon.core import *
 
 
 _w = summon.get_summon_window
