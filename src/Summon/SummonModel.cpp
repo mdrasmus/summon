@@ -13,9 +13,6 @@
 
 
 
-
-
-
 namespace Summon
 {
 
@@ -518,7 +515,8 @@ void SummonModel::RemoveGroup(int id)
             parent->RemoveChild(group);
         }
         
-        delete group;
+        if (!group->IsReferenced())
+            delete group;
         
         // make sure model always has a root
         if (group == m_root) {

@@ -965,6 +965,7 @@ MakeConstruct(PyObject *self, PyObject *args)
         PyErr_Format(PyExc_Exception, "error constructing element");
         return NULL;
     }
+    elm->SetReferenced(true);
     
     printf("new: %p\n", elm);
     
@@ -980,12 +981,16 @@ DeleteConstruct(PyObject *self, PyObject *args)
     long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
     Element *elm = (Element*) addr;
     
+
+    
     // if element has a parent, then parent owns element and
     // element will be deleted by parent
     if (elm->GetParent() == NULL) {
         printf("delete: %p\n", elm);
         delete elm;
     }
+    
+    elm->SetReferenced(false);
     
     Py_RETURN_NONE;
 }

@@ -27,19 +27,9 @@ enum {
 class Element
 {
 public:
-    Element(int id = -1) : 
-        m_id(id), 
-        m_parent(NULL),
-        m_visible(true),
-        m_dynamic(false)                
-    {}
+    Element(int id = -1);
+    virtual ~Element();
     
-    virtual ~Element()
-    {
-        // delete all child elements
-        for (Iterator i=Begin(); i!=End(); i++)
-            delete (*i);
-    }
     
     virtual Element *Create() {
         return new Element();
@@ -85,12 +75,18 @@ public:
     virtual void FindBounding(float *top, float *bottom, float *left, float *right,
                       TransformMatrix *matrix);
     
+    inline void SetReferenced(bool val)
+    { m_referenced = val; }
+    
+    inline bool IsReferenced() { return m_referenced; }
+    
 protected:
     int m_id;
     Element *m_parent;
     list<Element*> m_children;
     bool m_visible;    
-    bool m_dynamic;
+    bool m_referenced;
+    bool m_dynamic; // maybe remove to reduce size
 };
 
 Element *GetElementFromObject(PyObject *obj);

@@ -25,6 +25,27 @@ Element *GetElementFromObject(PyObject *obj)
 }
 
 
+Element::Element(int id) : 
+    m_id(id), 
+    m_parent(NULL),
+    m_visible(true),
+    m_referenced(false),
+    m_dynamic(false)
+{}
+    
+
+Element::~Element()
+{
+    // delete all child elements
+    for (Iterator i=Begin(); i!=End(); i++) {
+        if (!(*i)->m_referenced) {
+            delete (*i);
+        } else {
+            RemoveChild(*i);
+        }
+    }
+}
+
 // recursively build child elements and if sucessful, add them as children
 bool Element::Build(const Scm &code)
 {
