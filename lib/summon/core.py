@@ -30,7 +30,7 @@ __summon_thread.start()
 atexit.register(lambda: summon_core.summon_shutdown)
 
 # wait for summon to startup
-while summon_core.get_windows() == None: time.sleep(.1)
+while summon_core.get_windows() == None: time.sleep(.05)
 
 
 
@@ -42,16 +42,11 @@ while summon_core.get_windows() == None: time.sleep(.1)
 
 
 _summon_constructs = """\
-color
 color_contents
 dynamic_group
 dynamic_group_contents
-flip
 flip_contents
-get_group_id
-group
 group_contents
-hotspot
 hotspot_click
 hotspot_contents
 input_click
@@ -84,35 +79,20 @@ is_triangle_fan
 is_triangle_strip
 is_triangles
 is_vertices
-line_strip
 line_strip_contents
-lines
 lines_contents
-points
 points_contents
-polygon
 polygon_contents
-quad_strip
 quad_strip_contents
-quads
 quads_contents
-rotate
 rotate_contents
-scale
 scale_contents
-text
-text_clip
 text_clip_contents
 text_contents
-text_scale
 text_scale_contents
-translate
 translate_contents
-triangle_fan
 triangle_fan_contents
-triangle_strip
 triangle_strip_contents
-triangles
 triangles_contents
 vertices
 vertices_contents
@@ -128,3 +108,132 @@ vertices_contents
 _globals = globals()
 for func in _summon_constructs: # + _summon_funcs:
     _globals[func] = summon_core.__dict__[func]
+
+
+
+_GROUP_CONSTRUCT = 1060
+_HOTSPOT_CONSTRUCT = 1062
+
+_POINTS_CONSTRUCT = 1063
+_LINES_CONSTRUCT = 1064
+_LINE_STRIP_CONSTRUCT = 1065
+_TRIANGLES_CONSTRUCT = 1066
+_TRIANGLE_STRIP_CONSTRUCT = 1067
+_TRIANGLE_FAN_CONSTRUCT = 1068
+_QUADS_CONSTRUCT = 1069
+_QUAD_STRIP_CONSTRUCT = 1070
+_POLYGON_CONSTRUCT = 1071
+_TEXT_CONSTRUCT = 1072
+_TEXT_SCALE_CONSTRUCT = 1073
+_TEXT_CLIP_CONSTRUCT = 1074
+
+_COLOR_CONSTRUCT = 1076
+
+_TRANSLATE_CONSTRUCT = 1078
+_ROTATE_CONSTRUCT = 1079
+_SCALE_CONSTRUCT = 1080
+_FLIP_CONSTRUCT = 1081
+
+
+class Construct:
+    def __init__(self, constructid, code):
+        self.constructid = constructid
+        try:
+            self.ptr = summon_core.make_construct(constructid, code)
+        except:
+            self.ptr = None
+            raise
+
+    def __del__(self):
+        if self.ptr != None:
+            summon_core.delete_construct(self.ptr)
+
+class group (Construct):
+    def __init__(self, *code):
+        Construct.__init__(self, _GROUP_CONSTRUCT, code)
+
+class hotspot (Construct):
+    def __init__(self, *code):
+        Construct.__init__(self, _HOTSPOT_CONSTRUCT, code)
+
+#=============================================================================
+# graphics
+
+class points (Construct):
+    def __init__(self, *code):
+        Construct.__init__(self, _POINTS_CONSTRUCT, code)
+
+class lines (Construct):
+    def __init__(self, *code):
+        Construct.__init__(self, _LINES_CONSTRUCT, code)
+
+class line_strip (Construct):
+    def __init__(self, *code):
+        Construct.__init__(self, _LINE_STRIP_CONSTRUCT, code)
+
+class triangles (Construct):
+    def __init__(self, *code):
+        Construct.__init__(self, _TRIANGLES_CONSTRUCT, code)
+
+class triangle_strip (Construct):
+    def __init__(self, *code):
+        Construct.__init__(self, _TRIANGLE_STRIP_CONSTRUCT, code)
+
+class quads (Construct):
+    def __init__(self, *code):
+        Construct.__init__(self, _QUADS_CONSTRUCT, code)
+
+class quad_strip (Construct):
+    def __init__(self, *code):
+        Construct.__init__(self, _QUAD_STRIP_CONSTRUCT, code)
+
+class polygon (Construct):
+    def __init__(self, *code):
+        Construct.__init__(self, _POLYGON_CONSTRUCT, code)
+
+def color(r, g, b, a=1.0):
+    return (_COLOR_CONSTRUCT, r, g, b, a)
+
+
+#=============================================================================
+# text
+
+class text (Construct):
+    def __init__(self, *code):
+        Construct.__init__(self, _TEXT_CONSTRUCT, code)
+
+class text_scale (Construct):
+    def __init__(self, *code):
+        Construct.__init__(self, _TEXT_SCALE_CONSTRUCT, code)
+
+class text_clip (Construct):
+    def __init__(self, *code):
+        Construct.__init__(self, _TEXT_CLIP_CONSTRUCT, code)
+
+
+#=============================================================================
+# transforms
+
+class translate (Construct):
+    def __init__(self, *code):
+        Construct.__init__(self, _TRANSLATE_CONSTRUCT, code)
+
+class rotate (Construct):
+    def __init__(self, *code):
+        Construct.__init__(self, _ROTATE_CONSTRUCT, code)
+
+class scale (Construct):
+    def __init__(self, *code):
+        Construct.__init__(self, _SCALE_CONSTRUCT, code)
+
+class flip (Construct):
+    def __init__(self, *code):
+        Construct.__init__(self, _FLIP_CONSTRUCT, code)
+
+
+#=============================================================================
+# global functions
+
+def get_group_id(aGroup):
+    return aGroup
+

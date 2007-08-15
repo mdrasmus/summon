@@ -28,7 +28,7 @@ void SummonModel::ExecCommand(Command &command)
         case ADD_GROUP_COMMAND: {
             //ModelChangeCommand change;        
             BuildEnv env(true, m_kind);
-            int id = AddGroup(env, -1, ((AddGroupCommand*)(&command))->code);
+            int id = AddGroup(env, NULL, ((AddGroupCommand*)(&command))->code);
             ((AddGroupCommand*)(&command))->SetReturn(Int2Scm(id));
             
             //change.changedGroups.push_back(m_table.GetGroup(id));
@@ -43,13 +43,13 @@ void SummonModel::ExecCommand(Command &command)
             int pid = ((InsertGroupCommand*)(&command))->groupid;
             
             // find parent group to insert into
-            Group *group = Id2Group(pid); //m_table.GetGroup(pid);
+            Group *group = Id2Group(pid);
             if (group != NULL)
             {
                 // get the environment and parent of old group
                 env = GetEnv(env, NULL, group);
                 
-                int id = AddGroup(env, pid, 
+                int id = AddGroup(env, Id2Group(pid), 
                                   ((InsertGroupCommand*)(&command))->code);
                 
                 ((InsertGroupCommand*)(&command))->SetReturn(Int2Scm(id));
@@ -71,7 +71,7 @@ void SummonModel::ExecCommand(Command &command)
             
             // loop through group ids
             for (unsigned int i=0; i<remove->groupids.size(); i++) {
-                RemoveGroup(remove->groupids[i]);
+                RemoveGroup(Id2Group(remove->groupids[i]));
             }
             
             ModelChanged();
@@ -80,44 +80,37 @@ void SummonModel::ExecCommand(Command &command)
             } break;
         
         case REPLACE_GROUP_COMMAND: {
-            /*
             //ModelChangeCommand change;
             ReplaceGroupCommand *replace = (ReplaceGroupCommand*) &command;
             BuildEnv env(true, m_kind);
             
             // find group to replace
-            Group *group = m_table.GetGroup(replace->groupid);
+            Group *group = Id2Group(replace->groupid);
             if (group != NULL && 
-                group != m_table.GetRootGroup())
+                group != GetRoot())
             {
                 // get the environment and parent of old group
                 env = GetEnv(env, NULL, group);
                 Element *parent = group->GetParent();
                 
                 // remove old group
-                RemoveGroup(replace->groupid);
+                RemoveGroup(Id2Group(replace->groupid));
                 
-                // add new group
-                if (PopulateElement(env, parent, replace->code)) {
-                    replace->SetReturn(ScmCadr(ScmCar(replace->code)));
-                    //change.changedGroups.push_back();
-                } else {
-                    replace->SetReturn(Int2Scm(-1));
-                }
+                int id = AddGroup(env, parent, replace->code);
+                replace->SetReturn(Int2Scm(id));
+                
                 ModelChanged();
                 //Redisplay();                
             } else {
                 Error("unknown group %d", replace->groupid);
                 replace->SetReturn(Int2Scm(-1));
             }
-            */
             } break;
         
         case CLEAR_GROUPS_COMMAND: {
             // remove root group, GroupTable will create new root
             RemoveHotspots(GetRoot());
-            RemoveGroup(GetRoot()->GetGroupId());
-            //m_table.Clear();
+            RemoveGroup(GetRoot());
             ModelChanged();
             Update();
             //Redisplay();
@@ -128,7 +121,7 @@ void SummonModel::ExecCommand(Command &command)
             ShowGroupCommand *show = (ShowGroupCommand*) &command;
             
             // toggle a group's visibility
-            Group *group = Id2Group(show->groupid); //m_table.GetGroup(show->groupid);
+            Group *group = Id2Group(show->groupid);
             if (group) {
                 group->SetVisible(show->visible);
                 //change.changedGroups.push_back(group);
@@ -142,7 +135,7 @@ void SummonModel::ExecCommand(Command &command)
         case GET_GROUP_COMMAND: {
             GetGroupCommand *getGroup = (GetGroupCommand*) &command;
             
-            Group *group = Id2Group(getGroup->groupid); //m_table.GetGroup(getGroup->groupid);
+            Group *group = Id2Group(getGroup->groupid);
             if (group) {
                 BuildEnv env(true, m_kind);
                 getGroup->SetReturn(GetGroup(env, group));
@@ -191,7 +184,7 @@ BuildEnv SummonModel::GetEnv(BuildEnv &env, Element *start, Element *end)
 
     // the default value for start is the root
     if (start == NULL) {
-        start = GetRoot(); //m_table.GetRootGroup();
+        start = GetRoot();
     }
     
     // find path from end to start through parent pointers
@@ -219,7 +212,7 @@ BuildEnv SummonModel::GetEnv(BuildEnv &env, Element *start, Element *end)
 }
 
 
-int SummonModel::AddGroup(BuildEnv &env, int parent, Scm code)
+int SummonModel::AddGroup(BuildEnv &env, Element *parent, Scm code)
 {
     Element *elm = GetElementFromObject(code.GetPy());
     
@@ -230,22 +223,12 @@ int SummonModel::AddGroup(BuildEnv &env, int parent, Scm code)
     }
 
     // set parent if default (root) is given
-    if (parent == -1) {
-        parent = GetRoot()->GetGroupId(); //m_table.GetRoot();
-    }
-    
-    // get parent group object
-    Group *pgroup = Id2Group(parent); //m_table.GetGroup(parent);
-    if (!pgroup) {
-        Error("Unknown parent group %d", pgroup);
-        return -1;
-    }
-    
+    if (parent == NULL)
+        parent = GetRoot();
     
     Group *group = (Group*) elm;
-    //m_table.AddGroup(group);
     if (group) {
-        pgroup->AddChild(group);
+        parent->AddChild(group);
         return group->GetGroupId();
     } else {
         return -1;
@@ -501,28 +484,24 @@ Scm SummonModel::GetGroup(BuildEnv &env, Element *elm)
 }
 
 
-void SummonModel::RemoveGroup(int id)
+void SummonModel::RemoveGroup(Group *group)
 {
-    Group *group = Id2Group(id); //m_table.GetGroup(id);
-    if (group) {
-        RemoveHotspots(group);
-        //m_table.RemoveGroup(id);
-        
-        Element *parent = group->GetParent();
-        
-        // notify parent
-        if (parent) {
-            parent->RemoveChild(group);
-        }
-        
-        if (!group->IsReferenced())
-            delete group;
-        
-        // make sure model always has a root
-        if (group == m_root) {
-            m_root = new Group();
-        }        
-    }
+    Element *parent = group->GetParent();
+
+    // notify parent
+    if (parent)
+        parent->RemoveChild(group);
+
+    // remove any hotspots underneath this group
+    RemoveHotspots(group);
+    
+    // delete only if it is not referenced by python
+    if (!group->IsReferenced())
+        delete group;
+
+    // make sure model always has a root
+    if (group == m_root)
+        m_root = new Group();
 }
 
 

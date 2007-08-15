@@ -691,29 +691,33 @@ class Model (object):
     clear_groups.__doc__ = summon_core.clear_groups.__doc__.split("\n")[1]
     
     def add_group(self, aGroup):
-        return summon_core.add_group(self.id, aGroup)
+        summon_core.add_group(self.id, aGroup)
+        return aGroup
     add_group.__doc__ = summon_core.add_group.__doc__.split("\n")[1]
     
-    def insert_group(self, groupid, aGroup):
-        return summon_core.insert_group(self.id, groupid, aGroup)
+    def insert_group(self, parentGroup, childGroup):
+        summon_core.insert_group(self.id, parentGroup.ptr, childGroup)
+        return childGroup
     insert_group.__doc__ = summon_core.insert_group.__doc__.split("\n")[1]
     
-    def remove_group(self, *groupids):
-        return summon_core.remove_group(self.id, *groupids)
+    def remove_group(self, *groups):
+        ids = [x.ptr for x in groups]
+        return summon_core.remove_group(self.id, *ids)
     remove_group.__doc__ = summon_core.remove_group.__doc__.split("\n")[1]
     
-    def replace_group(self, groupid, aGroup):
-        return summon_core.replace_group(self.id, groupid, aGroup)
+    def replace_group(self, oldGroup, newGroup):
+        summon_core.replace_group(self.id, oldGroup.ptr, newGroup)
+        return newGroup
     replace_group.__doc__ = summon_core.replace_group.__doc__.split("\n")[1]
-
-    def show_group(self, groupid, visible):
-        return summon_core.show_group(self.id, groupid, visible)
+    
+    def show_group(self, aGroup, visible):
+        return summon_core.show_group(self.id, aGroup.ptr, visible)
     show_group.__doc__ = summon_core.show_group.__doc__.split("\n")[1]
     
-    def get_group(self, groupid):
-        return summon_core.get_group(self.id, groupid)
+    def get_group(self, aGroup):
+        return summon_core.get_group(self.id, aGroup.ptr)
     get_group.__doc__ = summon_core.get_group.__doc__.split("\n")[1]
-
+    
     def get_root_id(self):
         return summon_core.get_root_id(self.id)
     get_root_id.__doc__ = summon_core.get_root_id.__doc__.split("\n")[1]

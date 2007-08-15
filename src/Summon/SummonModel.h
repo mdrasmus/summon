@@ -60,31 +60,27 @@ public:
     
     BuildEnv GetEnv(BuildEnv &env, Element *start, Element *end);
     
-    // model construction
-    int AddGroup(BuildEnv &env, int parent, Scm code);
-    
+    // book keeping
     void Update();
     void Update(Element *element, BuildEnv *env);
     void UpdateHotspot(Hotspot *hotspot, BuildEnv *env);
     void UpdateTextElement(TextElement *textElm, BuildEnv *env);
-    
-    
-    void RemoveGroup(int id);
-    Scm GetGroup(BuildEnv &env, Element *elm);
-    
     void RemoveHotspots(Element *elm);
     
-    void SetKind(int kind) { m_kind = kind; }
+    // model manipulation
+    int AddGroup(BuildEnv &env, Element *parent, Scm code);
+    void RemoveGroup(Group *group);
+    
+    Scm GetGroup(BuildEnv &env, Element *elm);
     
     void FindBounding(Vertex2f *pos1, Vertex2f *pos2);
-    
-    //inline GroupTable *GetGroupTable()
-    //{ return &m_table; }
     
     inline Group *GetRoot()
     { return m_root; } //m_table.GetRootGroup(); }
     
     inline int GetId() { return m_id; }
+    
+    void SetKind(int kind) { m_kind = kind; }
     
     inline void Redisplay()
     {

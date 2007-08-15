@@ -36,6 +36,11 @@ bool Graphic::Build(const Scm &code2)
     
     printf("graphic: %d\n", m_id);
     
+    // special case for lonely color construct
+    if (m_id == COLOR_CONSTRUCT) {
+        code = ScmCons(code2, Scm_EOL);
+    }
+    
     // determine data size
     m_datasize = GetDataSize(code);
     if (m_datasize == -1) {
