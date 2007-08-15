@@ -96,7 +96,9 @@ void SummonModel::ExecCommand(Command &command)
                 // remove old group
                 RemoveGroup(Id2Group(replace->groupid));
                 
-                int id = AddGroup(env, parent, replace->code);
+                //PyObject_Print(ScmCar(replace->code).GetPy(), stdout, 0);
+                
+                int id = AddGroup(env, parent, ScmCar(replace->code));
                 replace->SetReturn(Int2Scm(id));
                 
                 ModelChanged();
@@ -296,10 +298,10 @@ void SummonModel::UpdateHotspot(Hotspot *hotspot, BuildEnv *env)
     
     // register hotspot
     if (!m_hotspotClickSet.HasKey(hotspot)) {
-        printf("HOTSPOT register %f %f %f %f | %f %f %f %f\n", 
-                    hotspot->pos1.x, hotspot->pos1.y, 
-                    hotspot->pos2.x, hotspot->pos2.y,
-                    pos1.x, pos1.y, pos2.x, pos2.y);
+        //printf("HOTSPOT register %f %f %f %f | %f %f %f %f\n", 
+        //            hotspot->pos1.x, hotspot->pos1.y, 
+        //            hotspot->pos2.x, hotspot->pos2.y,
+        //            pos1.x, pos1.y, pos2.x, pos2.y);
         m_hotspotClickSet.Insert(hotspot, true);
         m_hotspotClicks.push_back(hotspot);
     }

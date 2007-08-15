@@ -34,7 +34,7 @@ bool Graphic::Build(const Scm &code2)
     SetId(Scm2Int(ScmCar(code2)));
     Scm code = ScmCdr(code2);
     
-    printf("graphic: %d\n", m_id);
+    //printf("graphic: %d\n", m_id);
     
     // special case for lonely color construct
     if (m_id == COLOR_CONSTRUCT) {

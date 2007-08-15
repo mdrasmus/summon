@@ -27,7 +27,7 @@ g = group(l,
 
 win = summon.Window()
 win.add_group(g)
-#win.remove_group(g)
+win.replace_group(g, group(lines(100, 0, 0, 100)))
 
 EOF
 

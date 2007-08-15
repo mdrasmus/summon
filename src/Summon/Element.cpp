@@ -49,7 +49,7 @@ Element::~Element()
 // recursively build child elements and if sucessful, add them as children
 bool Element::Build(const Scm &code)
 {
-    printf("element build\n");
+    //printf("element build\n");
     
 
     // process children
@@ -57,10 +57,10 @@ bool Element::Build(const Scm &code)
          ScmConsp(children); 
          children = ScmCdr(children))
     {
-        printf("build child\n");
+        //printf("build child\n");
         
         Scm child = ScmCar(children);
-        PyObject_Print(child.GetPy(), stdout, 0);
+        //PyObject_Print(child.GetPy(), stdout, 0);
         
         PyObject *obj = child.GetPy();
         Element *elm = GetElementFromObject(obj);
@@ -75,7 +75,7 @@ bool Element::Build(const Scm &code)
         
             // build element based on header
             int elmid = Scm2Int(ScmCar(child));
-            printf("elmid: %d %d\n", elmid, COLOR_CONSTRUCT);
+            //printf("elmid: %d %d\n", elmid, COLOR_CONSTRUCT);
         
             elm = g_elementFactory.Create(elmid);
             if (!elm->Build(child)) {
@@ -90,7 +90,7 @@ bool Element::Build(const Scm &code)
         }
         
         AddChild(elm);
-        printf("added %p to %p\n", elm, this);
+        //printf("added %p to %p\n", elm, this);
     }
     return true;
 }
