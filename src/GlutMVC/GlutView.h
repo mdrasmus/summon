@@ -66,7 +66,7 @@ public:
     static void GlutReshape(int width, int height);
     static void GlutClose();
     
-    void Close();
+    virtual void Close();
     
     inline void SetName(char *name) {
         m_name = name;

@@ -442,7 +442,18 @@ class MatrixViewer (object):
     
     
     def toggleLabelWindows(self):
-        self.setLabelWindows(not self.showLabelWindows)
+        # rotate through (no labels, inline, and panels)
+        if self.showLabelWindows:
+            self.showLabels = False
+            show = False
+        else:
+            if not self.showLabels:
+                self.showLabels = True
+                show = False
+            else:
+                show = True
+            
+        self.setLabelWindows(show)
     
     def setLabelWindows(self, show=True):
         self.showLabelWindows = show

@@ -350,7 +350,7 @@ while True:
     g = drawBoard(game.board)
     
     # stop looping if window is closed
-    if win.winid not in summon.get_windows():
+    if not win.is_open():
         break
         
     gid = win.replace_group(gid, g)
