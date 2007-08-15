@@ -12,10 +12,18 @@
 
 
 
-// TODO: separate model construction from, book-keeping (BuildEnv)
+
+
+
 
 namespace Summon
 {
+
+Group *Id2Group(int id)
+{
+    return (Group*) id;
+}
+
 
 void SummonModel::ExecCommand(Command &command)
 {
@@ -38,7 +46,7 @@ void SummonModel::ExecCommand(Command &command)
             int pid = ((InsertGroupCommand*)(&command))->groupid;
             
             // find parent group to insert into
-            Group *group = m_table.GetGroup(pid);
+            Group *group = Id2Group(pid); //m_table.GetGroup(pid);
             if (group != NULL)
             {
                 // get the environment and parent of old group
@@ -110,8 +118,9 @@ void SummonModel::ExecCommand(Command &command)
         
         case CLEAR_GROUPS_COMMAND: {
             // remove root group, GroupTable will create new root
-            RemoveHotspots(m_table.GetRootGroup());
-            m_table.Clear();
+            RemoveHotspots(GetRoot());
+            RemoveGroup(GetRoot()->GetGroupId());
+            //m_table.Clear();
             ModelChanged();
             Update();
             //Redisplay();
@@ -122,7 +131,7 @@ void SummonModel::ExecCommand(Command &command)
             ShowGroupCommand *show = (ShowGroupCommand*) &command;
             
             // toggle a group's visibility
-            Group *group = m_table.GetGroup(show->groupid);
+            Group *group = Id2Group(show->groupid); //m_table.GetGroup(show->groupid);
             if (group) {
                 group->SetVisible(show->visible);
                 //change.changedGroups.push_back(group);
@@ -136,7 +145,7 @@ void SummonModel::ExecCommand(Command &command)
         case GET_GROUP_COMMAND: {
             GetGroupCommand *getGroup = (GetGroupCommand*) &command;
             
-            Group *group = m_table.GetGroup(getGroup->groupid);
+            Group *group = Id2Group(getGroup->groupid); //m_table.GetGroup(getGroup->groupid);
             if (group) {
                 BuildEnv env(true, m_kind);
                 getGroup->SetReturn(GetGroup(env, group));
@@ -147,7 +156,7 @@ void SummonModel::ExecCommand(Command &command)
 
         case GET_ROOT_ID_COMMAND:
             ((GetRootIdCommand*) &command)->SetReturn(
-                Int2Scm(m_table.GetRoot()));
+                Int2Scm(GetRoot()->GetGroupId()));
             break;
         
         default:
@@ -185,7 +194,7 @@ BuildEnv SummonModel::GetEnv(BuildEnv &env, Element *start, Element *end)
 
     // the default value for start is the root
     if (start == NULL) {
-        start = m_table.GetRootGroup();
+        start = GetRoot(); //m_table.GetRootGroup();
     }
     
     // find path from end to start through parent pointers
@@ -225,11 +234,11 @@ int SummonModel::AddGroup(BuildEnv &env, int parent, Scm code)
 
     // set parent if default (root) is given
     if (parent == -1) {
-        parent = m_table.GetRoot();
+        parent = GetRoot()->GetGroupId(); //m_table.GetRoot();
     }
     
     // get parent group object
-    Group *pgroup = m_table.GetGroup(parent);
+    Group *pgroup = Id2Group(parent); //m_table.GetGroup(parent);
     if (!pgroup) {
         Error("Unknown parent group %d", pgroup);
         return -1;
@@ -237,7 +246,7 @@ int SummonModel::AddGroup(BuildEnv &env, int parent, Scm code)
     
     
     Group *group = (Group*) elm;
-    m_table.AddGroup(group);
+    //m_table.AddGroup(group);
     if (group) {
         pgroup->AddChild(group);
         return group->GetGroupId();
@@ -250,7 +259,7 @@ int SummonModel::AddGroup(BuildEnv &env, int parent, Scm code)
 
 void SummonModel::Update()
 {
-    Element *element = m_table.GetGroup(m_table.GetRoot());
+    Element *element = GetRoot();
     BuildEnv env(true, m_kind);
     Update(element, &env);
 }
@@ -497,12 +506,31 @@ Scm SummonModel::GetGroup(BuildEnv &env, Element *elm)
 
 void SummonModel::RemoveGroup(int id)
 {
-    Group *group = m_table.GetGroup(id);
+    Group *group = Id2Group(id); //m_table.GetGroup(id);
     if (group) {
-        RemoveHotspots(group);    
-        m_table.RemoveGroup(id);
+        RemoveHotspots(group);
+        //m_table.RemoveGroup(id);
+        
+        Element *parent = group->GetParent();
+        
+        // notify parent
+        if (parent) {
+            parent->RemoveChild(group);
+        }
+        
+        delete group;
+        
+        // make sure model always has a root
+        if (group == m_root) {
+            m_root = new Group();
+        }        
     }
 }
+
+
+        
+
+
 
 
 void SummonModel::RemoveHotspots(Element *elm)
@@ -533,7 +561,7 @@ void SummonModel::FindBounding(Vertex2f *pos1, Vertex2f *pos2)
     TransformMatrix matrix;
     MakeIdentityMatrix(matrix.mat);
     
-    Group *group = GetGroupTable()->GetRootGroup();
+    Group *group = GetRoot();
     group->FindBounding(&top, &bottom, &left, &right, &matrix);
     
     pos1->x = left;

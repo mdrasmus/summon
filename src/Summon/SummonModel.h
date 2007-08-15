@@ -50,6 +50,7 @@ public:
         m_kind(kind),
         m_hotspotClickSet(1000)
     {
+        m_root = new Group();
     }
     
     virtual void ExecCommand(Command &command);
@@ -77,8 +78,11 @@ public:
     
     void FindBounding(Vertex2f *pos1, Vertex2f *pos2);
     
-    inline GroupTable *GetGroupTable()
-    { return &m_table; }
+    //inline GroupTable *GetGroupTable()
+    //{ return &m_table; }
+    
+    inline Group *GetRoot()
+    { return m_root; } //m_table.GetRootGroup(); }
     
     inline int GetId() { return m_id; }
     
@@ -98,7 +102,8 @@ public:
 protected:
     int m_id;
     int m_kind;
-    GroupTable m_table;
+    Group *m_root;
+    //GroupTable m_table;
     list<Hotspot*> m_hotspotClicks;
     HashTable<Hotspot*, bool, HashPointer> m_hotspotClickSet;
 };

@@ -21,9 +21,10 @@ class Group : public Element
 {
 public:
     Group(int groupid=-1) : 
-        Element(GROUP_CONSTRUCT),
-        m_groupid(groupid)
-    {}
+        Element(GROUP_CONSTRUCT)
+    {
+        m_groupid = (int) this;
+    }
     virtual ~Group() {}
     
     virtual Element *Create() {
@@ -31,7 +32,6 @@ public:
     };
     
     virtual bool Build(const Scm &code) {
-        SetGroupId((int) this);
         return Element::Build(ScmCdr(code));
     }
     

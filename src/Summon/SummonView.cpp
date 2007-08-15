@@ -287,8 +287,7 @@ void SummonView::ExecuteTasks()
                 break;
             case TASK_ELEMENT: {
                 // assumes only world elements are on task list
-                GroupTable *table = m_worldModel->GetGroupTable();
-                DrawElement(table, m_tasks[i]->m_element, true);
+                DrawElement(m_tasks[i]->m_element, true);
                 } break;
             default:
                 assert(0);
@@ -348,9 +347,8 @@ void SummonView::DrawWorld()
     if (m_tasks.size() == 0) {
         // if no tasks, create new drawlist task
         AddTask(new DrawTask(glGenLists(1)));
-            
-        GroupTable *table = m_worldModel->GetGroupTable();
-        DrawElement(table, table->GetGroup(table->GetRoot()), true);
+        
+        DrawElement(m_worldModel->GetRoot(), true);
         
         GetLastTask()->Close();
     } else {
@@ -370,8 +368,7 @@ void SummonView::DrawScreen()
     }
 
     glPointSize(1.0);
-    GroupTable *table = m_screenModel->GetGroupTable();
-    DrawElement(table, table->GetGroup(table->GetRoot()), false);
+    DrawElement(m_screenModel->GetRoot(), false);
 
 }
 
@@ -408,7 +405,7 @@ void SummonView::DrawCrosshair()
 }
 
 
-void SummonView::DrawElement(GroupTable *table, Element *element, bool useTasks)
+void SummonView::DrawElement(Element *element, bool useTasks)
 {
     // ignore non-visible elements
     if (!element->IsVisible())
@@ -496,7 +493,7 @@ void SummonView::DrawElement(GroupTable *table, Element *element, bool useTasks)
     
     // exec element's children
     for (Element::Iterator i=element->Begin(); i!=element->End(); i++) {
-        DrawElement(table, *i, useTasks);
+        DrawElement(*i, useTasks);
     }
     
     

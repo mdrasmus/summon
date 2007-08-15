@@ -84,7 +84,9 @@ g = group(l,
           text_clip("hello", 0, 0, 100, 100, 4, 20))))
 
 win = summon.Window()
-print "group id", win.add_group(g)
+gid = win.add_group(g)
+
+win.remove_group(gid)
 
 EOF
 
