@@ -614,27 +614,27 @@ class Window (object):
         return self.world.add_group(aGroup)
     add_group.__doc__ = summon_core.add_group.__doc__.split("\n")[1]
     
-    def insert_group(self, groupid, aGroup):
+    def insert_group(self, parentGroup, childGroup):
         """inserts a drawing group 'aGroup' as a child to an existing group
            with id 'groupid'."""
-        return self.world.insert_group(groupid, aGroup)
+        return self.world.insert_group(parentGroup, childGroup)
     
-    def remove_group(self, *groupids):
-        return self.world.remove_group(*groupids)
+    def remove_group(self, *groups):
+        return self.world.remove_group(*groups)
     remove_group.__doc__ = summon_core.remove_group.__doc__.split("\n")[1]
     
-    def replace_group(self, groupid, aGroup):
+    def replace_group(self, oldGroup, newGroup):
         """replaces a current drawing group with id 'groupid' with a new 
            group 'aGroup'"""
-        return self.world.replace_group(groupid, aGroup)
+        return self.world.replace_group(oldGroup, newGroup)
     replace_group.__doc__ = summon_core.replace_group.__doc__.split("\n")[1]
     
-    def show_group(self, groupid, visible):
-        return self.world.show_group(groupid, visible)
+    def show_group(self, aGroup, visible):
+        return self.world.show_group(aGroup, visible)
     show_group.__doc__ = summon_core.show_group.__doc__.split("\n")[1]
     
-    def get_group(self, groupid):
-        return self.world.get_group(groupid)
+    def get_group(self, aGroup):
+        return self.world.get_group(aGroup)
     get_group.__doc__ = summon_core.get_group.__doc__.split("\n")[1]
     
     def get_root_id(self):
@@ -719,7 +719,7 @@ class Model (object):
     get_group.__doc__ = summon_core.get_group.__doc__.split("\n")[1]
     
     def get_root_id(self):
-        return summon_core.get_root_id(self.id)
+        return group_dummy(summon_core.get_root_id(self.id))
     get_root_id.__doc__ = summon_core.get_root_id.__doc__.split("\n")[1]
 
 

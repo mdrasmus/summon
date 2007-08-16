@@ -138,6 +138,7 @@ _FLIP_CONSTRUCT = 1081
 class Construct:
     def __init__(self, constructid, code):
         self.constructid = constructid
+        self.dels = 0
         try:
             self.ptr = summon_core.make_construct(constructid, code)
         except:
@@ -151,6 +152,15 @@ class Construct:
 class group (Construct):
     def __init__(self, *code):
         Construct.__init__(self, _GROUP_CONSTRUCT, code)
+
+class group_dummy (group):
+    def __init__(self, ptr):
+        self.constructid = _GROUP_CONSTRUCT
+        self.ptr = ptr
+    
+    def __del__(self):
+        self.ptr = None
+
 
 class hotspot (Construct):
     def __init__(self, *code):

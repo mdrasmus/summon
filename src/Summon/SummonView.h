@@ -16,7 +16,7 @@
 #include "Glut2DView.h"
 #include "SummonModel.h"
 #include "summonCommands.h"
-#include "GroupTable.h"
+#include "Group.h"
 #include "Graphic.h"
 #include "TextElement.h"
 #include "Transform.h"

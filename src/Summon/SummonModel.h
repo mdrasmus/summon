@@ -12,11 +12,11 @@
 #include "Model.h"
 #include "summonCommands.h"
 #include "Graphic.h"
-#include "GroupTable.h"
 #include "HashTable.h"
 #include "Hotspot.h"
 #include "Transform.h"
 #include "TextElement.h"
+#include "Group.h"
 
 
 namespace Summon

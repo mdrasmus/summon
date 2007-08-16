@@ -21,6 +21,11 @@ Group *Id2Group(int id)
     return (Group*) id;
 }
 
+int Group2Id(Group *group)
+{
+    return (int) group;
+}
+
 
 void SummonModel::ExecCommand(Command &command)
 {
@@ -102,6 +107,7 @@ void SummonModel::ExecCommand(Command &command)
                 replace->SetReturn(Int2Scm(id));
                 
                 ModelChanged();
+                Update();
                 //Redisplay();                
             } else {
                 Error("unknown group %d", replace->groupid);
@@ -148,7 +154,7 @@ void SummonModel::ExecCommand(Command &command)
 
         case GET_ROOT_ID_COMMAND:
             ((GetRootIdCommand*) &command)->SetReturn(
-                Int2Scm(GetRoot()->GetGroupId()));
+                Int2Scm(Group2Id(GetRoot())));
             break;
         
         default:
@@ -231,7 +237,7 @@ int SummonModel::AddGroup(BuildEnv &env, Element *parent, Scm code)
     Group *group = (Group*) elm;
     if (group) {
         parent->AddChild(group);
-        return group->GetGroupId();
+        return Group2Id(group);
     } else {
         return -1;
     }
@@ -361,8 +367,8 @@ Scm SummonModel::GetGroup(BuildEnv &env, Element *elm)
         
         if (elm->GetId() == GROUP_CONSTRUCT) {
             return ScmCons(Int2Scm(GROUP_CONSTRUCT), 
-                           ScmCons(Int2Scm(((Group*)elm)->GetGroupId()),
-                                   children));                  
+                           ScmCons(Int2Scm(Group2Id((Group*)elm)),
+                                   children));
         } else {
             // transform returns multiple objects
             return children;

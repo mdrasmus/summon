@@ -12,7 +12,7 @@ import summon
 
 
 def func():
-    print "hello"
+    win.remove_group(g)
 
 
 
@@ -27,7 +27,21 @@ g = group(l,
 
 win = summon.Window()
 win.add_group(g)
-win.replace_group(g, group(lines(100, 0, 0, 100)))
+win.insert_group(g, group(lines(100, 0, 0, 200)))
+win.add_group(group(lines(100, 0, 0, 300)))
+
+q = win.replace_group(g, group(lines(100, 0, 0, 100)))
+print q
+q = win.replace_group(q, group(lines(100, 0, 0, 100)))
+print q
+q = win.replace_group(q, group(lines(100, 0, 0, 100)))
+print q
+q = win.replace_group(q, group(lines(100, 0, 0, 100)))
+print q
+q = win.replace_group(q, group(lines(100, 0, 0, 100)))
+print q
+
+win.set_binding(input_key("l"), func)
 
 EOF
 

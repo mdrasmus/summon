@@ -38,10 +38,10 @@ Element::~Element()
 {
     // delete all child elements
     for (Iterator i=Begin(); i!=End(); i++) {
-        if (!(*i)->m_referenced) {
-            delete (*i);
-        } else {
+        if ((*i)->m_referenced) {
             RemoveChild(*i);
+        } else {
+            delete (*i);
         }
     }
 }
