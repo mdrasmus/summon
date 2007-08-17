@@ -27,21 +27,15 @@ g = group(l,
 
 win = summon.Window()
 win.add_group(g)
-win.insert_group(g, group(lines(100, 0, 0, 200)))
-win.add_group(group(lines(100, 0, 0, 300)))
+#win.insert_group(g, group(lines(100, 0, 0, 200)))
+#win.add_group(group(lines(100, 0, 0, 300)))
 
-q = win.replace_group(g, group(lines(100, 0, 0, 100)))
-print q
-q = win.replace_group(q, group(lines(100, 0, 0, 100)))
-print q
-q = win.replace_group(q, group(lines(100, 0, 0, 100)))
-print q
-q = win.replace_group(q, group(lines(100, 0, 0, 100)))
-print q
-q = win.replace_group(q, group(lines(100, 0, 0, 100)))
-print q
+l2 = lines(100, 0, 0, 100)
+g2 = group(l2)
+g3 = win.replace_group(g, g2)
 
-win.set_binding(input_key("l"), func)
+#win.insert_group(g, group(lines(100, 0, 0, 100)))
+#win.set_binding(input_key("l"), func)
 
 EOF
 

@@ -99,7 +99,7 @@ void SummonModel::ExecCommand(Command &command)
                 Element *parent = group->GetParent();
                 
                 // remove old group
-                RemoveGroup(Id2Group(replace->groupid));
+                RemoveGroup(group);
                 
                 //PyObject_Print(ScmCar(replace->code).GetPy(), stdout, 0);
                 
@@ -495,7 +495,7 @@ Scm SummonModel::GetGroup(BuildEnv &env, Element *elm)
 void SummonModel::RemoveGroup(Group *group)
 {
     Element *parent = group->GetParent();
-
+    
     // notify parent
     if (parent)
         parent->RemoveChild(group);
@@ -504,8 +504,9 @@ void SummonModel::RemoveGroup(Group *group)
     RemoveHotspots(group);
     
     // delete only if it is not referenced by python
-    if (!group->IsReferenced())
+    if (!group->IsReferenced()) {
         delete group;
+    }
 
     // make sure model always has a root
     if (group == m_root)
