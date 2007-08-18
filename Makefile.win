@@ -59,29 +59,33 @@ LIBS=\
     $MSSDK_LIB
     
 
-OBJS=src/Common/Matrix.obj \
-     src/Common/Script.obj \
-     src/Common/ScriptCommand.obj \
-     src/GlutMVC/glut2DCommands.obj \
-     src/GlutMVC/Glut2DController.obj \
-     src/GlutMVC/Glut2DView.obj \
-     src/GlutMVC/GlutController.obj \
-     src/GlutMVC/glutInputs.obj \
-     src/GlutMVC/GlutView.obj \
-     src/MVC/Binding.obj \
-     src/MVC/Command.obj \
-     src/MVC/common.obj \
-     src/MVC/Input.obj \
-     src/MVC/Model.obj \
-     src/MVC/StringCommand.obj \
-     src/Summon/summonCommands.obj \
-     src/Summon/SummonController.obj \
-     src/Summon/SummonModel.obj \
-     src/Summon/SummonView.obj \
-     src/Summon/Graphic.obj \
-     src/Summon/GroupTable.obj \
-     src/Summon/Summon.obj \
-     src/Summon/Transform.obj
+OBJS=/src/Common/Matrix.obj \
+     /src/Common/Script.obj \
+     /src/Common/ScriptCommand.obj \
+     /src/GlutMVC/glut2DCommands.obj \
+     /src/GlutMVC/Glut2DController.obj \
+     /src/GlutMVC/Glut2DView.obj \
+     /src/GlutMVC/GlutController.obj \
+     /src/GlutMVC/glutInputs.obj \
+     /src/GlutMVC/GlutView.obj \
+     /src/MVC/Binding.obj \
+     /src/MVC/Command.obj \
+     /src/MVC/common.obj \
+     /src/MVC/Input.obj \
+     /src/MVC/Model.obj \
+     /src/MVC/StringCommand.obj \
+     /src/Summon/summonCommands.obj \
+     /src/Summon/SummonController.obj \
+     /src/Summon/SummonModel.obj \
+     /src/Summon/SummonView.obj \
+     /src/Summon/Element.obj \
+     /src/Summon/Graphic.obj \
+     /src/Summon/Hotspot.obj \
+     /src/Summon/Summon.obj \
+     /src/Summon/TextElement.obj \
+     /src/Summon/Transform.obj \
+     /src/Summon/TransformMatrix.obj 
+
 
 OBJS2=$(BUILD_DIR)/src/Common/Matrix.obj \
       $(BUILD_DIR)/src/Common/Script.obj \
@@ -102,11 +106,15 @@ OBJS2=$(BUILD_DIR)/src/Common/Matrix.obj \
       $(BUILD_DIR)/src/Summon/SummonController.obj \
       $(BUILD_DIR)/src/Summon/SummonModel.obj \
       $(BUILD_DIR)/src/Summon/SummonView.obj \
+      $(BUILD_DIR)/src/Summon/Element.obj \
       $(BUILD_DIR)/src/Summon/Graphic.obj \
-      $(BUILD_DIR)/src/Summon/GroupTable.obj \
+      $(BUILD_DIR)/src/Summon/Hotspot.obj \
       $(BUILD_DIR)/src/Summon/Summon.obj \
-      $(BUILD_DIR)/src/Summon/Transform.obj
+      $(BUILD_DIR)/src/Summon/TextElement.obj \
+      $(BUILD_DIR)/src/Summon/Transform.obj \
+      $(BUILD_DIR)/src/Summon/TransformMatrix.obj 
 
+      
 
 CFLAGS = -D__WXMSW__ -c
 

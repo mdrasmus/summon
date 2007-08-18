@@ -20,14 +20,14 @@ from summon.core import *
 from summon import util
 
 
-VERSION = "1.7.2"
+VERSION = "1.8"
 VERSION_INFO = """\
 -----------------------------------------------------------------------------
-                                   SUMMON %s
-                       visualization prototyping and scripting
-                                 Matt Rasmussen
-                             (http://mit.edu/rasmus)
-                               Copyright 2005-2007
+                                  SUMMON %s
+                      visualization prototyping and scripting
+                                Matt Rasmussen
+                            (http://mit.edu/rasmus)
+                              Copyright 2005-2007
 -----------------------------------------------------------------------------
 """ % VERSION
 

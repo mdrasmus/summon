@@ -2,7 +2,7 @@
 # SUMMON - Linux Makefile
 #
 
-VERSION=1.7.2
+VERSION=1.8
 MODULE=summon_core.so
 
 all: lib/$(MODULE)
