@@ -15,6 +15,8 @@ def func():
     win.remove_group(g)
 
 
+def hello():
+    print "hi"
 
 l = lines(color(1,0,1), 0, 0, 100, 100)
 g = group(l, 
@@ -31,8 +33,10 @@ win.add_group(g)
 #win.add_group(group(lines(100, 0, 0, 300)))
 
 l2 = lines(100, 0, 0, 100)
-g2 = group(l2)
-g3 = win.replace_group(g, g2)
+g2 = group(l2, )
+win.clear_groups()
+g3 = win.add_group(group(g2, 
+        translate(100, 100, hotspot("click", 0, 0, 100, 100, hello))))
 
 #win.insert_group(g, group(lines(100, 0, 0, 100)))
 #win.set_binding(input_key("l"), func)

@@ -117,7 +117,7 @@ void SummonModel::ExecCommand(Command &command)
         
         case CLEAR_GROUPS_COMMAND: {
             // remove root group, GroupTable will create new root
-            RemoveHotspots(GetRoot());
+            //RemoveHotspots(GetRoot());
             RemoveGroup(GetRoot());
             ModelChanged();
             Update();
@@ -523,6 +523,7 @@ void SummonModel::RemoveHotspots(Element *elm)
 {
     if (elm->GetId() == HOTSPOT_CONSTRUCT) {
         m_hotspotClicks.remove((Hotspot*) elm);
+        m_hotspotClickSet.Remove((Hotspot*) elm);
     } else {
         // recurse
         for (Element::Iterator i=elm->Begin(); i!=elm->End(); i++) {

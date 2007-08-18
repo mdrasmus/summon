@@ -162,6 +162,7 @@ class SumTree (object):
                            sx, sy - node.size/2.0,
                            sx + height, sy + node.size/2.0,
                            func))
+
         
         if self.showLabels and node.isLeaf() and type(node.name) == str:
             if self.vertical:
@@ -202,7 +203,7 @@ class SumTree (object):
     
     
     def nodeClick(self, node):
-        print "----------------"
+        print "-" * 20
         self.printNode(node)
     
     
