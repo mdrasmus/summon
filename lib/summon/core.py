@@ -111,6 +111,9 @@ for func in _summon_constructs: # + _summon_funcs:
 
 
 
+#=============================================================================
+# constuct IDs
+
 _GROUP_CONSTRUCT = 1060
 _HOTSPOT_CONSTRUCT = 1062
 

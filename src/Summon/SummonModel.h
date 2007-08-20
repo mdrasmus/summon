@@ -62,13 +62,14 @@ public:
     
     // book keeping
     void Update();
+    void Update(Element *element);
     void Update(Element *element, BuildEnv *env);
     void UpdateHotspot(Hotspot *hotspot, BuildEnv *env);
     void UpdateTextElement(TextElement *textElm, BuildEnv *env);
     void RemoveHotspots(Element *elm);
     
     // model manipulation
-    int AddGroup(BuildEnv &env, Element *parent, Scm code);
+    Group *AddGroup(BuildEnv &env, Element *parent, Scm code);
     void RemoveGroup(Group *group);
     
     Scm GetGroup(BuildEnv &env, Element *elm);
@@ -76,7 +77,7 @@ public:
     void FindBounding(Vertex2f *pos1, Vertex2f *pos2);
     
     inline Group *GetRoot()
-    { return m_root; } //m_table.GetRootGroup(); }
+    { return m_root; }
     
     inline int GetId() { return m_id; }
     
@@ -99,7 +100,6 @@ protected:
     int m_id;
     int m_kind;
     Group *m_root;
-    //GroupTable m_table;
     list<Hotspot*> m_hotspotClicks;
     HashTable<Hotspot*, bool, HashPointer> m_hotspotClickSet;
 };

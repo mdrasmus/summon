@@ -23,7 +23,6 @@ public:
     Group(int groupid=-1) : 
         Element(GROUP_CONSTRUCT)
     {
-        //m_groupid = (int) this;
     }
     virtual ~Group() {}
     
@@ -34,12 +33,6 @@ public:
     virtual bool Build(const Scm &code) {
         return Element::Build(ScmCdr(code));
     }
-    
-    //inline int GetGroupId() { return m_groupid; }
-    //inline void SetGroupId(int groupid) { m_groupid = groupid; }
-    
-protected:    
-    //int m_groupid;
 };
 
 

@@ -33,13 +33,14 @@ void SummonModel::ExecCommand(Command &command)
         case ADD_GROUP_COMMAND: {
             //ModelChangeCommand change;        
             BuildEnv env(true, m_kind);
-            int id = AddGroup(env, NULL, ((AddGroupCommand*)(&command))->code);
+            int id = Group2Id(AddGroup(env, NULL, 
+                                       ((AddGroupCommand*)(&command))->code));
             ((AddGroupCommand*)(&command))->SetReturn(Int2Scm(id));
-            
+
             //change.changedGroups.push_back(m_table.GetGroup(id));
+            Update(Id2Group(id));
             ModelChanged();
-            Update();
-            //Redisplay();
+
             } break;
         
         case INSERT_GROUP_COMMAND: {
@@ -53,16 +54,15 @@ void SummonModel::ExecCommand(Command &command)
             {
                 // get the environment and parent of old group
                 env = GetEnv(env, NULL, group);
-                
-                int id = AddGroup(env, Id2Group(pid), 
-                                  ((InsertGroupCommand*)(&command))->code);
+                int id = Group2Id(AddGroup(env, Id2Group(pid), 
+                                  ((InsertGroupCommand*)(&command))->code));
                 
                 ((InsertGroupCommand*)(&command))->SetReturn(Int2Scm(id));
-                //change.changedGroups.push_back(group);
                 
+                //change.changedGroups.push_back(group);
+                Update(Id2Group(id));
                 ModelChanged();
-                Update();
-                //Redisplay();                
+
             } else {
                 Error("unknown group %d", pid);
                 ((InsertGroupCommand*)(&command))->SetReturn(Int2Scm(-1));
@@ -77,11 +77,16 @@ void SummonModel::ExecCommand(Command &command)
             // loop through group ids
             for (unsigned int i=0; i<remove->groupids.size(); i++) {
                 RemoveGroup(Id2Group(remove->groupids[i]));
+                
+                Element *elm = Id2Group(remove->groupids[i])->GetParent();
+                if (elm)
+                    Update(elm);
+                else
+                    Update();
             }
             
+            
             ModelChanged();
-            Update();
-            //Redisplay();
             } break;
         
         case REPLACE_GROUP_COMMAND: {
@@ -103,12 +108,11 @@ void SummonModel::ExecCommand(Command &command)
                 
                 //PyObject_Print(ScmCar(replace->code).GetPy(), stdout, 0);
                 
-                int id = AddGroup(env, parent, ScmCar(replace->code));
+                int id = Group2Id(AddGroup(env, parent, ScmCar(replace->code)));
                 replace->SetReturn(Int2Scm(id));
                 
+                Update(Id2Group(id));
                 ModelChanged();
-                Update();
-                //Redisplay();                
             } else {
                 Error("unknown group %d", replace->groupid);
                 replace->SetReturn(Int2Scm(-1));
@@ -116,12 +120,10 @@ void SummonModel::ExecCommand(Command &command)
             } break;
         
         case CLEAR_GROUPS_COMMAND: {
-            // remove root group, GroupTable will create new root
-            //RemoveHotspots(GetRoot());
+            // remove root group, new root will be automatically created
             RemoveGroup(GetRoot());
-            ModelChanged();
             Update();
-            //Redisplay();
+            ModelChanged();
             } break;
         
         case SHOW_GROUP_COMMAND: {
@@ -130,14 +132,11 @@ void SummonModel::ExecCommand(Command &command)
             
             // toggle a group's visibility
             Group *group = Id2Group(show->groupid);
-            if (group) {
-                group->SetVisible(show->visible);
-                //change.changedGroups.push_back(group);
-            }
-            
+            group->SetVisible(show->visible);
+            //change.changedGroups.push_back(group);
+                
+            Update(group);
             ModelChanged();
-            Update();
-            //Redisplay();
             } break;
         
         case GET_GROUP_COMMAND: {
@@ -220,14 +219,14 @@ BuildEnv SummonModel::GetEnv(BuildEnv &env, Element *start, Element *end)
 }
 
 
-int SummonModel::AddGroup(BuildEnv &env, Element *parent, Scm code)
+Group *SummonModel::AddGroup(BuildEnv &env, Element *parent, Scm code)
 {
     Element *elm = GetElementFromObject(code.GetPy());
     
     // verify that this is a group
     if (!elm || elm->GetId() != GROUP_CONSTRUCT) {
         Error("Can only add groups");
-        return -1;
+        return NULL;
     }
 
     // set parent if default (root) is given
@@ -237,9 +236,9 @@ int SummonModel::AddGroup(BuildEnv &env, Element *parent, Scm code)
     Group *group = (Group*) elm;
     if (group) {
         parent->AddChild(group);
-        return Group2Id(group);
+        return group;
     } else {
-        return -1;
+        return NULL;
     }
 }
 
@@ -248,6 +247,13 @@ int SummonModel::AddGroup(BuildEnv &env, Element *parent, Scm code)
 void SummonModel::Update()
 {
     Element *element = GetRoot();
+    BuildEnv env(true, m_kind);
+    Update(element, &env);
+}
+
+
+void SummonModel::Update(Element *element)
+{
     BuildEnv env(true, m_kind);
     Update(element, &env);
 }
@@ -304,10 +310,6 @@ void SummonModel::UpdateHotspot(Hotspot *hotspot, BuildEnv *env)
     
     // register hotspot
     if (!m_hotspotClickSet.HasKey(hotspot)) {
-        //printf("HOTSPOT register %f %f %f %f | %f %f %f %f\n", 
-        //            hotspot->pos1.x, hotspot->pos1.y, 
-        //            hotspot->pos2.x, hotspot->pos2.y,
-        //            pos1.x, pos1.y, pos2.x, pos2.y);
         m_hotspotClickSet.Insert(hotspot, true);
         m_hotspotClicks.push_back(hotspot);
     }
@@ -504,9 +506,8 @@ void SummonModel::RemoveGroup(Group *group)
     RemoveHotspots(group);
     
     // delete only if it is not referenced by python
-    if (!group->IsReferenced()) {
+    if (!group->IsReferenced())
         delete group;
-    }
 
     // make sure model always has a root
     if (group == m_root)
@@ -526,9 +527,8 @@ void SummonModel::RemoveHotspots(Element *elm)
         m_hotspotClickSet.Remove((Hotspot*) elm);
     } else {
         // recurse
-        for (Element::Iterator i=elm->Begin(); i!=elm->End(); i++) {
+        for (Element::Iterator i=elm->Begin(); i!=elm->End(); i++)
             RemoveHotspots(*i);
-        }
     }
 }
 
