@@ -27,6 +27,16 @@ int Group2Id(Group *group)
 }
 
 
+SummonModel::SummonModel(int id, int kind) :
+    m_id(id),
+    m_kind(kind),
+    m_hotspotClickSet(1000)
+{
+    m_root = new Group();
+    m_root->IncRef();
+}    
+
+
 void SummonModel::ExecCommand(Command &command)
 {
     switch (command.GetId()) {
@@ -195,7 +205,7 @@ BuildEnv SummonModel::GetEnv(BuildEnv &env, Element *start, Element *end)
     }
     
     // find path from end to start through parent pointers
-    for (Element *i = end; i != start; i = i->GetParent()) {
+    for (Element *i = end; i && i != start; i = i->GetParent()) {
         elms.push_front(i);
     }
     elms.push_front(end);
@@ -255,7 +265,8 @@ void SummonModel::Update()
 void SummonModel::Update(Element *element)
 {
     BuildEnv env(true, m_kind);
-    Update(element, &env);
+    BuildEnv env2 = GetEnv(env, NULL, element);
+    Update(element, &env2);
 }
 
 
@@ -339,11 +350,76 @@ void SummonModel::UpdateTextElement(TextElement *textElm, BuildEnv *env)
 }
 
 
+
+void SummonModel::RemoveGroup(Group *group)
+{
+    Element *parent = group->GetParent();
+    
+    // notify parent
+    if (parent)
+        parent->RemoveChild(group);
+
+    // remove any hotspots underneath this group
+    RemoveHotspots(group);
+
+    // make sure model always has a root
+    if (group == m_root) {
+        group->DecRef();
+        m_root = new Group();
+        m_root->IncRef();
+    }
+    
+    // delete only if it is not referenced by python
+    if (!group->IsReferenced())
+        delete group;
+}
+
+
+        
+void SummonModel::RemoveHotspots(Element *elm)
+{
+    if (elm->GetId() == HOTSPOT_CONSTRUCT) {
+        m_hotspotClicks.remove((Hotspot*) elm);
+        m_hotspotClickSet.Remove((Hotspot*) elm);
+    } else {
+        // recurse
+        for (Element::Iterator i=elm->Begin(); i!=elm->End(); i++)
+            RemoveHotspots(*i);
+    }
+}
+
+
+void SummonModel::FindBounding(Vertex2f *pos1, Vertex2f *pos2)
+{
+
+    float FLOAT_MIN = -1e307;
+    float FLOAT_MAX = 1e307;
+
+    // find smallest bouding box
+    float top    = FLOAT_MIN, 
+          bottom = FLOAT_MAX, 
+          left   = FLOAT_MAX, 
+          right  = FLOAT_MIN;
+
+    TransformMatrix matrix;
+    MakeIdentityMatrix(matrix.mat);
+    
+    Group *group = GetRoot();
+    group->FindBounding(&top, &bottom, &left, &right, &matrix);
+    
+    pos1->x = left;
+    pos1->y = bottom;
+    pos2->x = right;
+    pos2->y = top;
+}
+
+
+
 Scm SummonModel::GetGroup(BuildEnv &env, Element *elm)
 {
     Scm children = Scm_EOL;
     
-
+    /*
     if (elm->GetId() == GROUP_CONSTRUCT ||
         elm->GetId() == TRANSFORM_CONSTRUCT ||
         elm->GetId() == DYNAMIC_GROUP_CONSTRUCT)
@@ -377,7 +453,9 @@ Scm SummonModel::GetGroup(BuildEnv &env, Element *elm)
         }
     
     
-    } else if (IsGraphic(elm->GetId())) {
+    } else
+    
+    if (IsGraphic(elm->GetId())) {
         Graphic *graphic = (Graphic*) elm;
         Scm children = Scm_EOL;
         
@@ -415,7 +493,9 @@ Scm SummonModel::GetGroup(BuildEnv &env, Element *elm)
         }
     
         return ScmCons(Int2Scm(elm->GetId()), children);
-    } else if (elm->GetId() == TEXT_CONSTRUCT) {
+    } else
+    
+     if (elm->GetId() == TEXT_CONSTRUCT) {
         TextElement *text = (TextElement*) elm;
         
         Scm justified = Scm_EOL;
@@ -468,7 +548,10 @@ Scm SummonModel::GetGroup(BuildEnv &env, Element *elm)
                     ScmCons(Float2Scm(y2), justified))))));
         
         
-    } else if (elm->GetId() == HOTSPOT_CONSTRUCT) {
+    } else
+    
+    
+     if (elm->GetId() == HOTSPOT_CONSTRUCT) {
         Hotspot *hotspot = (Hotspot*) elm;
         Scm kind;
         
@@ -489,72 +572,9 @@ Scm SummonModel::GetGroup(BuildEnv &env, Element *elm)
     } else {
         assert(0);
     }
+    */
     
     return Scm_EOL;
-}
-
-
-void SummonModel::RemoveGroup(Group *group)
-{
-    Element *parent = group->GetParent();
-    
-    // notify parent
-    if (parent)
-        parent->RemoveChild(group);
-
-    // remove any hotspots underneath this group
-    RemoveHotspots(group);
-    
-    // delete only if it is not referenced by python
-    if (!group->IsReferenced())
-        delete group;
-
-    // make sure model always has a root
-    if (group == m_root)
-        m_root = new Group();
-}
-
-
-        
-
-
-
-
-void SummonModel::RemoveHotspots(Element *elm)
-{
-    if (elm->GetId() == HOTSPOT_CONSTRUCT) {
-        m_hotspotClicks.remove((Hotspot*) elm);
-        m_hotspotClickSet.Remove((Hotspot*) elm);
-    } else {
-        // recurse
-        for (Element::Iterator i=elm->Begin(); i!=elm->End(); i++)
-            RemoveHotspots(*i);
-    }
-}
-
-
-void SummonModel::FindBounding(Vertex2f *pos1, Vertex2f *pos2)
-{
-
-    float FLOAT_MIN = -1e307;
-    float FLOAT_MAX = 1e307;
-
-    // find smallest bouding box
-    float top    = FLOAT_MIN, 
-          bottom = FLOAT_MAX, 
-          left   = FLOAT_MAX, 
-          right  = FLOAT_MIN;
-
-    TransformMatrix matrix;
-    MakeIdentityMatrix(matrix.mat);
-    
-    Group *group = GetRoot();
-    group->FindBounding(&top, &bottom, &left, &right, &matrix);
-    
-    pos1->x = left;
-    pos1->y = bottom;
-    pos2->x = right;
-    pos2->y = top;
 }
 
 }

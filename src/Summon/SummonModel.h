@@ -33,8 +33,7 @@ struct BuildEnv
         if (identity) {
             trans.SetIdentity();
         }
-    }
-    
+    } 
     
     
     TransformMatrix trans;
@@ -45,13 +44,7 @@ struct BuildEnv
 class SummonModel : public Model
 {
 public:
-    SummonModel(int id, int kind=MODEL_WORLD) :
-        m_id(id),
-        m_kind(kind),
-        m_hotspotClickSet(1000)
-    {
-        m_root = new Group();
-    }
+    SummonModel(int id, int kind=MODEL_WORLD);
     
     virtual void ExecCommand(Command &command);
 

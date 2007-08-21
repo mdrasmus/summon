@@ -29,8 +29,7 @@ Element::Element(int id) :
     m_id(id), 
     m_parent(NULL),
     m_visible(true),
-    m_referenced(false),
-    m_dynamic(false)
+    m_referenced(0)
 {}
     
 
@@ -38,7 +37,7 @@ Element::~Element()
 {
     // delete all child elements
     for (Iterator i=Begin(); i!=End(); i++) {
-        if ((*i)->m_referenced) {
+        if ((*i)->IsReferenced()) {
             // just detach parent pointer and let python garbage collect child
             (*i)->SetParent(NULL);
         } else {
@@ -89,6 +88,11 @@ bool Element::Build(const Scm &code)
         AddChild(elm);
     }
     return true;
+}
+
+Scm Element::GetContents()
+{
+    return Scm_EOL;
 }
 
 void Element::FindBounding(float *top, float *bottom, 

@@ -28,13 +28,25 @@ public:
         maxHeight(0.0),
         modelKind(MODEL_WORLD)
     {
-        m_dynamic = true;
+    }
+    
+    virtual int GetSpecificId()
+    {
+        switch (kind) {
+            case KIND_BITMAP: return TEXT_CONSTRUCT;
+            case KIND_SCALE: return TEXT_SCALE_CONSTRUCT;
+            case KIND_CLIP: return TEXT_CLIP_CONSTRUCT;
+            default: assert(0);
+        }
     }
     
     virtual Element *Create()
     { return new TextElement(); }
     
+    virtual bool IsDynamic() { return true; }
+    
     virtual bool Build(const Scm &code);
+    virtual Scm GetContents();
     
     enum {
         KIND_BITMAP,

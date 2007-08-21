@@ -55,7 +55,23 @@ bool Hotspot::Build(const Scm &code)
 }
 
 
+Scm Hotspot::GetContents()
+{
+    Scm skind;
 
+    if (kind == CLICK) {
+        skind = String2Scm("click");
+    } else {
+        assert(0);
+    }
+
+    return ScmCons(skind,
+             ScmCons(Float2Scm(pos1.x),
+              ScmCons(Float2Scm(pos1.y),
+               ScmCons(Float2Scm(pos2.x),
+                ScmCons(Float2Scm(pos2.y),
+                 ScmCons(GetProc()->GetScmProc(), Scm_EOL))))));
+}
 
 
 } // namespace Summon

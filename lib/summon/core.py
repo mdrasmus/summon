@@ -130,8 +130,10 @@ _TEXT_CONSTRUCT = 1072
 _TEXT_SCALE_CONSTRUCT = 1073
 _TEXT_CLIP_CONSTRUCT = 1074
 
+_VERTICES_CONSTRUCT = 1075
 _COLOR_CONSTRUCT = 1076
 
+_TRANSFORM_CONSTRUCT = 1077
 _TRANSLATE_CONSTRUCT = 1078
 _ROTATE_CONSTRUCT = 1079
 _SCALE_CONSTRUCT = 1080
@@ -139,114 +141,196 @@ _FLIP_CONSTRUCT = 1081
 
 
 class Construct:
-    def __init__(self, constructid, code):
+    def __init__(self, constructid, code, options={}):
         self.constructid = constructid
-        self.dels = 0
-        try:
-            self.ptr = summon_core.make_construct(constructid, code)
-        except:
-            self.ptr = None
-            raise
+        
+        if "ref" in options and options["ref"]:
+            # create a reference to an existing construct
+            self.ptr = code[0]
+            summon_core.incref_construct(code[0])
+        else:
+            # create a new construct
+            try:
+                self.ptr = summon_core.make_construct(constructid, code)
+                #print "new", self.ptr
+            except:
+                self.ptr = None
+                raise
 
     def __del__(self):
+        #print "delete", self.ptr, self.constructid
         if self.ptr != None:
+            # when python interface is GC also delete C++ construct
             summon_core.delete_construct(self.ptr)
 
-class group (Construct):
-    def __init__(self, *code):
-        Construct.__init__(self, _GROUP_CONSTRUCT, code)
 
-class group_dummy (group):
-    def __init__(self, ptr):
-        self.constructid = _GROUP_CONSTRUCT
-        self.ptr = ptr
+    def __iter__(self):
+        children = summon_core.get_construct_children(self.ptr)
+        
+        for i in xrange(0, len(children), 2):
+            yield _make_ref(children[i], children[i+1])
     
-    def __del__(self):
-        self.ptr = None
+    def get_contents(self):
+        return summon_core.get_construct_contents(self.ptr)
 
+    def get_children(self):
+        return list(self)
+
+
+class group (Construct):
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _GROUP_CONSTRUCT, code, options)
+    
 
 class hotspot (Construct):
-    def __init__(self, *code):
-        Construct.__init__(self, _HOTSPOT_CONSTRUCT, code)
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _HOTSPOT_CONSTRUCT, code, options)
 
 #=============================================================================
 # graphics
 
-class points (Construct):
-    def __init__(self, *code):
-        Construct.__init__(self, _POINTS_CONSTRUCT, code)
+class graphic (Construct):
+    pass
+        
 
-class lines (Construct):
-    def __init__(self, *code):
-        Construct.__init__(self, _LINES_CONSTRUCT, code)
+class points (graphic):
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _POINTS_CONSTRUCT, code, options)
 
-class line_strip (Construct):
-    def __init__(self, *code):
-        Construct.__init__(self, _LINE_STRIP_CONSTRUCT, code)
+class lines (graphic):
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _LINES_CONSTRUCT, code, options)
 
-class triangles (Construct):
-    def __init__(self, *code):
-        Construct.__init__(self, _TRIANGLES_CONSTRUCT, code)
+class line_strip (graphic):
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _LINE_STRIP_CONSTRUCT, code, options)
 
-class triangle_strip (Construct):
-    def __init__(self, *code):
-        Construct.__init__(self, _TRIANGLE_STRIP_CONSTRUCT, code)
+class triangles (graphic):
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _TRIANGLES_CONSTRUCT, code, options)
 
-class quads (Construct):
-    def __init__(self, *code):
-        Construct.__init__(self, _QUADS_CONSTRUCT, code)
+class triangle_strip (graphic):
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _TRIANGLE_STRIP_CONSTRUCT, code, options)
 
-class quad_strip (Construct):
-    def __init__(self, *code):
-        Construct.__init__(self, _QUAD_STRIP_CONSTRUCT, code)
+class triangle_fan (graphic):
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _TRIANGLE_FAN_CONSTRUCT, code, options)
 
-class polygon (Construct):
-    def __init__(self, *code):
-        Construct.__init__(self, _POLYGON_CONSTRUCT, code)
+class quads (graphic):
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _QUADS_CONSTRUCT, code, options)
+
+class quad_strip (graphic):
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _QUAD_STRIP_CONSTRUCT, code, options)
+
+class polygon (graphic):
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _POLYGON_CONSTRUCT, code, options)
+
+class color_graphic (graphic):
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _COLOR_CONSTRUCT, code, options)
 
 def color(r, g, b, a=1.0):
     return (_COLOR_CONSTRUCT, r, g, b, a)
+
+#class _color_ref (graphic):
+#    def __init__(self, *code, **options):
+#        Construct.__init__(self, _COLOR_CONSTRUCT, code, options)
 
 
 #=============================================================================
 # text
 
 class text (Construct):
-    def __init__(self, *code):
-        Construct.__init__(self, _TEXT_CONSTRUCT, code)
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _TEXT_CONSTRUCT, code, options)
 
-class text_scale (Construct):
-    def __init__(self, *code):
-        Construct.__init__(self, _TEXT_SCALE_CONSTRUCT, code)
+class text_scale (text):
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _TEXT_SCALE_CONSTRUCT, code, options)
 
-class text_clip (Construct):
-    def __init__(self, *code):
-        Construct.__init__(self, _TEXT_CLIP_CONSTRUCT, code)
+class text_clip (text):
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _TEXT_CLIP_CONSTRUCT, code, options)
 
 
 #=============================================================================
 # transforms
 
-class translate (Construct):
-    def __init__(self, *code):
-        Construct.__init__(self, _TRANSLATE_CONSTRUCT, code)
+class transform (Construct):
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _TRANSFORM_CONSTRUCT, code, options)
 
-class rotate (Construct):
-    def __init__(self, *code):
-        Construct.__init__(self, _ROTATE_CONSTRUCT, code)
+class translate (transform):
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _TRANSLATE_CONSTRUCT, code, options)
 
-class scale (Construct):
-    def __init__(self, *code):
-        Construct.__init__(self, _SCALE_CONSTRUCT, code)
+class rotate (transform):
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _ROTATE_CONSTRUCT, code, options)
 
-class flip (Construct):
-    def __init__(self, *code):
-        Construct.__init__(self, _FLIP_CONSTRUCT, code)
+class scale (transform):
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _SCALE_CONSTRUCT, code, options)
+
+class flip (transform):
+    def __init__(self, *code, **options):
+        Construct.__init__(self, _FLIP_CONSTRUCT, code, options)
 
 
 #=============================================================================
 # global functions
 
+
 def get_group_id(aGroup):
     return aGroup
+    
+def is_color(prim):
+    return prim[0] == _COLOR_CONSTRUCT
+
+def is_vertices(prim):
+    return prim[0] == _VERTICES_CONSTRUCT
+    
+
+#=============================================================================
+# private
+
+_construct_table = {
+    _GROUP_CONSTRUCT:          group,
+    _HOTSPOT_CONSTRUCT:        hotspot,
+
+    # graphics
+    _POINTS_CONSTRUCT:         points,
+    _LINES_CONSTRUCT:          lines,
+    _LINE_STRIP_CONSTRUCT:     line_strip,
+    _TRIANGLES_CONSTRUCT:      triangles,
+    _TRIANGLE_STRIP_CONSTRUCT: triangle_strip,
+    _TRIANGLE_FAN_CONSTRUCT:   triangle_fan,
+    _QUADS_CONSTRUCT:          quads,
+    _QUAD_STRIP_CONSTRUCT:     quad_strip,
+    _POLYGON_CONSTRUCT:        polygon,
+ 
+    # text
+    _TEXT_CONSTRUCT:           text,
+    _TEXT_SCALE_CONSTRUCT:     text_scale,
+    _TEXT_CLIP_CONSTRUCT:      text_clip,
+ 
+    _COLOR_CONSTRUCT:          color_graphic,
+
+    # transforms
+    _TRANSFORM_CONSTRUCT:      transform,
+    _TRANSLATE_CONSTRUCT:      translate,
+    _ROTATE_CONSTRUCT:         rotate,
+    _SCALE_CONSTRUCT:          scale,
+    _FLIP_CONSTRUCT:           flip
+}
+
+
+def _make_ref(constructid, ptr):
+    return _construct_table[constructid](ptr, ref=True)
+
+
 

@@ -1,7 +1,10 @@
-from summon_core import *
+#from summon_core import *
+from summon.core import *
 import summon
+from summon import util
 
 import os
+import math
 
 
 svgHeader = """<?xml version='1.0' encoding='UTF-8'?> 
@@ -22,133 +25,155 @@ def color2string(color):
                             int(255 * color[2]))
 
 
-def writeSvg(win, outfile, group):
-    def printLine(x1, y1, x2, y2, color):
-        print >>outfile, "<line x1='%f' y1='%f' x2='%f' y2='%f' " % (x1, y1, x2, y2)
-        print >>outfile, "stroke-opacity='%f' " % (color[3])
-        print >>outfile, "stroke='%s' />\n" % (color2string(color))
+
+class SvgWriter:
+    def __init__(self):
+        pass
+    
+        
+    def write(self, win, outfile, group):
+         # print out svg code
+        (x, y, x2, y2) = win.get_visible()  
+        (width, height) = win.get_size()    
+        bgcolor = win.get_bgcolor()
+        
+        self.out = outfile
+        self.curcolor = [1, 1, 1, 1]
+
+        print >>self.out, svgHeader
+        print >>self.out, svgTag % (width, height)
+        print >>self.out, "<g transform='translate(0, %d)'>" % height
+        print >>self.out, "<g transform='scale(1, -1)'>"
+        print >>self.out, "<rect x='0' y='0' width='%d' height='%d' fill='%s'/>" % \
+                (width, height, color2string(bgcolor))
+
+        self.printElm(group)
+
+        print >>self.out, "</g></g>"
+        print >>self.out, svgEndTag
+
+    def printLine(self, x1, y1, x2, y2, color):
+        print >>self.out, "<line x1='%f' y1='%f' x2='%f' y2='%f' " % (x1, y1, x2, y2)
+        print >>self.out, "stroke-opacity='%f' " % (color[3])
+        print >>self.out, "stroke='%s' />\n" % (color2string(color))
 
 
-    def printPolygon(verts, color):
-        print >>outfile, "<polygon fill='%s' stroke='%s' opacity='%f' points='" % \
+    def printPolygon(self, verts, color):
+        print >>self.out, "<polygon fill='%s' stroke='%s' opacity='%f' points='" % \
                 (color2string(color), color2string(color), color[3])
         for pt in verts:
-            print >>outfile, "%f,%f " % (pt[0], pt[1])
-        print >>outfile, "' />"
+            print >>self.out, "%f,%f " % (pt[0], pt[1])
+        print >>self.out, "' />"
+
     
-    def printText(elm, verts, color):
-        msg = text_contents(elm)[0]
-        pos = text_contents(elm)[5:]
-        (x1, y1), (x2, y2) = verts
+    def printText(self, elm):
+        """write the SVG for a text element"""
         
-        col = color2string(color)
+        c = elm.get_contents()
+        kind = c[0]
+        msg = c[1]
+        x1, y1, x2, y2 = c[2:6]
+        color = self.curcolor
         
-        # TODO: remove hack (why is color[3] so near 0)
-        color[3] = 1
-        
+        col = color2string(color)        
         
         boxheight = y2 - y1
         boxwidth = x2 - x1
         
-        if summon.is_text_scale(elm) or summon.is_text_clip(elm):
+        if isinstance(elm, text_scale) or isinstance(elm, text_clip):
             textheight = 20.0
             textwidth = textheight * .75 * float(len(msg)) # TODO: approx for now
             
             scale = min(boxheight / textheight, boxwidth / textwidth)
             
-            print >>outfile, \
+            print >>self.out, \
             """<g transform='translate(%f,%f) scale(%f,%f)'>
                 <text x='0' y='0' font-size='%s' fill='%s' fill-opacity='%f'>%s</text></g>
             """ % (x1, y1, scale, -scale, textheight,  col, color[3], msg)
-        elif summon.is_text(elm):
-            print >>outfile, \
+        elif isinstance(elm, text):
+            print >>self.out, \
             """<g transform='translate(%f,%f) scale(1,-1)'>
                 <text x='0' y='0' font-size='%s' fill='%s' fill-opacity='%f'>%s</text></g>
             """ % (x1, y1, 10, col, color[3], msg)
+
     
-    
-    def printText2(elm, verts, color):
-        msg = text_contents(elm)[0]
-        pos = text_contents(elm)[5:]
-        (x1, y1), (x2, y2) = verts
+    def printGraphic(self, elm):
+        """write the SVG for a graphics element"""
         
-        col = color2string(color)
-        
-        # TODO: remove hack (why is color[3] so near 0)
-        color[3] = 1
-        
-        
-        boxheight = y2 - y1
-        boxwidth = x2 - x1
-        
-        if summon.is_text_scale(elm) or summon.is_text_clip(elm):
-            textheight = 20.0
-            textwidth = textheight * .75 * float(len(msg)) # TODO: approx for now
+        for verts, col in summon.iter_vertices(elm, self.curcolor):
+            self.curcolor = col
             
-            scale = min(boxheight / textheight, boxwidth / textwidth)
+            if isinstance(elm, lines) or \
+               isinstance(elm, line_strip):
+                self.printLine(verts[0][0], verts[0][1], 
+                               verts[1][0], verts[1][1], col)
+            elif isinstance(elm, triangles) or \
+                 isinstance(elm, triangle_strip) or \
+                 isinstance(elm, quads) or \
+                 isinstance(elm, quad_strip) or \
+                 isinstance(elm, polygon):
+                self.printPolygon(verts, col)
+    
+    
+    def printBeginTransform(self, elm):
+        """write the opening tag for a transform"""
+    
+        c = elm.get_contents()    
+        if isinstance(elm, translate):
+            print >>self.out, "<g transform='translate(%f,%f)'>" % (c[1], c[2])
+        elif isinstance(elm, scale):
+            print >>self.out, "<g transform='scale(%f,%f)'>" % (c[1], c[2])
+        elif isinstance(elm, rotate):
+            print >>self.out, "<g transform='rotate(%f)'>" % c[3]
+        elif isinstance(elm, flip):
+            x, y = c[1], c[1]
+            h = math.sqrt(x*x + y*y)
+            angle = 180 / math.pi * math.acos(x / h)
+            if y < 0:
+                angle *= -1
             
-            print >>outfile, \
-            """<g transform='translate(%f,%f) scale(%f,%f)'>
-                <text x='0' y='0' font-size='%s' stroke-width='%f' stroke='%s' 
-                    fill='%s' stroke-opacity='%f' fill-opacity='%f'>%s</text></g>
-            """ % (x1, y1, scale, -scale, textheight, 1/scale, col, col, 
-                    0, color[3], msg)
-        elif summon.is_text(elm):
-            print >>outfile, \
-            """<g transform='translate(%f,%f) scale(1,-1)'>
-                <text x='0' y='0' font-size='%s' stroke-width='%f' stroke='%s' 
-                    fill='%s' stroke-opacity='%f' fill-opacity='%f'>%s</text></g>
-            """ % (x1, y1, 10, 1, col, col, 
-                    0, color[3], msg)        
+            print >>self.out, "<g transform='rotate(%f) scale(-1, 1) rotate(%f)'>" % \
+                (-angle, angle)
+    
+    
+    def printEndTransform(self, elm):
+        """write the closing tag for a transform"""
         
-
-    def printGraphic(elm, verts, color):
-        verts2 = []
-        for vert in verts:
-            verts2.append([(vert[0] + transx) * scalex,
-                           (vert[1] + transy) * scaley])
-        verts = verts2
-    
-        if summon.is_lines(elm) or summon.is_line_strip(elm):
-            printLine(verts[0][0], verts[0][1], verts[1][0], verts[1][1], color)
-        elif summon.is_triangles(elm) or \
-             summon.is_triangle_strip(elm) or \
-             summon.is_quads(elm) or \
-             summon.is_quad_strip(elm) or \
-             summon.is_polygon(elm):
-            printPolygon(verts, color)
-        elif summon.is_text_elm(elm):
-            printText(elm, verts2, color)
+        if isinstance(elm, translate) or \
+           isinstance(elm, scale) or \
+           isinstance(elm, rotate) or \
+           isinstance(elm, flip):
+            print >>self.out, "</g>"
     
     
-    def printElm(elm):
-        summon.visitGraphics(elm, printGraphic)
+    def printElm(self, elm):
+        """write the SVG an element and all of its children"""
+        
+        if isinstance(elm, graphic):
+            self.printGraphic(elm)
+        
+        if isinstance(elm, text):
+            self.printText(elm)
 
-    # print out svg code
-    (x, y, x2, y2) = win.get_visible()  
-    boxWidth  = x2 - x
-    boxHeight = y2 - y
-    (width, height) = win.get_size()    
-    transx = -x
-    transy = -y
-    scalex = width / boxWidth
-    scaley = height / boxHeight
-    bgcolor = win.get_bgcolor()
+        if isinstance(elm, transform):
+            self.printBeginTransform(elm)
+        
+        # recurse
+        for child in elm:
+            self.printElm(child)
+
+        if isinstance(elm, transform):
+            self.printEndTransform(elm)
+
+
+
+def writeSvg(win, outfile, group):
+    writer = SvgWriter()
     
-    print >>outfile, svgHeader
-    print >>outfile, svgTag % (width, height)
-    print >>outfile, "<g transform='translate(0, %d)'>" % height
-    print >>outfile, "<g transform='scale(1, -1)'>"
-    print >>outfile, "<rect x='0' y='0' width='%d' height='%d' fill='%s'/>" % \
-            (width, height, color2string(bgcolor))
-    #print >>outfile, "<g transform='scale(%f, %f)'>"  % (scalex, scaley)
-    #print >>outfile, "<g transform='translate(%d, %d)'>" % (-x, -y)
-    #print >>outfile, "<g stroke-width='%f'>" % (1 / max(scalex, scaley))
+    writer.write(win, outfile, group)
 
-    printElm(group)
 
-    print >>outfile, "</g></g>"  #</g></g></g>"
-    print >>outfile, svgEndTag
+    
 
 
 def printScreen(win, filename = None, visgroup=None):
@@ -160,7 +185,7 @@ def printScreen(win, filename = None, visgroup=None):
         filename = filename.replace("./", "./summon")
     
     if visgroup == None:
-        visgroup = win.get_group(win.get_root_id())
+        visgroup = win.get_root()
     
     print "dumping screen to '%s'..." % filename
     
@@ -179,6 +204,7 @@ def printScreen(win, filename = None, visgroup=None):
     print "wrote '%s'" % filename
     
     return filename
+
 
 def printScreenPng(win, pngFilename = None):
     print "dumping screen to '%s'..." % pngFilename

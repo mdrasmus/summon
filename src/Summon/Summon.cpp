@@ -32,7 +32,10 @@ static PyObject *Exec(PyObject *self, PyObject *tup);
 static PyObject *SummonMainLoop(PyObject *self, PyObject *tup);
 static PyObject *SummonShutdown(PyObject *self, PyObject *tup);
 static PyObject *MakeConstruct(PyObject *self, PyObject *args);
+static PyObject *IncRefConstruct(PyObject *self, PyObject *args);
 static PyObject *DeleteConstruct(PyObject *self, PyObject *args);
+static PyObject *GetConstructChildren(PyObject *self, PyObject *args);
+static PyObject *GetConstructContents(PyObject *self, PyObject *args);
 }
 
 
@@ -107,7 +110,7 @@ public:
             }
         }
         
-        static PyMethodDef *summonMethods = new PyMethodDef [6];
+        static PyMethodDef *summonMethods = new PyMethodDef [9];
 
         // install main command
         int table = 0;
@@ -139,9 +142,30 @@ public:
         summonMethods[table].ml_doc   = "";
         table++;
         
-        // gracefully shutdown glut from python
+        // delete a construct
         summonMethods[table].ml_name  = "delete_construct";
         summonMethods[table].ml_meth  = DeleteConstruct;
+        summonMethods[table].ml_flags = METH_VARARGS;
+        summonMethods[table].ml_doc   = "";
+        table++;
+        
+        // reference a construct
+        summonMethods[table].ml_name  = "incref_construct";
+        summonMethods[table].ml_meth  = IncRefConstruct;
+        summonMethods[table].ml_flags = METH_VARARGS;
+        summonMethods[table].ml_doc   = "";
+        table++;
+
+        // get the children of a construct
+        summonMethods[table].ml_name  = "get_construct_children";
+        summonMethods[table].ml_meth  = GetConstructChildren;
+        summonMethods[table].ml_flags = METH_VARARGS;
+        summonMethods[table].ml_doc   = "";
+        table++;
+
+        // get the contents of a construct
+        summonMethods[table].ml_name  = "get_construct_contents";
+        summonMethods[table].ml_meth  = GetConstructContents;
         summonMethods[table].ml_flags = METH_VARARGS;
         summonMethods[table].ml_doc   = "";
         table++;
@@ -963,7 +987,7 @@ MakeConstruct(PyObject *self, PyObject *args)
         PyErr_Format(PyExc_Exception, "error constructing element");
         return NULL;
     }
-    elm->SetReferenced(true);
+    elm->IncRef();
     
     //printf("new: %p\n", elm);
     
@@ -979,16 +1003,63 @@ DeleteConstruct(PyObject *self, PyObject *args)
     long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
     Element *elm = (Element*) addr;
     
+    elm->DecRef();
+    
     // if element has a parent, then parent owns element and
     // element will be deleted by parent
-    if (elm->GetParent() == NULL) {
+    if (!elm->IsReferenced() && elm->GetParent() == NULL) {
         //printf("delete: %p\n", elm);
         delete elm;
     }
     
-    elm->SetReferenced(false);
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+IncRefConstruct(PyObject *self, PyObject *args)
+{
+    long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
+    Element *elm = (Element*) addr;
+    
+    //printf("incref %p\n", elm);
+    elm->IncRef();
     
     Py_RETURN_NONE;
+}
+
+
+static PyObject *
+GetConstructChildren(PyObject *self, PyObject *args)
+{
+    long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
+    Element *elm = (Element*) addr;
+    
+    int len = elm->NumChildren() * 2;
+    
+    PyObject *children = PyTuple_New(len);
+    int i = 0;
+    for (Element::Iterator child=elm->Begin(); child!=elm->End(); child++) {
+        PyTuple_SET_ITEM(children, i, PyInt_FromLong((*child)->GetSpecificId()));
+        PyTuple_SET_ITEM(children, i+1, PyInt_FromLong((long) (*child)));
+        i+=2;
+    }
+    
+    return children;
+}
+
+
+static PyObject *
+GetConstructContents(PyObject *self, PyObject *args)
+{
+    long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
+    Element *elm = (Element*) addr;
+    
+    Scm contents = elm->GetContents();
+    PyObject *pycontents = Scm2Py(contents);
+    Py_INCREF(pycontents);
+    
+    return pycontents;
 }
 
 

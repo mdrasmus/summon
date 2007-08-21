@@ -73,5 +73,52 @@ bool TextElement::Build(const Scm &code2)
 }
 
 
+Scm TextElement::GetContents()
+{
+    Scm just = Scm_EOL;
+
+    if (justified & LEFT)
+        just = ScmCons(String2Scm("left"), just);
+    if (justified & CENTER)
+        just = ScmCons(String2Scm("center"), just);
+    if (justified & RIGHT)
+        just = ScmCons(String2Scm("right"), just);
+    if (justified & TOP)
+        just = ScmCons(String2Scm("top"), just);
+    if (justified & MIDDLE)
+        just = ScmCons(String2Scm("middle"), just);
+    if (justified & BOTTOM)
+        just = ScmCons(String2Scm("bottom"), just);
+    if (justified & VERTICAL)
+        just = ScmCons(String2Scm("vertical"), just);
+
+    int id = 0;
+
+    switch (kind) {
+        case KIND_BITMAP:
+            id = TEXT_CONSTRUCT;
+            break;
+        case KIND_SCALE:
+            id = TEXT_SCALE_CONSTRUCT;
+            break;
+        case KIND_CLIP:
+            id = TEXT_CLIP_CONSTRUCT;
+
+            // add extra height fields                
+            just = ScmCons(Float2Scm(minHeight),
+                    ScmCons(Float2Scm(maxHeight), just));
+            break;
+        default:
+            assert(0);
+    }
+    
+    return ScmCons(Int2Scm(id),
+           ScmCons(String2Scm(text.c_str()),
+             ScmCons(Float2Scm(pos1.x),
+              ScmCons(Float2Scm(pos1.y),
+               ScmCons(Float2Scm(pos2.x),
+                ScmCons(Float2Scm(pos2.y), just))))));
+}
+
 
 } // namespace Summon

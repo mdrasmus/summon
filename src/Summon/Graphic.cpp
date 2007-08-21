@@ -193,6 +193,45 @@ int Graphic::GetDataSize(Scm code)
 }
 
 
+Scm Graphic::GetContents()
+{
+    Scm children = Scm_EOL;
+
+    // build primitives
+    for (int ptr = 0; More(ptr); ptr = NextPrimitive(ptr))
+    {
+        Scm child = Scm_EOL;
+
+        if (IsVertices(ptr)) {
+            float *data = GetVertex(VerticesStart(ptr));
+
+            for (int i = 2 * GetVerticesLen(ptr) - 1; i > 0; i-=2)
+            {
+                child = ScmCons(Float2Scm(data[i-1]), 
+                                ScmCons(Float2Scm(data[i]), child));
+            }
+            child = ScmCons(Int2Scm(VERTICES_CONSTRUCT), child);
+
+        } else if (IsColor(ptr)) {
+            char *color = GetColor(ptr);
+            for (int i = 3; i >= 0; i--) {
+                child = ScmCons(Float2Scm(((unsigned char) color[i]) / 255.0), child);
+            }
+            child = ScmCons(Int2Scm(COLOR_CONSTRUCT), child);
+
+        } else {
+            // unknown primitive
+            Error("unknown primitive");
+            assert(0);
+        }
+
+        children = ScmAppend(children, ScmCons(child, Scm_EOL));
+    }
+
+    return children;
+}
+
+
 void Graphic::FindBounding(float *top, float *bottom, float *left, float *right,
                            TransformMatrix *matrix)
 {    

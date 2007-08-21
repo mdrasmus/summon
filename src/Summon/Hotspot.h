@@ -34,6 +34,7 @@ public:
     { return new Hotspot(); }
     
     virtual bool Build(const Scm &code);
+    virtual Scm GetContents();
     
     inline void SetProc(CallProcCommand *proc)
     { m_proc = proc; }

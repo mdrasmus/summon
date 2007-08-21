@@ -43,8 +43,9 @@ public:
         Element(DYNAMIC_GROUP_CONSTRUCT),
         m_proc(proc)
     {
-        m_dynamic = true;
     }
+    
+    virtual bool IsDynamic() { return true; }
     
     inline Scm GetProc() { return m_proc; }
     

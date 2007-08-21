@@ -11,8 +11,10 @@
 from summon.core import *
 import summon
 
-
+# get the newly created window
 win = summon.get_summon_window()
+
+# clear all bindings
 win.clear_all_bindings()
 
 

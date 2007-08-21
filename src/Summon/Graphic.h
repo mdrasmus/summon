@@ -65,6 +65,7 @@ public:
     virtual bool Build(const Scm &code);
     bool BuildVertices(char *data, int &ptr, Scm &code);
     int GetDataSize(Scm code);
+    virtual Scm GetContents();
     
     void FindBounding(float *top, float *bottom, float *left, float *right,
                       TransformMatrix *matrix);

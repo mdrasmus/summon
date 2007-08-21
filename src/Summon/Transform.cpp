@@ -106,6 +106,28 @@ bool Transform::Build(const Scm &code)
     return false;
 }
 
+Scm Transform::GetContents()
+{
+    switch (m_kind) {
+        case TRANSLATE_CONSTRUCT:
+        case SCALE_CONSTRUCT:
+        case FLIP_CONSTRUCT:
+            return ScmCons(Int2Scm(m_kind),
+                     ScmCons(Float2Scm(m_param1),
+                       ScmCons(Float2Scm(m_param2),
+                         Scm_EOL)));
+
+        case ROTATE_CONSTRUCT:
+            return ScmCons(Int2Scm(m_kind),
+                     ScmCons(Float2Scm(m_param1),
+                       Scm_EOL));
+            
+        default:
+            Error("Unknown transform");
+            assert(0);
+    }
+}
+
 
 void Transform::FindBounding(float *top, float *bottom, 
                              float *left, float *right,

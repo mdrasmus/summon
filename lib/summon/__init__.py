@@ -637,9 +637,15 @@ class Window (object):
         return self.world.get_group(aGroup)
     get_group.__doc__ = summon_core.get_group.__doc__.split("\n")[1]
     
+    def get_root(self):
+        """Get the root group of the window's 'world' model"""
+        return self.world.get_root()
+    
+    # DEPRECATED
     def get_root_id(self):
         return self.world.get_root_id()
     get_root_id.__doc__ = summon_core.get_root_id.__doc__.split("\n")[1]
+
     
     #===================================================================
     # misc
@@ -718,9 +724,17 @@ class Model (object):
         return summon_core.get_group(self.id, aGroup.ptr)
     get_group.__doc__ = summon_core.get_group.__doc__.split("\n")[1]
     
+    def get_root(self):
+        """Get the root group of the window's 'world' model"""
+        return group(summon_core.get_root_id(self.id), ref=True)
+
+    
+    # DEPRECATED
     def get_root_id(self):
-        return group_dummy(summon_core.get_root_id(self.id))
+        return group(summon_core.get_root_id(self.id), ref=True)
     get_root_id.__doc__ = summon_core.get_root_id.__doc__.split("\n")[1]
+
+
 
 
 
@@ -764,6 +778,59 @@ class VisObject (object):
 # functions for iterating and inspecting graphical elements
 #
 
+
+def iter_vertices(elm, curcolor=None):
+    if curcolor == None:
+        curcolor = [1.0, 1.0, 1.0, 1.0]
+    verts = []
+    
+    # iterate over primitives
+    for prim in elm.get_contents():
+        if is_color(prim):
+            # color primitive
+            rgb = list(prim[1:])
+            if len(rgb) == 3:
+                rgb.append(1.0)
+            
+            # update current color
+            curcolor = rgb
+
+        elif is_vertices(prim):
+            # vertices primitive
+            coords = prim[1:]
+            
+            for i in xrange(0, len(coords), 2):
+                # push a new vertex                    
+                verts.append(coords[i:i+2])
+
+                if isinstance(elm, points):            nverts, nkeep = 1, 0
+                elif isinstance(elm, lines):           nverts, nkeep = 2, 0
+                elif isinstance(elm, line_strip):      nverts, nkeep = 2, 1
+                elif isinstance(elm, triangles):       nverts, nkeep = 3, 0
+                elif isinstance(elm,  triangle_strip): nverts, nkeep = 3, 2
+                elif isinstance(elm, quads):           nverts, nkeep = 4, 0
+                elif isinstance(elm, quad_strip):      nverts, nkeep = 4, 2
+
+                # yield vertices, when the appropriate number of vertices have 
+                # been collected
+                if len(verts) == nverts:
+                    yield verts, curcolor
+                    if nkeep == 0:
+                        verts = []
+                    else:
+                        verts = verts[-nkeep:]
+            
+            if isinstance(elm, polygon):
+                yield verts, curcolor
+    
+    if isinstance(elm, color_graphic):
+        yield [], curcolor
+    
+
+
+'''
+
+
 def is_graphic(elm):
     return is_points(elm) or \
            is_lines(elm) or \
@@ -793,6 +860,7 @@ def is_transform(elm):
 def graphic_contents(elm):
     return elm[1:]
 
+
 def element_contents(elm):
     if is_group(elm):
         return group_contents(elm)
@@ -818,6 +886,7 @@ def visitElements(elm, beginFunc, endFunc):
         visitElements(elm, beginFunc, endFunc)
     endFunc(elm)
 
+    
 
 def visitGraphics(elm, func):
     closure = {
@@ -868,6 +937,8 @@ def visitGraphics(elm, func):
         return None
 
     visitElements(elm, beginElement, endElement)
+
+'''
 
 
 
