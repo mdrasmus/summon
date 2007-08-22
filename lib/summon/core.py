@@ -35,74 +35,16 @@ while summon_core.get_windows() == None: time.sleep(.05)
 
 
 
-# All functions exported from summon_core 
-#
-# TODO: should only really need to export Contructs.  Everything else should
-# be under summon.*
-
+# All functions exported directly from summon_core 
 
 _summon_constructs = """\
-color_contents
-dynamic_group
-dynamic_group_contents
-flip_contents
-group_contents
-hotspot_click
-hotspot_contents
 input_click
 input_click_contents
 input_key
 input_key_contents
 input_motion
 input_motion_contents
-is_color
-is_dynamic_group
-is_flip
-is_group
-is_hotspot
-is_input_click
-is_input_key
-is_input_motion
-is_line_strip
-is_lines
-is_points
-is_polygon
-is_quad_strip
-is_quads
-is_rotate
-is_scale
-is_text
-is_text_clip
-is_text_scale
-is_translate
-is_triangle_fan
-is_triangle_strip
-is_triangles
-is_vertices
-line_strip_contents
-lines_contents
-points_contents
-polygon_contents
-quad_strip_contents
-quads_contents
-rotate_contents
-scale_contents
-text_clip_contents
-text_contents
-text_scale_contents
-translate_contents
-triangle_fan_contents
-triangle_strip_contents
-triangles_contents
-vertices
-vertices_contents
 """.split()
-
-
-# Note: these will be removed some day
-# only timer_call is necessary right now
-#_summon_funcs = """\
-#""".split()
 
 
 _globals = globals()
@@ -244,9 +186,15 @@ def color(r, g, b, a=1.0):
 #=============================================================================
 # text
 
+#class text (Construct):
+#    def __init__(self, msg, x1, y1, x2, y2, *justified, **options):
+#        Construct.__init__(self, _TEXT_CONSTRUCT, 
+#                                tuple([msg, x1, y1, x2, y2] + list(justified)), options)
+
 class text (Construct):
     def __init__(self, *code, **options):
         Construct.__init__(self, _TEXT_CONSTRUCT, code, options)
+
 
 class text_scale (text):
     def __init__(self, *code, **options):

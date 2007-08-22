@@ -721,17 +721,6 @@ void SummonView::SetBgColor(Color &color)
 }
 
 
-/*
-void SummonView::Reshape(int width, int height)
-{
-    // process window reshape
-    Glut2DView::Reshape(width, height);
-    
-    // perform callbacks
-    //if (m_listener)
-    //    m_listener->ViewResize(this);
-}*/
-
 
 
 } // namespace Summon

@@ -45,12 +45,23 @@ class SummonModel : public Model
 {
 public:
     SummonModel(int id, int kind=MODEL_WORLD);
+
+    inline int GetId() { return m_id; }
+    void SetKind(int kind) { m_kind = kind; }    
     
+    // model manipulation
     virtual void ExecCommand(Command &command);
+    Group *AddGroup(Element *parent, Scm code);
+    void RemoveGroup(Group *group);
 
     // model queries
-    list<Command*> HotspotClick(Vertex2f pos);
+    list<Command*> HotspotClick(Vertex2f pos);    
+    void FindBounding(Vertex2f *pos1, Vertex2f *pos2);
+    inline Group *GetRoot()
+    { return m_root; }
     
+    
+protected:
     BuildEnv GetEnv(BuildEnv &env, Element *start, Element *end);
     
     // book keeping
@@ -60,36 +71,14 @@ public:
     void UpdateHotspot(Hotspot *hotspot, BuildEnv *env);
     void UpdateTextElement(TextElement *textElm, BuildEnv *env);
     void RemoveHotspots(Element *elm);
-    
-    // model manipulation
-    Group *AddGroup(BuildEnv &env, Element *parent, Scm code);
-    void RemoveGroup(Group *group);
-    
-    Scm GetGroup(BuildEnv &env, Element *elm);
-    
-    void FindBounding(Vertex2f *pos1, Vertex2f *pos2);
-    
-    inline Group *GetRoot()
-    { return m_root; }
-    
-    inline int GetId() { return m_id; }
-    
-    void SetKind(int kind) { m_kind = kind; }
-    
-    inline void Redisplay()
-    {
-        RedisplayCommand redisplay;
-        UpdateViews(redisplay);
-    }
-    
+
     inline void ModelChanged()
     {
         ModelChangedCommand cmd;
         UpdateViews(cmd);
     }
 
-    
-protected:
+
     int m_id;
     int m_kind;
     Group *m_root;

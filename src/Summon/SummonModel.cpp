@@ -41,21 +41,13 @@ void SummonModel::ExecCommand(Command &command)
 {
     switch (command.GetId()) {
         case ADD_GROUP_COMMAND: {
-            //ModelChangeCommand change;        
-            BuildEnv env(true, m_kind);
-            int id = Group2Id(AddGroup(env, NULL, 
+            int id = Group2Id(AddGroup(NULL, 
                                        ((AddGroupCommand*)(&command))->code));
             ((AddGroupCommand*)(&command))->SetReturn(Int2Scm(id));
-
-            //change.changedGroups.push_back(m_table.GetGroup(id));
             Update(Id2Group(id));
-            ModelChanged();
-
             } break;
         
         case INSERT_GROUP_COMMAND: {
-            //ModelChangeCommand change;
-            BuildEnv env(true, m_kind);
             int pid = ((InsertGroupCommand*)(&command))->groupid;
             
             // find parent group to insert into
@@ -63,16 +55,11 @@ void SummonModel::ExecCommand(Command &command)
             if (group != NULL)
             {
                 // get the environment and parent of old group
-                env = GetEnv(env, NULL, group);
-                int id = Group2Id(AddGroup(env, Id2Group(pid), 
+                int id = Group2Id(AddGroup(Id2Group(pid), 
                                   ((InsertGroupCommand*)(&command))->code));
                 
                 ((InsertGroupCommand*)(&command))->SetReturn(Int2Scm(id));
-                
-                //change.changedGroups.push_back(group);
                 Update(Id2Group(id));
-                ModelChanged();
-
             } else {
                 Error("unknown group %d", pid);
                 ((InsertGroupCommand*)(&command))->SetReturn(Int2Scm(-1));
@@ -95,14 +82,10 @@ void SummonModel::ExecCommand(Command &command)
                     Update();
             }
             
-            
-            ModelChanged();
             } break;
         
         case REPLACE_GROUP_COMMAND: {
-            //ModelChangeCommand change;
             ReplaceGroupCommand *replace = (ReplaceGroupCommand*) &command;
-            BuildEnv env(true, m_kind);
             
             // find group to replace
             Group *group = Id2Group(replace->groupid);
@@ -110,19 +93,14 @@ void SummonModel::ExecCommand(Command &command)
                 group != GetRoot())
             {
                 // get the environment and parent of old group
-                env = GetEnv(env, NULL, group);
                 Element *parent = group->GetParent();
                 
                 // remove old group
                 RemoveGroup(group);
                 
-                //PyObject_Print(ScmCar(replace->code).GetPy(), stdout, 0);
-                
-                int id = Group2Id(AddGroup(env, parent, ScmCar(replace->code)));
+                int id = Group2Id(AddGroup(parent, ScmCar(replace->code)));
                 replace->SetReturn(Int2Scm(id));
-                
                 Update(Id2Group(id));
-                ModelChanged();
             } else {
                 Error("unknown group %d", replace->groupid);
                 replace->SetReturn(Int2Scm(-1));
@@ -133,22 +111,19 @@ void SummonModel::ExecCommand(Command &command)
             // remove root group, new root will be automatically created
             RemoveGroup(GetRoot());
             Update();
-            ModelChanged();
             } break;
         
         case SHOW_GROUP_COMMAND: {
-            //ModelChangeCommand change;
             ShowGroupCommand *show = (ShowGroupCommand*) &command;
             
             // toggle a group's visibility
             Group *group = Id2Group(show->groupid);
             group->SetVisible(show->visible);
-            //change.changedGroups.push_back(group);
                 
             Update(group);
-            ModelChanged();
             } break;
         
+        /*
         case GET_GROUP_COMMAND: {
             GetGroupCommand *getGroup = (GetGroupCommand*) &command;
             
@@ -160,6 +135,7 @@ void SummonModel::ExecCommand(Command &command)
                 Error("unknown group %d", getGroup->groupid);
             }
             } break;
+        */
 
         case GET_ROOT_ID_COMMAND:
             ((GetRootIdCommand*) &command)->SetReturn(
@@ -205,17 +181,17 @@ BuildEnv SummonModel::GetEnv(BuildEnv &env, Element *start, Element *end)
     }
     
     // find path from end to start through parent pointers
-    for (Element *i = end; i && i != start; i = i->GetParent()) {
+    for (Element *i = end->GetParent(); i && i != start; i = i->GetParent()) {
         elms.push_front(i);
     }
-    elms.push_front(end);
+    elms.push_front(start);
 
     
     // traceback down parent pointers to calc env
     for (list<Element*>::iterator i=elms.begin(); i!=elms.end(); i++) {
         switch ((*i)->GetId()) {
             case TRANSFORM_CONSTRUCT: {
-                // modify environment for children elements
+                // modify environment for child elements
                 float tmp[16];
                 MultMatrix(env2.trans.mat, ((Transform*) (*i))->GetMatrix(), 
                            tmp);
@@ -229,7 +205,7 @@ BuildEnv SummonModel::GetEnv(BuildEnv &env, Element *start, Element *end)
 }
 
 
-Group *SummonModel::AddGroup(BuildEnv &env, Element *parent, Scm code)
+Group *SummonModel::AddGroup(Element *parent, Scm code)
 {
     Element *elm = GetElementFromObject(code.GetPy());
     
@@ -259,6 +235,7 @@ void SummonModel::Update()
     Element *element = GetRoot();
     BuildEnv env(true, m_kind);
     Update(element, &env);
+    ModelChanged();
 }
 
 
@@ -267,6 +244,7 @@ void SummonModel::Update(Element *element)
     BuildEnv env(true, m_kind);
     BuildEnv env2 = GetEnv(env, NULL, element);
     Update(element, &env2);
+    ModelChanged();
 }
 
 
@@ -382,7 +360,7 @@ void SummonModel::RemoveHotspots(Element *elm)
         m_hotspotClicks.remove((Hotspot*) elm);
         m_hotspotClickSet.Remove((Hotspot*) elm);
     } else {
-        // recurse
+        // recurse to child elements
         for (Element::Iterator i=elm->Begin(); i!=elm->End(); i++)
             RemoveHotspots(*i);
     }
@@ -414,168 +392,5 @@ void SummonModel::FindBounding(Vertex2f *pos1, Vertex2f *pos2)
 }
 
 
-
-Scm SummonModel::GetGroup(BuildEnv &env, Element *elm)
-{
-    Scm children = Scm_EOL;
-    
-    /*
-    if (elm->GetId() == GROUP_CONSTRUCT ||
-        elm->GetId() == TRANSFORM_CONSTRUCT ||
-        elm->GetId() == DYNAMIC_GROUP_CONSTRUCT)
-    {
-        // build children, iterate backwards
-        Element::Iterator iter = elm->End();
-        iter--;
-        for (; iter != elm->End(); iter--) {
-            if (IsTransform((*iter)->GetId())) {
-                Transform *trans = (Transform*) (*iter);
-                BuildEnv env2 = env;
-                MultMatrix(env.trans.mat, trans->GetMatrix(), env2.trans.mat);
-                Scm elms = GetGroup(env2, *iter);
-                
-                // transform returns multiple objects
-                children = ScmAppend(elms, children);
-            } else {
-                if ((*iter)->IsVisible()) {
-                    children = ScmCons(GetGroup(env, *iter), children);
-                }
-            }
-        }
-        
-        if (elm->GetId() == GROUP_CONSTRUCT) {
-            return ScmCons(Int2Scm(GROUP_CONSTRUCT), 
-                           ScmCons(Int2Scm(Group2Id((Group*)elm)),
-                                   children));
-        } else {
-            // transform returns multiple objects
-            return children;
-        }
-    
-    
-    } else
-    
-    if (IsGraphic(elm->GetId())) {
-        Graphic *graphic = (Graphic*) elm;
-        Scm children = Scm_EOL;
-        
-        // build primitives
-        for (int ptr = 0; graphic->More(ptr); ptr = graphic->NextPrimitive(ptr))
-        {
-            Scm child = Scm_EOL;
-
-            if (graphic->IsVertices(ptr)) {
-                float *data = graphic->GetVertex(graphic->VerticesStart(ptr));
-
-                for (int i = 2 * graphic->GetVerticesLen(ptr) - 1; i > 0; i-=2)
-                {
-                    float x, y;
-                    env.trans.VecMult(data[i-1], data[i], &x, &y);
-                    child = ScmCons(Float2Scm(x), 
-                                    ScmCons(Float2Scm(y), child));
-                }
-                child = ScmCons(Int2Scm(VERTICES_CONSTRUCT), child);
-
-            } else if (graphic->IsColor(ptr)) {
-                char *color = graphic->GetColor(ptr);
-                for (int i = 3; i >= 0; i--) {
-                    child = ScmCons(Float2Scm(((unsigned char) color[i]) / 255.0), child);
-                }
-                child = ScmCons(Int2Scm(COLOR_CONSTRUCT), child);
-
-            } else {
-                // unknown primitive
-                Error("unknown primitive");
-                assert(0);
-            }
-
-            children = ScmAppend(children, ScmCons(child, Scm_EOL));
-        }
-    
-        return ScmCons(Int2Scm(elm->GetId()), children);
-    } else
-    
-     if (elm->GetId() == TEXT_CONSTRUCT) {
-        TextElement *text = (TextElement*) elm;
-        
-        Scm justified = Scm_EOL;
-        
-        if (text->justified & TextElement::LEFT)
-            justified = ScmCons(String2Scm("left"), justified);
-        if (text->justified & TextElement::CENTER)
-            justified = ScmCons(String2Scm("center"), justified);
-        if (text->justified & TextElement::RIGHT)
-            justified = ScmCons(String2Scm("right"), justified);
-        if (text->justified & TextElement::TOP)
-            justified = ScmCons(String2Scm("top"), justified);
-        if (text->justified & TextElement::MIDDLE)
-            justified = ScmCons(String2Scm("middle"), justified);
-        if (text->justified & TextElement::BOTTOM)
-            justified = ScmCons(String2Scm("bottom"), justified);
-        if (text->justified & TextElement::VERTICAL)
-            justified = ScmCons(String2Scm("vertical"), justified);
-
-        float x1, y1, x2, y2;
-        env.trans.VecMult(text->pos1.x, text->pos1.y, &x1, &y1);
-        env.trans.VecMult(text->pos2.x, text->pos2.y, &x2, &y2);
-        
-        int id = 0;
-        
-        switch (text->kind) {
-            case TextElement::KIND_BITMAP:
-                id = TEXT_CONSTRUCT;
-                break;
-            case TextElement::KIND_SCALE:
-                id = TEXT_SCALE_CONSTRUCT;
-                break;
-            case TextElement::KIND_CLIP:
-                id = TEXT_CLIP_CONSTRUCT;
-                
-                // add extra height fields                
-                justified = 
-                    ScmCons(Float2Scm(text->minHeight),
-                        ScmCons(Float2Scm(text->maxHeight), justified));
-                break;
-            default:
-                assert(0);
-        }
-        
-        return ScmCons(Int2Scm(id),
-                ScmCons(String2Scm(text->text.c_str()),
-                 ScmCons(Float2Scm(x1),
-                  ScmCons(Float2Scm(y1),
-                   ScmCons(Float2Scm(x2),
-                    ScmCons(Float2Scm(y2), justified))))));
-        
-        
-    } else
-    
-    
-     if (elm->GetId() == HOTSPOT_CONSTRUCT) {
-        Hotspot *hotspot = (Hotspot*) elm;
-        Scm kind;
-        
-        if (hotspot->kind == Hotspot::CLICK) {
-            kind = String2Scm("click");
-        } else {
-            assert(0);
-        }
-        
-        return ScmCons(Int2Scm(elm->GetId()),
-                ScmCons(kind,
-                 ScmCons(Float2Scm(hotspot->pos1.x),
-                  ScmCons(Float2Scm(hotspot->pos1.y),
-                   ScmCons(Float2Scm(hotspot->pos2.x),
-                    ScmCons(Float2Scm(hotspot->pos2.y),
-                     ScmCons(hotspot->GetProc()->GetScmProc(), Scm_EOL)))))));
-        
-    } else {
-        assert(0);
-    }
-    */
-    
-    return Scm_EOL;
-}
-
-}
+} // namespace Summon
 

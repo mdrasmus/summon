@@ -20,7 +20,7 @@ def arrow():
               blue,  -40, -80,
               white, 0, -40),
               
-        lines(white, vertices(0,0, 0, 100))) # shaft
+        lines(white, 0,0, 0, 100)) # shaft
 
 # a function for writing text at particular position
 def label(string, pos):

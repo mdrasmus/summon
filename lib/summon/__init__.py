@@ -632,11 +632,7 @@ class Window (object):
     def show_group(self, aGroup, visible):
         return self.world.show_group(aGroup, visible)
     show_group.__doc__ = summon_core.show_group.__doc__.split("\n")[1]
-    
-    def get_group(self, aGroup):
-        return self.world.get_group(aGroup)
-    get_group.__doc__ = summon_core.get_group.__doc__.split("\n")[1]
-    
+        
     def get_root(self):
         """Get the root group of the window's 'world' model"""
         return self.world.get_root()
@@ -645,6 +641,10 @@ class Window (object):
     def get_root_id(self):
         return self.world.get_root_id()
     get_root_id.__doc__ = summon_core.get_root_id.__doc__.split("\n")[1]
+
+    #def get_group(self, aGroup):
+    #    return self.world.get_group(aGroup)
+    #get_group.__doc__ = summon_core.get_group.__doc__.split("\n")[1]
 
     
     #===================================================================
@@ -718,16 +718,15 @@ class Model (object):
     
     def show_group(self, aGroup, visible):
         return summon_core.show_group(self.id, aGroup.ptr, visible)
-    show_group.__doc__ = summon_core.show_group.__doc__.split("\n")[1]
-    
-    def get_group(self, aGroup):
-        return summon_core.get_group(self.id, aGroup.ptr)
-    get_group.__doc__ = summon_core.get_group.__doc__.split("\n")[1]
+    show_group.__doc__ = summon_core.show_group.__doc__.split("\n")[1]        
     
     def get_root(self):
         """Get the root group of the window's 'world' model"""
         return group(summon_core.get_root_id(self.id), ref=True)
 
+    #def get_group(self, aGroup):
+    #    return summon_core.get_group(self.id, aGroup.ptr)
+    #get_group.__doc__ = summon_core.get_group.__doc__.split("\n")[1]
     
     # DEPRECATED
     def get_root_id(self):
