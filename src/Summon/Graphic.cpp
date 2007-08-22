@@ -27,18 +27,19 @@ Graphic::~Graphic()
 }
 
 
-bool Graphic::Build(const Scm &code2)
+bool Graphic::Build(int header, const Scm &code2)   // code2
 {
     //PyObject_Print(code2.GetPy(), stdout, 0);
 
-    SetId(Scm2Int(ScmCar(code2)));
-    Scm code = ScmCdr(code2);
+    SetId(header);
+    //Scm code = ScmCdr(code2);
+    Scm code = code2;
     
     //printf("graphic: %d\n", m_id);
     
     // special case for lonely color construct
     if (m_id == COLOR_CONSTRUCT) {
-        code = ScmCons(code2, Scm_EOL);
+        code = ScmCons(ScmCons(Int2Scm(header), code), Scm_EOL);
     }
     
     // determine data size

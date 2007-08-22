@@ -35,7 +35,7 @@ public:
         return new Element();
     }
     
-    virtual bool Build(const Scm &code);
+    virtual bool Build(int header, const Scm &code);
     virtual Scm GetContents();    
     
     typedef list<Element*>::iterator Iterator;

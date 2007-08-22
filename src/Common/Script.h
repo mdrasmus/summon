@@ -66,9 +66,10 @@ public:
         if (start == 0)
             return py;
         else {
+            // NOTE: this might be a bug
             // get slice makes a new reference.  However, it is my convention
             // that GetPy() always returns a borrowed reference
-            PyObject *o = PyTuple_GetSlice((PyObject*) py, start, 
+            PyObject *o = PyTuple_GetSlice(py, start, 
                                            PyTuple_GET_SIZE(py));
             Py_DECREF(o);
             return o;

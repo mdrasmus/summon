@@ -13,15 +13,15 @@ namespace Summon {
 
 
 
-bool TextElement::Build(const Scm &code2)
+bool TextElement::Build(int header, const Scm &code2)
 {
-    int header;
+    //int header;
     float x1, y1, x2, y2;
     if (!ParseScm("Bad format for text construct", code2,
-                  "dsffff", &header, &text, &x1, &y1, &x2, &y2))
+                  "sffff", &text, &x1, &y1, &x2, &y2))
         return false;
     
-    Scm code = ScmCdddr(ScmCdddr(code2));
+    Scm code = ScmCddr(ScmCdddr(code2));
     
     switch (header) {
         case TEXT_CONSTRUCT:        kind = KIND_BITMAP; break;
@@ -112,12 +112,10 @@ Scm TextElement::GetContents()
             assert(0);
     }
     
-    return ScmCons(Int2Scm(id),
-           ScmCons(String2Scm(text.c_str()),
-             ScmCons(Float2Scm(pos1.x),
-              ScmCons(Float2Scm(pos1.y),
-               ScmCons(Float2Scm(pos2.x),
-                ScmCons(Float2Scm(pos2.y), just))))));
+    return ScmAppend(Py2ScmTake(Py_BuildValue("isffff", id, text.c_str(), 
+                                              pos1.x, pos1.y, pos2.x, pos2.y)),
+                    just);
+
 }
 
 

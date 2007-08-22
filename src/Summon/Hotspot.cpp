@@ -13,16 +13,16 @@ namespace Summon {
 
 
 
-bool Hotspot::Build(const Scm &code)
+bool Hotspot::Build(int header, const Scm &code)
 {
-    int header;
+    //int header;
     int kindid;
     string kindstr;
     Scm procCode;
     
     // parse the scm code for a hotspot
     if (!ParseScm("Bad format for Hotspot", code,
-                  "dsffffp", &header, &kindstr, 
+                  "sffffp", &kindstr, 
                    &pos1.x, &pos1.y, &pos2.x, &pos2.y, &procCode))
         return false;
 
@@ -57,20 +57,17 @@ bool Hotspot::Build(const Scm &code)
 
 Scm Hotspot::GetContents()
 {
-    Scm skind;
+    char *skind;
 
     if (kind == CLICK) {
-        skind = String2Scm("click");
+        skind = "click";
     } else {
         assert(0);
     }
-
-    return ScmCons(skind,
-             ScmCons(Float2Scm(pos1.x),
-              ScmCons(Float2Scm(pos1.y),
-               ScmCons(Float2Scm(pos2.x),
-                ScmCons(Float2Scm(pos2.y),
-                 ScmCons(GetProc()->GetScmProc(), Scm_EOL))))));
+    
+    return Py2ScmTake(Py_BuildValue("sffffO", skind, 
+                                    pos1.x, pos1.y, pos2.x, pos2.y,
+                                    Scm2Py(GetProc()->GetScmProc())));
 }
 
 

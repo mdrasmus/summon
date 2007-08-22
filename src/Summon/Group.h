@@ -29,10 +29,6 @@ public:
     virtual Element *Create() {
         return new Group();
     };
-    
-    virtual bool Build(const Scm &code) {
-        return Element::Build(ScmCdr(code));
-    }
 };
 
 

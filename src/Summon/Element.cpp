@@ -47,7 +47,7 @@ Element::~Element()
 }
 
 // recursively build child elements and if sucessful, add them as children
-bool Element::Build(const Scm &code)
+bool Element::Build(int header, const Scm &code)
 {
     // process children
     for (Scm children = code; 
@@ -63,6 +63,8 @@ bool Element::Build(const Scm &code)
         
         if (!elm) {
             // python code
+            // NOTE: I think the only element that uses this code is a color
+            // construct outside any graphic
             
             // do nothing if not a list
             // and check that header is int
@@ -74,7 +76,7 @@ bool Element::Build(const Scm &code)
             int elmid = Scm2Int(header);
         
             elm = g_elementFactory.Create(elmid);
-            if (!elm->Build(child)) {
+            if (!elm->Build(elmid, ScmCdr(child))) {
                 delete elm;
                 return false;
             }

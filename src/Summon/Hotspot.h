@@ -33,7 +33,7 @@ public:
     virtual Element* Create()
     { return new Hotspot(); }
     
-    virtual bool Build(const Scm &code);
+    virtual bool Build(int header, const Scm &code);
     virtual Scm GetContents();
     
     inline void SetProc(CallProcCommand *proc)

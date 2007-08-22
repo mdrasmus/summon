@@ -118,6 +118,9 @@ class Construct:
     def get_children(self):
         return list(self)
 
+    def __getitem__(self, i):
+        return list(self)[i]
+
 
 class group (Construct):
     def __init__(self, *code, **options):
@@ -127,6 +130,7 @@ class group (Construct):
 class hotspot (Construct):
     def __init__(self, *code, **options):
         Construct.__init__(self, _HOTSPOT_CONSTRUCT, code, options)
+
 
 #=============================================================================
 # graphics

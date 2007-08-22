@@ -56,7 +56,7 @@ public:
     
     void Set(int kind, float param1, float param2 = 0.0);
     
-    virtual bool Build(const Scm &code);
+    virtual bool Build(int header, const Scm &code);
     virtual Scm GetContents();
     
     void FindBounding(float *top, float *bottom, float *left, float *right,

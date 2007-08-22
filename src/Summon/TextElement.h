@@ -43,9 +43,9 @@ public:
     virtual Element *Create()
     { return new TextElement(); }
     
-    virtual bool IsDynamic() { return true; }
+    virtual bool IsDynamic() { return kind != KIND_SCALE; }
     
-    virtual bool Build(const Scm &code);
+    virtual bool Build(int header, const Scm &code);
     virtual Scm GetContents();
     
     enum {

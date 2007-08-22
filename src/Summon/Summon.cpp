@@ -973,17 +973,12 @@ MakeConstruct(PyObject *self, PyObject *args)
         
     if (!ok)
         return NULL;
-    Scm code = ScmCons(Int2Scm(elmid), Py2Scm(lst));
-    
-    //printf("elmid2: %d %d\n", elmid, LINES_CONSTRUCT);
+    Scm code = Py2Scm(lst);
     
     // add factory call
     Element *elm = g_elementFactory.Create(elmid);
     
-    //printf("passed %d %d %d %d\n", elmid, elm->GetId(), TRANSLATE_CONSTRUCT,
-    //                                              TRANSFORM_CONSTRUCT);
-    
-    if (elm == NULL || !elm->Build(code)) {
+    if (elm == NULL || !elm->Build(elmid, code)) {
         PyErr_Format(PyExc_Exception, "error constructing element");
         return NULL;
     }
@@ -1057,7 +1052,9 @@ GetConstructContents(PyObject *self, PyObject *args)
     
     Scm contents = elm->GetContents();
     PyObject *pycontents = Scm2Py(contents);
-    Py_INCREF(pycontents);
+    
+    if (pycontents != NULL)
+        Py_INCREF(pycontents);
     
     return pycontents;
 }

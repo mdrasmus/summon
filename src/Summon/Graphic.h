@@ -62,7 +62,7 @@ public:
     const static char PRIM_COLOR    = 0x02;
     
     
-    virtual bool Build(const Scm &code);
+    virtual bool Build(int header, const Scm &code);
     bool BuildVertices(char *data, int &ptr, Scm &code);
     int GetDataSize(Scm code);
     virtual Scm GetContents();
