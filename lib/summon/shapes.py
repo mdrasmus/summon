@@ -1,3 +1,9 @@
+"""
+    SUMMON - common shapes
+    
+    This module provideds functions for building common shapes.
+"""
+
 from summon import *
 import math
 

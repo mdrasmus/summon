@@ -82,6 +82,8 @@ _SCALE_CONSTRUCT = 1080
 _FLIP_CONSTRUCT = 1081
 
 
+# TODO: add docstrings
+
 class Construct:
     def __init__(self, constructid, code, options={}):
         self.constructid = constructid
