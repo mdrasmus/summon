@@ -15,4 +15,4 @@
 # will result in execl('/usr/bin/env', 'python -i') and will fail.
 #
 
-`which python` -i $*
+python -i $*
