@@ -1,4 +1,4 @@
-#!/usr/bin/python -i
+#!/usr/bin/env python-i
 # SUMMON examples
 # 08_tree_big.py - recursive drawing of a BIG tree
 

@@ -665,7 +665,10 @@ void SummonView::DrawTextElement(TextElement *elm)
     
         void *font = GLUT_STROKE_MONO_ROMAN;
         float fontSize = 119.05;
-                
+        
+        float asize = glutStrokeLength(font, (const unsigned char*) "AAAAAAAAAA");
+        float error = 1048.0 / asize;
+        
         Vertex2f zoom = GetZoom();
         if (elm->modelKind == MODEL_SCREEN) {
             zoom.x = 1.0;
@@ -682,7 +685,7 @@ void SummonView::DrawTextElement(TextElement *elm)
         pos2.x *= zoom.x;
         pos2.y *= zoom.y;
         
-        float textWidth  = glutStrokeLength(font, text);
+        float textWidth  = glutStrokeLength(font, text) * error;
         float textHeight = fontSize;
         float boxWidth   = pos2.x - pos1.x;
         float boxHeight  = pos2.y - pos1.y;

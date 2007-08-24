@@ -1,4 +1,4 @@
-#!/usr/bin/python -i
+#!/usr/bin/env python-i
 # SUMMON examples
 # 03_basics.py - more complex building before add_group()
 

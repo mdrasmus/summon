@@ -1,4 +1,4 @@
-#!/usr/bin/python -i
+#!/usr/bin/env python-i
 # NOTE: These features are still experimental
 #
 

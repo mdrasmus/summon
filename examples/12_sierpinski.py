@@ -1,4 +1,4 @@
-#!/usr/bin/python -i
+#!/usr/bin/env python-i
 # 12_sierpinski.py
 #
 # sierpinski's triangle

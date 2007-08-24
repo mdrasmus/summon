@@ -1,4 +1,4 @@
-#!/usr/bin/python -i
+#!/usr/bin/env python-i
 # SUMMON examples
 # 09_key_bindings.py - example use of bindings
 #

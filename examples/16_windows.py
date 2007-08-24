@@ -1,4 +1,4 @@
-#!/usr/bin/python -i
+#!/usr/bin/env python-i
 # SUMMON examples
 # 15_dup_window.py 
 #

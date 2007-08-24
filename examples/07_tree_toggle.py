@@ -1,4 +1,4 @@
-#!/usr/bin/python -i
+#!/usr/bin/env python-i
 # SUMMON examples
 # 07_tree_toggle.py - recursive drawing of a tree with node toggles
 

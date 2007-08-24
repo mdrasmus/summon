@@ -1,4 +1,4 @@
-#!/usr/bin/python -i
+#!/usr/bin/env python-i
 # 14_units.py
 #
 # simple demo of various measurements

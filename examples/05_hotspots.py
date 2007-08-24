@@ -1,4 +1,5 @@
 #!/usr/bin/python -i
+#!/usr/bin/env python-i
 # SUMMON examples
 # 05_hotspots.py - example of hotspots
 

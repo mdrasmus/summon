@@ -1,4 +1,4 @@
-#!/usr/bin/python -i
+#!/usr/bin/env python-i
 # 13_gameoflife.py
 #
 # Game of Life
