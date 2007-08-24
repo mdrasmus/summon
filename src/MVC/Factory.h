@@ -25,7 +25,7 @@ public:
     Factory() {}
     virtual ~Factory() {}
     
-    void Register(ProductType *product, KeyType &id) {
+    void Register(ProductType *product, const KeyType &id) {
         m_products[id] = product;
     }
     

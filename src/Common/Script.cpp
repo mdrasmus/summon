@@ -8,7 +8,7 @@
 ***************************************************************************/
 
 #include "Script.h"
-
+#include <stdarg.h>
 
 namespace Summon {
 
@@ -54,4 +54,5 @@ string int2string(int num)
 }
 
 
-}
+
+} // namespace Summon

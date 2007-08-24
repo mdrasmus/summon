@@ -18,7 +18,6 @@ Graphic::Graphic(int id) :
     m_data(NULL),
     m_datasize(0)
 {
-    
 }
 
 Graphic::~Graphic()
@@ -28,8 +27,21 @@ Graphic::~Graphic()
 }
 
 
-bool Graphic::Build(Scm code)
+bool Graphic::Build(int header, const Scm &code2)   // code2
 {
+    //PyObject_Print(code2.GetPy(), stdout, 0);
+
+    SetId(header);
+    //Scm code = ScmCdr(code2);
+    Scm code = code2;
+    
+    //printf("graphic: %d\n", m_id);
+    
+    // special case for lonely color construct
+    if (m_id == COLOR_CONSTRUCT) {
+        code = ScmCons(ScmCons(Int2Scm(header), code), Scm_EOL);
+    }
+    
     // determine data size
     m_datasize = GetDataSize(code);
     if (m_datasize == -1) {
@@ -166,7 +178,7 @@ int Graphic::GetDataSize(Scm code)
             else if (tag == COLOR_CONSTRUCT) {
                 datasize += 5; // (tag, r, g, b, a)
             } else {
-                Error("Unknown primitive");
+                Error("Unknown primitive: %d", tag);
                 return -1;
             }
             
@@ -179,6 +191,45 @@ int Graphic::GetDataSize(Scm code)
     }
 
     return datasize;
+}
+
+
+Scm Graphic::GetContents()
+{
+    Scm children = Scm_EOL;
+
+    // build primitives
+    for (int ptr = 0; More(ptr); ptr = NextPrimitive(ptr))
+    {
+        Scm child = Scm_EOL;
+
+        if (IsVertices(ptr)) {
+            float *data = GetVertex(VerticesStart(ptr));
+
+            for (int i = 2 * GetVerticesLen(ptr) - 1; i > 0; i-=2)
+            {
+                child = ScmCons(Float2Scm(data[i-1]), 
+                                ScmCons(Float2Scm(data[i]), child));
+            }
+            child = ScmCons(Int2Scm(VERTICES_CONSTRUCT), child);
+
+        } else if (IsColor(ptr)) {
+            char *color = GetColor(ptr);
+            for (int i = 3; i >= 0; i--) {
+                child = ScmCons(Float2Scm(((unsigned char) color[i]) / 255.0), child);
+            }
+            child = ScmCons(Int2Scm(COLOR_CONSTRUCT), child);
+
+        } else {
+            // unknown primitive
+            Error("unknown primitive");
+            assert(0);
+        }
+
+        children = ScmAppend(children, ScmCons(child, Scm_EOL));
+    }
+
+    return children;
 }
 
 

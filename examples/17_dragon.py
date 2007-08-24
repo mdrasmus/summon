@@ -35,19 +35,21 @@ class Pencil:
         self.points = []
     
     def color(self, val):
-        self.points.append(color(0, 1.0-val, 1))
+        self.points.append(color(1, .7-val/.7, 0))
 
 # dragon rules:
 # fx
 #   x = x+yf+
 #   y = -fx-y
 
+colorspan = 2**14
+
 def dragon(p, depth):
     def x(d):
         if d < 0:
             return []
         
-        p.color((len(p.points) % 60) / 60.0)
+        p.color((len(p.points) % colorspan) / float(colorspan))
         x(d-1)
         p.right()
         y(d-1)
@@ -58,7 +60,7 @@ def dragon(p, depth):
         if d < 0:
             return []
         
-        p.color((len(p.points) % 60) / 60.0)
+        p.color((len(p.points) % colorspan) / float(colorspan))
         p.left()
         p.forward()
         x(d-1)

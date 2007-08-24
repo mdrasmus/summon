@@ -24,23 +24,19 @@ enum {
 };
 
 
-
 class Element
 {
 public:
-    Element(int id = -1) : 
-        m_id(id), 
-        m_parent(NULL),
-        m_visible(true),
-        m_dynamic(false)                
-    {}
+    Element(int id = -1);
+    virtual ~Element();
     
-    virtual ~Element()
-    {
-        // delete all child elements
-        for (Iterator i=Begin(); i!=End(); i++)
-            delete (*i);
+    
+    virtual Element *Create() {
+        return new Element();
     }
+    
+    virtual bool Build(int header, const Scm &code);
+    virtual Scm GetContents();    
     
     typedef list<Element*>::iterator Iterator;
     
@@ -66,26 +62,49 @@ public:
         return End();
     }
     
+    inline int NumChildren()
+    { return m_children.size(); }
+    
     inline int GetId() { return m_id; }
+    virtual int GetSpecificId() { return m_id; }
+    inline void SetId(int id) { m_id = id; }
     
     inline Iterator Begin() { return m_children.begin(); }
     inline Iterator End() { return m_children.end(); }
     inline void SetParent(Element *elm) { m_parent = elm; }
     inline Element *GetParent() { return m_parent; }
-    inline bool IsDynamic() { return m_dynamic; }
+    virtual bool IsDynamic() { return false; }
     inline bool IsVisible() { return m_visible; }
     inline void SetVisible(bool vis) { m_visible = vis; }    
     
+
+    
     virtual void FindBounding(float *top, float *bottom, float *left, float *right,
                       TransformMatrix *matrix);
+    
+    
+    inline void IncRef() { m_referenced++; }
+    inline void DecRef() { m_referenced--; }
+    
+    inline bool IsReferenced() { return m_referenced > 0; }
     
 protected:
     int m_id;
     Element *m_parent;
     list<Element*> m_children;
     bool m_visible;    
-    bool m_dynamic;
+    int m_referenced;
 };
+
+Element *GetElementFromObject(PyObject *obj);
+
+
+// element factory and registration
+class Element;
+typedef Factory<int, Element> ElementFactory;
+
+extern ElementFactory g_elementFactory;
+
 
 
 }

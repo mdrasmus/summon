@@ -80,10 +80,12 @@ OBJS=src/Common/Matrix.obj \
      src/Summon/SummonView.obj \
      src/Summon/Element.obj \
      src/Summon/Graphic.obj \
-     src/Summon/GroupTable.obj \
+     src/Summon/Hotspot.obj \
      src/Summon/Summon.obj \
+     src/Summon/TextElement.obj \
      src/Summon/Transform.obj \
-     src/Summon/TransformMatrix.obj
+     src/Summon/TransformMatrix.obj 
+
 
 OBJS2=$(BUILD_DIR)/src/Common/Matrix.obj \
       $(BUILD_DIR)/src/Common/Script.obj \
@@ -106,11 +108,13 @@ OBJS2=$(BUILD_DIR)/src/Common/Matrix.obj \
       $(BUILD_DIR)/src/Summon/SummonView.obj \
       $(BUILD_DIR)/src/Summon/Element.obj \
       $(BUILD_DIR)/src/Summon/Graphic.obj \
-      $(BUILD_DIR)/src/Summon/GroupTable.obj \
+      $(BUILD_DIR)/src/Summon/Hotspot.obj \
       $(BUILD_DIR)/src/Summon/Summon.obj \
+      $(BUILD_DIR)/src/Summon/TextElement.obj \
       $(BUILD_DIR)/src/Summon/Transform.obj \
       $(BUILD_DIR)/src/Summon/TransformMatrix.obj
 
+      
 
 CFLAGS = -DNOGLUTEXT /EHsc -c
 

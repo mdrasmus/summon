@@ -24,7 +24,6 @@ SummonView::SummonView(SummonModel *model, int width, int height, const char *na
     m_screenModel(NULL),
     m_bgColor(0,0,0,0),
     m_active(false),
-    m_executingTasks(false),
     m_showCrosshair(false),
     m_crosshairColor(1,1,1,1),
     m_mousePos(0,0)
@@ -278,24 +277,19 @@ void SummonView::Home()
 // those tasks affect by the change should ideally be altered.
 void SummonView::ExecuteTasks()
 {
-    m_executingTasks = true;
-
     for (unsigned int i=0; i<m_tasks.size(); i++) {
         switch (m_tasks[i]->GetId()) {
             case TASK_DRAWLIST:
                 glCallList(m_tasks[i]->m_drawlist);
                 break;
-            case TASK_ELEMENT: {
+            case TASK_ELEMENT:
                 // assumes only world elements are on task list
-                GroupTable *table = m_worldModel->GetGroupTable();
-                DrawElement(table, m_tasks[i]->m_element, true);
-                } break;
+                DrawElement(m_tasks[i]->m_element, false);
+                break;
             default:
                 assert(0);
         }
     }
-    
-    m_executingTasks = false;
 }
 
 
@@ -345,14 +339,17 @@ void SummonView::DrawWorld()
     glPointSize(pointsize);
         
     
+    // NOTE: I am not using draw lists effectively.
+    // It's fast to construct with out them.
     if (m_tasks.size() == 0) {
         // if no tasks, create new drawlist task
-        AddTask(new DrawTask(glGenLists(1)));
-            
-        GroupTable *table = m_worldModel->GetGroupTable();
-        DrawElement(table, table->GetGroup(table->GetRoot()), true);
+        //AddTask(new DrawTask(glGenLists(1)));
         
-        GetLastTask()->Close();
+        DrawElement(m_worldModel->GetRoot(), false); // true
+        
+        //GetLastTask()->Close();
+        
+        //printf("tasks %d\n", m_tasks.size());
     } else {
         ExecuteTasks();
     }
@@ -370,8 +367,7 @@ void SummonView::DrawScreen()
     }
 
     glPointSize(1.0);
-    GroupTable *table = m_screenModel->GetGroupTable();
-    DrawElement(table, table->GetGroup(table->GetRoot()), false);
+    DrawElement(m_screenModel->GetRoot(), false);
 
 }
 
@@ -408,19 +404,27 @@ void SummonView::DrawCrosshair()
 }
 
 
-void SummonView::DrawElement(GroupTable *table, Element *element, bool useTasks)
+void SummonView::DrawElement(Element *element, bool createTasks)
 {
     // ignore non-visible elements
     if (!element->IsVisible())
         return;
 
     // prepprocess dynamic elements
-    if (useTasks && element->IsDynamic() && !IsExecutingTasks()) {
-        // close any drawlists that are currently being compiled
-        GetLastTask()->Close();
-        
-        // add a task to draw this dynamic element
-        AddTask(new DrawTask(element));
+    if (createTasks) {
+        if (element->IsDynamic()) {
+            // close any drawlists that are currently being compiled
+            if (GetLastTask()->IsOpen())
+                GetLastTask()->Close();
+            
+            // add a task to draw this dynamic element
+            AddTask(new DrawTask(element));
+        } else {
+            // if the last task is closed open a new draw list
+            // NOTE: dynamic tasks will close themselves
+            if (!GetLastTask()->IsOpen())
+                AddTask(new DrawTask(glGenLists(1)));
+        }
     }
     
     
@@ -451,6 +455,10 @@ void SummonView::DrawElement(GroupTable *table, Element *element, bool useTasks)
             DrawGraphic((Graphic*) element);
             
             glEnd();
+            break;
+        
+        case COLOR_CONSTRUCT:
+            DrawGraphic((Graphic*) element);
             break;
         
         case TEXT_CONSTRUCT:
@@ -492,9 +500,16 @@ void SummonView::DrawElement(GroupTable *table, Element *element, bool useTasks)
     
     // exec element's children
     for (Element::Iterator i=element->Begin(); i!=element->End(); i++) {
-        DrawElement(table, *i, useTasks);
+        DrawElement(*i, createTasks);
     }
     
+    // postprocess dynamic elements
+    if (createTasks) {
+        if (!element->IsDynamic() && !GetLastTask()->IsOpen()) {
+            // start a new drawlist task for later elements
+            AddTask(new DrawTask(glGenLists(1)));
+        }
+    }
     
     // postprocess element
     switch (element->GetId()) {
@@ -503,11 +518,11 @@ void SummonView::DrawElement(GroupTable *table, Element *element, bool useTasks)
             break;
     }
     
-    
     // postprocess dynamic elements
-    if (useTasks && element->IsDynamic() && !IsExecutingTasks()) {
-        // start a new drawlist task for later elements
-        AddTask(new DrawTask(glGenLists(1)));
+    if (createTasks) {
+        if (element->IsDynamic()) {
+            GetLastTask()->Close();
+        }
     }
 }
 
@@ -583,6 +598,7 @@ void SummonView::DrawTextElement(TextElement *elm)
     
     // do not draw text that is not visible
     // get bounding visible view
+    
     if (elm->modelKind == MODEL_WORLD && 
         !WithinView(elm->envpos1, elm->envpos2)) 
     {
@@ -641,6 +657,8 @@ void SummonView::DrawTextElement(TextElement *elm)
         glPopMatrix();
         
     } else if (elm->kind == TextElement::KIND_CLIP) {
+        // TODO: must properly use elm->scale
+    
         void *font = GLUT_STROKE_MONO_ROMAN;
         float fontSize = 119.05;
                 
@@ -671,6 +689,7 @@ void SummonView::DrawTextElement(TextElement *elm)
 
         textWidth *= scale;
         textHeight *= scale;
+        
         
         // clip text if it falls outside its height restrictions
         if (textHeight < elm->minHeight)
@@ -715,17 +734,6 @@ void SummonView::SetBgColor(Color &color)
     m_bgColor.a = 0.0;
 }
 
-
-/*
-void SummonView::Reshape(int width, int height)
-{
-    // process window reshape
-    Glut2DView::Reshape(width, height);
-    
-    // perform callbacks
-    //if (m_listener)
-    //    m_listener->ViewResize(this);
-}*/
 
 
 

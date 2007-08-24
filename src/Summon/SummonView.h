@@ -16,7 +16,7 @@
 #include "Glut2DView.h"
 #include "SummonModel.h"
 #include "summonCommands.h"
-#include "GroupTable.h"
+#include "Group.h"
 #include "Graphic.h"
 #include "TextElement.h"
 #include "Transform.h"
@@ -37,12 +37,14 @@ class DrawTask
 public:
     DrawTask(Element *elm) :
         m_id(TASK_ELEMENT),
-        m_element(elm)
+        m_element(elm),
+        m_open(true)
     {}
     
     DrawTask(int drawlist) :
         m_id(TASK_DRAWLIST),
-        m_drawlist(drawlist)
+        m_drawlist(drawlist),
+        m_open(true)
     {
         glNewList(drawlist, GL_COMPILE_AND_EXECUTE);
     }
@@ -58,13 +60,17 @@ public:
     
     void Close()
     {
+        m_open = false;
         if (m_id == TASK_DRAWLIST)
             glEndList();
     }
     
+    inline bool IsOpen() { return m_open; }
+    
     int m_id;
     Element *m_element;
     int m_drawlist;
+    bool m_open;
 };
 
 
@@ -107,7 +113,7 @@ protected:
     virtual void DrawScreen();
     virtual void DrawCrosshair();
         
-    void DrawElement(GroupTable *table, Element *elm, bool useTasks=true); 
+    void DrawElement(Element *elm, bool createTasks=true); 
     void DrawGraphic(Graphic *graphic);
     void DrawTextElement(TextElement *elm);
     
@@ -123,9 +129,7 @@ protected:
     }
     inline DrawTask* GetLastTask() { return m_tasks.back(); }
     void ExecuteTasks();
-    inline bool IsExecutingTasks() { return m_executingTasks; }
     
-    //virtual void Reshape(int width, int height);
     
     
     SummonModel *m_worldModel;
@@ -133,7 +137,6 @@ protected:
     Color m_bgColor;
     bool m_active;
     vector<DrawTask*> m_tasks;
-    bool m_executingTasks;
         
     // crosshair
     bool m_showCrosshair;

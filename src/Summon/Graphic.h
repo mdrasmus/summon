@@ -49,8 +49,12 @@ inline bool IsGraphic(int header)
 class Graphic : public Element
 {
 public:
-    Graphic(int id);
+    Graphic(int id=-1);
     virtual ~Graphic();
+
+    virtual Element *Create() {
+        return new Graphic();
+    }
 
     
     // tags for primitives
@@ -58,9 +62,10 @@ public:
     const static char PRIM_COLOR    = 0x02;
     
     
-    bool Build(Scm code);
+    virtual bool Build(int header, const Scm &code);
     bool BuildVertices(char *data, int &ptr, Scm &code);
     int GetDataSize(Scm code);
+    virtual Scm GetContents();
     
     void FindBounding(float *top, float *bottom, float *left, float *right,
                       TransformMatrix *matrix);

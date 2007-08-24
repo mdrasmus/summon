@@ -71,6 +71,7 @@ def drawBall(ball):
             hotspot("click", - 2 * ball.size, - 2*ball.size,
                              2*ball.size, 2*ball.size,
                              func)))
+    
     ball.group = get_group_id(g)
     win.add_group(g)
 

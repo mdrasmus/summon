@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # 
-# setup for SUMMON pckage
+# setup for SUMMON package
 #
 # use the following to install summon:
 #   python setup.py install
@@ -8,7 +8,7 @@
 
 from distutils.core import setup, Extension
 
-SUMMON_VERSION = '1.7.2'
+SUMMON_VERSION = '1.8'
 
 setup(
     name='summon',
@@ -93,16 +93,17 @@ setup(
              "src/MVC/Model.cpp",
              "src/MVC/StringCommand.cpp",
              "src/MVC/common.cpp",
-             "src/Summon/SummonController.cpp",
-             "src/Summon/SummonModel.cpp",
-             "src/Summon/SummonView.cpp",
              "src/Summon/Element.cpp",
              "src/Summon/Graphic.cpp",
-             "src/Summon/GroupTable.cpp",
+             "src/Summon/Hotspot.cpp",
              "src/Summon/Summon.cpp",
+             "src/Summon/TextElement.cpp",
              "src/Summon/Transform.cpp",
              "src/Summon/TransformMatrix.cpp",
-             "src/Summon/summonCommands.cpp"],
+             "src/Summon/summonCommands.cpp",
+             "src/Summon/SummonController.cpp",
+             "src/Summon/SummonModel.cpp",
+             "src/Summon/SummonView.cpp"],
             include_dirs=["src/MVC",
                           "src/GlutMVC",
                           "src/Common",
@@ -116,7 +117,7 @@ setup(
 
 """
 
-MAC OS X may need the following extra variables set
+MAC OS X may need some of the following extra variables set
 
 include_dirs=[
     "src/MVC",

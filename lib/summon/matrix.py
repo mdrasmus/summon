@@ -382,8 +382,7 @@ class MatrixViewer (object):
         mat.colormap.min = mat.minval
         mat.colormap.range = mat.maxval - mat.minval
         getcolor = mat.colormap.get
-        vis = []
-        chunksize = 1000
+        chunksize = 10000
         rows, cols, vals = (mat.rows, mat.cols, mat.vals)
         rinv, cinv = (mat.rinv, mat.cinv)
         
@@ -393,8 +392,9 @@ class MatrixViewer (object):
                           shapes.box(-.5,.5,mat.ncols-.5, -mat.nrows+.5)))
         
         # draw non-zeros
+        vis = []
+        vis2 = []
         for chunk in xrange(0, len(rows), chunksize):
-
             if self.style == "points":
                 if getcolor == None:
                     for k in xrange(chunk, min(len(rows), chunk+chunksize)):
@@ -417,12 +417,13 @@ class MatrixViewer (object):
                                 cinv[cols[k]] + .5, -rinv[rows[k]] + .5,
                                 cinv[cols[k]] + .5, -rinv[rows[k]] - .5
                                 ])
-                win.add_group(group(quads(* vis)))
+                vis2.append(group(quads(* vis)))
 
             else:
                 raise Exception("unknown style '%s'" % self.style)
 
             vis = []
+        win.add_group(group(*vis2))
         
         if mouseClick != None:
             win.add_group(group(hotspot('click', -.5, .5, 
@@ -442,7 +443,18 @@ class MatrixViewer (object):
     
     
     def toggleLabelWindows(self):
-        self.setLabelWindows(not self.showLabelWindows)
+        # rotate through (no labels, inline, and panels)
+        if self.showLabelWindows:
+            self.showLabels = False
+            show = False
+        else:
+            if not self.showLabels:
+                self.showLabels = True
+                show = False
+            else:
+                show = True
+            
+        self.setLabelWindows(show)
     
     def setLabelWindows(self, show=True):
         self.showLabelWindows = show

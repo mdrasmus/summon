@@ -5,7 +5,8 @@ OBJS = summonCommands.o \
        SummonView.o \
        Element.o \
        Graphic.o \
-       GroupTable.o \
+       Hotspot.o \
+       TextElement.o \
        Transform.o \
        TransformMatrix.o \
        Summon.o 

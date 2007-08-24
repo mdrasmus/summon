@@ -1,15 +1,49 @@
-SUMMON - visualization protyping python module
+SUMMON - A general 2D visualization prototyping module
 Matt Rasmussen
 2007/4/5
 
+1. INSTALL WITH DISTUTILS
+
 To install summon with python distutils use the following command:
 
-python setup.py install
+    python setup.py install
 
 or to install in your home directory use:
 
-python setup.py install --prefix=$HOME
+    python setup.py install --prefix=$HOME
 
 
-For documentation see doc/summon_manual.pdf
+
+2. INSTALL WITH MAKE
+
+You can also use the Makefiles to install summon in the source directory.
+On Linux, you may run:
+
+    make
+    
+On cygwin use the following command:
+
+    make -f Makefile.cygwin
+
+On both Linux and Cygwin, you must add the summon source directory to your 
+python path using:
+
+    export PYTHONPATH=$PYTHONPATH:path/to/summon-XXX/lib
+
+
+On windows, you can run nmake with the properly setup environment variables. 
+You will likely need to edit Makefile.win first to configure the location of 
+third party libraries.
+
+    <<edit Makefile.win>>
+    nmake -f Makefile.win
+
+For convenience, you can use winsh.bat to run the above command in a proper
+environment for Microsoft Visual Studio 8:
+
+    winsh.bat nmake -f Makefile.win
+
+
+
+For more documentation see doc/summon_manual.pdf
 

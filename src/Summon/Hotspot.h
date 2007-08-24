@@ -19,12 +19,22 @@ using namespace std;
 class Hotspot : public Element
 {
 public:
-    Hotspot() : Element(HOTSPOT_CONSTRUCT), m_proc(NULL) {}
+    Hotspot() : 
+        Element(HOTSPOT_CONSTRUCT), 
+        m_proc(NULL) 
+    {}
+    
     virtual ~Hotspot()
     {
         if (m_proc)
             delete m_proc;
     }
+    
+    virtual Element* Create()
+    { return new Hotspot(); }
+    
+    virtual bool Build(int header, const Scm &code);
+    virtual Scm GetContents();
     
     inline void SetProc(CallProcCommand *proc)
     { m_proc = proc; }
@@ -41,6 +51,9 @@ public:
     int kind;
     Vertex2f pos1;
     Vertex2f pos2;
+    
+    Vertex2f envpos1;
+    Vertex2f envpos2;
     
 protected:
     CallProcCommand *m_proc;

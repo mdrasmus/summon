@@ -37,8 +37,6 @@ class SumTree (object):
         self.win = None
         self.vertical = vertical
         
-        self.setupTree(tree)
-        
         
     def setupTree(self, tree):
         sizes = treelib.countDescendents(tree.root)
@@ -64,10 +62,14 @@ class SumTree (object):
     def show(self):
         util.tic("drawing")
         
+        self.setupTree(self.tree)
+        
         if self.win == None:
             self.win = summon.Window(self.name)
+            newwin = True
         else:
             self.win.clear_groups()
+            newwin = False
         self.win.set_bgcolor(1,1,1)
         
         if self.vertical:
@@ -89,21 +91,24 @@ class SumTree (object):
         # draw branch length legend
         if not self.vertical and self.xscale != 0:
             maxwidth = max(node.x for node in self.tree.nodes.itervalues())
-
-            # automatically choose a scale
-            length = maxwidth / self.xscale
-            order = math.floor(math.log10(length))
-            length = 10 ** order
+            
+            # if tree has no lengths, do not draw legend
+            if maxwidth > 0:            
+                # automatically choose a scale
+                length = maxwidth / self.xscale
+                order = math.floor(math.log10(length))
+                length = 10 ** order
     
-            self.win.add_group(self.drawScale(0, -self.tree.root.size/2.0 - 2 , 
-                                              length, self.xscale))
+                self.win.add_group(self.drawScale(0, -self.tree.root.size/2.0 - 2 , 
+                                                  length, self.xscale))
         
 
         # put tree into view
-        w, h = self.win.get_size()        
-        self.win.home()
-        self.win.focus(w/2, h/2)
-        self.win.zoom(.9, .9)
+        if newwin:
+            w, h = self.win.get_size()        
+            self.win.home()
+            self.win.focus(w/2, h/2)
+            self.win.zoom(.9, .9)
     
     
     #======================================================================
@@ -157,6 +162,7 @@ class SumTree (object):
                            sx, sy - node.size/2.0,
                            sx + height, sy + node.size/2.0,
                            func))
+
         
         if self.showLabels and node.isLeaf() and type(node.name) == str:
             if self.vertical:
@@ -164,14 +170,14 @@ class SumTree (object):
                     translate(sx + height, sy - node.size/2.0,
                             color(0,0,0),
                             text_clip(node.name, 0, node.size*.1, 
-                                      node.size*100, node.size*.9, 5, 12,
+                                      node.size*1000, node.size*.9, 5, 12,
                                       "left", "middle", "vertical")))
             else:
                 label = group(
                     translate(sx + height, sy - node.size/2.0,
                             color(0,0,0),
                             text_clip(node.name, 0, node.size*.1, 
-                                      node.size*100, node.size*.9, 5, 12,
+                                      node.size*1000, node.size*.9, 5, 12,
                                       "left", "middle")))
         
             self.labelids.append(get_group_id(label))
@@ -197,7 +203,7 @@ class SumTree (object):
     
     
     def nodeClick(self, node):
-        print "----------------"
+        print "-" * 20
         self.printNode(node)
     
     

@@ -20,14 +20,14 @@ from summon.core import *
 from summon import util
 
 
-VERSION = "1.7.2"
+VERSION = "1.8"
 VERSION_INFO = """\
 -----------------------------------------------------------------------------
-                                   SUMMON %s
-                       visualization prototyping and scripting
-                                 Matt Rasmussen
-                             (http://mit.edu/rasmus)
-                               Copyright 2005-2007
+                                  SUMMON %s
+                      visualization prototyping and scripting
+                                Matt Rasmussen
+                            (http://mit.edu/rasmus)
+                              Copyright 2005-2007
 -----------------------------------------------------------------------------
 """ % VERSION
 
@@ -614,32 +614,38 @@ class Window (object):
         return self.world.add_group(aGroup)
     add_group.__doc__ = summon_core.add_group.__doc__.split("\n")[1]
     
-    def insert_group(self, groupid, aGroup):
+    def insert_group(self, parentGroup, childGroup):
         """inserts a drawing group 'aGroup' as a child to an existing group
            with id 'groupid'."""
-        return self.world.insert_group(groupid, aGroup)
+        return self.world.insert_group(parentGroup, childGroup)
     
-    def remove_group(self, *groupids):
-        return self.world.remove_group(*groupids)
+    def remove_group(self, *groups):
+        return self.world.remove_group(*groups)
     remove_group.__doc__ = summon_core.remove_group.__doc__.split("\n")[1]
     
-    def replace_group(self, groupid, aGroup):
+    def replace_group(self, oldGroup, newGroup):
         """replaces a current drawing group with id 'groupid' with a new 
            group 'aGroup'"""
-        return self.world.replace_group(groupid, aGroup)
+        return self.world.replace_group(oldGroup, newGroup)
     replace_group.__doc__ = summon_core.replace_group.__doc__.split("\n")[1]
     
-    def show_group(self, groupid, visible):
-        return self.world.show_group(groupid, visible)
+    def show_group(self, aGroup, visible):
+        return self.world.show_group(aGroup, visible)
     show_group.__doc__ = summon_core.show_group.__doc__.split("\n")[1]
+        
+    def get_root(self):
+        """Get the root group of the window's 'world' model"""
+        return self.world.get_root()
     
-    def get_group(self, groupid):
-        return self.world.get_group(groupid)
-    get_group.__doc__ = summon_core.get_group.__doc__.split("\n")[1]
-    
+    # DEPRECATED
     def get_root_id(self):
         return self.world.get_root_id()
     get_root_id.__doc__ = summon_core.get_root_id.__doc__.split("\n")[1]
+
+    #def get_group(self, aGroup):
+    #    return self.world.get_group(aGroup)
+    #get_group.__doc__ = summon_core.get_group.__doc__.split("\n")[1]
+
     
     #===================================================================
     # misc
@@ -691,32 +697,43 @@ class Model (object):
     clear_groups.__doc__ = summon_core.clear_groups.__doc__.split("\n")[1]
     
     def add_group(self, aGroup):
-        return summon_core.add_group(self.id, aGroup)
+        summon_core.add_group(self.id, aGroup)
+        return aGroup
     add_group.__doc__ = summon_core.add_group.__doc__.split("\n")[1]
     
-    def insert_group(self, groupid, aGroup):
-        return summon_core.insert_group(self.id, groupid, aGroup)
+    def insert_group(self, parentGroup, childGroup):
+        summon_core.insert_group(self.id, parentGroup.ptr, childGroup)
+        return childGroup
     insert_group.__doc__ = summon_core.insert_group.__doc__.split("\n")[1]
     
-    def remove_group(self, *groupids):
-        return summon_core.remove_group(self.id, *groupids)
+    def remove_group(self, *groups):
+        ids = [x.ptr for x in groups]
+        return summon_core.remove_group(self.id, *ids)
     remove_group.__doc__ = summon_core.remove_group.__doc__.split("\n")[1]
     
-    def replace_group(self, groupid, aGroup):
-        return summon_core.replace_group(self.id, groupid, aGroup)
+    def replace_group(self, oldGroup, newGroup):
+        summon_core.replace_group(self.id, oldGroup.ptr, newGroup)
+        return newGroup
     replace_group.__doc__ = summon_core.replace_group.__doc__.split("\n")[1]
-
-    def show_group(self, groupid, visible):
-        return summon_core.show_group(self.id, groupid, visible)
-    show_group.__doc__ = summon_core.show_group.__doc__.split("\n")[1]
     
-    def get_group(self, groupid):
-        return summon_core.get_group(self.id, groupid)
-    get_group.__doc__ = summon_core.get_group.__doc__.split("\n")[1]
+    def show_group(self, aGroup, visible):
+        return summon_core.show_group(self.id, aGroup.ptr, visible)
+    show_group.__doc__ = summon_core.show_group.__doc__.split("\n")[1]        
+    
+    def get_root(self):
+        """Get the root group of the window's 'world' model"""
+        return group(summon_core.get_root_id(self.id), ref=True)
 
+    #def get_group(self, aGroup):
+    #    return summon_core.get_group(self.id, aGroup.ptr)
+    #get_group.__doc__ = summon_core.get_group.__doc__.split("\n")[1]
+    
+    # DEPRECATED
     def get_root_id(self):
-        return summon_core.get_root_id(self.id)
+        return group(summon_core.get_root_id(self.id), ref=True)
     get_root_id.__doc__ = summon_core.get_root_id.__doc__.split("\n")[1]
+
+
 
 
 
@@ -760,6 +777,59 @@ class VisObject (object):
 # functions for iterating and inspecting graphical elements
 #
 
+
+def iter_vertices(elm, curcolor=None):
+    if curcolor == None:
+        curcolor = [1.0, 1.0, 1.0, 1.0]
+    verts = []
+    
+    # iterate over primitives
+    for prim in elm.get_contents():
+        if is_color(prim):
+            # color primitive
+            rgb = list(prim[1:])
+            if len(rgb) == 3:
+                rgb.append(1.0)
+            
+            # update current color
+            curcolor = rgb
+
+        elif is_vertices(prim):
+            # vertices primitive
+            coords = prim[1:]
+            
+            for i in xrange(0, len(coords), 2):
+                # push a new vertex                    
+                verts.append(coords[i:i+2])
+
+                if isinstance(elm, points):            nverts, nkeep = 1, 0
+                elif isinstance(elm, lines):           nverts, nkeep = 2, 0
+                elif isinstance(elm, line_strip):      nverts, nkeep = 2, 1
+                elif isinstance(elm, triangles):       nverts, nkeep = 3, 0
+                elif isinstance(elm,  triangle_strip): nverts, nkeep = 3, 2
+                elif isinstance(elm, quads):           nverts, nkeep = 4, 0
+                elif isinstance(elm, quad_strip):      nverts, nkeep = 4, 2
+
+                # yield vertices, when the appropriate number of vertices have 
+                # been collected
+                if len(verts) == nverts:
+                    yield verts, curcolor
+                    if nkeep == 0:
+                        verts = []
+                    else:
+                        verts = verts[-nkeep:]
+            
+            if isinstance(elm, polygon):
+                yield verts, curcolor
+    
+    if isinstance(elm, color_graphic):
+        yield [], curcolor
+    
+
+
+'''
+
+
 def is_graphic(elm):
     return is_points(elm) or \
            is_lines(elm) or \
@@ -789,6 +859,7 @@ def is_transform(elm):
 def graphic_contents(elm):
     return elm[1:]
 
+
 def element_contents(elm):
     if is_group(elm):
         return group_contents(elm)
@@ -814,6 +885,7 @@ def visitElements(elm, beginFunc, endFunc):
         visitElements(elm, beginFunc, endFunc)
     endFunc(elm)
 
+    
 
 def visitGraphics(elm, func):
     closure = {
@@ -864,6 +936,8 @@ def visitGraphics(elm, func):
         return None
 
     visitElements(elm, beginElement, endElement)
+
+'''
 
 
 

@@ -1,12 +1,22 @@
+"""
+    SUMMON - common shapes
+    
+    This module provideds functions for building common shapes.
+"""
+
 from summon import *
 import math
 
 
 def boxStroke(x1, y1, x2, y2):
-    return group(line_strip(x1, y1, x2, y1, x2, y2, x1, y2, x1, y1))
+    """DEPRECATED: use box(x1, y1, x2, y2, fill=False)"""
+    return box(x1, y1, x2, y2, fill=False)
 
-def box(x1, y1, x2, y2):
-    return group(quads(x1, y1, x2, y1, x2, y2, x1, y2))
+def box(x1, y1, x2, y2, fill=True):
+    if fill:
+        return group(quads(x1, y1, x2, y1, x2, y2, x1, y2))
+    else:
+        return group(line_strip(x1, y1, x2, y1, x2, y2, x1, y2, x1, y1))
 
 
 def regularPolyStroke(nsides, size):

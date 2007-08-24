@@ -20,16 +20,15 @@ using namespace std;
 class Group : public Element
 {
 public:
-    Group(int groupid) : 
-        Element(GROUP_CONSTRUCT),
-        m_groupid(groupid)
-    {}
+    Group(int groupid=-1) : 
+        Element(GROUP_CONSTRUCT)
+    {
+    }
     virtual ~Group() {}
     
-    inline int GetGroupId() { return m_groupid; }
-    
-protected:    
-    int m_groupid;
+    virtual Element *Create() {
+        return new Group();
+    };
 };
 
 
@@ -40,8 +39,9 @@ public:
         Element(DYNAMIC_GROUP_CONSTRUCT),
         m_proc(proc)
     {
-        m_dynamic = true;
     }
+    
+    virtual bool IsDynamic() { return true; }
     
     inline Scm GetProc() { return m_proc; }
     
