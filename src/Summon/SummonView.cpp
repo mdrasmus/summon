@@ -631,9 +631,13 @@ void SummonView::DrawTextElement(TextElement *elm)
         
     } else if (elm->kind == TextElement::KIND_SCALE) {
         void *font = GLUT_STROKE_MONO_ROMAN;
-        float fontSize = 119.05;
+        float const fontSize = 119.05;
         
-        float textWidth  = glutStrokeLength(font, text);
+        float asize = glutStrokeLength(font, (const unsigned char*) 
+                                       "AAAAAAAAAA");
+        float error = 1048.0 / asize;
+        
+        float textWidth  = glutStrokeLength(font, text) * error;
         float textHeight = fontSize;
         float boxWidth   = pos2.x - pos1.x;
         float boxHeight  = pos2.y - pos1.y;
