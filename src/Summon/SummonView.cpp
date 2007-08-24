@@ -633,6 +633,9 @@ void SummonView::DrawTextElement(TextElement *elm)
         void *font = GLUT_STROKE_MONO_ROMAN;
         float fontSize = 119.05;
         
+        printf("len %d\n", glutStrokeLength(font, (const unsigned char*)
+                                            "AAAAAAAAAA"));
+        
         float textWidth  = glutStrokeLength(font, text);
         float textHeight = fontSize;
         float boxWidth   = pos2.x - pos1.x;

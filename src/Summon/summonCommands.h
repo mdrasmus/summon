@@ -1294,6 +1294,8 @@ public:
     {
         if (input.GetId() == MOUSE_CLICK_INPUT) {
             pos = ((MouseClickInput*) &input)->pos;
+        } else if (input.GetId() == MOUSE_MOTION_INPUT) {
+            pos = ((MouseMotionInput*) &input)->pos;            
         } else if (input.GetId() == KEYBOARD_INPUT) {
             pos = ((KeyboardInput*) &input)->pos;
         } else if (input.GetId() == SPECIAL_KEY_INPUT) {

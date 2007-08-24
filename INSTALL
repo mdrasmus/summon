@@ -4,22 +4,82 @@ Matt Rasmussen
 
 
 =============================================================================
-CROSSPLATFORM INSTALLATION (Ideally)
+THIRD PARTY SOFTWARE
 
+The following third party packages are needed for SUMMON:
+    - SDL
+    - GLUT
+
+This software is available for all major platforms.  See below for platform
+specific instructions:
+
+
+=== LINUX (Debian)
+
+On Debian Linux the following apt-get command should install the third party
+packages:
+
+    apt-get install libsdl-dev freeglut-dev
+
+
+=== MAC OS X
+Using fink to install third party packages:
+
+    /sw/bin/fink install sdl glut
+
+=============================================================================
+CROSSPLATFORM INSTALLATION WITH DISTUTILS (Ideally)
 
 To install summon with python distutils use the following command:
 
     python setup.py install
-
-
 
 or to install in your home directory use:
 
     python setup.py install --prefix=$HOME
 
 
+=== MAC OS X
+For installing on Mac OS X use the following command:
+    
+    python setup-macosx.py install
+
+
 =============================================================================
-CYGWIN INSTALLATION
+INSTALL WITH MAKE
+
+
+=== LINUX MAKE
+You can also use the Makefiles to install summon in the source directory.
+On Linux, you may run:
+
+    make
+    
+On cygwin use the following command:
+
+    make -f Makefile.cygwin
+
+On both Linux and Cygwin, you must add the summon source directory to your 
+python path using:
+
+    export PYTHONPATH=$PYTHONPATH:path/to/summon-XXX/lib
+
+
+=== WINDOWS MAKE
+On windows, you can run nmake with the properly setup environment variables. 
+You will likely need to edit Makefile.win first to configure the location of 
+third party libraries.
+
+    <<edit Makefile.win>>
+    nmake -f Makefile.win
+
+For convenience, you can use winsh.bat to run the above command in a proper
+environment for Microsoft Visual Studio 8:
+
+    winsh.bat nmake -f Makefile.win
+
+
+=== WINDOWS CYGWIN MAKE
 
 I have had trouble using setup.py for installing on CYGWIN, so I made a Makefile
 specifically for installing on CYGWIN  Use the following to install on CYGWIN.  
@@ -30,4 +90,6 @@ first.
     make -f Makefile.cygwin
 
 
+
+For more documentation see doc/summon_manual.pdf
 
