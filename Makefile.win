@@ -35,7 +35,7 @@ LINK=link
 #
 
 BUILD_DIR=build\windows
-SUMMON=build\lib.win32-2.4\summon_core.dll
+SUMMON=build\windows\lib\summon_core.dll
 
 
 
@@ -44,19 +44,19 @@ INCLUDE=\
     -Isrc/GlutMVC \
     -Isrc/Common \
     -Isrc/Summon \
-    $PYTHON_INCLUDE \
-    $SDL_INCLUDE \
-    $GLUT_INCLUDE \
-    $MSVS_INCLUDE \
-    $MSSDK_INCLUDE
+    $(PYTHON_INCLUDE) \
+    $(SDL_INCLUDE) \
+    $(GLUT_INCLUDE) \
+    $(MSVS_INCLUDE) \
+    $(MSSDK_INCLUDE)
     
     
 LIBS=\
-    $PYTHON_LIB \
-    $SDL_LIB \
-    $GLUT_LIB \
-    $MSVS_LIB \
-    $MSSDK_LIB
+    $(PYTHON_LIB) \
+    $(SDL_LIB) \
+    $(GLUT_LIB) \
+    $(MSVS_LIB) \
+    $(MSSDK_LIB)
     
 
 OBJS=src/Common/Matrix.obj \
@@ -78,10 +78,12 @@ OBJS=src/Common/Matrix.obj \
      src/Summon/SummonController.obj \
      src/Summon/SummonModel.obj \
      src/Summon/SummonView.obj \
+     src/Summon/Element.obj \
      src/Summon/Graphic.obj \
      src/Summon/GroupTable.obj \
      src/Summon/Summon.obj \
-     src/Summon/Transform.obj
+     src/Summon/Transform.obj \
+     src/Summon/TransformMatrix.obj
 
 OBJS2=$(BUILD_DIR)/src/Common/Matrix.obj \
       $(BUILD_DIR)/src/Common/Script.obj \
@@ -102,13 +104,15 @@ OBJS2=$(BUILD_DIR)/src/Common/Matrix.obj \
       $(BUILD_DIR)/src/Summon/SummonController.obj \
       $(BUILD_DIR)/src/Summon/SummonModel.obj \
       $(BUILD_DIR)/src/Summon/SummonView.obj \
+      $(BUILD_DIR)/src/Summon/Element.obj \
       $(BUILD_DIR)/src/Summon/Graphic.obj \
       $(BUILD_DIR)/src/Summon/GroupTable.obj \
       $(BUILD_DIR)/src/Summon/Summon.obj \
-      $(BUILD_DIR)/src/Summon/Transform.obj
+      $(BUILD_DIR)/src/Summon/Transform.obj \
+      $(BUILD_DIR)/src/Summon/TransformMatrix.obj
 
 
-CFLAGS = -D__WXMSW__ -c
+CFLAGS = -DNOGLUTEXT /EHsc -c
 
 $(SUMMON):
 	$(LINK) -out:$(SUMMON) $(OBJS2) $(LIBS) /DLL
@@ -117,6 +121,7 @@ compile: $(OBJS)
 
 
 .cpp.obj:
+	echo hello $(INCLUDE)
 	$(CC) $(INCLUDE) $(CFLAGS) $< /Fo$(BUILD_DIR)/$@
 
     

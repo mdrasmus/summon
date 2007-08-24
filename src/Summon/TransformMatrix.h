@@ -12,8 +12,6 @@
 
 namespace Summon {
 
-using namespace std;
-
 
 void MultMatrix(float *mat1, float *mat2, float *mat3);
 void MakeTransMatrix(float *vec, float *m);
