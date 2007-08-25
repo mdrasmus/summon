@@ -42,7 +42,9 @@ struct HashString {
 
 
 struct HashPointer {
-    static unsigned int Hash(const void *p) { return (unsigned int) p; }
+    static unsigned int Hash(const void *p) { 
+        return (unsigned int) p;
+    }
 };
 
 
@@ -71,10 +73,12 @@ public:
         m_table = new ListType [size];
     }
     
-    void Insert(const KeyType &key, const ValueType &object)
+    inline ValueType &Insert(const KeyType &key, const ValueType &object)
     {
         unsigned int hash = HashFunc::Hash(key);
-        m_table[hash % m_size].push_back(NodeType(key, object));
+        int index = hash % m_size;
+        m_table[index].push_back(NodeType(key, object));
+        return m_table[index].back().second;
     }
     
     void Remove(const KeyType &key)
@@ -133,6 +137,19 @@ public:
         }
     }
     
+    ValueType &operator[](const KeyType &key) {
+        unsigned int hash = HashFunc::Hash(key);
+        ListType *lst = &m_table[hash % m_size];
+
+        for (typename ListType::iterator i = lst->begin(); i != lst->end(); i++) {
+            if ((*i).first == key) {
+                return (*i).second;
+            }
+        }
+
+        // existing key not found, insert new value
+        return Insert(key, m_null);
+    }
     
 protected:
     typedef pair<KeyType, ValueType> NodeType;
