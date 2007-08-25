@@ -86,15 +86,6 @@ public:
     
     // initialization
     bool Init()
-    {    
-        ModuleInit();
-        InitDrawEnv();    
-        
-        return true;
-    }
-    
-    
-    void ModuleInit()
     {
         // init commands
         summonCommandsInit();
@@ -175,6 +166,7 @@ public:
         summonMethods[table].ml_meth  = NULL;
         summonMethods[table].ml_flags = 0;
         summonMethods[table].ml_doc   = NULL;
+        table++;
 
         // register all methods with python
         PyObject *module = Py_InitModule(MODULE_NAME, 
@@ -203,62 +195,10 @@ public:
                 //"__helper_" + name + ".func_name = \"" + name + "\"\n";
             ScmEvalStr(pyCommands.c_str());
         }
+        
+        return true;
     }
     
-    // TODO: make less ugly
-    void InitDrawEnv()
-    {
-        // install group id generator
-        ScmEvalStr("import " MODULE_NAME);
-        ScmEvalStr(
-MODULE_NAME ".__groupid = 1 \n\
-def __new_groupid(): \n\
-    "MODULE_NAME".__groupid = "MODULE_NAME".__groupid + 1 \n\
-    return "MODULE_NAME".__groupid\n\
-"MODULE_NAME".new_groupid = __new_groupid\n");
-
-
-        // register constructs
-        for (CommandAttr::Iterator i=g_constructAttr.Begin(); 
-             i != g_constructAttr.End(); i++)
-        {
-            Construct *cmd = (Construct*) *i;
-            string str;
-
-            string name = string(cmd->GetName());
-            string id = int2string(cmd->GetId());
-            string help = string("(") + string(cmd->GetUsage()) + 
-                  ")\\n" + cmd->GetDescription();
-
-            if (cmd->GetId() == GROUP_CONSTRUCT) {
-                str = string("") + "\
-def __group(* args): return (" + id + ", __new_groupid()) + args\n\
-__group.func_doc = \"" + help + "\"\n\
-def __list2group(lst):\n\
-    return ("+ id +", __new_groupid()) + tuple(lst)\n\
-def __is_group(obj): return (obj[0] == " + id + ")\n\
-def __group_contents(obj): return obj[2:]\n\
-def __get_group_id(obj): return obj[1]\n\
-"MODULE_NAME".group = __group\n\
-"MODULE_NAME".list2group = __list2group\n\
-"MODULE_NAME".is_group = __is_group\n\
-"MODULE_NAME".group_contents = __group_contents\n\
-"MODULE_NAME".get_group_id = __get_group_id\n";
-            } else {
-                str = string("") + "\
-def __" + name + "(* args): return (" + id + ",) + args\n\
-__" + name + ".func_doc = \"" + help + "\"\n\
-def __is_" + name + "(obj): return (obj[0] == " + id + ")\n\
-def __" + name + "_contents(obj): return obj[1:]\n\
-"MODULE_NAME"." + name + " = __" + name + "\n\
-"MODULE_NAME".is_" + name + " = __is_" + name + "\n\
-"MODULE_NAME"." + name + "_contents = __" + name + "_contents\n\
-";
-            }
-
-            ScmEvalStr(str.c_str());
-        }
-    }
     
         
     // Main command execution function

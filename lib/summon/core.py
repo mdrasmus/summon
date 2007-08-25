@@ -37,27 +37,6 @@ while summon_core.get_windows() == None: time.sleep(.05)
 
 
 
-# All functions exported directly from summon_core 
-
-_summon_constructs = """\
-input_click
-is_input_click
-input_click_contents
-input_key
-is_input_key
-input_key_contents
-input_motion
-is_input_motion
-input_motion_contents
-""".split()
-
-
-_globals = globals()
-for _func in _summon_constructs:
-    _globals[_func] = summon_core.__dict__[_func]
-
-
-
 def _tuple(*args):
     return args
 
@@ -92,6 +71,13 @@ _TRANSLATE_CONSTRUCT = _i.next()
 _ROTATE_CONSTRUCT = _i.next()
 _SCALE_CONSTRUCT = _i.next()
 _FLIP_CONSTRUCT = _i.next()
+_i.next()
+_i.next()
+   
+# inputs
+_INPUT_KEY_CONSTRUCT = _i.next()
+_INPUT_CLICK_CONSTRUCT = _i.next()
+_INPUT_MOTION_CONSTRUCT = _i.next()
 
 
 #=============================================================================
@@ -447,6 +433,70 @@ def is_vertices(prim):
     """test whether an object is a vertices primitive"""
     return prim[0] == _VERTICES_CONSTRUCT
     
+#=============================================================================
+# input constructs
+
+def input_key(key, *mods):
+    """Specifies a keyboard input
+        
+       key   - key press
+       *mods - zero or many modifier keys: 'shift', 'ctrl', 'alt'
+    """
+    return _tuple(_INPUT_KEY_CONSTRUCT, key, *mods)
+
+def is_input_key(input_construct):
+    """Returns true if argument is an input_key"""
+    return input_construct[0] == _INPUT_KEY_CONSTRUCT
+
+def input_key_contents(input_construct):
+    """Returns the contents of an input_key object"""
+    return input_construct[1:]
+
+
+
+def input_click(button, state, *mods):
+    """Specifies a mouse click input
+    
+       button  - mouse button: 'left'|'middle'|'right', 
+       state   - state of button: 'up'|'down',
+       *mods   - zero or many modifier keys: 'shift', 'ctrl', 'alt'
+    """
+    return _tuple(_INPUT_CLICK_CONSTRUCT, button, state, *mods)
+
+def is_input_click(input_construct):
+    """Returns true if argument is an input_click"""
+    return input_construct[0] == _INPUT_CLICK_CONSTRUCT
+
+def input_click_contents(input_construct):
+    """Returns the contents of an input_click object"""
+    return input_construct[1:]
+
+
+
+def input_motion(button, state, *mods):
+    """Specifies a mouse motion input
+
+       button  - mouse button: 'left'|'middle'|'right', 
+       state   - state of button: 'up'|'down',
+       *mods   - zero or many modifier keys: 'shift', 'ctrl', 'alt'    
+    """
+    return _tuple(_INPUT_MOTION_CONSTRUCT, button, state, *mods)
+
+def is_input_motion(input_construct):
+    """Returns true if argument is an input_motion"""
+    return input_construct[0] == _INPUT_MOTION_CONSTRUCT
+
+def input_motion_contents(input_construct):
+    """Returns the contents of an input_motion object"""
+    return input_construct[1:]
+
+
+
+
+
+
+
+
 
 #=============================================================================
 # private
