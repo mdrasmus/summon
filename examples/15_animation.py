@@ -55,7 +55,7 @@ for i in range(nballs):
 
 
 # draw bounding box
-win.add_group(group(color(1,1,1), shapes.boxStroke(0, 0, winsize, winsize)))
+win.add_group(group(color(1,1,1), shapes.box(0, 0, winsize, winsize, fill=False)))
 
 
 def drawBall(ball):
@@ -107,10 +107,10 @@ def drawFrame():
             ball.vy *= bounce
             ball.y = winsize - ball.size
     
-    # setup timer to call this function again
-    summon.timer_call(rate, drawFrame)
-
 
 # begin animation
 win.home()
-drawFrame()
+
+# setup timer to call this function again
+summon.add_update_func(drawFrame, win, interval=rate)
+summon.begin_updating()

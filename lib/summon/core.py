@@ -1,7 +1,9 @@
 """
     SUMMON - core module
 
-    This is the core summon module that is most often imported as:
+    This is the core summon module that provides the most common primitives for
+    creating visualizations in SUMMON.  Since these primitives are used so often
+    this modules is most often imported as:
         from summon.core import *
     
 """
@@ -22,9 +24,9 @@ import summon_core
 
 
 # start summon thread
-__summon_thread = threading.Thread(target=summon_core.summon_main_loop)
-__summon_thread.setDaemon(True)
-__summon_thread.start()
+_summon_thread = threading.Thread(target=summon_core.summon_main_loop)
+_summon_thread.setDaemon(True)
+_summon_thread.start()
 
 # register a function for clean shutdown
 atexit.register(lambda: summon_core.summon_shutdown)
@@ -39,18 +41,25 @@ while summon_core.get_windows() == None: time.sleep(.05)
 
 _summon_constructs = """\
 input_click
+is_input_click
 input_click_contents
 input_key
+is_input_key
 input_key_contents
 input_motion
+is_input_motion
 input_motion_contents
 """.split()
 
 
 _globals = globals()
-for func in _summon_constructs: # + _summon_funcs:
-    _globals[func] = summon_core.__dict__[func]
+for _func in _summon_constructs:
+    _globals[_func] = summon_core.__dict__[_func]
 
+
+
+def _tuple(*args):
+    return args
 
 
 #=============================================================================
@@ -85,11 +94,39 @@ _SCALE_CONSTRUCT = _i.next()
 _FLIP_CONSTRUCT = _i.next()
 
 
-# TODO: add docstrings
+#=============================================================================
+# Element classes
 
-class Construct:
-    def __init__(self, constructid, code, options={}):
-        self.constructid = constructid
+class Element:
+    """This is the abstract base class of all graphical elements in SUMMON.
+       Graphical elements are organized as follows:
+       
+       Element: base class
+            - group
+            - hotspot
+            - text: base class of all text elements
+                - text_scale
+                - text_clip
+            - etc...
+            
+            Graphic: lines and polygons
+                - lines
+                - quads
+                - etc...
+            
+            Transform: base class for all transformations
+                - translate
+                - rotate
+                - scale
+                - flip
+    """
+        
+
+    def __init__(self, elementid, code, options={}):
+        """Create a new element from the SUMMON extension module.
+           This class is typically not instantiated directly by user code.
+        """
+        self.elementid = elementid
         
         if "ref" in options and options["ref"]:
             # create a reference to an existing construct
@@ -98,144 +135,300 @@ class Construct:
         else:
             # create a new construct
             try:
-                self.ptr = summon_core.make_construct(constructid, code)
+                self.ptr = summon_core.make_construct(elementid, code)
                 #print "new", self.ptr
             except:
                 self.ptr = None
                 raise
 
     def __del__(self):
-        #print "delete", self.ptr, self.constructid
+        #print "delete", self.ptr, self.elementid
         if self.ptr != None:
             # when python interface is GC also delete C++ construct
             summon_core.delete_construct(self.ptr)
 
-
     def __iter__(self):
+        """Iterates through this element's child elements"""
         children = summon_core.get_construct_children(self.ptr)
         
         for i in xrange(0, len(children), 2):
             yield _make_ref(children[i], children[i+1])
-    
-    def get_contents(self):
-        return summon_core.get_construct_contents(self.ptr)
-
-    def get_children(self):
-        return list(self)
 
     def __getitem__(self, i):
         return list(self)[i]
+    
+    def get_contents(self):
+        """Returns the a tuple in a format specific to the content 
+           of this element"""
+        return summon_core.get_construct_contents(self.ptr)
+
+    def get_children(self):
+        """Returns the children of this element as a list"""
+        return list(self)
 
 
-class group (Construct):
-    def __init__(self, *code, **options):
-        Construct.__init__(self, _GROUP_CONSTRUCT, code, options)
+
+
+class group (Element):
+    """Groups together several graphical elements into one"""
+    def __init__(self, *elements, **options):
+        Element.__init__(self, _GROUP_CONSTRUCT, elements, options)
     
 
-class hotspot (Construct):
-    def __init__(self, *code, **options):
-        Construct.__init__(self, _HOTSPOT_CONSTRUCT, code, options)
+class hotspot (Element):
+    """Designates a region of the screen to react to mouse clicks.
+    
+       When a mouse click (default: middle click) occurs within the specified
+       rectangular region the given function will be called."""
+    def __init__(self, kind, x1, y1, x2, y2, func, **options):
+        """kind - must be the string "click" (more options in future versions)
+           x1   - 1st x-coordinate of rectangular region
+           y1   - 1st y-coordinate of rectangular region
+           x2   - 2nd x-coordinate of rectangular region
+           y2   - 2nd y-coordinate of rectangular region
+           func - callback function of no arguments
+        """
+        Element.__init__(self, _HOTSPOT_CONSTRUCT, 
+                         _tuple(kind, x1, y1, x2, y2, func), options)
 
 
 #=============================================================================
 # graphics
 
-class graphic (Construct):
+class Graphic (Element):
+    """This the abstract base class of all line and polygon graphical elements.
+       Every graphic consists of only vertices and color primitives.
+    """
     pass
         
 
-class points (graphic):
-    def __init__(self, *code, **options):
-        Construct.__init__(self, _POINTS_CONSTRUCT, code, options)
+class points (Graphic):
+    """A graphic that draws one or more points"""
+    def __init__(self, *primitives, **options):
+        """*primitives - a series of coordinates and color primitives
+        
+            ex: points(100, 200)  
+            # a single point at (100,200)
+        
+            ex: points(color(1, 0, 0), 0, 0, 100, 200,
+                       color(0, 0, 1), 100, 100, 300, 400)
+            # four points, two red the other two blue
+        """
+        Element.__init__(self, _POINTS_CONSTRUCT, primitives, options)
 
-class lines (graphic):
-    def __init__(self, *code, **options):
-        Construct.__init__(self, _LINES_CONSTRUCT, code, options)
+class lines (Graphic):
+    """A graphic that draws one or more lines"""
+    def __init__(self, *primitives, **options):
+        """*primitives - a series of coordinates and color primitives
+        
+            ex: lines(0, 0, 100, 200)  
+            # a single line from (0,0) to (100,200)
+        
+            ex: lines(color(1, 0, 0), 0, 0, 100, 200,
+                      color(0, 0, 1), 100, 100, 300, 400)
+            # two lines, one red the other blue
+        """
+        Element.__init__(self, _LINES_CONSTRUCT, primitives, options)
 
-class line_strip (graphic):
-    def __init__(self, *code, **options):
-        Construct.__init__(self, _LINE_STRIP_CONSTRUCT, code, options)
+class line_strip (Graphic):
+    """A graphic that draws one or more lines that are connected end to end"""
+    def __init__(self, *primitives, **options):
+        """*primitives - a series of coordinates and color primitives
+        
+            ex: line_strip(0, 0, 100, 200, 300, 400)  
+            # two lines, one from (0,0) to (100,200)
+            # the other from (100, 200) to (300, 400)
+        """    
+        Element.__init__(self, _LINE_STRIP_CONSTRUCT, primitives, options)
 
-class triangles (graphic):
-    def __init__(self, *code, **options):
-        Construct.__init__(self, _TRIANGLES_CONSTRUCT, code, options)
+class triangles (Graphic):
+    """A graphic that draws one or more triangles"""
+    def __init__(self, *primitives, **options):
+        """*primitives - a series of coordinates and color primitives
+        
+            ex: triangles(0, 0, 100, 200, 300, 400)              
+            # a trinagle with vertices (0,0), (100,200) and (300, 400)
+            
+            ex: triangles(0, 0, 100, 200, 300, 400,
+                          400, 400, 500, 400, 400, 500)              
+            # two triangles
+        """    
+        Element.__init__(self, _TRIANGLES_CONSTRUCT, primitives, options)
 
-class triangle_strip (graphic):
-    def __init__(self, *code, **options):
-        Construct.__init__(self, _TRIANGLE_STRIP_CONSTRUCT, code, options)
+class triangle_strip (Graphic):
+    """A graphic that draws one or more triangles that align edge to edge in 
+       a long strip"""
+    def __init__(self, *primitives, **options):
+        """*primitives - a series of coordinates and color primitives
+        
+            ex: triangle_strip(0, 0, 0, 200, 200, 0, 200, 200)
+            # two triangles with vertices (0,0),(0,200),(200,0) and
+            # another with vertices (0,200),(200,0),(200,200)
+        """
+        Element.__init__(self, _TRIANGLE_STRIP_CONSTRUCT, primitives, options)
 
-class triangle_fan (graphic):
-    def __init__(self, *code, **options):
-        Construct.__init__(self, _TRIANGLE_FAN_CONSTRUCT, code, options)
+class triangle_fan (Graphic):
+    """A graphic that draws one or more triangles in a fan shape"""
+    def __init__(self, *primitives, **options):
+        """*primitives - a series of coordinates and color primitives
+        """
+        Element.__init__(self, _TRIANGLE_FAN_CONSTRUCT, primitives, options)
 
-class quads (graphic):
-    def __init__(self, *code, **options):
-        Construct.__init__(self, _QUADS_CONSTRUCT, code, options)
+class quads (Graphic):
+    """A graphic that draws one or more quadrilaterals"""
+    def __init__(self, *primitives, **options):
+        """*primitives - a series of coordinates and color primitives
+        
+           ex: quads(50,0, 50,70, 60,70, 60,0)
+           # a quadrilateral with vertices (50,0), (50,70), (60,70), (60,0)
+        """    
+        Element.__init__(self, _QUADS_CONSTRUCT, primitives, options)
 
-class quad_strip (graphic):
-    def __init__(self, *code, **options):
-        Construct.__init__(self, _QUAD_STRIP_CONSTRUCT, code, options)
+class quad_strip (Graphic):
+    """A graphic that draws one or more quadrilaterals that align edge to edge
+       in a long strip"""
+    def __init__(self, *primitives, **options):
+        """*primitives - a series of coordinates and color primitives
+        """    
+        Element.__init__(self, _QUAD_STRIP_CONSTRUCT, primitives, options)
 
-class polygon (graphic):
-    def __init__(self, *code, **options):
-        Construct.__init__(self, _POLYGON_CONSTRUCT, code, options)
+class polygon (Graphic):
+    """A graphic that draws one polygon with an arbitrary number of vertices"""
+    def __init__(self, *primitives, **options):
+        """*primitives - a series of coordinates and color primitives
+        """
+        Element.__init__(self, _POLYGON_CONSTRUCT, primitives, options)
 
-class color_graphic (graphic):
-    def __init__(self, *code, **options):
-        Construct.__init__(self, _COLOR_CONSTRUCT, code, options)
+class color_graphic (Graphic):
+    """A graphic that sets the current color
+       NOTE: this object should not be used directly, see: color(r, g, b, a)
+    """
+    def __init__(self, *primitives, **options):
+        Element.__init__(self, _COLOR_CONSTRUCT, primitives, options)
 
-def color(r, g, b, a=1.0):
-    return (_COLOR_CONSTRUCT, r, g, b, a)
+def color(red, green, blue, alpha=1.0):
+    """A primitive that sets the current color
+    
+       red   - a value from 0 to 1
+       green - a value from 0 to 1
+       blue  - a value from 0 to 1
+       alpha - a value from 0 to 1 (opacity)
+    """
+    return (_COLOR_CONSTRUCT, red, green, blue, alpha)
 
-#class _color_ref (graphic):
-#    def __init__(self, *code, **options):
-#        Construct.__init__(self, _COLOR_CONSTRUCT, code, options)
 
 
 #=============================================================================
 # text
 
-#class text (Construct):
-#    def __init__(self, msg, x1, y1, x2, y2, *justified, **options):
-#        Construct.__init__(self, _TEXT_CONSTRUCT, 
-#                                tuple([msg, x1, y1, x2, y2] + list(justified)), options)
 
-class text (Construct):
-    def __init__(self, *code, **options):
-        Construct.__init__(self, _TEXT_CONSTRUCT, code, options)
+#class text (Element):
+#    def __init__(self, *code, **options):
+#        Element.__init__(self, _TEXT_CONSTRUCT, code, options)
 
+
+class text (Element):
+    """A bitmap text element that automatically hides if it cannot fit within 
+       its bounding box"""
+    def __init__(self, txt, x1, y1, x2, y2, *justified, **options):
+        """txt        - text to display
+           x1         - 1st x-coordinate of bounding box
+           y1         - 1st y-coordinate of bounding box
+           x2         - 2nd x-coordinate of bounding box
+           y2         - 2nd y-coordinate of bounding box
+           *justified - one or more of the following strings, indicating how
+                        to justify the text within the bounding box
+                'left' 'center' 'right' 
+                'bottom' 'middle' 'top'
+        """
+        Element.__init__(self, _TEXT_CONSTRUCT, 
+                                 _tuple(txt, x1, y1, x2, y2, *justified), 
+                                 options)
 
 class text_scale (text):
-    def __init__(self, *code, **options):
-        Construct.__init__(self, _TEXT_SCALE_CONSTRUCT, code, options)
+    """A vector graphics text element"""
+    def __init__(self, txt, x1, y1, x2, y2, *justified, **options):
+        """txt        - text to display
+           x1         - 1st x-coordinate of bounding box
+           y1         - 1st y-coordinate of bounding box
+           x2         - 2nd x-coordinate of bounding box
+           y2         - 2nd y-coordinate of bounding box
+           *justified - one or more of the following strings, indicating how
+                        to justify the text within the bounding box
+                'left' 'center' 'right' 
+                'bottom' 'middle' 'top'
+        """
+        Element.__init__(self, _TEXT_SCALE_CONSTRUCT, 
+                                 _tuple(txt, x1, y1, x2, y2, *justified), 
+                                 options)
 
 class text_clip (text):
-    def __init__(self, *code, **options):
-        Construct.__init__(self, _TEXT_CLIP_CONSTRUCT, code, options)
+    """A vector graphics text element that has a minimum and maximum height"""
+    def __init__(self, txt, x1, y1, x2, y2, minheight, maxheight, *justified, 
+                       **options):
+        """txt        - text to display
+           x1         - 1st x-coordinate of bounding box
+           y1         - 1st y-coordinate of bounding box
+           x2         - 2nd x-coordinate of bounding box
+           y2         - 2nd y-coordinate of bounding box
+           minheight  - minimum on-screen height (pixels)
+           maxheight  - maximum on-screen height (pixels)
+           *justified - one or more of the following strings, indicating how
+                        to justify the text within the bounding box
+                'left' 'center' 'right' 
+                'bottom' 'middle' 'top'
+        """    
+        Element.__init__(self, _TEXT_CLIP_CONSTRUCT, 
+                  _tuple(txt, x1, y1, x2, y2, minheight, maxheight, *justified), 
+                  options)
 
 
 #=============================================================================
 # transforms
 
-class transform (Construct):
+class Transform (Element):
+    """Base class for all transformation elements"""
     def __init__(self, *code, **options):
-        Construct.__init__(self, _TRANSFORM_CONSTRUCT, code, options)
+        Element.__init__(self, _TRANSFORM_CONSTRUCT, code, options)
 
-class translate (transform):
-    def __init__(self, *code, **options):
-        Construct.__init__(self, _TRANSLATE_CONSTRUCT, code, options)
+class translate (Transform):
+    """Translates the containing elements"""
+    def __init__(self, x, y, *elements, **options):
+        """x         - units along the x-axis to translate
+           y         - units along the y-axis to translate
+           *elements - one or more elements to translate
+        """
+        Element.__init__(self, _TRANSLATE_CONSTRUCT, 
+                         _tuple(x, y, *elements), options)
 
-class rotate (transform):
-    def __init__(self, *code, **options):
-        Construct.__init__(self, _ROTATE_CONSTRUCT, code, options)
+class rotate (Transform):
+    """Rotates the containing elements"""
+    def __init__(self, angle, *elements, **options):
+        """angle     - angle in degrees (-360, 360) to rotate (clock-wise)
+           *elements - one or more elements to rotate
+        """
+        Element.__init__(self, _ROTATE_CONSTRUCT, 
+                         _tuple(angle, *elements), options)
 
-class scale (transform):
-    def __init__(self, *code, **options):
-        Construct.__init__(self, _SCALE_CONSTRUCT, code, options)
+class scale (Transform):
+    """Scales the containing elements"""
+    def __init__(self, scalex, scaley, *elements, **options):
+        """scalex    - factor of scaling along x-axis
+           scaley    - factor of scaling along y-axis
+           *elements - one or more elements to scale
+        """
+        Element.__init__(self, _SCALE_CONSTRUCT, 
+                         _tuple(scalex, scaley, *elements), options)
 
-class flip (transform):
-    def __init__(self, *code, **options):
-        Construct.__init__(self, _FLIP_CONSTRUCT, code, options)
+class flip (Transform):
+    """Flips the containing elements over a line (0,0)-(x,y)"""
+    def __init__(self, x, y, *elements, **options):
+        """x         - x-coordinate of line
+           y         - y-coordinate of line
+           *elements - one or more elements to flips
+        """
+        Element.__init__(self, _FLIP_CONSTRUCT, 
+                         _tuple(x, y, *elements), options)
 
 
 #=============================================================================
@@ -243,19 +436,22 @@ class flip (transform):
 
 
 def get_group_id(aGroup):
+    """DEPRECATED: group IDs are no longer needed"""
     return aGroup
     
 def is_color(prim):
+    """test whether an object is a color primitive"""
     return prim[0] == _COLOR_CONSTRUCT
 
 def is_vertices(prim):
+    """test whether an object is a vertices primitive"""
     return prim[0] == _VERTICES_CONSTRUCT
     
 
 #=============================================================================
 # private
 
-_construct_table = {
+_element_table = {
     _GROUP_CONSTRUCT:          group,
     _HOTSPOT_CONSTRUCT:        hotspot,
 
@@ -278,7 +474,7 @@ _construct_table = {
     _COLOR_CONSTRUCT:          color_graphic,
 
     # transforms
-    _TRANSFORM_CONSTRUCT:      transform,
+    _TRANSFORM_CONSTRUCT:      Transform,
     _TRANSLATE_CONSTRUCT:      translate,
     _ROTATE_CONSTRUCT:         rotate,
     _SCALE_CONSTRUCT:          scale,
@@ -286,8 +482,8 @@ _construct_table = {
 }
 
 
-def _make_ref(constructid, ptr):
-    return _construct_table[constructid](ptr, ref=True)
+def _make_ref(elementid, ptr):
+    return _element_table[elementid](ptr, ref=True)
 
 
 

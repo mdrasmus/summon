@@ -237,7 +237,7 @@ following python code:
 \begin{minipage}{6in}
 { \footnotesize
 \begin{verbatim}
-#!/usr/bin/python -i
+#!/usr/bin/env python-i
 # SUMMON examples
 # 01_basics.py - basic commands
 
@@ -246,35 +246,35 @@ from summon.core import *
 import summon
 
 # syntax of used summon functions
-# add_group( <group> )   : adds a group of graphics to the screen
-# group( <elements> )    : creates a group from several graphical elements
-# lines( <primitives> )  : an element that draws one or more lines
-# quads( <primitives> )  : an element that draws one or more quadrilaterals
-# color( <red>, <green>, <blue>, [alpha] ) : a primitive that specifies a color
+# add_group( <group> )   = adds a group of graphics to the screen
+# group( <elements> )    = creates a group from several graphical elements
+# lines( x1, y1, x2, y2, ... )  = an element that draws one or more lines
+# quads( x1, y1, ..., x4, y4, ... )  = an element that draws one or more quadrilaterals
+# color( <red>, <green>, <blue>, [alpha] ) = a primitive that specifies a color
 
 
 # create a new window
 win = summon.Window("01_basics")
 
 # add a line from (0,0) to (30,40)
-win.add_group(group(lines(0,0, 30,40)))
+win.add_group(lines(0,0, 30,40))
 
-# add a quadrilateral
-win.add_group(group(quads(50,0, 50,70, 60,70, 60,0)))
+# add two blue quadrilaterals inside a group
+win.add_group(group(color(0, 0, 1), 
+                    quads(50,0, 50,70, 60,70, 60,0),
+                    quads(65,0, 65,70, 75,70, 75,0)))
 
-# add a multi-colored quad
-win.add_group(group(quads(
-    color(1,0,0), 100, 0,
-    color(0,1,0), 100, 70,
-    color(0,0,1), 140, 60,
-    color(1,1,1), 140, 0)))
+# add a multi-colored quad, where each vertex has it own color
+win.add_group(quads(color(1,0,0), 100, 0,
+                    color(0,1,0), 100, 70,
+                    color(0,0,1), 140, 60,
+                    color(1,1,1), 140, 0))
 
 
 # add some text below everything else
-win.add_group(group(
-    text("Hello, world!",    # text to appear
-         0, -10, 140, -100,    # bounding box of text
-         "center", "top")))    # justification of text in bounding box
+win.add_group(text("Hello, world!",     # text to appear
+                   0, -10, 140, -100,   # bounding box of text
+                   "center", "top"))    # justification of text in bounding box
 
 # center the "camera" so that all shapes are in view
 win.home()
@@ -291,27 +291,27 @@ the \code{summon.core} module into the current environment.
 A new SUMMON graphics window is created using the \code{summon.Window} object.
 
 All graphics are added and removed from the window in sets called {\em groups}. 
-Groups provide a way to organize and reference graphical elements.
+Groups provide a way to organize graphical elements into a hierarchy.
 The first graphical group added to the window is a line.
 The line is created with the \code{lines} function, which takes a series of
 numbers specifying the end-point coordinates for the line.  The first
 two numbers specify the x and y coordinates of one end-point (0,0) and the last
-two specify the other end-point (30,40).  Next, the line is placed in a group
-using the \code{group} function which returns a group ready to be added to the
-screen.   Lastly, the \code{add\_group} function is called on the group.  This
-function finally places the line on the window.  Although this may seem like a
-lot to type to draw a single line, in most uses several lines and other graphics 
-are placed a group before adding them to the window.
+two specify the other end-point (30,40).  Next, the line is added to the window
+using the \code{add\_group} function.
 
-The next line in the example adds a quadrilateral to the screen with the
-\code{quads} command.  The arguments to the \code{quads} function are similar to
-the \code{lines} function, except four vertices (8 numbers) are specified.  Both
-functions can draw multiple lines and quadrilaterals (hence their plural names)
-by supplying more coordinates as arguments.
+The next part of the example adds two quadrilaterals to the window with the
+\code{quads} and \code{group} commands.  The arguments to the \code{quads}
+function are similar to the \code{lines} function, except four vertices (8
+numbers) are specified.  In the example, two quadrilaterals are created and
+grouped together with the \code{group} function.
+
+Note, both the \code{lines} and \code{quads} functions can draw multiple lines
+and quadrilaterals (hence their plural names) by supplying more coordinates as
+arguments.
 
 The third group illustrates the use of color.  Color is stateful, as in OpenGL,
 and all vertices that appear after a color object in a group will be affected. 
-The \code{color} function creates a color object.  Color objects can appear
+The \code{color} function creates a color object, which can appear
 within graphical elements such as \code{lines} and \code{quads} or directly
 inside a group.  Since each vertex in this example quad has a different color,
 OpenGL will draw a quadrilateral that blends these colors.
@@ -320,18 +320,18 @@ Lastly, an example of text is shown.  Once again the text is added to the window
 using the \code{add\_group} function.  The arguments to the text function
 specify the text to be displayed, a bounding box specified by two
 opposite  vertices, and then zero or more justifications ("left", "right",
-"center", "top", "bottom", "middle") that will affect how the text aligns in its
-bounding box.  There are currently three types of text: \code{text} (bitmap),
-\code{text\_scale} (stroke), \code{text\_clip} (stroked text that clips).  The
-bitmap text will clip if it cannot fit within its bounding box.  This is very
-useful in cases where the user zooms out very far and no more space is available
-for the text to fit.  See the example \code{10\_text.py} for a better
-illustration of the different text constructs.
+"center", "top", "bottom", "middle") that will affect how the text aligns 
+within its bounding box.  There are currently three types of text: \code{text}
+(bitmap), \code{text\_scale} (stroke), \code{text\_clip} (stroked text that
+clips).  The bitmap text will clip if it cannot fit within its bounding box. 
+This is very useful in cases where the user zooms out very far and no more space
+is available for the text to fit.  See the example \code{10\_text.py} for a
+better illustration of the different text constructs.
 
-The final function in the script is \code{home()}.  \code{home()} causes the
-SUMMON window to scroll and zoom such that all graphics are visible.  This is a
-very useful command for making sure what you have drawn is visible in the
-window.  The command can also be execute by pressing the 'h' key.  This key 
+The final function in the script is \code{win.home()}.  \code{win.home()} causes
+the SUMMON window to scroll and zoom such that all graphics are visible.  This
+is a very useful command for making sure that what you have drawn is visible in
+the window.  The command can also be executed by pressing the 'h' key.  This key 
 comes in handy when you "lose sight" of the visualization.
 
 This is only a simple example.  See the remaining scripts for examples of
@@ -340,8 +340,8 @@ SUMMON's more powerful features.
 \subsection{Example Visualizations: SUMMATRIX and SUMTREE}
 
 In the \code{summon/bin/} directory are two programs, \code{summatrix} and
-\code{sumtree} that use summon to visualize large datasets.  There programs are
-written in python and so can be easily extended.  In my own work, I have 
+\code{sumtree} that use summon to visualize large datasets.  They are simply 
+python scripts and so can be easily extended.  In my own work, I have 
 extended the tree visualization program to integrate more closely with
 biological data (executing CLUSTALW and MUSCLE on subtrees, displaying GO terms,
 etc.).  The purpose of writing visualization programs in this way, is to allow
@@ -356,13 +356,8 @@ non-scriptable visualization.
 
 Example input files for both programs can be found under the 
 \code{summon/examples} directory.  Both programs will print their usage if run
-with no arguments.  Here are some recommended examples:
-
-\codeblock{\$ sumtree -n olfactory-genes.tree}
-
-\codeblock{\$ sumtree -n olfactory-genes.tree -t 10}
-
-\codeblock{\$ summatrix -i human\_mouse.imat}
+with no arguments.  View/execute the \code{view\_*.sh} scripts for examples of
+how to call summatrix and sumtree.
 
 
 \section{SUMMON Function Reference}

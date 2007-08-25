@@ -149,20 +149,20 @@ class SvgWriter:
     def printElm(self, elm):
         """write the SVG an element and all of its children"""
         
-        if isinstance(elm, graphic):
+        if isinstance(elm, Graphic):
             self.printGraphic(elm)
         
         if isinstance(elm, text):
             self.printText(elm)
 
-        if isinstance(elm, transform):
+        if isinstance(elm, Transform):
             self.printBeginTransform(elm)
         
         # recurse
         for child in elm:
             self.printElm(child)
 
-        if isinstance(elm, transform):
+        if isinstance(elm, Transform):
             self.printEndTransform(elm)
 
 

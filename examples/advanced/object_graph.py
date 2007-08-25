@@ -31,7 +31,7 @@ class ObjectGraph (object):
     def makeObjHotspot(self, obj, x, y, width):
         def func():
             self.win.add_group(group(color(0,0,0),
-                                     shapes.boxStroke(x, y, x+width, y-1),
+                                     shapes.box(x, y, x+width, y-1, fill=False),
                                      lines(x+width, y-.5, x+width+2, y-.5),
                                      self.drawobj(obj, x+width+2, y)))
         return hotspot("click", x, y, x+width, y-1, func)
