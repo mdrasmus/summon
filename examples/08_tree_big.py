@@ -19,9 +19,9 @@ button_size = .25
 
 # class for node in tree
 class Node:
-    def __init__(self, gid):
+    def __init__(self, grp):
         self.shown = True
-        self.groupid = gid
+        self.group = grp
 
 
 # a class for a tree
@@ -74,10 +74,10 @@ def drawTree(tree, height):
             translate(right, -height,
                 drawTree(tree.children[1], height)))
         
-        node = Node(get_group_id(grp))   
+        node = Node(grp)
         def func():
             node.shown = not node.shown
-            win.show_group(node.groupid, node.shown)
+            win.show_group(node.group, node.shown)
         
         return group(
             color(0,0,0),

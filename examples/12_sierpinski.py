@@ -19,7 +19,7 @@ triy = math.sin(math.pi / 2.0 - 2*math.pi / 3.0)
 
 def tri(size, depth):
     if depth == 0:
-        return group(triangles(0, size, size*trix, size*triy, -size*trix, size*triy))
+        return triangles(0, size, size*trix, size*triy, -size*trix, size*triy)
     else:
         # recurse
         

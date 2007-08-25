@@ -3,33 +3,32 @@
 # 03_basics.py - more complex building before add_group()
 
 
-
 # a function for drawing a commonly used shape
 def arrow():
     white = color(1,1,1)
     red  = color(1,0,0)
     blue = color(0,0,1)
     
-    return group(
-        quads(white, 0, 0,        # right fin
-              red,   40, -40,
-              red,   40, -80,
-              white, 0, -40,
-              
-              white, 0,0,         # left fin
-              blue,  -40, -40,
-              blue,  -40, -80,
-              white, 0, -40),
-              
-              lines(white, 0,0, 0, 100)) # shaft
+    return group(quads(white, 0, 0,        # right fin
+                       red,   40, -40,
+                       red,   40, -80,
+                       white, 0, -40,
+
+                       white, 0,0,         # left fin
+                       blue,  -40, -40,
+                       blue,  -40, -80,
+                       white, 0, -40),
+
+                       lines(white, 0,0, 0, 100)) # shaft
 
 
-def drawArrows():
-    # start a list of drawing elements that we will add to
+def drawArrows(narrows):
+    # In this example we will dynamically build up a group.
+    # Start a list to which we will append drawing elements.
     vis = []
     
     # add several arrows to our list, each translated and rotated differently
-    for x in range(0, 10):
+    for x in range(0, narrows):
         vis.append(
             translate(x*100, 0, 
                 rotate(x*-10, arrow())))
@@ -46,12 +45,11 @@ set_bgcolor(0, .5, 0)
 
 
 # add a row of arrows
-add_group(drawArrows())
+add_group(drawArrows(10))
 
 # draw row of arrows flipped!
-add_group(group(
-    translate(0, -200, 
-        flip(100, 0, drawArrows()))))
+add_group(translate(0, -200, 
+                    flip(100, 0, drawArrows(10))))
 
 
 # center the "camera" so that all shapes are in view

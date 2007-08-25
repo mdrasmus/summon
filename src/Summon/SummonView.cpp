@@ -337,6 +337,7 @@ void SummonView::DrawWorld()
     //if (pointsize < 1.5) 
     //    pointsize = 1.5;
     glPointSize(pointsize);
+    glColor4f(1.0, 1.0, 1.0, 1.0);
         
     
     // NOTE: I am not using draw lists effectively.

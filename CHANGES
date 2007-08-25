@@ -1,8 +1,18 @@
 SUMMON Change Log
 -----------------
 
+
+2007/8/24
+- cleaned up examples
+- removed concept of group id
+- created setup-macosx.py for Max OS X installation
+- beginning to remove artifical requirement of groups
+- uniform use of python-i
+
+
 2007/8/17
 - created foundation for a more pythonic model interface (merged cobject)
+- bug in example/13_gameoflife.py
 
 
 2007/7/11 - summon-1.7.2

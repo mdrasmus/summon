@@ -14,7 +14,6 @@ del_model
 focus
 get_bgcolor
 get_group
-get_group_id
 get_model
 get_models
 get_mouse_pos
@@ -26,7 +25,6 @@ get_window_size
 get_windows
 home
 insert_group
-new_groupid
 new_model
 new_window
 redraw_call
@@ -97,6 +95,7 @@ input_click
 """.split()
 
 other = """
+group
 hotspot
 hotspot_click
 """.split()

@@ -110,9 +110,8 @@ class ScatterPlot (object):
                                     maxy * self.scale[1] + height*.1, 
                                     self.clickCallback))
     
-        selgroup = group()
-        self.selgroup = get_group_id(selgroup)
-        vis.append(group(selgroup))
+        self.selgroup = group()
+        vis.append(group(self.selgroup))
             
         return group(*vis)
     

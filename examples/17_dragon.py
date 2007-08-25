@@ -77,5 +77,5 @@ def dragon(p, depth):
 
 win = summon.Window("17_dragon")
 pencil = Pencil()
-win.add_group(group(line_strip(* dragon(pencil, 14))))
+win.add_group(line_strip(* dragon(pencil, 14)))
 win.home()

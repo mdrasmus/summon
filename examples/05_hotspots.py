@@ -17,42 +17,41 @@ win = summon.Window("05_hotspots.py")
 def makeBox(string, x, y, width, boxColor):
     
     # create color quad separately
-    g = group(quads(boxColor, 
-            x, y ,
-            x + width, y,
-            x + width, y + width,
-            x, y + width))
+    # this will allow us to refer to it directly
+    colorsquare = quads(boxColor, 
+                        x, y ,
+                        x + width, y,
+                        x + width, y + width,
+                        x, y + width)
     
     # get the groupid of the color quad so we can manipulate it in callback()
     # use myVars to keep track of the visibility of the color quad
-    groupid = get_group_id(g)
     myVars = {"visible": True}
     
     def callback():
         print "HOTSPOT '%s' was clicked!" % string
         
-        # toggle the visibility of a group
+        # toggle the visibility of a drawing element
         myVars["visible"] = not myVars["visible"]
-        win.show_group(groupid, myVars["visible"])
+        win.show_group(colorsquare, myVars["visible"])
 
     
-    return  group(
-        g,
-        line_strip(color(1, 1, 1), 
-            x, y ,
-            x + width, y,
-            x + width, y + width,
-            x, y + width,
-            x, y),
-        text_scale(string,
-            x + width*.1, y + width*.1,
-            x + width*.9, y + width*.9,
-            "center", "middle"),
-        color(1, 1,1 ),
-        hotspot("click",
-            x, y,
-            x + width, y + width,
-            callback))
+    return  group(colorsquare,
+                  line_strip(color(1, 1, 1), 
+                      x, y ,
+                      x + width, y,
+                      x + width, y + width,
+                      x, y + width,
+                      x, y),
+                  text_scale(string,
+                      x + width*.1, y + width*.1,
+                      x + width*.9, y + width*.9,
+                      "center", "middle"),
+                  color(1, 1, 1),
+                  hotspot("click",
+                      x, y,
+                      x + width, y + width,
+                      callback))
 
 # define three colors
 red = color(1, 0, 0, .4)

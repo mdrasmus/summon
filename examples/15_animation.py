@@ -65,15 +65,13 @@ def drawBall(ball):
         ball.activate = 1
         
     val = (ball.vy + 3) / 6
-    g = group(color(val, ball.activate, 1),
-            translate(ball.x, ball.y,
-            shapes.regularPoly(20, ball.size),
-            hotspot("click", - 2 * ball.size, - 2*ball.size,
-                             2*ball.size, 2*ball.size,
-                             func)))
-    
-    ball.group = get_group_id(g)
-    win.add_group(g)
+    ball.group = translate(ball.x, ball.y,
+                           color(val, ball.activate, 1),
+                           shapes.regularPoly(20, ball.size),
+                           hotspot("click", - 2 * ball.size, - 2*ball.size,
+                                   2*ball.size, 2*ball.size,
+                                   func))
+    win.add_group(ball.group)
 
 
 def drawFrame():

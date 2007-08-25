@@ -39,7 +39,7 @@ class MenuItem (object):
         
         
     def draw(self):
-        g = group(self.buttonColor,
+        self.drawGroup = group(self.buttonColor,
                      shapes.box(0, 0, self.width, self.height),
                      self.buttonHighlight,
                      lines(0, self.height-1, self.width-1, self.height-1,
@@ -49,8 +49,8 @@ class MenuItem (object):
                           "bottom", "center"),
                      hotspot("click", 0, 0, self.width, self.height,
                                       self.onClick))
-        self.drawGroup = get_group_id(g)
-        return g
+
+        return self.drawGroup
         
 
 class SideBar (object):

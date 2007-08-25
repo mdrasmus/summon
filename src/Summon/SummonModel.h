@@ -51,13 +51,13 @@ public:
     
     // model manipulation
     virtual void ExecCommand(Command &command);
-    Group *AddGroup(Element *parent, Scm code);
-    void RemoveGroup(Group *group);
+    Element *AddElement(Element *parent, Scm code);
+    void RemoveElement(Element *elm);
 
     // model queries
     list<Command*> HotspotClick(Vertex2f pos);    
     void FindBounding(Vertex2f *pos1, Vertex2f *pos2);
-    inline Group *GetRoot()
+    inline Element *GetRoot()
     { return m_root; }
     
     
@@ -81,7 +81,7 @@ protected:
 
     int m_id;
     int m_kind;
-    Group *m_root;
+    Element *m_root;
     list<Hotspot*> m_hotspotClicks;
     HashTable<Hotspot*, bool, HashPointer> m_hotspotClickSet;
 };

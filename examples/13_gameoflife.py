@@ -310,7 +310,7 @@ print "initializing..."
 
 # create window
 win = summon.Window("13_gameoflife")
-win.add_group(group(hotspot("click", 0, 0, width, height, create)))
+win.add_group(hotspot("click", 0, 0, width, height, create))
 win.set_visible(0, 0, width, height)
 win.set_antialias(False)
 
@@ -337,21 +337,15 @@ if len(sys.argv) > 1:
     if "wave" in sys.argv:
         make_wave()
 
-gid = win.add_group(drawBoard(game.board))
+board = win.add_group(drawBoard(game.board))
 
 
 #=============================================================================
 # animate
 
 print "animating"
-while True:
+while win.is_open():
     game.evolve()
     
-    g = drawBoard(game.board)
-    
-    # stop looping if window is closed
-    if not win.is_open():
-        break
-        
-    gid = win.replace_group(gid, g)
-    time.sleep(.1)
+    board = win.replace_group(board, drawBoard(game.board))
+    time.sleep(0.05)

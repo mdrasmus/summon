@@ -14,9 +14,10 @@ win = summon.Window("07_tree_toggle")
 button_size = 1
 
 class Node:
-    def __init__(self, gid):
+    def __init__(self, grp):
         self.shown = True   # boolean whether this node is visible
-        self.groupid = gid  # group id, used to change visibility of group
+        self.group = grp    # reference to graphical element,
+                            # used to change its visibility
 
 
 # draw tree recursively
@@ -35,12 +36,12 @@ def drawTree(depth, width, height):
             translate(width/2.0, -height,
                 drawTree(depth-1, width/2.0, height)))
         
-        node = Node(get_group_id(grp))   
+        node = Node(grp)
         
         # callback function for when a tree node is clicked
         def onClickNode():
             node.shown = not node.shown
-            win.show_group(node.groupid, node.shown)
+            win.show_group(node.group, node.shown)
         
         return group(
             color(0,0,0),
@@ -58,7 +59,7 @@ def drawTree(depth, width, height):
                     button_size, button_size,
                     onClickNode)))
     else:
-        return group(lines(0, 0, 0, -height))
+        return lines(0, 0, 0, -height)
     
 
 # set background to white

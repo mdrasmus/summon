@@ -16,15 +16,17 @@
 namespace Summon
 {
 
-Group *Id2Group(int id)
+
+Element *Id2Element(int id)
 {
-    return (Group*) id;
+    return (Element*) id;
 }
 
-int Group2Id(Group *group)
+int Element2Id(Element *elm)
 {
-    return (int) group;
+    return (int) elm;
 }
+
 
 
 SummonModel::SummonModel(int id, int kind) :
@@ -41,25 +43,26 @@ void SummonModel::ExecCommand(Command &command)
 {
     switch (command.GetId()) {
         case ADD_GROUP_COMMAND: {
-            int id = Group2Id(AddGroup(NULL, 
+            int id = Element2Id(AddElement(NULL, 
                                        ((AddGroupCommand*)(&command))->code));
             ((AddGroupCommand*)(&command))->SetReturn(Int2Scm(id));
-            Update(Id2Group(id));
+            Update(Id2Element(id));
             } break;
         
         case INSERT_GROUP_COMMAND: {
             int pid = ((InsertGroupCommand*)(&command))->groupid;
             
             // find parent group to insert into
-            Group *group = Id2Group(pid);
-            if (group != NULL)
+            Element *elm = Id2Element(pid);
+            if (elm != NULL)
             {
                 // get the environment and parent of old group
-                int id = Group2Id(AddGroup(Id2Group(pid), 
-                                  ((InsertGroupCommand*)(&command))->code));
+                Element *elm = AddElement(Id2Element(pid), 
+                                       ((InsertGroupCommand*)(&command))->code);
                 
-                ((InsertGroupCommand*)(&command))->SetReturn(Int2Scm(id));
-                Update(Id2Group(id));
+                ((InsertGroupCommand*)(&command))->SetReturn(Int2Scm(
+                                                              Element2Id(elm)));
+                Update(elm);
             } else {
                 Error("unknown group %d", pid);
                 ((InsertGroupCommand*)(&command))->SetReturn(Int2Scm(-1));
@@ -73,9 +76,9 @@ void SummonModel::ExecCommand(Command &command)
             
             // loop through group ids
             for (unsigned int i=0; i<remove->groupids.size(); i++) {
-                RemoveGroup(Id2Group(remove->groupids[i]));
+                RemoveElement(Id2Element(remove->groupids[i]));
                 
-                Element *elm = Id2Group(remove->groupids[i])->GetParent();
+                Element *elm = Id2Element(remove->groupids[i])->GetParent();
                 if (elm)
                     Update(elm);
                 else
@@ -88,19 +91,19 @@ void SummonModel::ExecCommand(Command &command)
             ReplaceGroupCommand *replace = (ReplaceGroupCommand*) &command;
             
             // find group to replace
-            Group *group = Id2Group(replace->groupid);
-            if (group != NULL && 
-                group != GetRoot())
+            Element *elm = Id2Element(replace->groupid);
+            if (elm != NULL && 
+                elm != GetRoot())
             {
-                // get the environment and parent of old group
-                Element *parent = group->GetParent();
+                // get the environment and parent of old element
+                Element *parent = elm->GetParent();
                 
-                // remove old group
-                RemoveGroup(group);
+                // remove old element
+                RemoveElement(elm);
                 
-                int id = Group2Id(AddGroup(parent, ScmCar(replace->code)));
-                replace->SetReturn(Int2Scm(id));
-                Update(Id2Group(id));
+                Element *elm2 = AddElement(parent, ScmCar(replace->code));
+                replace->SetReturn(Int2Scm(Element2Id(elm2)));
+                Update(elm2);
             } else {
                 Error("unknown group %d", replace->groupid);
                 replace->SetReturn(Int2Scm(-1));
@@ -109,7 +112,7 @@ void SummonModel::ExecCommand(Command &command)
         
         case CLEAR_GROUPS_COMMAND: {
             // remove root group, new root will be automatically created
-            RemoveGroup(GetRoot());
+            RemoveElement(GetRoot());
             Update();
             } break;
         
@@ -117,29 +120,14 @@ void SummonModel::ExecCommand(Command &command)
             ShowGroupCommand *show = (ShowGroupCommand*) &command;
             
             // toggle a group's visibility
-            Group *group = Id2Group(show->groupid);
-            group->SetVisible(show->visible);
-                
-            Update(group);
+            Element *elm = Id2Element(show->groupid);
+            elm->SetVisible(show->visible); 
+            Update(elm);
             } break;
-        
-        /*
-        case GET_GROUP_COMMAND: {
-            GetGroupCommand *getGroup = (GetGroupCommand*) &command;
-            
-            Group *group = Id2Group(getGroup->groupid);
-            if (group) {
-                BuildEnv env(true, m_kind);
-                getGroup->SetReturn(GetGroup(env, group));
-            } else {
-                Error("unknown group %d", getGroup->groupid);
-            }
-            } break;
-        */
 
         case GET_ROOT_ID_COMMAND:
             ((GetRootIdCommand*) &command)->SetReturn(
-                Int2Scm(Group2Id(GetRoot())));
+                Int2Scm(Element2Id(GetRoot())));
             break;
         
         default:
@@ -205,13 +193,13 @@ BuildEnv SummonModel::GetEnv(BuildEnv &env, Element *start, Element *end)
 }
 
 
-Group *SummonModel::AddGroup(Element *parent, Scm code)
+Element *SummonModel::AddElement(Element *parent, Scm code)
 {
     Element *elm = GetElementFromObject(code.GetPy());
     
     // verify that this is a group
-    if (!elm || elm->GetId() != GROUP_CONSTRUCT) {
-        Error("Can only add groups");
+    if (!elm) {
+        Error("Cannot add graphical element, it is invalid.");
         return NULL;
     }
 
@@ -219,13 +207,8 @@ Group *SummonModel::AddGroup(Element *parent, Scm code)
     if (parent == NULL)
         parent = GetRoot();
     
-    Group *group = (Group*) elm;
-    if (group) {
-        parent->AddChild(group);
-        return group;
-    } else {
-        return NULL;
-    }
+    parent->AddChild(elm);
+    return elm;
 }
 
 
@@ -329,27 +312,27 @@ void SummonModel::UpdateTextElement(TextElement *textElm, BuildEnv *env)
 
 
 
-void SummonModel::RemoveGroup(Group *group)
+void SummonModel::RemoveElement(Element *elm)
 {
-    Element *parent = group->GetParent();
+    Element *parent = elm->GetParent();
     
     // notify parent
     if (parent)
-        parent->RemoveChild(group);
+        parent->RemoveChild(elm);
 
     // remove any hotspots underneath this group
-    RemoveHotspots(group);
+    RemoveHotspots(elm);
 
     // make sure model always has a root
-    if (group == m_root) {
-        group->DecRef();
+    if (elm == m_root) {
+        elm->DecRef();
         m_root = new Group();
         m_root->IncRef();
     }
     
     // delete only if it is not referenced by python
-    if (!group->IsReferenced())
-        delete group;
+    if (!elm->IsReferenced())
+        delete elm;
 }
 
 
@@ -382,8 +365,7 @@ void SummonModel::FindBounding(Vertex2f *pos1, Vertex2f *pos2)
     TransformMatrix matrix;
     MakeIdentityMatrix(matrix.mat);
     
-    Group *group = GetRoot();
-    group->FindBounding(&top, &bottom, &left, &right, &matrix);
+    GetRoot()->FindBounding(&top, &bottom, &left, &right, &matrix);
     
     pos1->x = left;
     pos1->y = bottom;

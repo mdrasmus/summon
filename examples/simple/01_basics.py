@@ -12,24 +12,24 @@
 
 
 # add a line from (0,0) to (30,40)
-add_group(group(lines(0,0, 30,40)))
+add_group(lines(0,0, 30,40))
 
-# add a quadrilateral
-add_group(group(quads(50,0, 50,70, 60,70, 60,0)))
+# add two blue quadrilaterals inside a group
+add_group(group(color(0, 0, 1), 
+                    quads(50,0, 50,70, 60,70, 60,0),
+                    quads(65,0, 65,70, 75,70, 75,0)))
 
-# add a multi-colored quad
-add_group(group(quads(
-    color(1,0,0), 100, 0,
-    color(0,1,0), 100, 70,
-    color(0,0,1), 140, 60,
-    color(1,1,1), 140, 0)))
+# add a multi-colored quad, where each vertex has it own color
+add_group(quads(color(1,0,0), 100, 0,
+                    color(0,1,0), 100, 70,
+                    color(0,0,1), 140, 60,
+                    color(1,1,1), 140, 0))
 
 
 # add some text below everything else
-add_group(group(
-    text("Hello, world!",    # text to appear
-         0, -10, 140, -100,    # bounding box of text
-         "center", "top")))    # justification of text in bounding box
+add_group(text("Hello, world!",     # text to appear
+                   0, -10, 140, -100,   # bounding box of text
+                   "center", "top"))    # justification of text in bounding box
 
 # center the "camera" so that all shapes are in view
 home()

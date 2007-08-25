@@ -14,7 +14,7 @@ import summon
 win = summon.Window("09_key_bindings")
 
 # color background boxes
-#   save the group id of each box so we can manipulate it later
+#   save a reference to each box so we can manipulate it later
 groupa = win.add_group(group(color(1,0,0), shapes.box(0,0,200,-50)))
 groupb = win.add_group(group(color(0,1,0), shapes.box(0,-50,200,-100)))
 groupc = win.add_group(group(color(0,0,1), shapes.box(0,-100,200,-150)))
@@ -24,7 +24,8 @@ win.add_group(group(color(1,1,1), text_scale("press 'a'", 0, 0, 200, -50)))
 win.add_group(group(color(1,1,1), text_scale("press 'b'", 0, -50, 200, -100)))
 win.add_group(group(color(1,1,1), text_scale("press 'c'", 0, -100, 200, -150)))
 
-win.add_group(shapes.boxStroke(0,0,200,-150))
+# use the shapes module to make a simple box shape
+win.add_group(shapes.box(0, 0, 200, -150, fill=False))
 win.home()
 
 
