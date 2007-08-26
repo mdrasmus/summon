@@ -8,10 +8,6 @@
     
 """
 
-#
-# This should contain only summon_core and transparent python replacements
-#
-
 # python libs
 import threading
 import time
@@ -34,11 +30,6 @@ atexit.register(lambda: summon_core.summon_shutdown)
 # wait for summon to startup
 while summon_core.get_windows() == None: time.sleep(.05)
 
-
-
-
-def _tuple(*args):
-    return args
 
 
 #=============================================================================
@@ -285,12 +276,9 @@ class polygon (Graphic):
         """
         Element.__init__(self, _POLYGON_CONSTRUCT, primitives, options)
 
-class color_graphic (Graphic):
-    """A graphic that sets the current color
-       NOTE: this object should not be used directly, see: color(r, g, b, a)
-    """
-    def __init__(self, *primitives, **options):
-        Element.__init__(self, _COLOR_CONSTRUCT, primitives, options)
+
+#=============================================================================
+# primitives
 
 def color(red, green, blue, alpha=1.0):
     """A primitive that sets the current color
@@ -301,16 +289,26 @@ def color(red, green, blue, alpha=1.0):
        alpha - a value from 0 to 1 (opacity)
     """
     return (_COLOR_CONSTRUCT, red, green, blue, alpha)
+    
+def is_color(prim):
+    """test whether an object is a color primitive"""
+    return prim[0] == _COLOR_CONSTRUCT
 
+def is_vertices(prim):
+    """test whether an object is a vertices primitive"""
+    return prim[0] == _VERTICES_CONSTRUCT
+   
+
+class color_graphic (Graphic):
+    """A graphic that sets the current color
+       NOTE: this object should not be used directly, see: color(r, g, b, a)
+    """
+    def __init__(self, *primitives, **options):
+        Element.__init__(self, _COLOR_CONSTRUCT, primitives, options)
 
 
 #=============================================================================
 # text
-
-
-#class text (Element):
-#    def __init__(self, *code, **options):
-#        Element.__init__(self, _TEXT_CONSTRUCT, code, options)
 
 
 class text (Element):
@@ -416,23 +414,7 @@ class flip (Transform):
         Element.__init__(self, _FLIP_CONSTRUCT, 
                          _tuple(x, y, *elements), options)
 
-
-#=============================================================================
-# global functions
-
-
-def get_group_id(aGroup):
-    """DEPRECATED: group IDs are no longer needed"""
-    return aGroup
-    
-def is_color(prim):
-    """test whether an object is a color primitive"""
-    return prim[0] == _COLOR_CONSTRUCT
-
-def is_vertices(prim):
-    """test whether an object is a vertices primitive"""
-    return prim[0] == _VERTICES_CONSTRUCT
-    
+ 
 #=============================================================================
 # input constructs
 
@@ -492,8 +474,13 @@ def input_motion_contents(input_construct):
 
 
 
+#=============================================================================
+# global functions
 
 
+def get_group_id(aGroup):
+    """DEPRECATED: group IDs are no longer needed"""
+    return aGroup
 
 
 
@@ -535,5 +522,8 @@ _element_table = {
 def _make_ref(elementid, ptr):
     return _element_table[elementid](ptr, ref=True)
 
+
+def _tuple(*args):
+    return args
 
 
