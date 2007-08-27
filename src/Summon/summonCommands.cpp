@@ -73,8 +73,8 @@ void summonCommandsInit()
     RegisterScriptCommand(ReplaceGroupCommand)  m() gl()
     RegisterScriptCommand(ClearGroupsCommand)   m() gl()
     RegisterScriptCommand(ShowGroupCommand)     m() gl()
-    RegisterScriptCommand(GetGroupCommand)      m()
     RegisterScriptCommand(GetRootIdCommand)     m()
+    RegisterScriptCommand(GetBoundingCommand)   m()
     
     // view commands
     RegisterScriptCommand(SetWindowNameCommand)     v() gl()

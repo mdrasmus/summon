@@ -56,7 +56,7 @@ public:
 
     // model queries
     list<Command*> HotspotClick(Vertex2f pos);    
-    void FindBounding(Vertex2f *pos1, Vertex2f *pos2);
+    void FindBounding(Element *elm, Vertex2f *pos1, Vertex2f *pos2);
     inline Element *GetRoot()
     { return m_root; }
     

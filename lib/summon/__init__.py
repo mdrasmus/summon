@@ -723,10 +723,11 @@ class Model (object):
     def get_root(self):
         """Get the root group of the window's 'world' model"""
         return group(summon_core.get_root_id(self.id), ref=True)
-
-    #def get_group(self, aGroup):
-    #    return summon_core.get_group(self.id, aGroup.ptr)
-    #get_group.__doc__ = summon_core.get_group.__doc__.split("\n")[1]
+    
+    def get_bounding(self, aGroup):
+        """Get the bounding box for a group and its contents"""
+        return summon_core.get_bounding(self.id, aGroup.ptr)
+    
     
     # DEPRECATED
     def get_root_id(self):

@@ -29,7 +29,7 @@ using namespace std;
 
 // command ids
 enum {
-    VISDRAW_COMMANDS_BEGIN = GLUT_COMMANDS_END + 1,
+    SUMMON_COMMANDS_BEGIN = GLUT_COMMANDS_END + 1,
     
     // global commands
     GET_WINDOWS_COMMAND,
@@ -50,9 +50,9 @@ enum {
     REMOVE_GROUP_COMMAND,
     REPLACE_GROUP_COMMAND,
     CLEAR_GROUPS_COMMAND,
-    SHOW_GROUP_COMMAND,
-    GET_GROUP_COMMAND,    
+    SHOW_GROUP_COMMAND,   
     GET_ROOT_ID_COMMAND,
+    GET_BOUNDING_COMMAND,
     
     // view commands
     SET_WINDOW_NAME_COMMAND,
@@ -95,7 +95,7 @@ enum {
     // constructs
     
     // structure
-    GROUP_CONSTRUCT,
+    GROUP_CONSTRUCT = 2000,
     DYNAMIC_GROUP_CONSTRUCT,
     HOTSPOT_CONSTRUCT,
     
@@ -134,7 +134,7 @@ enum {
     // misc
     CALL_PROC_COMMAND,    
         
-    VISDRAW_COMMANDS_END
+    SUMMON_COMMANDS_END
 };
 
 
@@ -549,26 +549,6 @@ public:
 };
 
 
-class GetGroupCommand : public ModelCommand
-{
-public:
-    virtual Command* Create() { return new GetGroupCommand(); }
-    virtual int GetId() { return GET_GROUP_COMMAND; }
-
-    virtual const char *GetName() { return "get_group"; }
-    virtual const char *GetUsage() { return "modelid, groupid"; }
-    virtual const char *GetDescription() 
-    { return "creates a tuple object that represents a group"; }
-    
-    virtual bool Setup(Scm lst)
-    {
-        return ParseScm(ErrorHelp(), lst, "dd", &modelid, &groupid);
-    }
-    
-    int groupid;
-};
-
-
 class GetRootIdCommand : public ModelCommand
 {
 public:
@@ -584,6 +564,27 @@ public:
     {
         return ParseScm(ErrorHelp(), lst, "d", &modelid);
     }
+};
+
+
+
+class GetBoundingCommand : public ModelCommand
+{
+public:
+    virtual Command* Create() { return new GetBoundingCommand(); }
+    virtual int GetId() { return GET_BOUNDING_COMMAND; }
+
+    virtual const char *GetName() { return "get_bounding"; }
+    virtual const char *GetUsage() { return "modelid, groupid"; }
+    virtual const char *GetDescription() 
+    { return "returns a bounding box for a group and its contents"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "dd", &modelid, &groupid);
+    }
+    
+    int groupid;
 };
 
 

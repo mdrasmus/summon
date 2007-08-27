@@ -35,7 +35,7 @@ while summon_core.get_windows() == None: time.sleep(.05)
 #=============================================================================
 # constuct IDs
 
-_i = iter(xrange(1060, 1060+200))
+_i = iter(xrange(2000, 2000+200))
 
 _GROUP_CONSTRUCT = _i.next()
 _i.next()
@@ -157,7 +157,7 @@ class hotspot (Element):
     
        When a mouse click (default: middle click) occurs within the specified
        rectangular region the given function will be called."""
-    def __init__(self, kind, x1, y1, x2, y2, func, **options):
+    def __init__(self, *args, **options):
         """kind - must be the string "click" (more options in future versions)
            x1   - 1st x-coordinate of rectangular region
            y1   - 1st y-coordinate of rectangular region
@@ -166,7 +166,7 @@ class hotspot (Element):
            func - callback function of no arguments
         """
         Element.__init__(self, _HOTSPOT_CONSTRUCT, 
-                         _tuple(kind, x1, y1, x2, y2, func), options)
+                         args, options)
 
 
 #=============================================================================
@@ -303,8 +303,8 @@ class color_graphic (Graphic):
     """A graphic that sets the current color
        NOTE: this object should not be used directly, see: color(r, g, b, a)
     """
-    def __init__(self, *primitives, **options):
-        Element.__init__(self, _COLOR_CONSTRUCT, primitives, options)
+    def __init__(self, *args, **options):
+        Element.__init__(self, _COLOR_CONSTRUCT, args, options)
 
 
 #=============================================================================
@@ -314,7 +314,7 @@ class color_graphic (Graphic):
 class text (Element):
     """A bitmap text element that automatically hides if it cannot fit within 
        its bounding box"""
-    def __init__(self, txt, x1, y1, x2, y2, *justified, **options):
+    def __init__(self, *args, **options):
         """txt        - text to display
            x1         - 1st x-coordinate of bounding box
            y1         - 1st y-coordinate of bounding box
@@ -326,12 +326,12 @@ class text (Element):
                 'bottom' 'middle' 'top'
         """
         Element.__init__(self, _TEXT_CONSTRUCT, 
-                                 _tuple(txt, x1, y1, x2, y2, *justified), 
+                                 args, 
                                  options)
 
 class text_scale (text):
     """A vector graphics text element"""
-    def __init__(self, txt, x1, y1, x2, y2, *justified, **options):
+    def __init__(self, *args, **options):
         """txt        - text to display
            x1         - 1st x-coordinate of bounding box
            y1         - 1st y-coordinate of bounding box
@@ -343,12 +343,12 @@ class text_scale (text):
                 'bottom' 'middle' 'top'
         """
         Element.__init__(self, _TEXT_SCALE_CONSTRUCT, 
-                                 _tuple(txt, x1, y1, x2, y2, *justified), 
+                                 args, 
                                  options)
 
 class text_clip (text):
     """A vector graphics text element that has a minimum and maximum height"""
-    def __init__(self, txt, x1, y1, x2, y2, minheight, maxheight, *justified, 
+    def __init__(self, *args, 
                        **options):
         """txt        - text to display
            x1         - 1st x-coordinate of bounding box
@@ -363,7 +363,7 @@ class text_clip (text):
                 'bottom' 'middle' 'top'
         """    
         Element.__init__(self, _TEXT_CLIP_CONSTRUCT, 
-                  _tuple(txt, x1, y1, x2, y2, minheight, maxheight, *justified), 
+                  args, 
                   options)
 
 
@@ -372,47 +372,47 @@ class text_clip (text):
 
 class Transform (Element):
     """Base class for all transformation elements"""
-    def __init__(self, *code, **options):
-        Element.__init__(self, _TRANSFORM_CONSTRUCT, code, options)
+    def __init__(self, *args, **options):
+        Element.__init__(self, _TRANSFORM_CONSTRUCT, args, options)
 
 class translate (Transform):
     """Translates the containing elements"""
-    def __init__(self, x, y, *elements, **options):
+    def __init__(self, *args, **options):
         """x         - units along the x-axis to translate
            y         - units along the y-axis to translate
            *elements - one or more elements to translate
         """
         Element.__init__(self, _TRANSLATE_CONSTRUCT, 
-                         _tuple(x, y, *elements), options)
+                         args, options)
 
 class rotate (Transform):
     """Rotates the containing elements"""
-    def __init__(self, angle, *elements, **options):
+    def __init__(self, *args, **options):
         """angle     - angle in degrees (-360, 360) to rotate (clock-wise)
            *elements - one or more elements to rotate
         """
         Element.__init__(self, _ROTATE_CONSTRUCT, 
-                         _tuple(angle, *elements), options)
+                         args, options)
 
 class scale (Transform):
     """Scales the containing elements"""
-    def __init__(self, scalex, scaley, *elements, **options):
+    def __init__(self, *args, **options):
         """scalex    - factor of scaling along x-axis
            scaley    - factor of scaling along y-axis
            *elements - one or more elements to scale
         """
         Element.__init__(self, _SCALE_CONSTRUCT, 
-                         _tuple(scalex, scaley, *elements), options)
+                         args, options)
 
 class flip (Transform):
     """Flips the containing elements over a line (0,0)-(x,y)"""
-    def __init__(self, x, y, *elements, **options):
+    def __init__(self, *args, **options):
         """x         - x-coordinate of line
            y         - y-coordinate of line
            *elements - one or more elements to flips
         """
         Element.__init__(self, _FLIP_CONSTRUCT, 
-                         _tuple(x, y, *elements), options)
+                         args, options)
 
  
 #=============================================================================

@@ -266,7 +266,7 @@ void SummonView::Home()
         return;
     
     Vertex2f pos1, pos2;
-    m_worldModel->FindBounding(&pos1, &pos2);
+    m_worldModel->FindBounding(NULL, &pos1, &pos2);
     
     // set make smallest bounding box visible
     SetVisible(pos1.x, pos1.y, pos2.x, pos2.y);

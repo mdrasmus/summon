@@ -130,6 +130,20 @@ void SummonModel::ExecCommand(Command &command)
                 Int2Scm(Element2Id(GetRoot())));
             break;
         
+        case GET_BOUNDING_COMMAND: {
+            ShowGroupCommand *show = (ShowGroupCommand*) &command;
+            
+            // get the bounding box of an element
+            Element *elm = Id2Element(show->groupid);
+            Vertex2f pos1, pos2;
+            FindBounding(elm, &pos1, &pos2);
+            
+            show->SetReturn(ScmCons(Float2Scm(pos1.x),
+                              ScmCons(Float2Scm(pos1.y),
+                                ScmCons(Float2Scm(pos2.x),
+                                  ScmCons(Float2Scm(pos2.y), Scm_EOL)))));
+        
+            } break;
         default:
             assert(0);
     }
@@ -350,7 +364,7 @@ void SummonModel::RemoveHotspots(Element *elm)
 }
 
 
-void SummonModel::FindBounding(Vertex2f *pos1, Vertex2f *pos2)
+void SummonModel::FindBounding(Element *elm, Vertex2f *pos1, Vertex2f *pos2)
 {
 
     float FLOAT_MIN = -1e307;
@@ -363,9 +377,18 @@ void SummonModel::FindBounding(Vertex2f *pos1, Vertex2f *pos2)
           right  = FLOAT_MIN;
 
     TransformMatrix matrix;
-    MakeIdentityMatrix(matrix.mat);
     
-    GetRoot()->FindBounding(&top, &bottom, &left, &right, &matrix);
+    if (elm) {
+        BuildEnv env(true, m_kind);    
+        BuildEnv env2 = GetEnv(env, NULL, elm);
+        CopyMatrix(matrix.mat, env.trans.mat);
+    } else {
+        elm = GetRoot();
+        MakeIdentityMatrix(matrix.mat);
+    }
+        
+    
+    elm->FindBounding(&top, &bottom, &left, &right, &matrix);
     
     pos1->x = left;
     pos1->y = bottom;
