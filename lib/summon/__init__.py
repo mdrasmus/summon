@@ -20,7 +20,7 @@ from summon.core import *
 from summon import util
 
 
-VERSION = "1.8"
+VERSION = "1.8.1"
 VERSION_INFO = """\
 -----------------------------------------------------------------------------
                                   SUMMON %s
