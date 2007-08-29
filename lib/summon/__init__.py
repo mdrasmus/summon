@@ -328,6 +328,18 @@ class Window (object):
             self.load_config()
     
     
+    def set_world_model(self, model):
+        """sets a model to be the world model"""
+        summon_core.assign_model(self.winid, "world", model.id)
+        self.world = model
+    
+     
+     def set_screen_model(self, model):
+        """sets a model to be the world model"""
+        summon_core.assign_model(self.winid, "screen", model.id)
+        self.screen = model
+           
+    
     def load_config(self):
         """loads a summon config file for a window"""
         state.current_window = self
@@ -842,6 +854,8 @@ class VisObject (object):
 
 
 def iter_vertices(elm, curcolor=None):
+    """iterates through the vertices of a graphic"""
+
     if curcolor == None:
         curcolor = [1.0, 1.0, 1.0, 1.0]
     verts = []
@@ -862,6 +876,8 @@ def iter_vertices(elm, curcolor=None):
             coords = prim[1:]
             
             for i in xrange(0, len(coords), 2):
+                # TODO: add triangle_fan()
+            
                 # push a new vertex                    
                 verts.append(coords[i:i+2])
 
