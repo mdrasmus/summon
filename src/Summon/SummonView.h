@@ -85,7 +85,6 @@ public:
 
     inline void SetActive(bool b = true) { m_active = b; }
     void SetBgColor(Color &color);
-    void Home();
     
     inline void SetWorldModel(SummonModel *model) { m_worldModel = model; }
     inline void SetScreenModel(SummonModel *model) { m_screenModel = model; }

@@ -41,12 +41,42 @@ struct HashString {
 };
 
 
+/*
+
+            ILP32   LP64  LLP64  ILP64
+char        8       8     8      8
+short       16      16    16     16
+int         32      32    32     64
+long        32      64    32     64
+long long 	64      64    64     64
+size_t 	    32      64    64     64
+pointer 	32      64    64     64
+*/
+
+struct HashPointer {
+    static unsigned int Hash(const void *p) { 
+        if (sizeof(void*) == 8)
+            return ((unsigned long long) p) ^ (((unsigned long long) p) >> 32);
+        else
+            return (unsigned int) p;
+    }
+};
+
+
+/*
+
 struct HashPointer {
     static unsigned int Hash(const void *p) { 
         return (unsigned int) p;
     }
 };
 
+struct HashPointer {
+    static unsigned int Hash(const void *p) { 
+        return *((unsigned int*)p) + *((unsigned int*)p + 1); 
+    }
+};
+*/
 
 
 template <class KeyType, class ValueType, class HashFunc>

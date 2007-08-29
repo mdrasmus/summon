@@ -175,11 +175,6 @@ void SummonView::ExecCommand(Command &command)
                    ScmCons(Float2Scm(pos2.y), Scm_EOL)))));
             } break;
         
-        case HOME_COMMAND:
-            MakeCurrentWindow();
-            Home();
-            Redisplay();
-            break;
         
         case SET_ANTIALIAS_COMMAND:
             MakeCurrentWindow();
@@ -260,17 +255,6 @@ void SummonView::ExecCommand(Command &command)
 }
 
 
-void SummonView::Home()
-{
-    if (!m_worldModel)
-        return;
-    
-    Vertex2f pos1, pos2;
-    m_worldModel->FindBounding(NULL, &pos1, &pos2);
-    
-    // set make smallest bounding box visible
-    SetVisible(pos1.x, pos1.y, pos2.x, pos2.y);
-}
 
 
 // TODO: everytime the model is changed all tasks are discarded.  Instead only

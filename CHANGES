@@ -1,6 +1,12 @@
 SUMMON Change Log
 -----------------
 
+
+2007/8/29
+- added fix for 64bit in HashTable.h:HashPointer()
+- added get_bounding() to Model
+
+
 2007/8/27 - summon-1.8.1
 - small fix for SVG output
 

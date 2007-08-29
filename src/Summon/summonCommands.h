@@ -71,7 +71,7 @@ enum {
     GET_BGCOLOR_COMMAND,
     SET_VISIBLE_COMMAND,
     GET_VISIBLE_COMMAND,
-    HOME_COMMAND,
+    //HOME_COMMAND,
     SET_ANTIALIAS_COMMAND,
     SHOW_CROSSHAIR_COMMAND,
     SET_CROSSHAIR_COLOR_COMMAND,
@@ -904,6 +904,7 @@ public:
 };
 
 
+/*
 class HomeCommand : public WindowCommand
 {
 public:
@@ -919,7 +920,7 @@ public:
     {
         return ParseScm(ErrorHelp(), lst, "d", &windowid);
     }
-};
+};*/
 
 
 class SetAntialiasCommand : public WindowCommand

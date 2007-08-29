@@ -192,6 +192,14 @@ def stop_updating():
 # python state of SUMMON
 #
 class SummonState (object):
+    """SUMMON State
+    
+       This class is instantiated as a singleton when the summon module is 
+       loaded.  It maintains the list of open windows and models as well as
+       the global summon timer object.  This class and singleton object should
+       not be used directly by users.
+    """
+
     def __init__(self):
         self.current_window = None
         self.windows = {}
@@ -231,11 +239,12 @@ state = SummonState()
 
 
 def get_summon_state():
+    """returns the summon state singleton"""
     return _summon_state
 
 
 def get_summon_window():
-    """Return the currently active window"""
+    """returns the currently active summon window"""
     return state.current_window
 
 # install summon window close callback for communication between C++ and python
@@ -257,7 +266,27 @@ def set_window_decoration(xoffset, yoffset):
 #
 
 class Window (object):
-    """The SUMMON Window"""
+    """The SUMMON Window
+    
+       Each window opened by SUMMON is an instantiation of this class. This
+       class provides the interface to manipulate the window (title, size,
+       position, etc.) as well as to manipulate the graphical elements it 
+       displays (add_group, remove_group, etc.).  
+
+       Each window is associated with two models (see Model class), called the
+       'world' and 'screen' which are accessible as 'Window.world' and
+       'Window.screen'.  The units of the world model's coordinate system  can
+       be whatever the user wants.  The size and orientation of the world  model
+       is dependent on scrolling and zooming. The world model is the default
+       model that is  used when drawing (e.g. functions such as Window.add_group
+       forward their arguments to Window.world.add_group).
+
+       In contrast, the screen model is always drawn with its origin at the 
+       lower left corner of the window and with units in terms of pixels. The
+       screen model is always drawn on top of the world model.  The screen model
+       is often used to draw menus, toolbars, or other things that should always
+       be in view, and should not be affected by scrolling and zooming.
+    """
 
     def __init__(self, name="SUMMON", worldid=None, screenid=None,
                  loadconfig=True):
@@ -300,7 +329,7 @@ class Window (object):
     
     
     def load_config(self):
-        """Load a summon config file for a window"""
+        """loads a summon config file for a window"""
         state.current_window = self
         
         # look for config in HOME directory
@@ -320,26 +349,28 @@ class Window (object):
 
     # view
     def is_open(self):
-        """Return whether underling SUMMON window is open"""
+        """returns whether underling SUMMON window is open"""
         
         return self.winid in state.windows
     
     def get_decoration(self):
-        return _window_decoration
-    get_decoration.__doc__ = summon_core.get_window_decoration.__doc__.split("\n")[1]
-    
+        """returns the window decoration size (width, height)
+           
+           Decoration size refers to the 'width' of the side frame and the
+           'height' of the title bar.
+        """
+        return _window_decoration    
     
 
     def close(self):
+        """close the window"""
         ret = summon_core.close_window(self.winid)
         # self._on_close() will get called back through the C++ module
         # letting us know the window is truely closed
-        
         return ret
-    close.__doc__ = summon_core.close_window.__doc__.split("\n")[1]
     
     def _on_close(self):
-        """A callback for window close events"""
+        """a callback for window close events"""
         
         # let the global summon state know, that this window is closed
         state.remove_window(self)
@@ -356,39 +387,42 @@ class Window (object):
     
     
     def set_name(self, name):
+        """sets the name of the window
+           
+           The name will be displayed in the window's title bar.
+        """
         self.name = name
         return summon_core.set_window_name(self.winid, name)
-    set_name.__doc__ = summon_core.set_window_name.__doc__.split("\n")[1]
     
     def get_name(self, name):
         """returns the name of a window"""
         return self.name
     
     def set_size(self, width, height):
+        """sets the size of a window in pixels"""
         return summon_core.set_window_size(self.winid, width, height)
-    set_size.__doc__ = summon_core.set_window_size.__doc__.split("\n")[1]
     
     def get_size(self):
+        """gets the size of a window in pixels"""
         return summon_core.get_window_size(self.winid)
-    get_size.__doc__ = summon_core.get_window_size.__doc__.split("\n")[1]
 
     def set_position(self, x, y):
+        """sets the position of a window on the desktop"""
         return summon_core.set_window_position(self.winid, x, y)
-    set_position.__doc__ = summon_core.set_window_position.__doc__.split("\n")[1]
     
     def get_position(self):
+        """gets the position of a window on the desktop"""
         return summon_core.get_window_position(self.winid)
-    get_position.__doc__ = summon_core.get_window_position.__doc__.split("\n")[1]
     
     def _on_resize(self):
         return self.on_resize(* self.get_size())
     
     def on_resize(self, width, height):
-        """A callback for when the window resizes"""
+        """a callback for when the window resizes"""
         pass
         
     def _on_view_change(self):
-        """A callback for when view changes"""
+        """a callback for when view changes"""
         
         if self.viewLock: return
         self.viewLock = True
@@ -400,7 +434,7 @@ class Window (object):
     
     
     def _on_focus_change(self):
-        """A callback for when zoom focus changes"""
+        """a callback for when zoom focus changes"""
         
         if self.focusLock: return
         self.focusLock = True
@@ -424,34 +458,34 @@ class Window (object):
         self.focusChangeListeners.remove(listener)
     
     def focus(self, x, y):
+        """set the zoom focus on window position 'x, 'y'"""
         ret = summon_core.focus(self.winid, int(x), int(y))
         self._on_focus_change() # notify focus has changed
         return ret
-    focus.__doc__ = summon_core.focus.__doc__.split("\n")[1]
     
     def zoom(self, x, y):
+        """zoom the x- and y-axis by the factors 'x' and 'y'"""
         ret = summon_core.zoom(self.winid, x, y)    
         self._on_view_change() # notify view has changed
         return ret
-    zoom.__doc__ = summon_core.zoom.__doc__.split("\n")[1]
 
     def zoomx(self, x):
+        """zoom the x-axis by a factor 'x'"""
         ret = summon_core.zoomx(self.winid, x)
         self._on_view_change() # notify view has changed
         return ret
-    zoomx.__doc__ = summon_core.zoomx.__doc__.split("\n")[1]
     
     def zoomy(self, y):
+        """zoom the y-axis by a factor 'y'"""
         ret = summon_core.zoomy(self.winid, y)
         self._on_view_change() # notify view has changed
         return ret
-    zoomy.__doc__ = summon_core.zoomy.__doc__.split("\n")[1]
     
     def zoom_camera(self, factor, factor2=None):
         """returns function that will zoom a window by a fixed factor.
            handy for use with set_binding()
            
-           if two zoom factors are supplied, the x and y coordinates will be
+           If two zoom factors are supplied, the x- and y-axis will be
            zoomed separately.
         """
         
@@ -465,83 +499,95 @@ class Window (object):
         return func
     
     def set_trans(self, x, y):
+        """sets the translation offset of the camera"""
         ret = summon_core.set_trans(self.winid, x, y)
         self._on_view_change() # notify view has changed
         return ret
-    set_trans.__doc__ = summon_core.set_trans.__doc__.split("\n")[1]
     
     def get_trans(self):
+        """gets the translation offset of the camera"""
         return summon_core.get_trans(self.winid)
-    get_trans.__doc__ = summon_core.get_trans.__doc__.split("\n")[1]
     
     def set_zoom(self, x, y):
+        """sets the zoom of the camera for both x- and y-axis"""
         ret = summon_core.set_zoom(self.winid, x, y)
         self._on_view_change() # notify view has changed
         return ret        
-    set_zoom.__doc__ = summon_core.set_zoom.__doc__.split("\n")[1]
 
     def get_zoom(self):
+        """gets the zoom of the camera for both x- and y-axis"""
         return summon_core.get_zoom(self.winid)
-    get_zoom.__doc__ = summon_core.get_zoom.__doc__.split("\n")[1]
     
     def get_focus(self):
+        """gets the zoom focus of the camera"""
         return summon_core.get_focus(self.winid)
-    get_focus.__doc__ = summon_core.get_focus.__doc__.split("\n")[1]
     
     def set_focus(self, x, y):
+        """sets the zoom focus of the camera"""
         ret = summon_core.set_focus(self.winid, x, y)
         self._on_focus_change() # notify focus has changed
         return ret
-    set_focus.__doc__ = summon_core.set_focus.__doc__.split("\n")[1]
     
     def trans(self, x, y):
+        """translates the camera by (x, y)"""
         ret = summon_core.trans(self.winid, x, y)
         self._on_view_change() # notify view has changed
         return ret        
-    trans.__doc__ = summon_core.trans.__doc__.split("\n")[1]
     
     def trans_camera(self, x, y):
-        """Return a function of no arguments that will translate the camera"""
+        """returns a function of no arguments that will translate the camera
+           
+           x -- units along the x-axis to translate
+           y -- units along the y-axis to translate
+        """
         return lambda: self.trans(x, y)
     
     def home(self):
-        ret = summon_core.home(self.winid)
-        self._on_focus_change() # notify view has changed        
-        self._on_view_change()  # notify view has changed
-        return ret        
-    home.__doc__ = summon_core.home.__doc__.split("\n")[1]
+        """centers the view such that all graphical elements are visible"""
+        #ret = summon_core.home(self.winid)
+        box = self.world.get_bounding()
+        self.set_visible(*box)
 
     def set_visible(self, x1, y1, x2, y2):
+        """sets the current view to the specified bounding box"""
         ret = summon_core.set_visible(self.winid, x1, y1, x2, y2)
         self._on_focus_change() # notify view has changed        
         self._on_view_change() # notify view has changed
-        return ret        
-    set_visible.__doc__ = summon_core.set_visible.__doc__.split("\n")[1]
+        return ret
     
     def get_visible(self):
+        """returns the current view as x1, y1, x2, y2
+        
+           x1 -- left most x-coordinate
+           y1 -- bottom most y-coordinate
+           x2 -- right most x-coordinate
+           y2 -- top most y-coordinate
+        """
         return summon_core.get_visible(self.winid)
-    get_visible.__doc__ = summon_core.get_visible.__doc__.split("\n")[1]
+
         
     
     #====================================================================
     
     def set_bgcolor(self, r, g, b):
+        """sets the backgroun color of the window"""
         return summon_core.set_bgcolor(self.winid, r, g, b)
-    set_bgcolor.__doc__ = summon_core.set_bgcolor.__doc__.split("\n")[1]
     
     def get_bgcolor(self):
+        """gets the background color of the window"""
         return summon_core.get_bgcolor(self.winid)
-    get_bgcolor.__doc__ = summon_core.get_bgcolor.__doc__.split("\n")[1]
     
     def set_antialias(self, enabled):
+        """sets whether antialiasing should be used"""
         self.antialias = enabled
         return summon_core.set_antialias(self.winid, enabled)
-    set_antialias.__doc__ = summon_core.set_antialias.__doc__.split("\n")[1]
     
     def toggle_aliasing(self):
+        """toggles the use of antialiasing"""
         self.set_antialias(not self.antialias)
 
     def toggle_crosshair(self):
+        """toggles the visibility of the mouse crosshair"""
         self.show_crosshair(not self.crosshair)
 
         if self.crosshair_color == None:
@@ -549,14 +595,20 @@ class Window (object):
             self.set_crosshair_color(1-col[0], 1-col[1], 1-col[2], 1)
     
     def set_crosshair_color(self, r, g, b, a=1):
+        """sets the color of the mouse crosshair
+        
+           r -- red (0, 1)
+           g -- green (0, 1)
+           b -- blue (0, 1)
+           a -- alpha, opacity (0,1)
+        """
         self.crosshair_color = (r, g, b, a)
         return summon_core.set_crosshair_color(self.winid, r, g, b, a)
-    set_crosshair_color.__doc__ = summon_core.set_crosshair_color.__doc__.split("\n")[1]
 
     def show_crosshair(self, enabled):
+        """shows and hides the mouse crosshair"""
         self.crosshair = enabled
         return summon_core.show_crosshair(self.winid, enabled)
-    show_crosshair.__doc__ = summon_core.show_crosshair.__doc__.split("\n")[1]
     
     
     #=============================================================
@@ -581,8 +633,8 @@ class Window (object):
         return ret
         
     def clear_binding(self, input_obj):
+        """clear all bindings for an input 'input_obj'"""
         return summon_core.clear_binding(self.winid, input_obj)
-    clear_binding.__doc__ = summon_core.clear_binding.__doc__.split("\n")[1]
 
     def set_binding(self, input_obj, func):
         """bind a function 'func' to an input 'input_obj'"""
@@ -590,8 +642,8 @@ class Window (object):
         return self.add_binding(input_obj, func)
     
     def clear_all_bindings(self):
+        """clear all input bindings for the window"""
         return summon_core.clear_all_bindings(self.winid)
-    clear_all_bindings.__doc__ = summon_core.clear_all_bindings.__doc__.split("\n")[1]
 
     def get_mouse_pos(self, coord):
         """gets the current mouse position within the window
@@ -607,45 +659,44 @@ class Window (object):
     #====================================================================
     # model manipulation (forward to world)
     def clear_groups(self):
+        """clears all groups from the world model"""
         return self.world.clear_groups()
-    clear_groups.__doc__ = summon_core.clear_groups.__doc__.split("\n")[1]
     
     def add_group(self, aGroup):
+        """adds a group to the world model""" 
         return self.world.add_group(aGroup)
-    add_group.__doc__ = summon_core.add_group.__doc__.split("\n")[1]
     
     def insert_group(self, parentGroup, childGroup):
         """inserts a drawing group 'aGroup' as a child to an existing group
-           with id 'groupid'."""
+           'parentGroup'."""
         return self.world.insert_group(parentGroup, childGroup)
     
     def remove_group(self, *groups):
+        """removes 'groups' from the world model"""
         return self.world.remove_group(*groups)
-    remove_group.__doc__ = summon_core.remove_group.__doc__.split("\n")[1]
     
     def replace_group(self, oldGroup, newGroup):
-        """replaces a current drawing group with id 'groupid' with a new 
-           group 'aGroup'"""
+        """replaces the group 'oldGroup' with a new group 'newGroup'"""
         return self.world.replace_group(oldGroup, newGroup)
-    replace_group.__doc__ = summon_core.replace_group.__doc__.split("\n")[1]
     
     def show_group(self, aGroup, visible):
+        """set the visiblity of a group in the 'world' model
+           
+           aGroup  -- a group or other graphical element
+           visible -- a bool indicating whether the group is visible
+        """    
         return self.world.show_group(aGroup, visible)
-    show_group.__doc__ = summon_core.show_group.__doc__.split("\n")[1]
         
     def get_root(self):
-        """Get the root group of the window's 'world' model"""
+        """get the root group of the window's 'world' model"""
         return self.world.get_root()
     
     # DEPRECATED
     def get_root_id(self):
+        """get the root group of the window's 'world' model"""
         return self.world.get_root_id()
-    get_root_id.__doc__ = summon_core.get_root_id.__doc__.split("\n")[1]
-
-    #def get_group(self, aGroup):
-    #    return self.world.get_group(aGroup)
-    #get_group.__doc__ = summon_core.get_group.__doc__.split("\n")[1]
-
+    
+    
     
     #===================================================================
     # misc
@@ -691,48 +742,59 @@ class Model (object):
             assert self.id != None
             state.add_model(self)
     
+    # TODO: determine how to delete models
     
     def clear_groups(self):
+        """clears all graphical elements from the model"""
         return summon_core.clear_groups(self.id)
-    clear_groups.__doc__ = summon_core.clear_groups.__doc__.split("\n")[1]
     
     def add_group(self, aGroup):
+        """adds a group to the model"""
         summon_core.add_group(self.id, aGroup)
         return aGroup
-    add_group.__doc__ = summon_core.add_group.__doc__.split("\n")[1]
     
     def insert_group(self, parentGroup, childGroup):
+        """inserts a drawing group 'aGroup' as a child to an existing group
+           'parentGroup'."""    
         summon_core.insert_group(self.id, parentGroup.ptr, childGroup)
         return childGroup
-    insert_group.__doc__ = summon_core.insert_group.__doc__.split("\n")[1]
     
     def remove_group(self, *groups):
+        """removes 'groups' from the model"""
         ids = [x.ptr for x in groups]
         return summon_core.remove_group(self.id, *ids)
-    remove_group.__doc__ = summon_core.remove_group.__doc__.split("\n")[1]
     
     def replace_group(self, oldGroup, newGroup):
+        """replaces the group 'oldGroup' with a new group 'newGroup'"""    
         summon_core.replace_group(self.id, oldGroup.ptr, newGroup)
         return newGroup
-    replace_group.__doc__ = summon_core.replace_group.__doc__.split("\n")[1]
     
     def show_group(self, aGroup, visible):
+        """set the visiblity of a group
+           
+           aGroup  -- a group or other graphical element
+           visible -- a bool indicating whether the group is visible
+        """
         return summon_core.show_group(self.id, aGroup.ptr, visible)
-    show_group.__doc__ = summon_core.show_group.__doc__.split("\n")[1]        
     
     def get_root(self):
-        """Get the root group of the window's 'world' model"""
+        """get the root group of the model"""
         return group(summon_core.get_root_id(self.id), ref=True)
     
-    def get_bounding(self, aGroup):
-        """Get the bounding box for a group and its contents"""
+    def get_bounding(self, aGroup=None):
+        """get the bounding box for a group and its contents
+        
+           if aGroup is None, the root group will be used.
+        """
+        
+        if aGroup == None:
+            aGroup = self.get_root()
         return summon_core.get_bounding(self.id, aGroup.ptr)
     
     
     # DEPRECATED
     def get_root_id(self):
         return group(summon_core.get_root_id(self.id), ref=True)
-    get_root_id.__doc__ = summon_core.get_root_id.__doc__.split("\n")[1]
 
 
 
