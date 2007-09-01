@@ -86,6 +86,11 @@ protected:
     HashTable<Hotspot*, bool, HashPointer> m_hotspotClickSet;
 };
 
+inline SummonModel *GetModelOfElement(Element *elm)
+{
+    return (SummonModel*) elm->GetModel();
+}
+
 }
 
 #endif

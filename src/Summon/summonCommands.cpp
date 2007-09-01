@@ -66,6 +66,12 @@ void summonCommandsInit()
     RegisterScriptCommand(TimerCallCommand)     g()
     RegisterScriptCommand(RedrawCallCommand)    g()
     
+    RegisterScriptCommand(AppendGroupCommand)   g()
+    RegisterScriptCommand(RemoveGroupCommand2)  g()
+    //RegisterScriptCommand(ReplaceGroupCommand2) g()
+    //RegisterScriptCommand(ShowGroupCommand2)    g()
+    //RegisterScriptCommand(GetBoundingCommand2)  g()
+    
     // model commands
     RegisterScriptCommand(AddGroupCommand)      m() gl()
     RegisterScriptCommand(InsertGroupCommand)   m() gl()

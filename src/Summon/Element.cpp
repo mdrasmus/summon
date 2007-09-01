@@ -28,6 +28,7 @@ Element *GetElementFromObject(PyObject *obj)
 Element::Element(int id) : 
     m_id(id), 
     m_parent(NULL),
+    m_model(NULL),
     m_visible(true),
     m_referenced(0)
 {}

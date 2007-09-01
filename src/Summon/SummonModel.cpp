@@ -17,17 +17,6 @@ namespace Summon
 {
 
 
-Element *Id2Element(int id)
-{
-    return (Element*) id;
-}
-
-int Element2Id(Element *elm)
-{
-    return (int) elm;
-}
-
-
 
 SummonModel::SummonModel(int id, int kind) :
     m_id(id),
@@ -46,7 +35,6 @@ void SummonModel::ExecCommand(Command &command)
             int id = Element2Id(AddElement(NULL, 
                                        ((AddGroupCommand*)(&command))->code));
             ((AddGroupCommand*)(&command))->SetReturn(Int2Scm(id));
-            Update(Id2Element(id));
             } break;
         
         case INSERT_GROUP_COMMAND: {
@@ -62,7 +50,6 @@ void SummonModel::ExecCommand(Command &command)
                 
                 ((InsertGroupCommand*)(&command))->SetReturn(Int2Scm(
                                                               Element2Id(elm)));
-                Update(elm);
             } else {
                 Error("unknown group %d", pid);
                 ((InsertGroupCommand*)(&command))->SetReturn(Int2Scm(-1));
@@ -77,12 +64,6 @@ void SummonModel::ExecCommand(Command &command)
             // loop through group ids
             for (unsigned int i=0; i<remove->groupids.size(); i++) {
                 RemoveElement(Id2Element(remove->groupids[i]));
-                
-                Element *elm = Id2Element(remove->groupids[i])->GetParent();
-                if (elm)
-                    Update(elm);
-                else
-                    Update();
             }
             
             } break;
@@ -103,7 +84,6 @@ void SummonModel::ExecCommand(Command &command)
                 
                 Element *elm2 = AddElement(parent, ScmCar(replace->code));
                 replace->SetReturn(Int2Scm(Element2Id(elm2)));
-                Update(elm2);
             } else {
                 Error("unknown group %d", replace->groupid);
                 replace->SetReturn(Int2Scm(-1));
@@ -113,7 +93,6 @@ void SummonModel::ExecCommand(Command &command)
         case CLEAR_GROUPS_COMMAND: {
             // remove root group, new root will be automatically created
             RemoveElement(GetRoot());
-            Update();
             } break;
         
         case SHOW_GROUP_COMMAND: {
@@ -222,6 +201,7 @@ Element *SummonModel::AddElement(Element *parent, Scm code)
         parent = GetRoot();
     
     parent->AddChild(elm);
+    Update(elm);
     return elm;
 }
 
@@ -248,7 +228,9 @@ void SummonModel::Update(Element *element)
 void SummonModel::Update(Element *element, BuildEnv *env)
 {
     BuildEnv *env2 = NULL;
-
+    
+    element->SetModel(this);
+    
     // perform element-specific updating
     switch (element->GetId()) {
         case HOTSPOT_CONSTRUCT:
@@ -341,7 +323,12 @@ void SummonModel::RemoveElement(Element *elm)
     if (elm == m_root) {
         elm->DecRef();
         m_root = new Group();
+        m_root->SetModel(this);
         m_root->IncRef();
+        Update();
+    } else {
+        assert(parent);
+        Update(parent);
     }
     
     // delete only if it is not referenced by python

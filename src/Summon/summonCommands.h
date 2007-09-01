@@ -44,6 +44,12 @@ enum {
     TIMER_CALL_COMMAND,
     REDRAW_CALL_COMMAND,
     
+    APPEND_GROUP_COMMAND,
+    REMOVE_GROUP_COMMAND2,
+    REPLACE_GROUP_COMMAND2,
+    SHOW_GROUP_COMMAND2,
+    GET_BOUNDING_COMMAND2,    
+    
     // model commands
     ADD_GROUP_COMMAND,
     INSERT_GROUP_COMMAND,
@@ -391,6 +397,130 @@ public:
     Scm proc;
 };
 
+
+class AppendGroupCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new AppendGroupCommand(); }
+    virtual int GetId() { return APPEND_GROUP_COMMAND; }
+
+    virtual const char *GetName() { return "append_group"; }
+    virtual const char *GetUsage() { return "groupid, group"; }
+    virtual const char *GetDescription() 
+    { return "adds drawing groups as children to another group"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "dc", &groupid, &code);
+    }
+    
+    int groupid;
+    Scm code;
+};
+
+class RemoveGroupCommand2 : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new RemoveGroupCommand2(); }
+    virtual int GetId() { return REMOVE_GROUP_COMMAND2; }
+
+    virtual const char *GetName() { return "remove_group2"; }
+    virtual const char *GetUsage() { return "groupid, *groups"; }
+    virtual const char *GetDescription() 
+    { return "removes drawing groups from another group"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        // parse groupid
+        if (ScmConsp(lst) && ScmIntp(ScmCar(lst))) {
+            groupid = Scm2Int(ScmCar(lst));
+            lst = ScmCdr(lst);
+        } else {
+            return false;
+        }
+    
+        // parse group ids
+        for (; ScmConsp(lst); lst = ScmCdr(lst)) {
+            if (ScmIntp(ScmCar(lst))) {
+                groupids.push_back(Scm2Int(ScmCar(lst)));
+            } else {
+                Error("Can only remove with group id");
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    int groupid;
+    vector<int> groupids;
+};
+
+
+class ReplaceGroupCommand2 : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new ReplaceGroupCommand2(); }
+    virtual int GetId() { return REPLACE_GROUP_COMMAND2; }
+
+    virtual const char *GetName() { return "replace_group2"; }
+    virtual const char *GetUsage() { return "oldgroup, newgroup"; }
+    virtual const char *GetDescription() 
+    { return "replaces a drawing group"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        if (ParseScm(ErrorHelp(), lst, "d", &oldgroupid)) {
+            code = ScmCddr(lst);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    int oldgroupid;
+    Scm code;
+};
+
+
+class ShowGroupCommand2 : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new ShowGroupCommand2(); }
+    virtual int GetId() { return SHOW_GROUP_COMMAND2; }
+
+    virtual const char *GetName() { return "show_group2"; }
+    virtual const char *GetUsage() { return "groupid, True|False"; }
+    virtual const char *GetDescription() 
+    { return "sets the visibilty of a group"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "db", &groupid, &visible);
+    }
+    
+    int groupid;
+    bool visible;
+};
+
+class GetBoundingCommand2 : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new GetBoundingCommand2(); }
+    virtual int GetId() { return GET_BOUNDING_COMMAND2; }
+
+    virtual const char *GetName() { return "get_bounding2"; }
+    virtual const char *GetUsage() { return "groupid"; }
+    virtual const char *GetDescription() 
+    { return "returns a bounding box for a group and its contents"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "d", &groupid);
+    }
+    
+    int groupid;
+};
 
 
 

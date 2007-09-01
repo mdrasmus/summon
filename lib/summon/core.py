@@ -142,6 +142,13 @@ class Element:
     def get_children(self):
         """Returns the children of this element as a list"""
         return list(self)
+    
+    def append(self, aGroup):
+        summon_core.append_group(self.ptr, aGroup)
+        return aGroup
+    
+    def remove(self, *groups):
+        summon_core.remove_group2(self.ptr, *[x.ptr for x in groups])
 
 
 

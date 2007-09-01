@@ -1,4 +1,27 @@
 
+
+move more of the Model functions to Elements
+
+model.add_group
+model.insert_group
+    g.append(aGroup)
+    g.extend(*groups)
+
+mode.remove_group
+    g.remove(aGroup)
+
+model.get_bounding()
+    g.get_bounding()
+
+model.show_group(True)
+    g.show(True)
+
+
+
+
+
+
+#=============================================================================
 ; transforms
 (translate x y z  . groups)
 (rotate x y z r . groups)

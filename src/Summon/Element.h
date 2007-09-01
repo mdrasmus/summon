@@ -76,7 +76,8 @@ public:
     virtual bool IsDynamic() { return false; }
     inline bool IsVisible() { return m_visible; }
     inline void SetVisible(bool vis) { m_visible = vis; }    
-    
+    inline void SetModel(void *model) { m_model = model; }
+    inline void *GetModel() { return m_model; }
 
     
     virtual void FindBounding(float *top, float *bottom, float *left, float *right,
@@ -91,10 +92,23 @@ public:
 protected:
     int m_id;
     Element *m_parent;
+    void *m_model;
     list<Element*> m_children;
     bool m_visible;    
     int m_referenced;
 };
+
+
+inline Element *Id2Element(int id)
+{
+    return (Element*) id;
+}
+
+inline int Element2Id(Element *elm)
+{
+    return (int) elm;
+}
+
 
 Element *GetElementFromObject(PyObject *obj);
 

@@ -344,7 +344,28 @@ public:
                 TimerCallCommand *cmd = (TimerCallCommand*) &command;
                 SetTimerCommand(cmd->delay, new CallProcCommand(cmd->proc));
                 } break;
-                
+
+            
+            case APPEND_GROUP_COMMAND: {
+                // a group to another
+                AppendGroupCommand *cmd = (AppendGroupCommand*) &command;
+                Element *elm = Id2Element(cmd->groupid);
+                SummonModel *model = GetModelOfElement(elm);
+                if (model)
+                    model->AddElement(elm, cmd->code);
+                } break;
+            
+            case REMOVE_GROUP_COMMAND2: {
+                // a group to another
+                RemoveGroupCommand2 *cmd = (RemoveGroupCommand2*) &command;
+                Element *elm = Id2Element(cmd->groupid);
+                SummonModel *model = GetModelOfElement(elm);
+
+                if (model)
+                    for (unsigned int i=0; i<cmd->groupids.size(); i++)
+                        model->RemoveElement(Id2Element(cmd->groupids[i]));
+                } break;
+            
                 
             default:
                 // do command routing

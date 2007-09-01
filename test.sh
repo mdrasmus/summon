@@ -32,13 +32,17 @@ g = group(l,
 win = summon.Window()
 win.add_group(g)
 
+l2 = lines(100, 0, 0, 100)
+g.append(l2)
+
+g.remove(l2)
 
 def walk(node, depth=0): 
     print "  " * depth, node, node.get_contents()
     for child in node:
         walk(child, depth+1)
 
-svg.writeSvg(win, sys.stdout, win.get_root())
+#svg.writeSvg(win, sys.stdout, win.get_root())
 
 EOF
 

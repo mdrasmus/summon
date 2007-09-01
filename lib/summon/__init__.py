@@ -334,7 +334,7 @@ class Window (object):
         self.world = model
     
      
-     def set_screen_model(self, model):
+    def set_screen_model(self, model):
         """sets a model to be the world model"""
         summon_core.assign_model(self.winid, "screen", model.id)
         self.screen = model
