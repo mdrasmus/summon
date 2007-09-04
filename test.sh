@@ -29,13 +29,18 @@ g = group(l,
             color(0, 1, 0, .5),
             text_clip("hello", 0, 0, 100, 100, 4, 20)))))
 
+
+
 win = summon.Window()
 win.add_group(g)
+win.add_group(color(1,1,1))
+win.add_group(text("white", 0, 0, 100, 100))
 
 l2 = lines(100, 0, 0, 100)
 g.append(l2)
 
-g.remove(l2)
+#g.remove(l2)
+
 
 def walk(node, depth=0): 
     print "  " * depth, node, node.get_contents()

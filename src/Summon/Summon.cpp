@@ -346,6 +346,7 @@ public:
                 } break;
 
             
+            
             case APPEND_GROUP_COMMAND: {
                 // a group to another
                 AppendGroupCommand *cmd = (AppendGroupCommand*) &command;

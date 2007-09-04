@@ -150,7 +150,14 @@ class Element:
     def remove(self, *groups):
         summon_core.remove_group2(self.ptr, *[x.ptr for x in groups])
 
-
+    def replace(self, oldchild, newchild):
+        pass
+        
+    def set_visible(self, vis):
+        pass
+    
+    def get_bounding(self):
+        pass
 
 
 class group (Element):

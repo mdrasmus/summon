@@ -20,7 +20,30 @@ Element *GetElementFromObject(PyObject *obj)
         
         return (Element*) addr;
     } else {
-        return NULL;
+        // python code
+        // NOTE: I think the only element that uses this code is a color
+        // construct outside any graphic
+        
+        // do nothing if not a list
+        // and check that header is int
+        if (!PyTuple_Check(obj) ||
+            PyTuple_GET_SIZE(obj) < 1 ||
+            !PyInt_Check(PyTuple_GET_ITEM(obj, 0)))
+            return NULL;
+        
+        // build element based on header
+        int elmid = (int) PyInt_AsLong(PyTuple_GET_ITEM(obj, 0));
+
+        Element *elm = g_elementFactory.Create(elmid);
+        Scm code = Py2ScmTake(PyTuple_GetSlice(obj, 1, PyTuple_GET_SIZE(obj)));
+        
+        if (!elm->Build(elmid, code)) {
+            delete elm;
+            return NULL;
+        }
+        
+        // return the built element
+        return elm;
     }
 }
 
@@ -62,26 +85,8 @@ bool Element::Build(int header, const Scm &code)
         PyObject *obj = child.GetPy();
         Element *elm = GetElementFromObject(obj);
         
-        if (!elm) {
-            // python code
-            // NOTE: I think the only element that uses this code is a color
-            // construct outside any graphic
-            
-            // do nothing if not a list
-            // and check that header is int
-            Scm header = ScmCar(child);
-            if (!ScmConsp(child) || !ScmIntp(header))
-                return false;
-        
-            // build element based on header
-            int elmid = Scm2Int(header);
-        
-            elm = g_elementFactory.Create(elmid);
-            if (!elm->Build(elmid, ScmCdr(child))) {
-                delete elm;
-                return false;
-            }
-        }
+        if (!elm)
+            return false;
         
         if (elm->GetParent() != NULL) {
             Error("element already has parent.");
