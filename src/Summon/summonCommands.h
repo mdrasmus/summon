@@ -470,7 +470,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        if (ParseScm(ErrorHelp(), lst, "d", &oldgroupid)) {
+        if (ParseScm(ErrorHelp(), lst, "dd", &groupid, &oldgroupid)) {
             code = ScmCddr(lst);
             return true;
         } else {
@@ -478,6 +478,7 @@ public:
         }
     }
     
+    int groupid;
     int oldgroupid;
     Scm code;
 };

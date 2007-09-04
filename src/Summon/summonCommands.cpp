@@ -68,9 +68,9 @@ void summonCommandsInit()
     
     RegisterScriptCommand(AppendGroupCommand)   g()
     RegisterScriptCommand(RemoveGroupCommand2)  g()
-    //RegisterScriptCommand(ReplaceGroupCommand2) g()
-    //RegisterScriptCommand(ShowGroupCommand2)    g()
-    //RegisterScriptCommand(GetBoundingCommand2)  g()
+    RegisterScriptCommand(ReplaceGroupCommand2) g()
+    RegisterScriptCommand(ShowGroupCommand2)    g()
+    RegisterScriptCommand(GetBoundingCommand2)  g()
     
     // model commands
     RegisterScriptCommand(AddGroupCommand)      m() gl()

@@ -354,6 +354,12 @@ public:
                 SummonModel *model = GetModelOfElement(elm);
                 if (model)
                     model->AddElement(elm, cmd->code);
+                else {
+                    Element *child = elm->AddChild(cmd->code);
+                    if (!child)
+                        Error("cannot add element");
+                }
+                    
                 } break;
             
             case REMOVE_GROUP_COMMAND2: {
@@ -365,8 +371,56 @@ public:
                 if (model)
                     for (unsigned int i=0; i<cmd->groupids.size(); i++)
                         model->RemoveElement(Id2Element(cmd->groupids[i]));
+                else
+                    for (unsigned int i=0; i<cmd->groupids.size(); i++) {
+                        Element *child = Id2Element(cmd->groupids[i]);
+                        if (child->GetParent() == elm)
+                            elm->RemoveChild(child);
+                        else
+                            Error("element is not a child");
+                    }
                 } break;
             
+            case REPLACE_GROUP_COMMAND2: {
+                ReplaceGroupCommand2 *cmd = (ReplaceGroupCommand2*) &command;
+                Element *elm = Id2Element(cmd->groupid);
+                Element *oldelm = Id2Element(cmd->oldgroupid);
+                SummonModel *model = GetModelOfElement(elm);
+                
+                // TODO: complete
+                
+                } break;
+                
+            case SHOW_GROUP_COMMAND2: {
+                ShowGroupCommand2 *cmd = (ShowGroupCommand2*) &command;
+                Element *elm = Id2Element(cmd->groupid);
+                SummonModel *model = GetModelOfElement(elm);
+                
+                elm->SetVisible(cmd->visible); 
+                
+                if (model)
+                    model->Update(elm);
+                
+                } break;               
+            
+            case GET_BOUNDING_COMMAND2: {
+                GetBoundingCommand2 *cmd = (GetBoundingCommand2*) &command;
+                Element *elm = Id2Element(cmd->groupid);
+                SummonModel *model = GetModelOfElement(elm);                
+                
+                if (model) {
+                    Vertex2f pos1, pos2;
+                    model->FindBounding(elm, &pos1, &pos2);
+            
+                    cmd->SetReturn(ScmCons(Float2Scm(pos1.x),
+                                 ScmCons(Float2Scm(pos1.y),
+                                   ScmCons(Float2Scm(pos2.x),
+                                     ScmCons(Float2Scm(pos2.y), Scm_EOL)))));
+                } else {
+                    Error("element must be added to a model to find its bounding box");
+                }
+                
+                } break;
                 
             default:
                 // do command routing

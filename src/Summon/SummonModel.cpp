@@ -196,6 +196,11 @@ Element *SummonModel::AddElement(Element *parent, Scm code)
         return NULL;
     }
 
+    if (elm->GetParent() != NULL) {
+        Error("element already has parent.");
+        return NULL;
+    }
+
     // set parent if default (root) is given
     if (parent == NULL)
         parent = GetRoot();

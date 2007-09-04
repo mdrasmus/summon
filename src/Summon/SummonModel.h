@@ -54,19 +54,19 @@ public:
     Element *AddElement(Element *parent, Scm code);
     void RemoveElement(Element *elm);
 
+    void Update();
+    void Update(Element *element);
+
     // model queries
     list<Command*> HotspotClick(Vertex2f pos);    
     void FindBounding(Element *elm, Vertex2f *pos1, Vertex2f *pos2);
     inline Element *GetRoot()
     { return m_root; }
     
-    
 protected:
     BuildEnv GetEnv(BuildEnv &env, Element *start, Element *end);
     
     // book keeping
-    void Update();
-    void Update(Element *element);
     void Update(Element *element, BuildEnv *env);
     void UpdateHotspot(Hotspot *hotspot, BuildEnv *env);
     void UpdateTextElement(TextElement *textElm, BuildEnv *env);

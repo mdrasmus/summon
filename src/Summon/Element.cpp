@@ -73,29 +73,38 @@ Element::~Element()
 // recursively build child elements and if sucessful, add them as children
 bool Element::Build(int header, const Scm &code)
 {
+    //PyObject_Print(code.GetPy(), stdout, 0);
+    //printf("\n");
+
     // process children
     for (Scm children = code; 
          ScmConsp(children); 
          children = ScmCdr(children))
     {
-        //printf("build child\n");
-        
         Scm child = ScmCar(children);
-        
-        PyObject *obj = child.GetPy();
-        Element *elm = GetElementFromObject(obj);
-        
-        if (!elm)
+        if (!AddChild(child))
             return false;
-        
-        if (elm->GetParent() != NULL) {
-            Error("element already has parent.");
-            return false;
-        }
-        
-        AddChild(elm);
     }
     return true;
+}
+
+Element *Element::AddChild(Scm code)
+{
+    Element *elm = GetElementFromObject(code.GetPy());
+
+    // if error with child, report error
+    if (!elm)
+        return NULL;
+
+    // ensure elements are not added twice
+    if (elm->GetParent() != NULL) {
+        Error("element already has parent.");
+        return NULL;
+    }
+
+    AddChild(elm);
+
+    return elm;
 }
 
 Scm Element::GetContents()

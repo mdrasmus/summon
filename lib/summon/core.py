@@ -157,7 +157,7 @@ class Element:
         pass
     
     def get_bounding(self):
-        pass
+        return summon_core.get_bounding2(self.ptr)
 
 
 class group (Element):

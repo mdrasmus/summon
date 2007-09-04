@@ -46,6 +46,8 @@ public:
         elm->SetParent(this);
     }
     
+    Element *AddChild(Scm code);
+    
     inline void RemoveChild(Element *elm)
     {
         m_children.remove(elm);
