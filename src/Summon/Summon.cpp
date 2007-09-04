@@ -385,9 +385,18 @@ public:
                 ReplaceGroupCommand2 *cmd = (ReplaceGroupCommand2*) &command;
                 Element *elm = Id2Element(cmd->groupid);
                 Element *oldelm = Id2Element(cmd->oldgroupid);
+                Scm newcode = cmd->code;
                 SummonModel *model = GetModelOfElement(elm);
+                Element *newelm = NULL;
                 
-                // TODO: complete
+                if (model) {
+                    newelm = model->ReplaceElement(oldelm, newcode);
+                } else {
+                    newelm = elm->ReplaceChild(oldelm, newcode);
+                }
+                
+                if (!newelm)
+                    Error("error replacing element");
                 
                 } break;
                 

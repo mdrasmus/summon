@@ -30,6 +30,8 @@ SummonModel::SummonModel(int id, int kind) :
 
 void SummonModel::ExecCommand(Command &command)
 {
+    // TODO: use consistent return value for bad element
+
     switch (command.GetId()) {
         case ADD_GROUP_COMMAND: {
             int id = Element2Id(AddElement(NULL, 
@@ -76,14 +78,12 @@ void SummonModel::ExecCommand(Command &command)
             if (elm != NULL && 
                 elm != GetRoot())
             {
-                // get the environment and parent of old element
-                Element *parent = elm->GetParent();
-                
-                // remove old element
-                RemoveElement(elm);
-                
-                Element *elm2 = AddElement(parent, ScmCar(replace->code));
-                replace->SetReturn(Int2Scm(Element2Id(elm2)));
+            
+                Element *elm2 = ReplaceElement(elm, ScmCar(replace->code));
+                if (elm2)
+                    replace->SetReturn(Int2Scm(Element2Id(elm2)));
+                else
+                    replace->SetReturn(Int2Scm(-1));
             } else {
                 Error("unknown group %d", replace->groupid);
                 replace->SetReturn(Int2Scm(-1));
@@ -210,6 +210,32 @@ Element *SummonModel::AddElement(Element *parent, Scm code)
     return elm;
 }
 
+
+bool SummonModel::ReplaceElement(Element *oldelm, Element *newelm)
+{
+    // TODO: fix
+    Element *parent = oldelm->GetParent();
+                
+    // remove old element
+    RemoveElement(oldelm);
+    parent->AddChild(newelm);
+    Update(newelm);
+    
+    return true;
+}
+
+
+Element *SummonModel::ReplaceElement(Element *oldelm, Scm code)
+{
+    // TODO: fix
+    Element *parent = oldelm->GetParent();
+                
+    // remove old element
+    RemoveElement(oldelm);
+    Element *elm = AddElement(parent, code);
+    
+    return elm;
+}
 
 
 void SummonModel::Update()

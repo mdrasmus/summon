@@ -151,9 +151,13 @@ class Element:
         summon_core.remove_group2(self.ptr, *[x.ptr for x in groups])
 
     def replace(self, oldchild, newchild):
-        pass
+        summon_core.replace_group2(self.ptr, oldchild.ptr, newchild)
+        return newchild
         
     def set_visible(self, vis):
+        summon_core.show_group2(self.ptr, vis)
+    
+    def get_visible(self):
         pass
     
     def get_bounding(self):

@@ -54,6 +54,18 @@ public:
         elm->SetParent(NULL);
     }
     
+    inline void ReplaceChild(Element *oldchild, Element *newchild) {
+        // TODO: fix
+        RemoveChild(oldchild);
+        AddChild(newchild);
+    }
+    
+    inline Element *ReplaceChild(Element *oldchild, Scm code) {
+        // TODO: fix
+        RemoveChild(oldchild);
+        return AddChild(code);
+    }
+    
     inline Iterator GetChild(Element *elm)
     {
         for (Iterator i=Begin(); i!=End(); i++) {
