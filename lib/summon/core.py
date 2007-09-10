@@ -136,12 +136,15 @@ class Element:
         return list(self)[i]
     
     def __eq__(self, other):
-        return self.ptr == other.ptr
+        return self.ptr == hash(other)
+    
+    def __ne__(self, other):
+        return self.ptr != hash(other)
     
     def __cmp__(self, other):
-        return cmp(self.ptr, other.ptr)
+        return cmp(self.ptr, hash(other))
     
-    def __hash__(self, other):
+    def __hash__(self):
         return self.ptr
     
     def get_contents(self):
