@@ -2,16 +2,20 @@
 Sun Sep  9 18:59:40 EDT 2007
 
 - add zoom_clamp
+    zoom_clamp(minx=0, miny=0, maxx=None, maxy=None, clip=False, *elements)
+    
+    zoom_clamp(1, 1, 10, 10, True, group(...), group(...))
+    
 
 - get_bounding for SVG
 - add drag and select
 - glut menus
 - fix SVG text_clip
-- track down close view bug
+
 
 - add aGroup.get_parent() DONE
 - use ref counts for element parent child relationships. DONE
-
+- track down close view bug DONE
 
 #=============================================================================
 

@@ -40,6 +40,7 @@ _i = iter(xrange(2000, 2000+200))
 _GROUP_CONSTRUCT = _i.next()
 _i.next()
 _HOTSPOT_CONSTRUCT = _i.next()
+_ZOOM_CLAMP_CONSTRUCT = _i.next()
 
 _POINTS_CONSTRUCT = _i.next()
 _LINES_CONSTRUCT = _i.next()
@@ -134,6 +135,15 @@ class Element:
     def __getitem__(self, i):
         return list(self)[i]
     
+    def __eq__(self, other):
+        return self.ptr == other.ptr
+    
+    def __cmp__(self, other):
+        return cmp(self.ptr, other.ptr)
+    
+    def __hash__(self, other):
+        return self.ptr
+    
     def get_contents(self):
         """Returns the a tuple in a format specific to the content 
            of this element"""
@@ -180,12 +190,37 @@ class group (Element):
         Element.__init__(self, _GROUP_CONSTRUCT, elements, options)
     
 
+
+class zoom_clamp (Element):
+    """Restricts the zoom-level of its contents"""
+    
+    def __init__(self, minx=None, miny=None, maxx=None, maxy=None, 
+                 *elements, **options):
+        """minx         -- minimum x-zoom level
+           miny         -- minimum y-zoom level (default=minx)
+           maxx         -- maximum x-zoom level
+           maxy         -- maximum y-zoom level (default=maxx)
+           *elements    -- elements to apply clamp to
+           clip         -- a bool whether elements are cliped when too small
+           linked       -- a bool whether x- and y-axis of elements
+                           should always zoom together
+        """
+        
+        clip = options.get("clip", True)
+        linked = options.get("linked", False)
+        
+        Element.__init__(self, _ZOOM_CLAMP_CONSTRUCT, 
+                         _tuple(minx, miny, maxx, maxy, clip, linked, *elements), 
+                                options)
+
+
 class hotspot (Element):
     """Designates a region of the screen to react to mouse clicks.
     
        When a mouse click (default: middle click) occurs within the specified
        rectangular region the given function will be called."""
-    def __init__(self, *args, **options):
+    def __init__(self, kind="click", x1=None, y1=None, x2=None, y2=None, 
+                 func=None, **options):
         """kind - must be the string "click" (more options in future versions)
            x1   - 1st x-coordinate of rectangular region
            y1   - 1st y-coordinate of rectangular region
@@ -194,7 +229,7 @@ class hotspot (Element):
            func - callback function of no arguments
         """
         Element.__init__(self, _HOTSPOT_CONSTRUCT, 
-                         args, options)
+                         _tuple(kind, x1, y1, x2, y2, func), options)
 
 
 #=============================================================================
@@ -342,7 +377,8 @@ class color_graphic (Graphic):
 class text (Element):
     """A bitmap text element that automatically hides if it cannot fit within 
        its bounding box"""
-    def __init__(self, *args, **options):
+    def __init__(self, txt="", x1=None, y1=None, x2=None, y2=None, *justified,
+                       **options):
         """txt        - text to display
            x1         - 1st x-coordinate of bounding box
            y1         - 1st y-coordinate of bounding box
@@ -354,12 +390,13 @@ class text (Element):
                 'bottom' 'middle' 'top'
         """
         Element.__init__(self, _TEXT_CONSTRUCT, 
-                                 args, 
-                                 options)
+                               _tuple(txt, x1, y1, x2, y2, *justified),  
+                               options)
 
 class text_scale (text):
     """A vector graphics text element"""
-    def __init__(self, *args, **options):
+    def __init__(self, txt="", x1=None, y1=None, x2=None, y2=None, *justified,
+                 **options):
         """txt        - text to display
            x1         - 1st x-coordinate of bounding box
            y1         - 1st y-coordinate of bounding box
@@ -371,12 +408,13 @@ class text_scale (text):
                 'bottom' 'middle' 'top'
         """
         Element.__init__(self, _TEXT_SCALE_CONSTRUCT, 
-                                 args, 
+                                 _tuple(txt, x1, y1, x2, y2, *justified), 
                                  options)
 
 class text_clip (text):
     """A vector graphics text element that has a minimum and maximum height"""
-    def __init__(self, *args, 
+    def __init__(self, txt="", x1=None, y1=None, x2=None, y2=None,
+                       minheight=4, maxheight=20, *justified,
                        **options):
         """txt        - text to display
            x1         - 1st x-coordinate of bounding box
@@ -391,7 +429,7 @@ class text_clip (text):
                 'bottom' 'middle' 'top'
         """    
         Element.__init__(self, _TEXT_CLIP_CONSTRUCT, 
-                  args, 
+                  _tuple(txt, x1, y1, x2, y2, minheight, maxheight, *justified), 
                   options)
 
 
@@ -405,42 +443,42 @@ class Transform (Element):
 
 class translate (Transform):
     """Translates the containing elements"""
-    def __init__(self, *args, **options):
+    def __init__(self, x=None, y=None, *elements, **options):
         """x         - units along the x-axis to translate
            y         - units along the y-axis to translate
            *elements - one or more elements to translate
         """
         Element.__init__(self, _TRANSLATE_CONSTRUCT, 
-                         args, options)
+                         _tuple(x, y, *elements), options)
 
 class rotate (Transform):
     """Rotates the containing elements"""
-    def __init__(self, *args, **options):
+    def __init__(self, angle=None, *elements, **options):
         """angle     - angle in degrees (-360, 360) to rotate (clock-wise)
            *elements - one or more elements to rotate
         """
         Element.__init__(self, _ROTATE_CONSTRUCT, 
-                         args, options)
+                         _tuple(angle, *elements), options)
 
 class scale (Transform):
     """Scales the containing elements"""
-    def __init__(self, *args, **options):
+    def __init__(self, scalex=None, scaley=None, *elements, **options):
         """scalex    - factor of scaling along x-axis
            scaley    - factor of scaling along y-axis
            *elements - one or more elements to scale
         """
         Element.__init__(self, _SCALE_CONSTRUCT, 
-                         args, options)
+                         _tuple(scalex, scaley, *elements), options)
 
 class flip (Transform):
     """Flips the containing elements over a line (0,0)-(x,y)"""
-    def __init__(self, *args, **options):
+    def __init__(self, x=None, y=None, *elements, **options):
         """x         - x-coordinate of line
            y         - y-coordinate of line
            *elements - one or more elements to flips
         """
         Element.__init__(self, _FLIP_CONSTRUCT, 
-                         args, options)
+                         _tuple(x, y, *elements), options)
 
  
 #=============================================================================

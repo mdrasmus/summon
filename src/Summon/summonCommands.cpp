@@ -14,6 +14,7 @@
 #include "Hotspot.h"
 #include "Transform.h"
 #include "TextElement.h"
+#include "ZoomClamp.h"
 
 
 namespace Summon
@@ -99,7 +100,6 @@ void summonCommandsInit()
     RegisterScriptCommand(GetBgColorCommand)        v()
     RegisterScriptCommand(SetVisibleCommand)        v() gl()
     RegisterScriptCommand(GetVisibleCommand)        v()    
-//    RegisterScriptCommand(HomeCommand)              v() gl()
     RegisterScriptCommand(SetAntialiasCommand)      v() gl()
     RegisterScriptCommand(ShowCrosshairCommand)     v()
     RegisterScriptCommand(SetCrosshairColorCommand) v()
@@ -120,44 +120,6 @@ void summonCommandsInit()
     RegisterScriptCommand(GetMousePosCommand)       c()
     RegisterScriptCommand(SetWindowOnResizeCommand) c()
     
-    // constructs
-    
-    // structure
-    RegisterConstruct(GroupConstruct)
-    RegisterConstruct(DynamicGroupConstruct)
-    RegisterConstruct(HotspotConstruct)
-    
-    // graphics
-    RegisterConstruct(PointsConstruct)
-    RegisterConstruct(LinesConstruct) 
-    RegisterConstruct(LineStripConstruct)    
-    RegisterConstruct(TrianglesConstruct)
-    RegisterConstruct(TriangleStripConstruct)
-    RegisterConstruct(TriangleFanConstruct)    
-    RegisterConstruct(QuadsConstruct)
-    RegisterConstruct(QuadStripConstruct)
-    RegisterConstruct(PolygonConstruct)
-    RegisterConstruct(TextConstruct)
-    RegisterConstruct(TextScaleConstruct)    
-    RegisterConstruct(TextClipConstruct)
-    
-    // primitives
-    RegisterConstruct(VerticesConstruct)
-    RegisterConstruct(ColorConstruct)
-    
-    // transforms
-    RegisterConstruct(TranslateConstruct)
-    RegisterConstruct(RotateConstruct)
-    RegisterConstruct(ScaleConstruct)
-    RegisterConstruct(FlipConstruct)
-    RegisterConstruct(NozoomConstruct)
-    RegisterConstruct(SideAlignConstruct)
-    
-    // inputs
-    RegisterConstruct(InputKeyConstruct)
-    RegisterConstruct(InputClickConstruct)
-    RegisterConstruct(InputMotionConstruct)
-
     RegisterScriptCommand(CallProcCommand) g()
 
 #   undef g
@@ -170,6 +132,7 @@ void summonCommandsInit()
     // structure
     g_elementFactory.Register(new Group(), GROUP_CONSTRUCT);
     g_elementFactory.Register(new Hotspot(), HOTSPOT_CONSTRUCT);
+    g_elementFactory.Register(new ZoomClamp(), ZOOM_CLAMP_CONSTRUCT);
     
     // graphics
     g_elementFactory.Register(new Graphic(), POINTS_CONSTRUCT);

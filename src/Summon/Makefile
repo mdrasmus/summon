@@ -1,15 +1,16 @@
 SRCPREFIX = ..
-OBJS = summonCommands.o \
-       SummonController.o \
-       SummonModel.o \
-       SummonView.o \
-       Element.o \
+OBJS = Element.o \
        Graphic.o \
        Hotspot.o \
        TextElement.o \
        Transform.o \
        TransformMatrix.o \
-       Summon.o 
+       Summon.o \
+       summonCommands.o \
+       SummonController.o \
+       SummonModel.o \
+       SummonView.o \
+       ZoomClamp.o
 
 all:: $(MODULE)
 

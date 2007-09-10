@@ -90,6 +90,10 @@ public:
     
     void Close()
     {
+        if (m_worldModel)
+            m_worldModel->RemoveView(&m_view);
+        if (m_screenModel)
+            m_screenModel->RemoveView(&m_view);
         m_view.Close();
     }
     
