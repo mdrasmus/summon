@@ -111,8 +111,8 @@ public:
     int start;
 };
 
-extern Scm Scm_UNSPECIFIED;
-extern Scm Scm_UNDEFINED;
+extern Scm Scm_NULL;
+extern Scm Scm_NONE;
 extern Scm Scm_EOL;
 extern Scm Scm_TRUE;
 extern Scm Scm_FALSE;
@@ -125,6 +125,9 @@ extern PyObject *python_globals;
 
 void InitPython();
 void DestroyPython();
+void Error(const char *fmt, ...);
+char *GetError();
+void ClearError();
 
 
 
@@ -289,18 +292,7 @@ inline Scm ScmAppend(const Scm &l1, const Scm &l2)
 
 string int2string(int num);
 
-/*
-Not needed for Python code
 
-inline Scm ScmDefine(const char *name, Scm val)
-{ return Scm_UNDEFINED; }
-
-inline Scm ScmLookup(const char *name)
-{ return Scm_UNDEFINED; }
-
-inline Scm ScmVariableRef(Scm var)
-{ return Scm_UNDEFINED; }
-*/
 
 }
 

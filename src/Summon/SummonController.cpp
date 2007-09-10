@@ -21,7 +21,7 @@ SummonController::SummonController(CommandExecutor *global, SummonView *view,
     m_view(view),
     m_world(world),
     m_screen(screen),
-    m_resizeProc(Scm_UNDEFINED)
+    m_resizeProc(Scm_NONE)
 {
     m_binding->Clear();
     m_view->AddListener(this);
@@ -154,7 +154,7 @@ void SummonController::Motion(int x, int y)
 
 void SummonController::ViewResize(GlutView *view)
 {
-    if (m_resizeProc != Scm_UNDEFINED) {
+    if (m_resizeProc != Scm_NONE) {
         CallProcCommand proc(m_resizeProc);
         ExecCommand(proc);
     }

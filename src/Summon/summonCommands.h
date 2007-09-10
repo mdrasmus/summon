@@ -1829,9 +1829,9 @@ public:
 class CallProcCommand : public ScriptCommand
 {
 public:
-    CallProcCommand(Scm code = Scm_UNDEFINED) : defined(false)
+    CallProcCommand(Scm code = Scm_NONE) : defined(false)
     {
-        if (code != Scm_UNDEFINED) {
+        if (code != Scm_NONE) {
             Setup(ScmCons(code, Scm_EOL));
         }
     }

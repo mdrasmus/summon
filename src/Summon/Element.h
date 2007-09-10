@@ -44,12 +44,14 @@ public:
     {
         m_children.push_back(elm); 
         elm->SetParent(this);
+        elm->IncRef();
     }
     
     Element *AddChild(Scm code);
     
     inline void RemoveChild(Element *elm)
     {
+        elm->DecRef();
         m_children.remove(elm);
         elm->SetParent(NULL);
     }

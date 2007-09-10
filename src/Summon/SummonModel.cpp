@@ -30,34 +30,20 @@ SummonModel::SummonModel(int id, int kind) :
 
 void SummonModel::ExecCommand(Command &command)
 {
-    // TODO: use consistent return value for bad element
-
     switch (command.GetId()) {
         case ADD_GROUP_COMMAND: {
-            int id = Element2Id(AddElement(NULL, 
-                                       ((AddGroupCommand*)(&command))->code));
-            ((AddGroupCommand*)(&command))->SetReturn(Int2Scm(id));
+            if (!AddElement(NULL, ((AddGroupCommand*)(&command))->code))
+                ((ScriptCommand*)(&command))->SetReturn(Scm_NULL);
             } break;
         
         case INSERT_GROUP_COMMAND: {
             int pid = ((InsertGroupCommand*)(&command))->groupid;
             
             // find parent group to insert into
-            Element *elm = Id2Element(pid);
-            if (elm != NULL)
-            {
-                // get the environment and parent of old group
-                Element *elm = AddElement(Id2Element(pid), 
-                                       ((InsertGroupCommand*)(&command))->code);
-                
-                ((InsertGroupCommand*)(&command))->SetReturn(Int2Scm(
-                                                              Element2Id(elm)));
-            } else {
-                Error("unknown group %d", pid);
-                ((InsertGroupCommand*)(&command))->SetReturn(Int2Scm(-1));
-            }
+            if (!AddElement(Id2Element(pid), 
+                            ((InsertGroupCommand*)(&command))->code))
+                ((ScriptCommand*)(&command))->SetReturn(Scm_NULL);
             
-
             } break;
         
         case REMOVE_GROUP_COMMAND: {
@@ -75,19 +61,9 @@ void SummonModel::ExecCommand(Command &command)
             
             // find group to replace
             Element *elm = Id2Element(replace->groupid);
-            if (elm != NULL && 
-                elm != GetRoot())
-            {
-            
-                Element *elm2 = ReplaceElement(elm, ScmCar(replace->code));
-                if (elm2)
-                    replace->SetReturn(Int2Scm(Element2Id(elm2)));
-                else
-                    replace->SetReturn(Int2Scm(-1));
-            } else {
-                Error("unknown group %d", replace->groupid);
-                replace->SetReturn(Int2Scm(-1));
-            }
+            Element *elm2 = ReplaceElement(elm, ScmCar(replace->code));
+            if (!elm2)
+                replace->SetReturn(Scm_NULL);
             } break;
         
         case CLEAR_GROUPS_COMMAND: {
@@ -124,6 +100,7 @@ void SummonModel::ExecCommand(Command &command)
         
             } break;
         default:
+            // unknown command given
             assert(0);
     }
 }
@@ -192,7 +169,7 @@ Element *SummonModel::AddElement(Element *parent, Scm code)
     
     // verify that this is a group
     if (!elm) {
-        Error("Cannot add graphical element, it is invalid.");
+        Error("cannot add graphical element, it is invalid.");
         return NULL;
     }
 
@@ -215,7 +192,12 @@ bool SummonModel::ReplaceElement(Element *oldelm, Element *newelm)
 {
     // TODO: fix
     Element *parent = oldelm->GetParent();
-                
+    
+    if (parent == NULL) {
+        Error("cannot replace root element");
+        return false;
+    }
+    
     // remove old element
     RemoveElement(oldelm);
     parent->AddChild(newelm);
@@ -229,7 +211,12 @@ Element *SummonModel::ReplaceElement(Element *oldelm, Scm code)
 {
     // TODO: fix
     Element *parent = oldelm->GetParent();
-                
+    
+    if (parent == NULL) {
+        Error("cannot replace root element");
+        return NULL;
+    }
+    
     // remove old element
     RemoveElement(oldelm);
     Element *elm = AddElement(parent, code);

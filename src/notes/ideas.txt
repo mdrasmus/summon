@@ -1,4 +1,19 @@
 
+Sun Sep  9 18:59:40 EDT 2007
+
+- add zoom_clamp
+
+- get_bounding for SVG
+- add drag and select
+- glut menus
+- fix SVG text_clip
+- track down close view bug
+
+- add aGroup.get_parent() DONE
+- use ref counts for element parent child relationships. DONE
+
+
+#=============================================================================
 
 move more of the Model functions to Elements
 

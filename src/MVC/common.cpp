@@ -81,17 +81,7 @@ char *Strtok(char *str, const char *delim, char **last, bool multiDelim)
    return token;
 }
 
-void Error(const char *fmt, ...)
-{
-   va_list ap;   
-   va_start(ap, fmt);
-   
-   fprintf(stderr, "error: ");
-   vfprintf(stderr, fmt, ap);
-   fprintf(stderr, "\n");
-   
-   va_end(ap);
-}
+
 
 void Log(int level, const char *fmt, ...)
 {

@@ -143,6 +143,16 @@ class Element:
         """Returns the children of this element as a list"""
         return list(self)
     
+    def get_parent(self):
+        """Returns the parent of this element or None if no parent exists"""
+        constructid, parent = summon_core.get_construct_parent(self.ptr)
+        
+        if parent == 0:
+            return None
+        else:
+            return _make_ref(constructid, parent)
+        
+    
     def append(self, aGroup):
         summon_core.append_group(self.ptr, aGroup)
         return aGroup

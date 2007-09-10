@@ -61,10 +61,11 @@ Element::~Element()
 {
     // delete all child elements
     for (Iterator i=Begin(); i!=End(); i++) {
-        if ((*i)->IsReferenced()) {
+        (*i)->DecRef();
+        if (!(*i)->IsReferenced()) {
             // just detach parent pointer and let python garbage collect child
-            (*i)->SetParent(NULL);
-        } else {
+            //(*i)->SetParent(NULL);
+        //} else {
             delete (*i);
         }
     }

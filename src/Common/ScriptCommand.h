@@ -19,7 +19,7 @@ namespace Summon
 class ScriptCommand : public StringCommand
 {
 public:
-    ScriptCommand() : m_return(Scm_UNSPECIFIED) {}
+    ScriptCommand() : m_return(Scm_NONE) {}
     virtual ~ScriptCommand() {}
 
     virtual bool Setup(Scm lst) { return true; }

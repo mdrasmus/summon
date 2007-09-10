@@ -36,6 +36,7 @@ static PyObject *IncRefConstruct(PyObject *self, PyObject *args);
 static PyObject *DeleteConstruct(PyObject *self, PyObject *args);
 static PyObject *GetConstructChildren(PyObject *self, PyObject *args);
 static PyObject *GetConstructContents(PyObject *self, PyObject *args);
+static PyObject *GetConstructParent(PyObject *self, PyObject *args);
 }
 
 
@@ -101,7 +102,7 @@ public:
             }
         }
         
-        static PyMethodDef *summonMethods = new PyMethodDef [9];
+        static PyMethodDef *summonMethods = new PyMethodDef [10];
 
         // install main command
         int table = 0;
@@ -157,6 +158,13 @@ public:
         // get the contents of a construct
         summonMethods[table].ml_name  = "get_construct_contents";
         summonMethods[table].ml_meth  = GetConstructContents;
+        summonMethods[table].ml_flags = METH_VARARGS;
+        summonMethods[table].ml_doc   = "";
+        table++;
+
+        // get the parent of a construct
+        summonMethods[table].ml_name  = "get_construct_parent";
+        summonMethods[table].ml_meth  = GetConstructParent;
         summonMethods[table].ml_flags = METH_VARARGS;
         summonMethods[table].ml_doc   = "";
         table++;
@@ -356,8 +364,8 @@ public:
                     model->AddElement(elm, cmd->code);
                 else {
                     Element *child = elm->AddChild(cmd->code);
-                    if (!child)
-                        Error("cannot add element");
+                    //if (!child)
+                    //    Error("cannot add element");
                 }
                     
                 } break;
@@ -395,8 +403,8 @@ public:
                     newelm = elm->ReplaceChild(oldelm, newcode);
                 }
                 
-                if (!newelm)
-                    Error("error replacing element");
+                //if (!newelm)
+                //    Error("error replacing element");
                 
                 } break;
                 
@@ -927,15 +935,23 @@ Exec(PyObject *self, PyObject *tup)
             // execute command
             g_summon->ThreadSafeExecCommand(cmd);
             PyObject *ret = Scm2Py(cmd->GetReturn());
-            Py_INCREF(ret);
+            if (ret)
+                Py_INCREF(ret);
+            else {
+                // set error
+                PyErr_Format(PyExc_Exception, GetError());
+                ClearError();
+            }
             delete cmd;
             return ret;
         } else {
-            Error("Error processing command '%s'", cmd->GetName());
+            PyErr_Format(PyExc_Exception, "error processing command '%s'", 
+                         cmd->GetName());
             delete cmd;
         }
         
     } else if (ScmStringp(Py2Scm(PyTuple_GET_ITEM(tup, 0)))) {
+        // TODO: is this case still needed?
         // old style? what about "trans"
         vector<string> args;
         
@@ -958,7 +974,7 @@ Exec(PyObject *self, PyObject *tup)
             } else if (ScmStringp(arg)) {
                 args.push_back(Scm2String(arg));
             } else {
-                Error("unknown argument type");
+                PyErr_Format(PyExc_Exception, "unknown argument type");
                 Py_RETURN_NONE;
             }
         }
@@ -983,8 +999,7 @@ Exec(PyObject *self, PyObject *tup)
         assert(0);
     }
     
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 
@@ -1012,7 +1027,7 @@ MakeConstruct(PyObject *self, PyObject *args)
     //printf("new: %p\n", elm);
     
     // return element address
-    PyObject *addr = PyInt_FromLong((long) elm);
+    PyObject *addr = PyInt_FromLong(Element2Id(elm));
     return addr;
 }
 
@@ -1021,13 +1036,13 @@ static PyObject *
 DeleteConstruct(PyObject *self, PyObject *args)
 {
     long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
-    Element *elm = (Element*) addr;
+    Element *elm = Id2Element(addr);
     
     elm->DecRef();
     
     // if element has a parent, then parent owns element and
     // element will be deleted by parent
-    if (!elm->IsReferenced() && elm->GetParent() == NULL) {
+    if (!elm->IsReferenced()) { // && elm->GetParent() == NULL) {
         //printf("delete: %p\n", elm);
         delete elm;
     }
@@ -1040,7 +1055,7 @@ static PyObject *
 IncRefConstruct(PyObject *self, PyObject *args)
 {
     long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
-    Element *elm = (Element*) addr;
+    Element *elm = Id2Element(addr);
     
     //printf("incref %p\n", elm);
     elm->IncRef();
@@ -1053,7 +1068,7 @@ static PyObject *
 GetConstructChildren(PyObject *self, PyObject *args)
 {
     long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
-    Element *elm = (Element*) addr;
+    Element *elm = Id2Element(addr);
     
     int len = elm->NumChildren() * 2;
     
@@ -1061,7 +1076,7 @@ GetConstructChildren(PyObject *self, PyObject *args)
     int i = 0;
     for (Element::Iterator child=elm->Begin(); child!=elm->End(); child++) {
         PyTuple_SET_ITEM(children, i, PyInt_FromLong((*child)->GetSpecificId()));
-        PyTuple_SET_ITEM(children, i+1, PyInt_FromLong((long) (*child)));
+        PyTuple_SET_ITEM(children, i+1, PyInt_FromLong(Element2Id(*child)));
         i+=2;
     }
     
@@ -1073,7 +1088,7 @@ static PyObject *
 GetConstructContents(PyObject *self, PyObject *args)
 {
     long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
-    Element *elm = (Element*) addr;
+    Element *elm = Id2Element(addr);
     
     Scm contents = elm->GetContents();
     PyObject *pycontents = Scm2Py(contents);
@@ -1082,6 +1097,20 @@ GetConstructContents(PyObject *self, PyObject *args)
         Py_INCREF(pycontents);
     
     return pycontents;
+}
+
+
+static PyObject *
+GetConstructParent(PyObject *self, PyObject *args)
+{
+    long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
+    Element *elm = Id2Element(addr);
+    
+    PyObject *parent = PyTuple_New(2);
+    PyTuple_SET_ITEM(parent, 0, PyInt_FromLong(elm->GetSpecificId()));
+    PyTuple_SET_ITEM(parent, 1, PyInt_FromLong(Element2Id(elm->GetParent())));
+    
+    return parent;
 }
 
 

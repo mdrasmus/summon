@@ -1,6 +1,10 @@
 SUMMON Change Log
 -----------------
 
+2007/9/9
+- added aGroup.get_parent()
+- fully implement exception raising
+
 
 2007/8/29
 - added fix for 64bit in HashTable.h:HashPointer()
