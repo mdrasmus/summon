@@ -107,6 +107,17 @@ void SummonView::ExecCommand(Command &command)
             } break;
             
         
+        case RAISE_WINDOW_COMMAND: {
+            // raise or lower the window
+            RaiseWindowCommand *cmd = (RaiseWindowCommand*) &command;
+            
+            MakeCurrentWindow();
+            if (cmd->raise)
+                glutPopWindow();
+            else
+                glutPushWindow(); 
+            } break;
+        
         case SET_TRANS_COMMAND: {
             MakeCurrentWindow();
             SetTransCommand *trans = (SetTransCommand*) &command;

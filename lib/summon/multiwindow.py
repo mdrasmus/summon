@@ -90,6 +90,8 @@ class WindowEnsemble (summon.VisObject):
             
     
     def stack(self, win):
+        """restack windows together"""
+        
         target_pos = win.get_position()
         target_size = win.get_size()
         
@@ -145,6 +147,7 @@ class WindowEnsemble (summon.VisObject):
         
             
     def align(self, win):
+        """move all windows the same amount window 'win' has moved"""
         now = win.get_position()
         now = [now[0], now[1]]
         pos1 = self.pos[win]
@@ -164,6 +167,7 @@ class WindowEnsemble (summon.VisObject):
     
     def tie(self, windows, tiex=False, tiey=False, pinx=False, piny=False,
                   coordsx=None, coordsy=None, master=None):
+        """ties the scrolling and zooming of multiple windows together"""
 
         if len(windows) < 2:
             return
@@ -205,6 +209,11 @@ class WindowEnsemble (summon.VisObject):
         master_focus()
         master_trans()
 
+
+    def raise_windows(self):
+        """raises all windows in ensemble above other windows on the desktop"""
+        for win in self.windows:
+            win.raise_window(True)
             
 
     def update(self):
@@ -218,10 +227,12 @@ class WindowEnsemble (summon.VisObject):
             if self.stackx or self.stacky:
                 if pos1 != pos2 or size1 != size2:
                     self.stack(win)
+                    self.raise_windows()
                     break
             else:
                 if pos1 != pos2:
                     self.align(win)
+                    self.raise_windows()
                     break
 
 

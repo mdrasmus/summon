@@ -23,12 +23,14 @@ win5 = summon.Window("window 5")
 for w in [win1, win2, win3, win4, win5]:
     w.set_bgcolor(1, 1, 1)
 
+def make_rows():
+    vis = [color(0,0,0)]
+    for i, row in enumerate(rows):
+        vis.append(text_clip(row, -100, -i, 0, -i-1, 3, 20, "right", "middle"))
+    return vis
 
-vis = [color(0,0,0)]
-for i, row in enumerate(rows):
-    vis.append(text_clip(row, -100, -i, 0, -i-1, 3, 20, "right", "middle"))
-win4.add_group(group(color(0,0,0), lines(0,0, 0, -len(rows)), *vis))
-win5.add_group(group(color(0,0,0), lines(0,0, 0, -len(rows)), *vis))
+win4.add_group(group(color(0,0,0), lines(0,0, 0, -len(rows)), *make_rows()))
+win5.add_group(group(color(0,0,0), lines(0,0, 0, -len(rows)), *make_rows()))
 
 win1.add_group(group(color(0,0,0), lines(0, -len(rows), len(cols), 0)))
 win2.add_group(group(color(0,0,0), lines(0, -len(rows), len(cols), 0)))

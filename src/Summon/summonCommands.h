@@ -78,6 +78,7 @@ enum {
     GET_WINDOW_POSITION_COMMAND,
     SET_WINDOW_SIZE_COMMAND,
     GET_WINDOW_SIZE_COMMAND,
+    RAISE_WINDOW_COMMAND,
     SET_TRANS_COMMAND,
     GET_TRANS_COMMAND,
     SET_ZOOM_COMMAND,
@@ -1048,6 +1049,25 @@ public:
     }    
 };
 
+
+class RaiseWindowCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new RaiseWindowCommand(); }
+    virtual int GetId() { return RAISE_WINDOW_COMMAND; }
+
+    virtual const char *GetName() { return "raise_window"; }
+    virtual const char *GetUsage() { return "id, raise"; }
+    virtual const char *GetDescription() 
+    { return "raises or lowers a window"; }
+
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "db", &windowid, &raise);
+    }
+    
+    bool raise;
+};
 
 
 class SetTransCommand : public WindowCommand

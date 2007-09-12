@@ -2,6 +2,9 @@ Tue Sep 11 21:12:44 EDT 2007
 
 - svg has bugs, fix them
 - mouse motion in opening window bug. DONE
+- added RemoveElement bug DONE
+- added win.raise_window(True) DONE
+    - make window ensembles raise together
 - glut menus DONE
     win.set_menu_binding('left'|'middle'|'right', ['alt' | 'ctrl' | 'shift'])
     win.set_menu(menu)

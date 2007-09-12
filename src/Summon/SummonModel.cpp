@@ -24,6 +24,7 @@ SummonModel::SummonModel(int id, int kind) :
     m_hotspotClickSet(1000)
 {
     m_root = new Group();
+    m_root->SetModel(this);
     m_root->IncRef();
 }    
 

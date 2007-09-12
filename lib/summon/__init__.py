@@ -277,10 +277,11 @@ class Window (object):
        Each window is associated with two models (see Model class), called the
        'world' and 'screen' which are accessible as 'Window.world' and
        'Window.screen'.  The units of the world model's coordinate system  can
-       be whatever the user wants.  The size and orientation of the world  model
-       is dependent on scrolling and zooming. The world model is the default
-       model that is  used when drawing (e.g. functions such as Window.add_group
-       forward their arguments to Window.world.add_group).
+       be whatever the user wants, provided that the x- and y- axis increase to 
+       the right and top, respectively.   The size and orientation of the world 
+       model is dependent on scrolling and zooming. The world model is the
+       default model that is  used when drawing (e.g. functions such as
+       Window.add_group forward their arguments to Window.world.add_group).
 
        In contrast, the screen model is always drawn with its origin at the 
        lower left corner of the window and with units in terms of pixels. The
@@ -289,40 +290,40 @@ class Window (object):
        be in view, and should not be affected by scrolling and zooming.
     """
 
-    def __init__(self, name="SUMMON", worldid=None, screenid=None,
+    def __init__(self, name="SUMMON", world=None, screen=None,
                  loadconfig=True):
         # create new window
         self.winid = summon_core.new_window()
         assert self.winid != None
         state.add_window(self)
 
-        if worldid != None:
-            self.world = state.get_model(worldid)
+        # setup world model
+        if world != None:
+            self.world = world
         else:
             self.world = Model()
-
-        if screenid != None:
-            self.screen = state.get_model(screenid)
+        summon_core.assign_model(self.winid, "world", self.world.id)
+        
+        # setup screen model
+        if screen != None:
+            self.screen = screen
         else:
             self.screen = Model()
-
-        summon_core.assign_model(self.winid, "world", self.world.id)
         summon_core.assign_model(self.winid, "screen", self.screen.id)
-        
-        summon_core.set_window_on_resize(self.winid, self._on_resize)
-        
-        
-        self.set_name(name)
-        self.antialias = True
-        self.crosshair = False
-        self.crosshair_color = None
-        
+                
         # listeners
         self.viewChangeListeners = set()
         self.focusChangeListeners = set()
         self.closeListeners = set()
         self.viewLock = False
         self.focusLock = False
+        summon_core.set_window_on_resize(self.winid, self._on_resize)        
+        
+        # configure window
+        self.set_name(name)
+        self.antialias = True
+        self.crosshair = False
+        self.crosshair_color = None        
         
         # menu
         self.menu = None
@@ -365,7 +366,8 @@ class Window (object):
             print e
 
     #===========================================================
-    # view
+    # window properties
+    
     def is_open(self):
         """returns whether underling SUMMON window is open"""
         
@@ -438,43 +440,14 @@ class Window (object):
     def on_resize(self, width, height):
         """a callback for when the window resizes"""
         pass
-        
-    def _on_view_change(self):
-        """a callback for when view changes"""
-        
-        if self.viewLock: return
-        self.viewLock = True
-        
-        for listener in self.viewChangeListeners:
-            listener()
-         
-        self.viewLock = False
     
+    def raise_window(self, raised):
+        summon_core.raise_window(self.winid, raised)
     
-    def _on_focus_change(self):
-        """a callback for when zoom focus changes"""
         
-        if self.focusLock: return
-        self.focusLock = True
-    
-        for listener in self.focusChangeListeners:
-            listener()
-        
-        self.focusLock = False
+    #==================================================================
+    # view
 
-    
-    def add_view_change_listener(self, listener):
-        self.viewChangeListeners.add(listener)
-    
-    def remove_view_change_listener(self, listener):
-        self.viewChangeListeners.remove(listener)
-    
-    def add_focus_change_listener(self, listener):
-        self.focusChangeListeners.add(listener)
-    
-    def remove_focus_change_listener(self, listener):
-        self.focusChangeListeners.remove(listener)
-    
     def focus(self, x, y):
         """set the zoom focus on window position 'x, 'y'"""
         ret = summon_core.focus(self.winid, int(x), int(y))
@@ -564,7 +537,12 @@ class Window (object):
         """centers the view such that all graphical elements are visible"""
         #ret = summon_core.home(self.winid)
         box = self.world.get_bounding()
-        self.set_visible(*box)
+        
+        if box[0] > -util.INF and \
+           box[1] > -util.INF and \
+           box[2] < util.INF and \
+           box[3] < util.INF:
+            self.set_visible(*box)
 
     def set_visible(self, x1, y1, x2, y2):
         """sets the current view to the specified bounding box"""
@@ -583,9 +561,46 @@ class Window (object):
         """
         return summon_core.get_visible(self.winid)
 
+    
+    #======================================================================
+    # view listeners
+    
+    def add_view_change_listener(self, listener):
+        self.viewChangeListeners.add(listener)
+    
+    def remove_view_change_listener(self, listener):
+        self.viewChangeListeners.remove(listener)
+    
+    def add_focus_change_listener(self, listener):
+        self.focusChangeListeners.add(listener)
+    
+    def remove_focus_change_listener(self, listener):
+        self.focusChangeListeners.remove(listener)
+
+    def _on_view_change(self):
+        """a callback for when view changes"""
         
+        if self.viewLock: return
+        self.viewLock = True
+        
+        for listener in self.viewChangeListeners:
+            listener()
+         
+        self.viewLock = False
+    
+    def _on_focus_change(self):
+        """a callback for when zoom focus changes"""
+        
+        if self.focusLock: return
+        self.focusLock = True
+    
+        for listener in self.focusChangeListeners:
+            listener()
+        
+        self.focusLock = False            
     
     #====================================================================
+    # misc
     
     def set_bgcolor(self, r, g, b):
         """sets the backgroun color of the window"""
@@ -631,6 +646,7 @@ class Window (object):
     
     #=============================================================
     # controller
+    
     def add_binding(self, input_obj, func):
         """add a function to the list of functions bounded to an input"""
         
@@ -676,6 +692,7 @@ class Window (object):
     
     #====================================================================
     # model manipulation (forward to world)
+    
     def clear_groups(self):
         """clears all groups from the world model"""
         return self.world.clear_groups()
@@ -730,14 +747,18 @@ class Window (object):
     
         
     def set_menu(self, menu):
-        if menu != None:
-            summon_core.attach_menu(self.winid, menu.menuid, self.menuButton)
-        elif self.menu != None:
+        if menu != self.menu and self.menu != None:
             summon_core.detach_menu(self.winid, self.menu.menuid, self.menuButton)
         
         self.menu = menu
-
     
+    def activate_menu(self):
+        if self.menu != None:
+            summon_core.attach_menu(self.winid, self.menu.menuid, self.menuButton)
+    
+    def deactivate_menu(self):
+        if self.menu != None:
+            summon_core.detach_menu(self.winid, self.menu.menuid, self.menuButton)
     
     #===================================================================
     # misc
@@ -753,7 +774,7 @@ class Window (object):
         zoomy = (coords[3] - coords[1]) / size[1]
 
         # create new window with same model and coords    
-        win = Window(worldid=self.world.id)
+        win = Window(world=self.world)
         win.set_size(* size)
         win.set_position(* self.get_position())
         win.set_name(self.get_name())

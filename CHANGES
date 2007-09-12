@@ -4,6 +4,7 @@ SUMMON Change Log
 2007/9/9
 - added aGroup.get_parent()
 - fully implement exception raising
+- fixed mouse passive motion in an opening window bug
 
 
 2007/8/29
