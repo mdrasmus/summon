@@ -437,10 +437,12 @@ public:
                 Element *elm = Id2Element(cmd->groupid);
                 SummonModel *model = GetModelOfElement(elm);
 
-                if (model)
-                    for (unsigned int i=0; i<cmd->groupids.size(); i++)
-                        model->RemoveElement(Id2Element(cmd->groupids[i]));
-                else
+                if (model) {
+                    for (unsigned int i=0; i<cmd->groupids.size(); i++) {
+                        if (!model->RemoveElement(Id2Element(cmd->groupids[i])))
+                            break;
+                    }
+                } else {
                     for (unsigned int i=0; i<cmd->groupids.size(); i++) {
                         Element *child = Id2Element(cmd->groupids[i]);
                         if (child->GetParent() == elm)
@@ -448,6 +450,7 @@ public:
                         else
                             Error("element is not a child");
                     }
+                }
                 } break;
             
             case REPLACE_GROUP_COMMAND2: {

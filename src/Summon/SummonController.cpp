@@ -142,10 +142,10 @@ void SummonController::HotspotClick(Vertex2i pos)
 }
 
 
-void SummonController::Motion(int x, int y)
+void SummonController::PassiveMotion(int x, int y)
 {
     // pass motion event to base class
-    Glut2DController::Motion(x, y);
+    Glut2DController::PassiveMotion(x, y);
     
     // notify view that mouse has moved
     m_view->SetMousePos(x, y);

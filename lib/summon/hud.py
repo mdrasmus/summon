@@ -92,6 +92,7 @@ class SideBar (object):
         self.shown = False
         if self.gid != None:
             self.win.screen.remove_group(self.gid)
+            self.gid = None
     
     
     def toggleMenu(self):

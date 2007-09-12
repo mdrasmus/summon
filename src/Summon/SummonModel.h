@@ -52,7 +52,7 @@ public:
     // model manipulation
     virtual void ExecCommand(Command &command);
     Element *AddElement(Element *parent, Scm code);
-    void RemoveElement(Element *elm);
+    bool RemoveElement(Element *elm);
     bool ReplaceElement(Element *oldelm, Element *newelm);
     Element *ReplaceElement(Element *oldelm, Scm code);
     

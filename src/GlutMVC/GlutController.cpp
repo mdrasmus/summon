@@ -32,7 +32,7 @@ GlutController::GlutController(int window):
     glutKeyboardFunc(GlutController::GlutKey);
     glutSpecialFunc(GlutController::GlutSpecialKey);
     glutMotionFunc(GlutController::GlutMotion);
-    glutPassiveMotionFunc(GlutController::GlutMotion);
+    glutPassiveMotionFunc(GlutController::GlutPassiveMotion);
     glutMouseFunc(GlutController::GlutMouseClick);
 }
 
@@ -70,6 +70,13 @@ void GlutController::GlutMotion(int x, int y)
 {
     PyGILState_STATE gstate = PyGILState_Ensure();
     g_controllers[glutGetWindow()]->Motion(x, y);
+    PyGILState_Release(gstate);
+}
+
+void GlutController::GlutPassiveMotion(int x, int y)
+{
+    PyGILState_STATE gstate = PyGILState_Ensure();
+    g_controllers[glutGetWindow()]->PassiveMotion(x, y);
     PyGILState_Release(gstate);
 }
 
@@ -125,6 +132,22 @@ void GlutController::Motion(int x, int y)
     ProcessInput(input);
 
     m_lastMouse = input.pos;
+}
+
+
+void GlutController::PassiveMotion(int x, int y)
+{
+    /*
+    MouseMotionInput input;
+    input.pos    = Vertex2i(x, y);
+    input.vel    = m_lastMouse - input.pos;
+    input.button = m_button;
+    input.state  = m_state;
+    input.mod    = m_mod;
+    
+    ProcessInput(input);
+    */
+    m_lastMouse = Vertex2i(x, y);
 }
 
 

@@ -32,7 +32,7 @@ public:
     inline void SetWorldModel(SummonModel *model) { m_world = model; }
     inline void SetScreenModel(SummonModel *model) { m_screen = model; }    
    
-    virtual void Motion(int x, int y);
+    virtual void PassiveMotion(int x, int y);
 
     virtual void ViewRedraw(GlutView *view) {}
     virtual void ViewResize(GlutView *view);

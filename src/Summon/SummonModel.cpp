@@ -51,7 +51,9 @@ void SummonModel::ExecCommand(Command &command)
             
             // loop through group ids
             for (unsigned int i=0; i<remove->groupids.size(); i++) {
-                RemoveElement(Id2Element(remove->groupids[i]));
+                if (!RemoveElement(Id2Element(remove->groupids[i]))) {
+                    remove->SetReturn(Scm_NULL);
+                }
             }
             
             } break;
@@ -199,7 +201,8 @@ bool SummonModel::ReplaceElement(Element *oldelm, Element *newelm)
     }
     
     // remove old element
-    RemoveElement(oldelm);
+    if (!RemoveElement(oldelm))
+        return false;
     parent->AddChild(newelm);
     Update(newelm);
     
@@ -218,7 +221,8 @@ Element *SummonModel::ReplaceElement(Element *oldelm, Scm code)
     }
     
     // remove old element
-    RemoveElement(oldelm);
+    if (!RemoveElement(oldelm))
+        return NULL;
     Element *elm = AddElement(parent, code);
     
     return elm;
@@ -326,8 +330,13 @@ void SummonModel::UpdateTextElement(TextElement *textElm, BuildEnv *env)
 
 
 
-void SummonModel::RemoveElement(Element *elm)
+bool SummonModel::RemoveElement(Element *elm)
 {
+    if (elm->GetModel() != this) {
+        Error("element is not in model");
+        return false;
+    }
+
     Element *parent = elm->GetParent();
     
     // notify parent
@@ -336,6 +345,7 @@ void SummonModel::RemoveElement(Element *elm)
 
     // remove any hotspots underneath this group
     RemoveHotspots(elm);
+    elm->SetModel(NULL);
 
     // make sure model always has a root
     if (elm == m_root) {
@@ -352,6 +362,8 @@ void SummonModel::RemoveElement(Element *elm)
     // delete only if it is not referenced by python
     if (!elm->IsReferenced())
         delete elm;
+    
+    return true;
 }
 
 
