@@ -27,7 +27,7 @@ class Select:
             if win.get_bgcolor() == (0, 0, 0):
                 self.strokeColor = (1, 1, 1, 1)
             else:
-                self.strokeColor = (0, 0, 0, 0)
+                self.strokeColor = (0, 0, 0, 1)
         else:
             self.strokeColor = strokeColor
         
@@ -48,6 +48,7 @@ class Select:
     def start(self):
         """initialize mouse bindings"""
         
+        # TODO: remove hard-coded bindings
         # setup bindings
         self.win.add_binding(input_click("middle", "down"), self.click)
         self.win.add_binding(input_motion("middle", "down"), self.drag)

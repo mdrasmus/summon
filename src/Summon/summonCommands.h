@@ -588,7 +588,7 @@ public:
     virtual Command* Create() { return new DetachMenuCommand(); }
     virtual int GetId() { return DETACH_MENU_COMMAND; }
 
-    virtual const char *GetName() { return "dettach_menu"; }
+    virtual const char *GetName() { return "detach_menu"; }
     virtual const char *GetUsage() 
     { return "windowid, menuid, button"; }
     virtual const char *GetDescription() 
@@ -596,7 +596,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "dds", &windowid, &menuid, &button);
+        return ParseScm(ErrorHelp(), lst, "ddd", &windowid, &menuid, &button);
     }
     
     int menuid;

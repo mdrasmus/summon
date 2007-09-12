@@ -42,12 +42,24 @@ win.set_binding(input_motion("right", "down", "shift"), "zoomy")
 
 
 # hotspot clicking
-#win.set_binding(input_click("middle", "up"), "hotspot_click")
+win.set_binding(input_click("middle", "up"), "hotspot_click")
 win.set_binding(input_click("left", "up", "ctrl"), "hotspot_click")
 
+
 # menus
-win.set_menu_button("middle")
-win.set_menu(summon.SummonMenu(win))
+def startmenu(win):
+    summenu = summon.SummonMenu(win)
+    def func():
+        win.set_menu_button("left")
+        win.set_menu(summenu)
+    return func
+def stopmenu(win):
+    def func():
+        win.set_menu(None)
+    return func
+win.set_binding(input_key("`"), startmenu(win))
+#win.add_binding(input_click("left", "down"), stopmenu(win))
+win.add_binding(input_click("left", "up"), stopmenu(win))
 
 # misc
 win.set_binding(input_key("h"), win.home)
