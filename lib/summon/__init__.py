@@ -18,6 +18,7 @@ import os, sys
 
 from summon.core import *
 from summon import util
+import summon.svg
 
 
 VERSION = "1.8.1"
@@ -411,7 +412,7 @@ class Window (object):
         self.name = name
         return summon_core.set_window_name(self.winid, name)
     
-    def get_name(self, name):
+    def get_name(self):
         """returns the name of a window"""
         return self.name
     
@@ -755,6 +756,7 @@ class Window (object):
         win = Window(worldid=self.world.id)
         win.set_size(* size)
         win.set_position(* self.get_position())
+        win.set_name(self.get_name())
         win.set_bgcolor(* bg)
         
         # make the view the same
@@ -841,6 +843,11 @@ class Model (object):
 
 
 class Menu:
+    """SUMMON Menu
+       
+       This class creates pop-up menus that can be displayed by SUMMON Windows.
+    """
+
     def __init__(self):
         self.menuid = summon_core.new_menu()
         self.items = []
@@ -849,6 +856,8 @@ class Menu:
     # python exit.
     
     def delete(self):
+        """delete all the resources of the menu"""
+        
         # delete all items first
         self.clear()
         
@@ -902,8 +911,11 @@ class Menu:
         summon_core.set_submenu(self.menuid, index+1, text, submenu.menuid)
     
     def remove(self, index):
-        summon_core.remove_menu_item(self.menuid, index)
+        """removes a menu item at position 'index'"""
+    
+        summon_core.remove_menu_item(self.menuid, index+1)
         
+        # remove item from internal list
         olditems = self.items
         self.items = []
         for i in xrange(len(olditems)):
@@ -919,15 +931,23 @@ class Menu:
 
 
 class SummonMenu (Menu):
-    """Default summon menu"""
+    """Default SUMMON menu"""
     
     def __init__(self, win):
         Menu.__init__(self)
-
+        
         self.add_entry("home   (h)", win.home)        
         self.add_toggle("crosshair   (ctrl+x)", win.toggle_crosshair, False)
         self.add_toggle("smooth   (ctrl+l)", win.toggle_aliasing, True)
         self.add_entry("duplicate window   (ctrl+d)", win.duplicate)
+        
+        self.print_screen_menu = Menu()
+        self.print_screen_menu.add_entry("svg   (ctrl+p)", 
+            lambda: summon.svg.printScreen(win))
+        self.print_screen_menu.add_entry("png   (ctrl+P)", 
+            lambda: summon.svg.printScreenPng(win))
+        self.add_submenu("print screen", self.print_screen_menu)
+        
         self.add_entry("close   (q)", win.close)
 
 
