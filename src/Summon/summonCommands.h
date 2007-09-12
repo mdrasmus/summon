@@ -44,6 +44,17 @@ enum {
     TIMER_CALL_COMMAND,
     REDRAW_CALL_COMMAND,
     
+    // menu commands
+    NEW_MENU_COMMAND,
+    DEL_MENU_COMMAND,
+    ADD_MENU_ENTRY_COMMAND,
+    ADD_SUBMENU_COMMAND,
+    REMOVE_MENU_ITEM_COMMAND,
+    SET_MENU_ENTRY_COMMAND,
+    SET_SUBMENU_COMMAND,
+    ATTACH_MENU_COMMAND,
+    DETACH_MENU_COMMAND,
+    
     APPEND_GROUP_COMMAND,
     REMOVE_GROUP_COMMAND2,
     REPLACE_GROUP_COMMAND2,
@@ -396,6 +407,204 @@ public:
     
     Scm proc;
 };
+
+
+//=============================================================================
+// menu commands
+
+class NewMenuCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new NewMenuCommand(); }
+    virtual int GetId() { return NEW_MENU_COMMAND; }
+
+    virtual const char *GetName() { return "new_menu"; }
+    virtual const char *GetUsage() 
+    { return ""; }
+    virtual const char *GetDescription() 
+    { return "creates a new menu"; }   
+};
+
+class DelMenuCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new DelMenuCommand(); }
+    virtual int GetId() { return DEL_MENU_COMMAND; }
+
+    virtual const char *GetName() { return "del_menu"; }
+    virtual const char *GetUsage() 
+    { return "menuid"; }
+    virtual const char *GetDescription() 
+    { return "deletes a menu"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "d", &menuid);
+    }
+    
+    int menuid;
+};
+
+class AddMenuEntryCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new AddMenuEntryCommand(); }
+    virtual int GetId() { return ADD_MENU_ENTRY_COMMAND; }
+
+    virtual const char *GetName() { return "add_menu_entry"; }
+    virtual const char *GetUsage() 
+    { return "menuid, text, func"; }
+    virtual const char *GetDescription() 
+    { return "adds an entry to a menu"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "dsp", &menuid, &text, &func);
+    }
+    
+    int menuid;
+    string text;
+    Scm func;
+};
+
+
+class AddSubmenuCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new AddSubmenuCommand(); }
+    virtual int GetId() { return ADD_SUBMENU_COMMAND; }
+
+    virtual const char *GetName() { return "add_submenu"; }
+    virtual const char *GetUsage() 
+    { return "menuid, text, submenuid"; }
+    virtual const char *GetDescription() 
+    { return "adds a submenu to a menu"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "dsd", &menuid, &text, &submenuid);
+    }
+    
+    int menuid;
+    string text;
+    int submenuid;
+};
+
+
+class RemoveMenuItemCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new RemoveMenuItemCommand(); }
+    virtual int GetId() { return REMOVE_MENU_ITEM_COMMAND; }
+
+    virtual const char *GetName() { return "remove_menu_item"; }
+    virtual const char *GetUsage() 
+    { return "menuid, index"; }
+    virtual const char *GetDescription() 
+    { return "remove a menu item from a menu"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "dd", &menuid, &index);
+    }
+    
+    int menuid;
+    int index;
+};
+
+
+class SetMenuEntryCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new SetMenuEntryCommand(); }
+    virtual int GetId() { return SET_MENU_ENTRY_COMMAND; }
+
+    virtual const char *GetName() { return "set_menu_entry"; }
+    virtual const char *GetUsage() 
+    { return "menuid, index, text, func"; }
+    virtual const char *GetDescription() 
+    { return "set a menu item to a menu entry"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "ddsp", &menuid, &index, &text, &func);
+    }
+    
+    int menuid;
+    int index;
+    string text;
+    Scm func;
+};
+
+class SetSubmenuCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new SetSubmenuCommand(); }
+    virtual int GetId() { return SET_SUBMENU_COMMAND; }
+
+    virtual const char *GetName() { return "set_submenu"; }
+    virtual const char *GetUsage() 
+    { return "menuid, index, text, submenuid"; }
+    virtual const char *GetDescription() 
+    { return "set a menu item to a menu entry"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "ddsd", &menuid, &index, &text, &submenuid);
+    }
+    
+    int menuid;
+    int index;
+    string text;
+    int submenuid;
+};
+
+
+class AttachMenuCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new AttachMenuCommand(); }
+    virtual int GetId() { return ATTACH_MENU_COMMAND; }
+
+    virtual const char *GetName() { return "attach_menu"; }
+    virtual const char *GetUsage() 
+    { return "windowid, menuid, button"; }
+    virtual const char *GetDescription() 
+    { return "attach a menu to a window"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "ddd", &windowid, &menuid, &button);
+    }
+    
+    int menuid;
+    int button;
+};
+
+
+class DetachMenuCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new DetachMenuCommand(); }
+    virtual int GetId() { return DETACH_MENU_COMMAND; }
+
+    virtual const char *GetName() { return "dettach_menu"; }
+    virtual const char *GetUsage() 
+    { return "windowid, menuid, button"; }
+    virtual const char *GetDescription() 
+    { return "detach a menu from a window"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "dds", &windowid, &menuid, &button);
+    }
+    
+    int menuid;
+    int button;
+};
+
+//=============================================================================
+// element commands
 
 
 class AppendGroupCommand : public ScriptCommand

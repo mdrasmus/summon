@@ -47,7 +47,12 @@ def walk(node, depth=0):
     for child in node:
         walk(child, depth+1)
 
-svg.writeSvg(win, sys.stdout, win.get_root())
+#svg.writeSvg(win, sys.stdout, win.get_root())
+
+
+def func2(text):
+    print text
+
 
 EOF
 

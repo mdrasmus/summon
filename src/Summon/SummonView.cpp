@@ -43,6 +43,8 @@ SummonView::SummonView(SummonModel *model, int width, int height, const char *na
     glEnable(GL_POINT_SMOOTH);    
     glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
     glEnable(GL_BLEND);
+    
+     
 }
 
 
@@ -247,7 +249,50 @@ void SummonView::ExecCommand(Command &command)
             glutPostRedisplay();
             //Glut2DView::ExecCommand(command);
             break;
+        
+        
+        //=========================================================
+        // menus
+        case ATTACH_MENU_COMMAND: {
+            AttachMenuCommand *cmd = (AttachMenuCommand*) &command;
+            int button;
             
+            MakeCurrentWindow();
+            glutSetMenu(cmd->menuid);
+            
+            switch (cmd->button) {
+                case 0: button = GLUT_LEFT_BUTTON; break;
+                case 1: button = GLUT_MIDDLE_BUTTON; break;
+                case 2: button = GLUT_RIGHT_BUTTON; break;
+                default:
+                    Error("unknown menu button '%d'", button);
+            }
+            
+            glutAttachMenu(button);
+            
+            } break;
+        
+        
+        case DETACH_MENU_COMMAND: {
+            DetachMenuCommand *cmd = (DetachMenuCommand*) &command;
+            int button;
+            
+            MakeCurrentWindow();
+            glutSetMenu(cmd->menuid);
+            
+            switch (cmd->button) {
+                case 0: button = GLUT_LEFT_BUTTON; break;
+                case 1: button = GLUT_MIDDLE_BUTTON; break;
+                case 2: button = GLUT_RIGHT_BUTTON; break;
+                default:
+                    Error("unknown menu button '%d'", button);
+            }
+            
+            glutDetachMenu(button);
+            
+            } break;
+        
+        
         default:
             MakeCurrentWindow();
             Glut2DView::ExecCommand(command);

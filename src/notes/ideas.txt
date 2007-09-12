@@ -1,4 +1,30 @@
+Tue Sep 11 21:12:44 EDT 2007
 
+- glut menus
+    win.set_menu_binding('left'|'middle'|'right', ['alt' | 'ctrl' | 'shift'])
+    win.set_menu(menu)
+
+
+class Menu:
+    def __init__(self):
+        self.menuid = summon_core.new_menu()
+    
+    def __del__(self):
+        summon_core.del_menu(self.menuid)
+
+    def add_entry(self, text, func):
+        summon_core.add_menu_entry(self.menuid, text, func)
+    
+    def add_submenu(self, submenu):
+        summon_core.add_submenu(self.menuid, submenu.menuid)
+    
+    def remove(self, index):
+        summon_core.remove_menu_item(self.menuid, index)
+    
+    
+
+
+=============================================================================
 Sun Sep  9 18:59:40 EDT 2007
 
 - add zoom_clamp
@@ -9,7 +35,6 @@ Sun Sep  9 18:59:40 EDT 2007
 
 - get_bounding for SVG
 - add drag and select
-- glut menus
 - fix SVG text_clip
 
 

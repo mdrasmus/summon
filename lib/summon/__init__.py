@@ -323,6 +323,10 @@ class Window (object):
         self.viewLock = False
         self.focusLock = False
         
+        # menu
+        self.menu = None
+        self.menuButton = 1  # middle mouse button
+        
         # load default configuration
         if loadconfig:
             self.load_config()
@@ -359,6 +363,7 @@ class Window (object):
             print "Warning: could not import summon_config"
             print e
 
+    #===========================================================
     # view
     def is_open(self):
         """returns whether underling SUMMON window is open"""
@@ -709,6 +714,29 @@ class Window (object):
         return self.world.get_root_id()
     
     
+    #====================================================================
+    # menu
+    
+    def set_menu_button(self, button):
+        lookup = {"left": 0,
+                  "middle": 1,
+                  "right": 2}
+        
+        if button not in lookup:
+            raise Exception("unknown mouse button '%s'" % button)
+        
+        self.menuButton = lookup[button]
+    
+        
+    def set_menu(self, menu):
+        if menu != None:
+            summon_core.attach_menu(self.winid, menu.menuid, self.menuButton)
+        elif self.menu != None:
+            summon_core.detach_menu(self.winid, self.menu.menuid, self.menuButton)
+        
+        self.menu = menu
+
+    
     
     #===================================================================
     # misc
@@ -726,6 +754,7 @@ class Window (object):
         # create new window with same model and coords    
         win = Window(worldid=self.world.id)
         win.set_size(* size)
+        win.set_position(* self.get_position())
         win.set_bgcolor(* bg)
         
         # make the view the same
@@ -810,6 +839,96 @@ class Model (object):
 
 
 
+
+class Menu:
+    def __init__(self):
+        self.menuid = summon_core.new_menu()
+        self.items = []
+    
+    # NOTE: I tried the __del__ function, but had trouble with destroyMenu on
+    # python exit.
+    
+    def delete(self):
+        # delete all items first
+        self.clear()
+        
+        # delete menu
+        summon_core.del_menu(self.menuid)
+                    
+
+    def add_entry(self, text, func):
+        summon_core.add_menu_entry(self.menuid, text, func)
+        self.items.append([text, func])
+    
+    def add_toggle(self, text, func, state=False):
+        item = [text, func, state]
+        self.items.append(item)
+    
+        if state:
+            summon_core.add_menu_entry(self.menuid, text + " [x]", 
+                                       lambda: self._on_toggle(item))
+        else:
+            summon_core.add_menu_entry(self.menuid, text + " [  ]",
+                                       lambda: self._on_toggle(item))
+
+    def _on_toggle(self, item):
+        index = self.items.index(item)
+        text, func, state = item
+        
+        # toggle state
+        state = not state
+        item[2] = state
+        
+        # update menu
+        if state:
+            self.set_entry(index, text + " [x]", lambda: self._on_toggle(item))
+        else:
+            self.set_entry(index, text + " [  ]", lambda: self._on_toggle(item))
+        
+        # call function
+        func()
+    
+    def add_submenu(self, text, submenu):
+        summon_core.add_submenu(self.menuid, text, submenu.menuid)
+        self.items.append([text, submenu])
+    
+    def get_item(self, index):
+        return self.items[index]
+    
+    def set_entry(self, index, text, func):
+        summon_core.set_menu_entry(self.menuid, index+1, text, func)
+    
+    def set_submenu(self, index, text, submenu):
+        summon_core.set_submenu(self.menuid, index+1, text, submenu.menuid)
+    
+    def remove(self, index):
+        summon_core.remove_menu_item(self.menuid, index)
+        
+        olditems = self.items
+        self.items = []
+        for i in xrange(len(olditems)):
+            if i != index:
+                self.items.append(olditems[i])
+    
+    def clear(self):
+        """clears all menu items"""
+        
+        for i, item in enumerate(self.items):
+            if not isinstance(item[1], Menu):
+                summon_core.remove_menu_item(self.menuid, i+1)    
+
+
+class SummonMenu (Menu):
+    """Default summon menu"""
+    
+    def __init__(self, win):
+        Menu.__init__(self)
+
+        self.add_entry("home   (h)", win.home)        
+        self.add_toggle("crosshair   (ctrl+x)", win.toggle_crosshair, False)
+        self.add_toggle("smooth   (ctrl+l)", win.toggle_aliasing, True)
+        self.add_entry("duplicate window   (ctrl+d)", win.duplicate)
+        self.add_entry("close   (q)", win.close)
 
 
 class VisObject (object):

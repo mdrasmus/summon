@@ -67,6 +67,18 @@ void summonCommandsInit()
     RegisterScriptCommand(TimerCallCommand)     g()
     RegisterScriptCommand(RedrawCallCommand)    g()
     
+    // menu commands
+    RegisterScriptCommand(NewMenuCommand)         g() gl()
+    RegisterScriptCommand(DelMenuCommand)         g() gl()
+    RegisterScriptCommand(AddMenuEntryCommand)    g() gl()
+    RegisterScriptCommand(AddSubmenuCommand)      g() gl()
+    RegisterScriptCommand(RemoveMenuItemCommand)  g() gl()
+    RegisterScriptCommand(SetMenuEntryCommand)    g() gl()
+    RegisterScriptCommand(SetSubmenuCommand)      g() gl()
+    RegisterScriptCommand(AttachMenuCommand)      v() gl()
+    RegisterScriptCommand(DetachMenuCommand)      v() gl()
+
+    
     RegisterScriptCommand(AppendGroupCommand)   g()
     RegisterScriptCommand(RemoveGroupCommand2)  g()
     RegisterScriptCommand(ReplaceGroupCommand2) g()

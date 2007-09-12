@@ -72,7 +72,9 @@ public:
         m_timerCommand(NULL),
         m_timerDelay(0),
         m_windowOffset(0,0),
-        m_windowCloseCallback(Scm_EOL)
+        m_windowCloseCallback(Scm_EOL),
+        
+        m_nextMenuItem(1)
     {
     }
     
@@ -353,8 +355,67 @@ public:
                 SetTimerCommand(cmd->delay, new CallProcCommand(cmd->proc));
                 } break;
 
+
+            //=============================================================
+            case NEW_MENU_COMMAND: {
+                // create a new menu
+                int menuid = glutCreateMenu(SummonModule::MenuCallback);
+                ((DelMenuCommand*) &command)->SetReturn(Int2Scm(menuid));
+                
+                } break;
+                
+            case DEL_MENU_COMMAND: {
+                // delete a menu
+                glutDestroyMenu(((DelMenuCommand*) &command)->menuid);
+                } break;
             
+            case ADD_MENU_ENTRY_COMMAND: {
+                // add an entry to a menu
+                AddMenuEntryCommand *cmd = (AddMenuEntryCommand*) &command;
+                
+                glutSetMenu(cmd->menuid);
+                glutAddMenuEntry(cmd->text.c_str(), m_nextMenuItem);
+                m_menuItems[m_nextMenuItem] = cmd->func;
+                m_nextMenuItem++;
+                
+                } break;
+                
+            case ADD_SUBMENU_COMMAND: {
+                AddSubmenuCommand *cmd = (AddSubmenuCommand*) &command;
+                
+                glutSetMenu(cmd->menuid);
+                glutAddSubMenu(cmd->text.c_str(), cmd->submenuid);
+                
+                } break;
             
+            case REMOVE_MENU_ITEM_COMMAND: {
+                RemoveMenuItemCommand *cmd = (RemoveMenuItemCommand*) &command;
+            
+                glutSetMenu(cmd->menuid);
+                glutRemoveMenuItem(cmd->index);
+                m_menuItems.erase(cmd->index);
+                
+                } break;
+            
+            case SET_MENU_ENTRY_COMMAND: {
+                SetMenuEntryCommand *cmd = (SetMenuEntryCommand*) &command;
+                
+                glutSetMenu(cmd->menuid);
+                glutChangeToMenuEntry(cmd->index, cmd->text.c_str(), m_nextMenuItem);
+                m_menuItems[m_nextMenuItem] = cmd->func;
+                m_nextMenuItem++;
+                } break;
+                
+            
+            case SET_SUBMENU_COMMAND: {
+                SetSubmenuCommand *cmd = (SetSubmenuCommand*) &command;
+                
+                glutSetMenu(cmd->menuid);
+                glutChangeToSubMenu(cmd->index, cmd->text.c_str(), cmd->submenuid);
+                } break;
+            
+            //=============================================================
+            // element commands
             case APPEND_GROUP_COMMAND: {
                 // a group to another
                 AppendGroupCommand *cmd = (AppendGroupCommand*) &command;
@@ -478,6 +539,21 @@ public:
                 }
         }
     }
+    
+    static void MenuCallback(int item)
+    {
+        PyGILState_STATE gstate = PyGILState_Ensure();
+        
+        Scm proc = g_summon->m_menuItems[item];
+        Scm ret = ScmApply(proc, Scm_EOL);
+
+        //display exceptions
+        if (Scm2Py(ret) == NULL)
+            PyErr_Print();
+        
+        PyGILState_Release(gstate);    
+    }
+    
     
     int NewWindow()
     {
@@ -801,6 +877,7 @@ public:
     int m_timerDelay;
     
     
+    
     // list of commands directly visible in python
     vector<StringCommand*> m_summonCommands;
     
@@ -813,8 +890,12 @@ public:
     map<GlutView*, SummonWindow*> m_closeWaiting;
     vector<SummonWindow*> m_deleteWaiting;
     Vertex2i m_windowOffset;
-    
+        
     Scm m_windowCloseCallback;
+    
+    // menus
+    int m_nextMenuItem;
+    map<int, Scm> m_menuItems;
 };
 
 
