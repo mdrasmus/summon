@@ -28,6 +28,8 @@ GlutView::GlutView(int width, int height, const char *name) :
 
     glutInitWindowSize(width, height);
     
+    // use default position
+    glutInitWindowPosition(-1, -1);
     
     
     // create glut window and register it
@@ -102,6 +104,7 @@ void GlutView::Reshape(int width, int height)
          iter != m_listeners.end(); iter++) {
         (*iter)->ViewResize(this);
     }
+    MakeCurrentWindow();    
 }
 
 
@@ -113,6 +116,7 @@ void GlutView::OnClose()
         GlutViewListener *listener = (*iter);
         listener->ViewClose(this);
     }
+    MakeCurrentWindow();
 }
 
 void GlutView::Close()

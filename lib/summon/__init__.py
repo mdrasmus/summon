@@ -105,20 +105,23 @@ class SummonTimer:
     def begin_updating(self):
         """starts the SUMMON timer"""
         
-        windows = set(summon_core.get_windows())
         dels = set()
         
         # call each timer that has past
         mindelay = util.INF
         for timer in self.updateFuncs:
-            if timer.win.winid in windows:
+            if timer.win.is_open():
+                # process timer if window is open
                 timer.delay -= self.timestep
                 
                 if timer.delay <= 0:
+                    # call user function
                     timer.func()
                     if timer.repeat:
+                        # reset timer
                         timer.delay = timer.interval
                     else:
+                        # delete timer
                         dels.add(timer)
                 
                 mindelay = min(mindelay, timer.delay)

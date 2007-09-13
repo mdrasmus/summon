@@ -64,7 +64,7 @@ void summonCommandsInit()
     RegisterScriptCommand(DelModelCommand)      g()
     RegisterScriptCommand(GetWindowDecorationCommand) g()
     RegisterScriptCommand(SetWindowCloseCallbackCommand) g()
-    RegisterScriptCommand(TimerCallCommand)     g()
+    RegisterScriptCommand(TimerCallCommand)     g() gl()
     RegisterScriptCommand(RedrawCallCommand)    g()
     
     // menu commands
@@ -79,10 +79,10 @@ void summonCommandsInit()
     RegisterScriptCommand(DetachMenuCommand)      v() gl()
 
     
-    RegisterScriptCommand(AppendGroupCommand)   g()
-    RegisterScriptCommand(RemoveGroupCommand2)  g()
-    RegisterScriptCommand(ReplaceGroupCommand2) g()
-    RegisterScriptCommand(ShowGroupCommand2)    g()
+    RegisterScriptCommand(AppendGroupCommand)   g() gl()
+    RegisterScriptCommand(RemoveGroupCommand2)  g() gl()
+    RegisterScriptCommand(ReplaceGroupCommand2) g() gl()
+    RegisterScriptCommand(ShowGroupCommand2)    g() gl()
     RegisterScriptCommand(GetBoundingCommand2)  g()
     
     // model commands

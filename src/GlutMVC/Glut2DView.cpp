@@ -22,7 +22,6 @@ Glut2DView::Glut2DView(int width, int height, const char *name) :
    m_trans(0, 0),
    m_zoom(1.0, 1.0)
 {
-   SetVisible(0, 0, 10, 10);
 }
 
 
@@ -135,10 +134,11 @@ void Glut2DView::Reshape(int w, int h)
    glLoadIdentity();
    glOrtho(0, w, 0, h, -1.0, 1.0);
   
-    // window has been closed
+    // window has resized
     for (ListenerIter iter = m_listeners.begin(); 
          iter != m_listeners.end(); iter++) {
         (*iter)->ViewResize(this);
+        MakeCurrentWindow();
     }
 }
 
