@@ -696,19 +696,24 @@ public:
     {
         // do initialization that can only be done after first pump of the 
         // GLUT event loop
+
+        glutSetWindow(g_hidden_window);        
+        int winx = glutGet(GLUT_WINDOW_X) - g_summon->m_windowOffset.x;
+        int winy = glutGet(GLUT_WINDOW_Y) - g_summon->m_windowOffset.y;
         
-        
-        // get window offset
-        glutSetWindow(g_hidden_window);
-        g_summon->m_windowOffset.x = glutGet(GLUT_WINDOW_X) - INIT_WINDOW_X;
-        g_summon->m_windowOffset.y = glutGet(GLUT_WINDOW_Y) - INIT_WINDOW_Y;
-        glutHideWindow();
-        //glutIdleFunc(NULL);
-        
-                
-        g_summon->m_initialized = true;
-        
-        glutTimerFunc(0, Timer, 0);
+        if (winx != INIT_WINDOW_X || winy != INIT_WINDOW_Y) {
+            // get window offset
+
+            g_summon->m_windowOffset.x = glutGet(GLUT_WINDOW_X) - INIT_WINDOW_X;
+            g_summon->m_windowOffset.y = glutGet(GLUT_WINDOW_Y) - INIT_WINDOW_Y;
+            //glutIdleFunc(NULL);
+            
+            glutTimerFunc(0, FirstTimer, 1);
+        } else {
+            glutHideWindow();                
+            g_summon->m_initialized = true;      
+            glutTimerFunc(0, Timer, 0);
+        }
     }
     
     
@@ -952,7 +957,7 @@ SummonMainLoop(PyObject *self, PyObject *tup)
 #endif
     
     // initialize hidden window
-    glutInitWindowSize(100, 100);
+    glutInitWindowSize(1, 1);
     glutInitWindowPosition(INIT_WINDOW_X, INIT_WINDOW_Y);
     g_hidden_window = glutCreateWindow("SUMMON");
     glutDisplayFunc(HiddenDisplay);
@@ -963,7 +968,7 @@ SummonMainLoop(PyObject *self, PyObject *tup)
     g_summon->m_threadId = PyThread_get_thread_ident();
 
     // setup glut timer
-    glutTimerFunc(0, Summon::SummonModule::FirstTimer, 0);
+    glutTimerFunc(0, Summon::SummonModule::FirstTimer, 1);
     
     
     // begin processing of GLUT events
