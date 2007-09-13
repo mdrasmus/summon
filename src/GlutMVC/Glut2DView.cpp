@@ -138,8 +138,8 @@ void Glut2DView::Reshape(int w, int h)
     for (ListenerIter iter = m_listeners.begin(); 
          iter != m_listeners.end(); iter++) {
         (*iter)->ViewResize(this);
-        MakeCurrentWindow();
     }
+    MakeCurrentWindow();
 }
 
 

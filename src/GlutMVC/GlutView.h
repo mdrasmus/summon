@@ -48,11 +48,12 @@ public:
 
     virtual void ExecCommand(Command &command);
 
+    // TODO: think more about how window resizing is treated with threads
     virtual void Resize(int width, int height)
     {
         MakeCurrentWindow(); 
         glutReshapeWindow(width, height);
-        Reshape(width, height);
+        //Reshape(width, height);
         m_windowSize = Vertex2i(width, height);
         glutPostRedisplay();
     }
@@ -89,6 +90,7 @@ public:
     
     inline void UpdatePosition()
     {
+        MakeCurrentWindow();
         m_windowPos.x = glutGet(GLUT_WINDOW_X) - m_windowOffset.x;
         m_windowPos.y = glutGet(GLUT_WINDOW_Y) - m_windowOffset.y;
     }
