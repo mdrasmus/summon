@@ -109,8 +109,6 @@ class WindowEnsemble (summon.VisObject):
     def stack(self, win):
         """restack windows together"""
         
-        print win.name
-        
         target_pos = win.get_position()
         target_size = win.get_size()
         

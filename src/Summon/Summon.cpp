@@ -705,8 +705,6 @@ public:
         glutHideWindow();
         //glutIdleFunc(NULL);
         
-        // let the window manager decide window placement
-        glutInitWindowSize(-1, -1);
                 
         g_summon->m_initialized = true;
         
@@ -954,7 +952,7 @@ SummonMainLoop(PyObject *self, PyObject *tup)
 #endif
     
     // initialize hidden window
-    glutInitWindowSize(1, 1);
+    glutInitWindowSize(100, 100);
     glutInitWindowPosition(INIT_WINDOW_X, INIT_WINDOW_Y);
     g_hidden_window = glutCreateWindow("SUMMON");
     glutDisplayFunc(HiddenDisplay);
