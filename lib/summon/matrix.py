@@ -11,7 +11,7 @@ from summon import multiwindow
 from summon import colors
 
 
-#############################################################################
+#=============================================================================
 # Data Structures
 #
 
@@ -95,7 +95,7 @@ class Matrix (util.Dict):
         self.minval = minval
         
 
-#############################################################################
+#=============================================================================
 # Matrix Reading
 #
 
@@ -308,7 +308,7 @@ def openDense(filename, mat, conf={"cutoff": -util.INF}):
 
 
 
-#######################################################################
+#=============================================================================
 # Drawing
 #
 
@@ -443,7 +443,7 @@ class MatrixViewer (object):
     
     
     def toggleLabelWindows(self):
-        # rotate through (no labels, inline, and panels)
+        """rotates through (no labels, inline, and panels"""
         if self.showLabelWindows:
             self.showLabels = False
             show = False
@@ -596,7 +596,7 @@ class MatrixViewer (object):
             for i in xrange(nrows):
                 x = -.5 - labelPadding
                 y = .5 - i*height + labelSpacing/2.
-                vis.append(text_clip(mat.rowlabels[mat.rinv[i]],
+                vis.append(text_clip(mat.rowlabels[mat.rperm[i]],
                                      x, y, x-labelWidth, y-height+labelSpacing/2.0,
                                      minTextSize, maxTextSize, 
                                      'right', 'middle'))
@@ -609,7 +609,7 @@ class MatrixViewer (object):
             for i in xrange(ncols):
                 x = .5 + labelPadding
                 y = .5 - i*height + labelSpacing/2.
-                vis2.append(text_clip(mat.collabels[mat.cinv[i]],
+                vis2.append(text_clip(mat.collabels[mat.cperm[i]],
                                   x, y, x+labelWidth, y-height+labelSpacing/2.0,
                                   minTextSize, maxTextSize, 
                                   'left', 'middle', 'vertical'))

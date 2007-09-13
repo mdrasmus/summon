@@ -1,9 +1,3 @@
-#!/bin/sh
-
-
-export PYTHONPATH=lib
-
-cat > test.py <<EOF
 
 import sys
 from summon.core import *
@@ -27,19 +21,15 @@ g = group(l,
             lines(color(1,1,1), 0, 100, 100, 0),
             hotspot("click", 0, 0, 100, 100, func),
             color(0, 1, 0, .5),
-            text_clip("hello", 0, 0, 100, 100, 4, 20)))))
-
-
+            text_clip("hello", 0, 0, 100, 100, 4, 20, "vertical")))))
 
 win = summon.Window()
 win.add_group(g)
-win.add_group(color(1,1,1))
-win.add_group(text("white", 0, 0, 100, 100))
 
-l2 = lines(100, 0, 0, 100)
-g.append(l2)
-
-#g.remove(l2)
+q = group(lines(100, 0, 0, 100), 
+          group(* (lines(i, 0, i, 100) 
+                   for i in xrange(5000))))
+g.append(q)
 
 
 def walk(node, depth=0): 
@@ -49,11 +39,3 @@ def walk(node, depth=0):
 
 #svg.writeSvg(win, sys.stdout, win.get_root())
 
-
-def func2(text):
-    print text
-
-
-EOF
-
-python -i test.py
