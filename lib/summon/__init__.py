@@ -441,7 +441,7 @@ class Window (object):
         """a callback for when the window resizes"""
         pass
     
-    def raise_window(self, raised):
+    def raise_window(self, raised=True):
         summon_core.raise_window(self.winid, raised)
     
         
