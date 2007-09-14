@@ -5,6 +5,7 @@ SUMMON Change Log
 - fixed summatrix label display with row/col permutation
 - fixed rare window resize bug
 - fixed rare window position bug (multiwindow "sliding")
+- fixed SVG camera transform
 
 
 2007/9/9

@@ -37,6 +37,12 @@ class SvgWriter:
         (width, height) = win.get_size()    
         bgcolor = win.get_bgcolor()
         
+        # determine camera transform
+        boxWidth  = x2 - x
+        boxHeight = y2 - y
+        scalex = width / boxWidth
+        scaley = height / boxHeight            
+        
         self.out = outfile
         self.curcolor = [1, 1, 1, 1]
 
@@ -46,9 +52,16 @@ class SvgWriter:
         print >>self.out, "<g transform='scale(1, -1)'>"
         print >>self.out, "<rect x='0' y='0' width='%d' height='%d' fill='%s'/>" % \
                 (width, height, color2string(bgcolor))
+        
+        # transform camera
+        print >>outfile, "<g transform='scale(%f, %f)'>"  % (scalex, scaley)
+        print >>outfile, "<g transform='translate(%d, %d)'>" % (-x, -y)
+        print >>outfile, "<g stroke-width='%f'>" % (1 / max(scalex, scaley))
+
 
         self.printElm(group)
 
+        print >>self.out, "</g></g></g>"
         print >>self.out, "</g></g>"
         print >>self.out, svgEndTag
 
