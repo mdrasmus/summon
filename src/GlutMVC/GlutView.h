@@ -86,7 +86,7 @@ public:
     
     inline Vertex2i GetPosition()
     { return m_windowPos; }
-    //{ return Vertex2i(glutGet(GLUT_WINDOW_X), glutGet(GLUT_WINDOW_Y)); }
+
     
     inline void UpdatePosition()
     {

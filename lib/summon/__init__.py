@@ -21,7 +21,7 @@ from summon import util
 import summon.svg
 
 
-VERSION = "1.8.1"
+VERSION = "1.8.2"
 VERSION_INFO = """\
 -----------------------------------------------------------------------------
                                   SUMMON %s

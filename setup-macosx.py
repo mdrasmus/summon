@@ -8,7 +8,7 @@
 
 from distutils.core import setup, Extension
 
-SUMMON_VERSION = '1.8.1'
+SUMMON_VERSION = '1.8.2'
 
 setup(
     name='summon',
@@ -103,7 +103,8 @@ setup(
              "src/Summon/summonCommands.cpp",
              "src/Summon/SummonController.cpp",
              "src/Summon/SummonModel.cpp",
-             "src/Summon/SummonView.cpp"],
+             "src/Summon/SummonView.cpp",
+             "src/Summon/ZoomClamp.cpp"],
             include_dirs=["src/MVC",
                           "src/GlutMVC",
                           "src/Common",

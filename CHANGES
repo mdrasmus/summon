@@ -1,6 +1,12 @@
 SUMMON Change Log
 -----------------
 
+2007/9/14
+- fixed summatrix label display with row/col permutation
+- fixed rare window resize bug
+- fixed rare window position bug (multiwindow "sliding")
+
+
 2007/9/9
 - added aGroup.get_parent()
 - fully implement exception raising

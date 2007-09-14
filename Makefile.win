@@ -84,7 +84,8 @@ OBJS=src/Common/Matrix.obj \
      src/Summon/Summon.obj \
      src/Summon/TextElement.obj \
      src/Summon/Transform.obj \
-     src/Summon/TransformMatrix.obj 
+     src/Summon/TransformMatrix.obj \
+     src/Summon/ZoomClamp.obj
 
 
 OBJS2=$(BUILD_DIR)/src/Common/Matrix.obj \
@@ -112,7 +113,8 @@ OBJS2=$(BUILD_DIR)/src/Common/Matrix.obj \
       $(BUILD_DIR)/src/Summon/Summon.obj \
       $(BUILD_DIR)/src/Summon/TextElement.obj \
       $(BUILD_DIR)/src/Summon/Transform.obj \
-      $(BUILD_DIR)/src/Summon/TransformMatrix.obj
+      $(BUILD_DIR)/src/Summon/TransformMatrix.obj \
+      $(BUILD_DIR)/src/Summon/ZoomClamp.obj
 
       
 
