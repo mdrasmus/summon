@@ -2,21 +2,17 @@ SUMMON Change Log
 -----------------
 
 2007/9/14
+- added GLUT pop-up menus
+- added aGroup.get_parent()
+- added get_bounding() to Model
+- fully implement exception raising
 - fixed summatrix label display with row/col permutation
 - fixed rare window resize bug
 - fixed rare window position bug (multiwindow "sliding")
 - fixed SVG camera transform
-
-
-2007/9/9
-- added aGroup.get_parent()
-- fully implement exception raising
 - fixed mouse passive motion in an opening window bug
+- fixed 64bit in HashTable.h:HashPointer()
 
-
-2007/8/29
-- added fix for 64bit in HashTable.h:HashPointer()
-- added get_bounding() to Model
 
 
 2007/8/27 - summon-1.8.1
@@ -24,19 +20,13 @@ SUMMON Change Log
 
 
 2007/8/25 - summon-1.8
-
-
-2007/8/24
-- cleaned up examples
-- removed concept of group id
-- created setup-macosx.py for Max OS X installation
-- beginning to remove artifical requirement of groups
-- uniform use of python-i
-
-
-2007/8/17
 - created foundation for a more pythonic model interface (merged cobject)
-- bug in example/13_gameoflife.py
+- removed concept of group id
+- beginning to remove artifical requirement of groups
+- cleaned up examples
+- created setup-macosx.py for Max OS X installation
+- uniform use of python-i
+- fixed example/13_gameoflife.py
 
 
 2007/7/11 - summon-1.7.2
@@ -51,7 +41,7 @@ More stability and more complete demos
 - fixes for cygwin compiling
 
 
-2007/5/31
+2007/5/31 - summon-1.7.1
 - added small edits to make OSX compilation go more smoothly
 - trying out git for version control
 - code cleanup
@@ -67,11 +57,11 @@ More stability and more complete demos
 - made source code fully compatible with Visual Studio 2005
 
 
-2007/4/6
+2007/4/6 - summon-1.6.1
 - fixed potential race condition
 
 
-2007/4/5
+2007/4/5 - summon-1.6
 - changed summon into an extension module for python
 - removed Guile backend
 - reorganized summon library

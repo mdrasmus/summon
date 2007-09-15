@@ -198,7 +198,7 @@ Their example input files are given in \code{summon/examples/summatrix/} and
 
 
 
-\subsection{Example Script}
+\subsection{Example script}
 
 For an introduction to the basic commands of SUMMON, let us walk through the
 code of the first example.  To begin, change into the
@@ -207,30 +207,41 @@ text editor.  Also use execute the example with following command.
 
 \codeblock{\$ python 01\_basics.py}
 
-The visualization should immediately appear in your OpenGL window.  The
-following controls are available:
+The visualization (\figref{fig:01_basics}) should immediately appear in your
+OpenGL window.  The following controls are available:
 
 \vspace{.1in}
 \begin{tabular}{ll}
     left mouse button          & scroll \\
     right mouse button         & zoom (down: zoom-out, up: zoom-in)\\
-    Ctrl + right mouse button  & zoom x-axis \\
-    Shift + right mouse button & zoom y-axis \\
+    Ctrl + right mouse button  & zoom x-axis (down: zoom-out, up: zoom-in)\\
+    Shift + right mouse button & zoom y-axis (down: zoom-out, up: zoom-in)\\
     arrow keys                 & scroll \\
     Shift + arrow keys         & scroll faster \\
     Z                          & zoom in \\
     z                          & zoom out \\
     h                          & home (make all graphics visible) \\
     Ctrl + l                   & toggle anti-aliasing \\
+    Ctrl + d                   & duplicate window \\
     Crrl + p                   & output SVG of the current view \\
     Ctrl + Shift + p           & output PNG of the current view \\
     Ctrl + x                   & show/hide crosshair \\
     q                          & close window \\
+    \`\  + left click          & display pop-up menu (note: back-tic is
+                                 usually above tab key) \\
 \end{tabular}
 \vspace{.2in}
 
+%============================
+\begin{figure}
+\begin{center}
+\includegraphics[height=3in]{figures/01_basics.pdf}
+\end{center}
+\caption{Screenshot of SUMMON with \code{examples/01\_basics.py}}
+\label{fig:01_basics}
+\end{figure}
 
-
+\clearpage
 In your text editor, the example \code{01\_basics.py} should contain the 
 following python code:
 
@@ -328,7 +339,7 @@ This is very useful in cases where the user zooms out very far and no more space
 is available for the text to fit.  See the example \code{10\_text.py} for a
 better illustration of the different text constructs.
 
-The final function in the script is \code{win.home()}.  \code{win.home()} causes
+The final function in the script is \code{win.home()}, which causes
 the SUMMON window to scroll and zoom such that all graphics are visible.  This
 is a very useful command for making sure that what you have drawn is visible in
 the window.  The command can also be executed by pressing the 'h' key.  This key 
@@ -337,15 +348,15 @@ comes in handy when you "lose sight" of the visualization.
 This is only a simple example.  See the remaining scripts for examples of
 SUMMON's more powerful features.
 
-\subsection{Example Visualizations: SUMMATRIX and SUMTREE}
+\subsection{Example visualizations: SUMMATRIX and SUMTREE}
 
 In the \code{summon/bin/} directory are two programs, \code{summatrix} and
 \code{sumtree} that use summon to visualize large datasets.  They are simply 
 python scripts and so can be easily extended.  In my own work, I have 
 extended the tree visualization program to integrate more closely with
 biological data (executing CLUSTALW and MUSCLE on subtrees, displaying GO terms,
-etc.).  The purpose of writing visualization programs in this way, is to allow
-others to easily overlay and integrate their own data.  
+etc.).  Since these visualization programs are simply python scripts,
+others can easily overlay and integrate their own data.  
 
 Also in both visualizations the underling data is accessible through global
 python variables.  That means if you have a very specific question like, "How
@@ -355,12 +366,216 @@ be very difficult to anticipate all such questions during the development of a
 non-scriptable visualization.
 
 Example input files for both programs can be found under the 
-\code{summon/examples} directory.  Both programs will print their usage if run
-with no arguments.  View/execute the \code{view\_*.sh} scripts for examples of
-how to call summatrix and sumtree.
+\code{summon/examples/summatrix} and \code{summon/examples/sumtree} directories.
+Both programs will print their usage if run with no arguments.  View/execute the
+\code{view\_*.sh} scripts for examples of how to call \code{summatrix} and 
+\code{sumtree}.
 
 
-\section{SUMMON Function Reference}
+\section{SUMMATRIX: large-scale sparse matrix visualizer}
+
+SUMMATRIX is a visualization for matrices (\figref{fig:summatrix}) built with
+SUMMON.  It can be executed either from the command-line with the supplied demo
+(\code{summatrix}) or  instantied as an object
+(\code{summon.matrix.MatrixViewer}) from within your own python program. 
+SUMMATRIX also includes support for visualizating data clustering and other
+matrix permutations.  To see all of SUMMATRIX's options run \code{summatrix} on
+the commmand-line with no options.
+
+
+%============================
+\begin{figure}
+\begin{center}
+\includegraphics[height=3in]{figures/summatrix.pdf}
+\includegraphics[width=3in,height=3in]{figures/summatrix-mammals.pdf}
+\end{center}
+\caption{Example screenshots of SUMMATRIX on both sparse and dense matrices}
+\label{fig:summatrix}
+\end{figure}
+
+
+\subsection{Matrix formats}
+
+\code{summatrix} visualizes dense and sparse matrices stored in a variety of 
+formats.
+
+\begin{itemize}
+
+    %============================================================
+    \item {\bf dense format.}
+    The {\em dense matrix format} is for small matrices with many non-zero entries.
+    The first line of a {\em dense matrix file} (\code{*.mat})
+    contains two white-space delimited integers:
+    
+    \codeblock{nrows ncols}
+    
+    where \code{nrows} and \code{ncols} are the number of rows and columns in
+    the matrix.  The remaining \code{nrows} lines of
+    the file specify each row of the matrix with \code{ncols} white-space
+    delimited numbers (integer or float).  For example:
+
+    \codeblock{val1 val2 val3 ... valN}
+
+    \code{summatrix} will load a {\em dense matrix} with the \code{-d}
+    and  \code{--dense} options.
+    
+    See \code{examples/summatrix/clustering/data.mat} for an example.
+    
+    
+    %=============================================================
+    \item {\bf compressed row format (sparse).}
+    The {\em compressed row format} is for large matrices with only a
+    relatively few non-zero entries.
+    The first line of a {\em compressed row matrix file} (\code{*.mat})
+    contains three white-space delimited integers:
+    
+    \codeblock{nrows ncols nnz}
+    
+    where \code{nrows} is the number of rows, \code{ncols} is the number of
+    columns, and \code{nnz} is the total number of non-zero entries in the
+    matrix.  The remaining \code{nrows} lines of the file specify each row of
+    the matrix in the following format:
+
+    \codeblock{col1 val1 col2 val2 col3 val3 ...}
+
+    which indicates that for this $row$ of the matrix we have
+    
+    \codeblock{
+        matrix[row][col1] = val1 \newline
+        matrix[row][col2] = val2 \newline
+        matrix[row][col3] = val3 \newline
+        ... 
+    }
+    
+    
+    Note that \code{colN} is an integer and 1-based (1st column is
+    numbered 1, last column is numbered $ncols$) and \code{valN} can be a 
+    float or integer.  Any entry of the matrix not specified is assumed to be
+    zero.
+
+    \code{summatrix} will load a {\em compressed row matrix} with the \code{-r}
+    and  \code{--rmat} options.
+    
+    See \code{examples/summatrix/dog\_human.mat} for an example.
+
+
+    %=============================================================
+    \item {\bf index format (sparse).}
+    The {\em index format} is for large matrices with only a
+    relatively few non-zero entries.     
+    The first line of an {\em index matrix file} (\code{*.imat}) contains three
+    white-space delimited integers:
+    
+    \codeblock{nrows ncols nnz}
+    
+    where \code{nrows} is the number of rows, \code{ncols} is the number of
+    columns, and \code{nnz} is the total number of non-zero entries.  The
+    remaining \code{nnz} lines of  the file specify each non-zero entry with the
+    format:
+
+    \codeblock{row col val}
+
+    which indicates that $matrix[row][col] = val$.  Note that 
+    \code{row} and \code{col} are integers and 0-based (1st row and column are
+    numbered 0, last row and column are numbered $nrows-1$ and $ncols-1$,
+    respectively) and \code{val} can be a float or integer.  Any entry of the
+    matrix not specified is assumed to be zero.
+
+    \code{summatrix} will load an {\em index matrix} with the \code{-i} and 
+    \code{--imat} options.
+    
+    See \code{examples/summatrix/human\_mouse.imat} for an example.
+
+
+    %==============================================================
+    \item {\bf labeled format (sparse).}       
+    This format is similar to {\em index format} except instead of specifying
+    row and column by an integer, they are specified by a unique string 
+    ({\em label}).
+    The total number of rows, columns, and non-zeros does not need to be
+    specified. Instead each line of the file has the following format:
+
+    \codeblock{rowlabel collabel val}
+
+    which indicates that $matrix[rowlabel][collabel] = val$.  Note that 
+    \code{row} and \code{col} are strings and \code{val} can be a float or 
+    integer.  Rows and columns are drawn in the order (left-to-right,
+    top-to-bottom) that are first mentioned in the file.  
+    A different ordering can specified with the \code{--order} option and a file
+    containing the labels in the desired order, one label per line.
+    Any entry of the matrix not specified is assumed to be zero.
+    
+    \code{summatrix} will load a {\em labeled matrix} with the \code{-l} and 
+    \code{--lmat} options.
+    
+    See \code{examples/summatrix/mammals\_distances.lmat} for an example.
+
+\end{itemize}
+
+
+\subsection{Row and column label formats}
+
+SUMMATRIX can display row and column labels.  They are specified with the 
+\code{--rlab=$filename$}, \code{--clab=$filename$} command-line options.  If
+your matrix is square and the row and column labels are the same, you can
+specify them with only one option using \code{--rclab=$filename$}.  The label
+file format is simple a text file with one label per line in the order that the
+rows (or columns) appear in the matrix.
+
+Labels will be used when the user clicks (middle-click or ctrl+left click)
+on an entry in the matrix.  Labels can also be displayed the sides of the
+matrix with the \code{--showlabels} option or by pressing the $l$-key during
+visualization.  The \code{inline} option will draw the labels in the same window
+as the matrix.  The \code{panels} option will draw the labels in neighboring
+windows, such that the labels are never out of view while zooming and scrolling.
+
+
+
+\subsection{Visualizing data clustering}
+
+SUMMATRIX allows easy visualization of clustering.  However, you must use
+another  third-party program to actually cluster your data.  If you are looking
+for ideas, I recommend taking a look at the CLUTO clustering toolkit at 
+\code{http://glaros.dtc.umn.edu/gkhome/views/cluto}.
+
+\subsubsection{Row and column permutation}
+
+Using such a clustering program you can visualize your clustering as a
+permutation of the rows (or columns) of your data matrix.  SUMMATRIX will
+permute your matrix if you specify any of the options 
+\code{--rperm=$filename$}, \code{--cperm=$filename$}, or 
+\code{--rcperm=$filename$}.  Where $filename$ is a permutation file, which is a
+text file with $nrows$ (or $ncols$) lines with one integer per line. 
+The integer indicates which row (or column) should appear in this position. The
+integer is 0-based (1st row is 0, last is $nrows-1$).
+
+See \code{examples/summatrix/clustering/data.rperm} for an example of a
+row permutation file.
+
+\subsubsection{Row and column partitioning}
+
+SUMMATRIX can also draw horizontal and vertical lines that divide the matrix
+into sub-divisions that represent your clusters.  This is done with the 
+\code{--rpart=$filename$}, \code{--cpart=$filename$}, and
+\code{--rcpart=$filename$} options.  The file $filename$ should be in the 
+{\em partition format}, which is a text file with $nrows$ (or $ncols$) lines
+with one string per line.  Each string indicates the cluster of the
+corresponding row (or column).  For example, if your matrix is clustered by
+rows into three clusters called ``ClusterA'', ``ClusterB'', and ``ClusterC'',
+then those three strings should used in the partition file.  Clusters can also
+be named with integers as in the supplied example.
+
+See \code{examples/summatrix/clustering/data.rpart} for an example of a
+row partition file.
+
+If a permutation file is specified the matrix will be permuted, and dividers
+will be drawn when ever two neighboring rows (or columns) are associated with
+different clusters.  If no permutation file is given, the rows (or columns) will
+be sorted automatically by their cluster label.
+
+
+
+\section{SUMMON function reference}
 
 See \code{summon.html} for complete function reference.
 

@@ -32,7 +32,7 @@ def parseSize(sizestr):
 # command line options
 options = [
     "Matrix formats",
-    ["r:", "comprow=", "comprow", "<compressed row matrix file>",
+    ["r:", "rmat=", "comprow", "<compressed row matrix file>",
         {"single": True}],
     ["i:", "imat=", "imat", "<index matrix file>",
         {"single": True}],
