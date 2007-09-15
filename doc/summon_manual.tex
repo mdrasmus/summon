@@ -203,9 +203,9 @@ Their example input files are given in \code{summon/examples/summatrix/} and
 For an introduction to the basic commands of SUMMON, let us walk through the
 code of the first example.  To begin, change into the
 \code{summon/examples/} directory and open up \code{01\_basics.py} in a
-text editor.  Also use execute the example with following command.
+text editor.  Also execute the example with following command.
 
-\codeblock{\$ python 01\_basics.py}
+\codeblock{python 01\_basics.py}
 
 The visualization (\figref{fig:01_basics}) should immediately appear in your
 OpenGL window.  The following controls are available:
@@ -223,12 +223,12 @@ OpenGL window.  The following controls are available:
     h                          & home (make all graphics visible) \\
     Ctrl + l                   & toggle anti-aliasing \\
     Ctrl + d                   & duplicate window \\
-    Crrl + p                   & output SVG of the current view \\
+    Ctrl + p                   & output SVG of the current view \\
     Ctrl + Shift + p           & output PNG of the current view \\
     Ctrl + x                   & show/hide crosshair \\
     q                          & close window \\
-    \`\  + left click          & display pop-up menu (note: back-tic is
-                                 usually above tab key) \\
+    \`\  + left click          & display pop-up menu (note: {\em back-tic} is
+                                 usually above {\em tab} key) \\
 \end{tabular}
 \vspace{.2in}
 
@@ -342,16 +342,19 @@ better illustration of the different text constructs.
 The final function in the script is \code{win.home()}, which causes
 the SUMMON window to scroll and zoom such that all graphics are visible.  This
 is a very useful command for making sure that what you have drawn is visible in
-the window.  The command can also be executed by pressing the 'h' key.  This key 
-comes in handy when you "lose sight" of the visualization.
+the window.  The command can also be executed by pressing the 'h' key within a
+SUMMON window.  This key  comes in handy when you "lose sight" of the
+visualization.
 
-This is only a simple example.  See the remaining scripts for examples of
-SUMMON's more powerful features.
+This is only a simple example.  See the remaining scripts in the 
+\code{summon/examples/} for examples of SUMMON's more powerful features.
+
+
 
 \subsection{Example visualizations: SUMMATRIX and SUMTREE}
 
 In the \code{summon/bin/} directory are two programs, \code{summatrix} and
-\code{sumtree} that use summon to visualize large datasets.  They are simply 
+\code{sumtree} that use SUMMON to visualize large datasets.  They are simply 
 python scripts and so can be easily extended.  In my own work, I have 
 extended the tree visualization program to integrate more closely with
 biological data (executing CLUSTALW and MUSCLE on subtrees, displaying GO terms,
@@ -366,21 +369,22 @@ be very difficult to anticipate all such questions during the development of a
 non-scriptable visualization.
 
 Example input files for both programs can be found under the 
-\code{summon/examples/summatrix} and \code{summon/examples/sumtree} directories.
-Both programs will print their usage if run with no arguments.  View/execute the
-\code{view\_*.sh} scripts for examples of how to call \code{summatrix} and 
-\code{sumtree}.
+\code{summon/examples/summatrix/} and \code{summon/examples/sumtree/}
+directories. Both programs will print their usage if run with no arguments. 
+View/execute the \code{view\_*.sh} scripts for examples of how to call
+\code{summatrix} and  \code{sumtree}.
 
 
+%=============================================================================
 \section{SUMMATRIX: large-scale sparse matrix visualizer}
 
 SUMMATRIX is a visualization for matrices (\figref{fig:summatrix}) built with
 SUMMON.  It can be executed either from the command-line with the supplied demo
-(\code{summatrix}) or  instantied as an object
+(\code{summatrix}) or  instantiated as an object
 (\code{summon.matrix.MatrixViewer}) from within your own python program. 
-SUMMATRIX also includes support for visualizating data clustering and other
+SUMMATRIX also includes support for visualizing data clustering and other
 matrix permutations.  To see all of SUMMATRIX's options run \code{summatrix} on
-the commmand-line with no options.
+the command-line with no options.
 
 
 %============================
@@ -516,15 +520,15 @@ formats.
 \subsection{Row and column label formats}
 
 SUMMATRIX can display row and column labels.  They are specified with the 
-\code{--rlab=$filename$}, \code{--clab=$filename$} command-line options.  If
+\code{--rlab=$filename$} and \code{--clab=$filename$} command-line options.  If
 your matrix is square and the row and column labels are the same, you can
 specify them with only one option using \code{--rclab=$filename$}.  The label
 file format is simple a text file with one label per line in the order that the
 rows (or columns) appear in the matrix.
 
-Labels will be used when the user clicks (middle-click or ctrl+left click)
-on an entry in the matrix.  Labels can also be displayed the sides of the
-matrix with the \code{--showlabels} option or by pressing the $l$-key during
+Labels will be used when the user clicks (middle-click or Ctrl+left click)
+on an entry in the matrix.  Labels can also be displayed on the sides of the
+matrix with the \code{--showlabels} option or by pressing the ``l'' key during
 visualization.  The \code{inline} option will draw the labels in the same window
 as the matrix.  The \code{panels} option will draw the labels in neighboring
 windows, such that the labels are never out of view while zooming and scrolling.
