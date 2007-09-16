@@ -1,8 +1,17 @@
+"""
+    SUMMON Matrix module
+    
+    Include base class for matrices, functions for reading several matrix 
+    formats, and base classes for matrix visualizations.
 
+"""
+
+
+# python libs
 import random
 import sys
 
-
+# summon libs
 from summon.core import *
 import summon
 from summon import shapes
@@ -14,7 +23,6 @@ from summon import colors
 #=============================================================================
 # Data Structures
 #
-
 
 
 class Matrix (util.Dict):
@@ -31,7 +39,7 @@ class Matrix (util.Dict):
         self.rowlabels = None
         self.collabels = None
         
-        self.rperm = [] # maybe these should be None
+        self.rperm = [] # NOTE: maybe these should be None
         self.cperm = []
         self.rinv  = []
         self.cinv  = []
@@ -100,14 +108,11 @@ class Matrix (util.Dict):
 #
 
 
-def openCompRow(filename, mat, conf={}):
+def openCompRow(filename, mat, loadvals=False, sample=False):
+    """reads a compressed row matrix file"""
+    
     util.tic("reading '%s'" % filename)
     infile = file(filename)
-    
-    if "loadvals" in conf:
-        loadvals = conf["loadvals"]
-    else:
-        loadvals = False    
     
     # read header
     fields = infile.next().split()
@@ -131,7 +136,7 @@ def openCompRow(filename, mat, conf={}):
     for line in infile:
         fields = line.split()
 
-        if "sample" in conf and random.random() > conf["sample"]:
+        if sample != False and random.random() > sample:
             row += 1
             continue
 
@@ -144,7 +149,7 @@ def openCompRow(filename, mat, conf={}):
             if val > maxval: maxval = val
             if val < minval: minval = val
             if loadvals:
-                mat[r][c] = val
+                mat[row][col] = val
         row += 1
     util.toc()
     
@@ -154,14 +159,11 @@ def openCompRow(filename, mat, conf={}):
     return mat
 
 
-def openImat(filename, mat, conf={}):
+def openImat(filename, mat, loadvals=False, sample=False):
+    """reads a index matrix file"""
+    
     util.tic("reading '%s'" % filename)
     infile = file(filename)
-    
-    if "loadvals" in conf:
-        loadvals = conf["loadvals"]
-    else:
-        loadvals = False
     
     # read header
     (nrows, ncols, nnz) = map(int, infile.next().split())
@@ -174,7 +176,7 @@ def openImat(filename, mat, conf={}):
     maxval = -1e1000
     minval = 1e1000
     for line in infile:
-        if "sample" in conf and random.random() > conf["sample"]:
+        if sample != False and random.random() > sample:
             continue
         
         (row, col, val) = line.split()
@@ -197,7 +199,9 @@ def openImat(filename, mat, conf={}):
 
 
 
-def openLabeledMatrix(filename, mat, conf={}):
+def openLabeledMatrix(filename, mat):
+    """reads a labeled matrix file"""
+    
     util.tic("reading '%s'" % filename)
     
     # read all data
@@ -262,7 +266,9 @@ def openLabeledMatrix(filename, mat, conf={}):
     
 
 
-def openDense(filename, mat, conf={"cutoff": -util.INF}):
+def openDense(filename, mat, cutoff=-util.INF):
+    """reads a dense matrix file"""
+    
     util.tic("reading '%s'" % filename)
     infile = file(filename)
     
@@ -279,8 +285,6 @@ def openDense(filename, mat, conf={"cutoff": -util.INF}):
     
     mat.setup(nrows, ncols, nnz)
     rows, cols, vals = (mat.rows, mat.cols, mat.vals)
-    
-    cutoff = conf['cutoff']
     
     # read in whole matrix
     maxval = -1e1000
@@ -321,10 +325,12 @@ def getDrawColor(bgcolor=(0,0,0)):
 
 
 class MatrixViewer (object):
+    """Base class for Matrix Visualizations"""
+    
     def __init__(self, mat=None, onClick=None, 
                  bgcolor=(0,0,0), drawzeros=False, style="points",
                  showLabels=False, showLabelWindows=False,
-                 winsize=(400,400)):
+                 winsize=(400,400), title="summatrix"):
         self.win = None
         self.mat = mat
         self.bgcolor = bgcolor
@@ -333,6 +339,7 @@ class MatrixViewer (object):
         self.showLabels = showLabels
         self.showLabelWindows = showLabelWindows
         self.winsize = winsize[:]
+        self.title = title
         
         self.labelWindows = None        
         self.ensemble1 = None
@@ -348,8 +355,10 @@ class MatrixViewer (object):
         
         
     def show(self):
+        """shows the visualization window"""
+        
         if self.win == None:
-            self.win = summon.Window()
+            self.win = summon.Window(self.title)
             self.win.set_size(* self.winsize)
         else:
             self.win.clear_groups()
@@ -358,7 +367,7 @@ class MatrixViewer (object):
         
         self.win.set_binding(input_key("1"), self.one2one)
         self.win.set_binding(input_key("l"), self.toggleLabelWindows)
-        self.drawMatrix(self.mat, mouseClick=self.clickCallback)        
+        self.drawMatrix(self.mat, mouseClick=self._clickCallback)        
         self.win.home()
         
         if self.showLabelWindows:
@@ -367,7 +376,7 @@ class MatrixViewer (object):
     def redraw(self):
         self.firstOpen = False
         self.win.clear_groups()
-        self.drawMatrix(self.mat, mouseClick=self.clickCallback)
+        self.drawMatrix(self.mat, mouseClick=self._clickCallback)
     
     
     def drawMatrix(self, mat, mouseClick=None):
@@ -443,7 +452,8 @@ class MatrixViewer (object):
     
     
     def toggleLabelWindows(self):
-        """rotates through (no labels, inline, and panels"""
+        """rotates through (no labels, inline, and panels)"""
+        
         if self.showLabelWindows:
             self.showLabels = False
             show = False
@@ -457,6 +467,8 @@ class MatrixViewer (object):
         self.setLabelWindows(show)
     
     def setLabelWindows(self, show=True):
+        """sets whether label windows are visible"""
+        
         self.showLabelWindows = show
         
         if show:
@@ -469,6 +481,7 @@ class MatrixViewer (object):
     
     def closeLabelWindows(self):
         """close down label windows"""
+        
         if self.ensemble1 != None:
             self.ensemble1.stop()
         if self.ensemble2 != None:
@@ -535,12 +548,16 @@ class MatrixViewer (object):
     
 
     def drawBorder(self, nrows, ncols):
+        """draws the matrix boarder"""
+    
         # draw boundary 
         self.win.add_group(group(color(* getDrawColor(self.bgcolor)), 
                            shapes.boxStroke(-.5,.5,ncols-.5, -nrows+.5)))
 
     
     def drawPartitions(self, mat):
+        """draws cluster partitions"""
+    
         vis = [color(* getDrawColor(self.bgcolor))]
 
         # draw row partitions
@@ -563,7 +580,9 @@ class MatrixViewer (object):
 
 
     
-    def drawLabels(self):    
+    def drawLabels(self):  
+        """draws matrix labels"""
+          
         mat = self.mat
         
         nrows = mat.nrows
@@ -620,7 +639,9 @@ class MatrixViewer (object):
         
     
     
-    def clickCallback(self):
+    def _clickCallback(self):
+        """internal callback for mouse clicks"""
+        
         x, y = self.win.get_mouse_pos('world')
         x = int(x+.5)
         y = -int(y-.5)
@@ -641,11 +662,13 @@ class MatrixViewer (object):
     
     
     def onClick(self, row, col, i, j, val):
+        """default callback for mouse clicks"""
+        
         print row, col, "mat[%d][%d] = %f" % (i, j, self.mat[i][j])
     
     
     def one2one(self):
-        """Make zoom one2one"""
+        """makes zoom one2one"""
 
         x, y, x2, y2 = self.win.get_visible()
         vwidth = x2 - x
@@ -662,6 +685,8 @@ class MatrixViewer (object):
 
 
 class DenseMatrixViewer (MatrixViewer):
+    """Matrix visualization specifically for dense matrices stored as a 
+       list of lists"""
     
     def __init__(self, data, colormap=None, 
                  rlabels=None, clabels=None, cutoff=-util.INF,
@@ -692,6 +717,7 @@ class DenseMatrixViewer (MatrixViewer):
     def setDenseMatrix(self, data, colormap=None,
                        rlabels=None, clabels=None, cutoff=-util.INF,
                        rperm=[], cperm=[], rpart=None, cpart=None):
+        """sets a new dense matrix to visualize"""
         
         self.mat = Matrix()
         self.mat.from2DList(data, cutoff=cutoff)

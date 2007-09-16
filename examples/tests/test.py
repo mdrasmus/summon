@@ -1,3 +1,4 @@
+#!/usr/bin/env python-i
 
 import sys
 from summon.core import *

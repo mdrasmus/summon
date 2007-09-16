@@ -1,12 +1,22 @@
 #!/usr/bin/env python-i
+#
+# SUMTREE (SUMMON Tree Visualizer)
+#
+# see summon/examples/sumtree/view_*.sh for examples
+#
 
+
+# python libs
 import sys
+
+# summon libs
 from summon.core import *
 from summon import sumtree
 from summon import util
 from summon import treelib
 
 
+# command line options
 options = [
  ["p:", "ptree=", "ptree", "<ptree file>",
     {"single": True}],
@@ -46,13 +56,12 @@ def readTree(conf):
 
     if "ptree" in conf:
         tree.readParentTree(conf["ptree"], conf["labels"])
-        print "%s: %d nodes, %d leaves\n" % \
-            (conf["ptree"], len(tree.nodes), len(tree.leaves()))
-
+        
     elif "newick" in conf:
         tree.readNewick(conf["newick"])
-        print "%s: %d nodes, %d leaves\n" % \
-            (conf["newick"], len(tree.nodes), len(tree.leaves()))
+    
+    print "%s: %d nodes, %d leaves\n" % \
+          (conf["newick"], len(tree.nodes), len(tree.leaves()))
 
     util.toc()    
     return tree
@@ -87,8 +96,8 @@ if "winsize" in conf:
 def find(name):
     return vis.find(name)
 
-def mark(boxColor = color(1,0,0)):
-    return vis.mark(boxColor)
+def mark(boxColor = color(1,0,0), **options):
+    return vis.mark(boxColor, **options)
 
 def clear_marks():
     vis.clearMarks()

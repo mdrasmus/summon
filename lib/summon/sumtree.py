@@ -17,11 +17,13 @@ sys.setrecursionlimit(2000)
 
 
 
-###########################################################################
+#=============================================================================
 # Drawing Code
 #
 
 class SumTree (object):
+    """SUMMON Tree Visualizer"""
+
     def __init__(self, tree, name="SUMTREE",
                        showLabels=True, xscale=1.0,
                        vertical=False):
@@ -60,6 +62,8 @@ class SumTree (object):
     
     
     def show(self):
+        """shows visualization window"""
+        
         util.tic("drawing")
         
         self.setupTree(self.tree)

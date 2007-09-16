@@ -12,7 +12,7 @@
 #
 
 # TODO: implement find, and marking
-# TODO: implement row/col label windows
+
 
 import random
 import sys
@@ -33,13 +33,17 @@ def parseSize(sizestr):
 options = [
     "Matrix formats",
     ["r:", "rmat=", "comprow", "<compressed row matrix file>",
-        {"single": True}],
+        {"single": True,
+         "help": "load a compressed row matrix file (*.mat)"}],
     ["i:", "imat=", "imat", "<index matrix file>",
-        {"single": True}],
+        {"single": True,
+         "help": "load a index matrix file (*.imat)"}],
     ["l:", "lmat=", "lmat", "<labeled sparse matrix file>",
-        {"single": True}],
+        {"single": True,
+         "help": "load a labeled matrix file (*.lmat)"}],
     ["d:", "dense=", "dense", "<dense matrix file>",
-        {"single": True}],
+        {"single": True,
+         "help": "load a dense matrix file (*.mat)"}],
     
     "Labels",
     ["", "rlab=", "rowlabels", "<row labels>",
@@ -79,11 +83,12 @@ options = [
          "default": "rainbow",
          "help": "specify a colormap using a predefined map or " +
                  "a custom map from a file"}],
-    ["", "bgcolor=", "bgcolor", "r,g,b   0<=r<=1",
+    ["", "bgcolor=", "bgcolor", "r,g,b",
         {"single": True,
          "parser": parseColor,
          "default": (0,0,0),
-         "help": "specify the background color (default: black)"}],
+         "help": "specify the background color (default: black)\n"+
+                 "    Each value is between 0 and 1."}],
     ["", "drawzeros", "drawzeros", "",
         {"single": True,
          "help": "a bool whether to explicitly draw zeros with the colormap"}],
@@ -94,7 +99,8 @@ options = [
     ["", "winsize=", "winsize", "<width>x<height>",
         {"single": True,
          "default": (400, 400),
-         "parser": parseSize}],
+         "parser": parseSize,
+         "help": "specify initial window size (default: 400x400)"}],
     
     "Miscellaneous",
     ["s:", "sample=", "sample", "<sample fraction>",
@@ -104,7 +110,8 @@ options = [
     ["", "cutoff=", "cutoff", "<value>",
         {"default": -1e1000,
          "parser": float,
-         "single": True}],             
+         "single": True,
+         "help": "if specified, only loads values greater than 'cutoff'"}],             
     ["", "loadvals", "loadvals", "",
         {"single": True,
          "help": "load all non-zeros into memory for easy interactive display"}]
@@ -115,7 +122,7 @@ conf = util.parseOptions(sys.argv, options, resthelp="<python script>")
 
 
 
-#######################################################################
+#=============================================================================
 # Main Execution
 #
 
@@ -151,20 +158,28 @@ if "order" in conf:
 # read matrix
 matfile = "summatrix"
 if "comprow" in conf:
-    openCompRow(conf["comprow"], mat, conf)
+    openCompRow(conf["comprow"], mat, 
+                loadvals=conf.get("loadvals", False),
+                sample=conf.get("sample", False))
     matfile = conf["comprow"]
+    
 elif "imat" in conf:
-    openImat(conf["imat"], mat, conf)
+    openImat(conf["imat"], mat, 
+             loadvals=conf.get("loadvals", False),
+             sample=conf.get("sample", False))
     matfile = conf["imat"]
+    
 elif "lmat" in conf:
     if "order" in conf:
-        openLabeledMatrix(conf["lmat"], mat, conf)
+        openLabeledMatrix(conf["lmat"], mat)
     else:
-        openLabeledMatrix(conf["lmat"], mat, conf)
+        openLabeledMatrix(conf["lmat"], mat)
     matfile = conf["lmat"]
+    
 elif "dense" in conf:
-    openDense(conf["dense"], mat)
+    openDense(conf["dense"], mat, cutoff=conf["cutoff"])
     matfile = conf["dense"]
+    
 else:
     raise Exception("no matrix specified")
 
@@ -209,17 +224,19 @@ elif conf["showlabels"] == "none":
 else:
     raise Exception("unknown showlabels setting '%s'" % conf["showlabels"])
 
-# execute python script
+# execute python scripts
 for script in conf["REST"]:
     print "executing", script
     execfile(script)
 
 
+# create matrix viewer and display it
 viewer = MatrixViewer(mat, bgcolor=conf["bgcolor"], 
                            drawzeros=conf["drawzeros"], 
                            style=conf["style"],
                            showLabels=showLabels,
                            showLabelWindows=showLabelWindows,
-                           winsize=conf["winsize"])
+                           winsize=conf["winsize"],
+                           title=matfile)
 viewer.show()
-viewer.win.set_name(matfile)
+

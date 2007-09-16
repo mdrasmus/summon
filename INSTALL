@@ -15,7 +15,6 @@ specific instructions:
 
 
 === LINUX (Debian)
-
 On Debian Linux the following apt-get command should install the third party
 packages:
 
@@ -55,14 +54,12 @@ On Linux, you may run:
 
     make
     
-On cygwin use the following command:
 
-    make -f Makefile.cygwin
-
-On both Linux and Cygwin, you must add the summon source directory to your 
-python path using:
+Next, you must add the summon source directory to your python path using
+(assuming you use the bash shell, add these lines to your ~/.bashrc file):
 
     export PYTHONPATH=$PYTHONPATH:path/to/summon-XXX/lib
+    export PATH=$PATH:path/to/summon-XXX/bin
 
 
 === WINDOWS MAKE
@@ -79,15 +76,24 @@ environment for Microsoft Visual Studio 8:
     winsh.bat nmake -f Makefile.win
 
 
+
 === WINDOWS CYGWIN MAKE
 
 I have had trouble using setup.py for installing on CYGWIN, so I made a Makefile
-specifically for installing on CYGWIN  Use the following to install on CYGWIN.  
-Note: make sure that the development packages of freeglut and SDL are installed
-first.
+specifically for installing on CYGWIN.  
+Note: make sure that the *development* packages of freeglut and SDL are
+installed first.  
+Then execute make with the following command
 
 
     make -f Makefile.cygwin
+
+Next, you must add the summon source directory to your python path using
+(assuming you use the bash shell, add these lines to your ~/.bashrc file):
+
+    export PYTHONPATH=$PYTHONPATH:path/to/summon-XXX/lib
+    export PATH=$PATH:path/to/summon-XXX/bin
+
 
 
 
