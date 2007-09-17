@@ -2,6 +2,8 @@
 # SUMMON - Multiple Window Management
 #
 
+import time
+
 from summon.core import *
 from summon import util
 import summon
@@ -9,7 +11,7 @@ import summon
    
 
 
-class WindowEnsemble (summon.VisObject):
+class WindowEnsemble:
     def __init__(self, windows, stackx=False, stacky=False, 
                        samew=False, sameh=False,
                        tiex=False, tiey=False, pinx=False, piny=False,
@@ -23,9 +25,11 @@ class WindowEnsemble (summon.VisObject):
         self.stacky = stacky
         self.samew = samew
         self.sameh = sameh
-        self.closeListeners = {}
+        self.listeners = {}
         self.ties = {}
         self.lock = False
+        self.invalidPos = set()
+        self.invalidSize = set()
         
         
         # setup master window
@@ -52,6 +56,21 @@ class WindowEnsemble (summon.VisObject):
             self.pos[win] = win.get_position()
             self.sizes[win] = win.get_size()        
         
+        
+        def make_listener(win):
+            return util.Bundle(close=lambda: self._on_window_close(win),
+                               resize=lambda w, h: self._on_window_resize(win, w, h),
+                               move=lambda x, y: self._on_window_move(win, x, y))
+                               
+        
+        # setup window listeners
+        for win in windows:
+            self.listeners[win] = make_listener(win)
+            win.add_close_listener(self.listeners[win].close)
+            win.add_resize_listener(self.listeners[win].resize)
+            win.add_move_listener(self.listeners[win].move)
+            
+
         # setup window stacking
         if stackx or stacky:
             self.stack(self.master)
@@ -61,18 +80,11 @@ class WindowEnsemble (summon.VisObject):
         if tiex or tiey:
             self.tie(windows, tiex=tiex, tiey=tiey, pinx=pinx, piny=piny,
                      coordsx=coordsx, coordsy=coordsy, master=master)
+
         
-        def make_close_listener(win):
-            return lambda: self._on_window_close(win)
-        
-        # setup window close listeners
-        for win in windows:
-            self.closeListeners[win] = make_close_listener(win)
-            win.add_close_listener(self.closeListeners[win])
-        
-        # enable updating
-        self.win = self.master
-        self.enableUpdating(interval=.2)
+        # wait for all windows to be in valid positions and sizes
+        while len(self.invalidPos) > 0 or len(self.invalidSize) > 0:
+            time.sleep(.1)
     
     
     def stop(self):
@@ -81,7 +93,6 @@ class WindowEnsemble (summon.VisObject):
         # pretend all the windows have closed
         for win in list(self.windows):
             self._on_window_close(win)
-        self.enableUpdating(False)
     
     
     def _on_window_close(self, win):
@@ -90,10 +101,12 @@ class WindowEnsemble (summon.VisObject):
         self.windows.remove(win)
         
         # remove all callbacks
-        win.remove_close_listener(self.closeListeners[win])
+        win.remove_close_listener(self.listeners[win].close)
+        win.remove_resize_listener(self.listeners[win].resize)
+        win.remove_move_listener(self.listeners[win].move)
         win.remove_view_change_listener(self.ties[win].update_scroll)
         win.remove_focus_change_listener(self.ties[win].update_focus)
-        del self.closeListeners[win]
+        del self.listeners[win]
         del self.ties[win]
         
         # make sure window ties remove their callbacks
@@ -104,7 +117,35 @@ class WindowEnsemble (summon.VisObject):
         if self.close_with_master and win == self.master:
             for win2 in self.windows:
                 win2.close()
-            
+
+    
+    def _on_window_resize(self, win, width, height):
+        # validate windows that have been changed by the ensemble
+        if win in self.invalidSize:
+            self.invalidSize.remove(win)
+    
+        # process windows that have been changed by outside forces
+        elif self.sizes[win] != (width, height):
+            if self.stackx or self.stacky:
+                self.stack(win)
+            else:
+                self.align(win)
+            self.raise_windows(win)
+    
+    
+    def _on_window_move(self, win, x, y):
+        # validate windows that have been changed by the ensemble    
+        if win in self.invalidPos:
+            self.invalidPos.remove(win)
+        
+        # process windows that have been changed by outside forces        
+        elif self.pos[win] != (x, y):
+            if self.stackx or self.stacky:
+                self.stack(win)
+            else:
+                self.align(win)
+            self.raise_windows(win)      
+                
     
     def stack(self, win):
         """restack windows together"""
@@ -123,14 +164,20 @@ class WindowEnsemble (summon.VisObject):
         
         for win2 in self.windows:
             # update size
-            w, h = win2.get_size()
+            w2, h2 = win2.get_size()
             
             if self.samew:
                 w = target_size[0]
+            else:
+                w = w2
             if self.sameh:
                 h = target_size[1]
+            else:
+                h = h2
             
-            win2.set_size(w, h)
+            if win2 != win and (w,h) != (w2, h2):
+                win2.set_size(w, h)
+                self.invalidSize.add(win2)
             self.sizes[win2] = (w, h)
             
             
@@ -155,12 +202,14 @@ class WindowEnsemble (summon.VisObject):
                 newx = target_pos[0] + x[i] - target[0]
                 newy = target_pos[1]
             
+            oldpos = win2.get_position()
             self.pos[win2] = (newx, newy)
             
-            if win2 != win:
+            if win2 != win and (newx, newy) != oldpos:
                 win2.set_position(newx, newy)
-            else:
-                assert target_pos == (newx, newy), (target_pos, (newx, newy))
+                self.invalidPos.add(win2)
+            #else:
+            #    assert target_pos == (newx, newy), (target_pos, (newx, newy))
         
             
     def align(self, win):
@@ -176,6 +225,7 @@ class WindowEnsemble (summon.VisObject):
                 pos3 = [now[0] + pos2[0] - pos1[0],
                         now[1] + pos2[1] - pos1[1]]
                 win2.set_position(*pos3)
+                self.invalidPos.add(win2)
                 self.pos[win2] = pos3
 
         # record new position for main window
@@ -227,12 +277,15 @@ class WindowEnsemble (summon.VisObject):
         master_trans()
 
 
-    def raise_windows(self):
+    def raise_windows(self, top=None):
         """raises all windows in ensemble above other windows on the desktop"""
         for win in self.windows:
             win.raise_window(True)
+        
+        if top != None:
+            top.raise_window(True)
             
-
+    '''
     def update(self):
         # check for moved windows
         for win in self.windows:
@@ -244,13 +297,14 @@ class WindowEnsemble (summon.VisObject):
             if self.stackx or self.stacky:
                 if pos1 != pos2 or size1 != size2:
                     self.stack(win)
-                    self.raise_windows()
+                    self.raise_windows(win)
                     break
             else:
                 if pos1 != pos2:
                     self.align(win)
-                    self.raise_windows()
+                    self.raise_windows(win)
                     break
+    '''
 
 
 

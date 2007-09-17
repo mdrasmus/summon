@@ -81,8 +81,8 @@ public:
     inline void SetPosition(int x, int y)
     {
         glutPositionWindow(x, y);
-        m_windowPos.x = x;
-        m_windowPos.y = y;
+        //m_windowPos.x = x;
+        //m_windowPos.y = y;
     }
     
     inline Vertex2i GetPosition()

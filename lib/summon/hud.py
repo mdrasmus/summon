@@ -70,9 +70,13 @@ class SideBar (object):
         self.shadowColor = color(0, 0, 0, .5)
         
         # install callbacks
-        win.on_resize = self.onResize
+        win.add_resize_listener(self.onResize)
         win.set_binding(showkey, self.toggleMenu)
     
+    
+    def delete(self):
+        self.win.remove_resize_listener(self.onResize)
+        
     
     def addItem(self, item):
         self.items.append(item)

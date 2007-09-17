@@ -87,4 +87,3 @@ win5.add_group(make_labels(rows))
 win1.add_group(make_labels(cols, True))
 win3.add_group(make_labels(cols, True))
 
-summon.begin_updating()

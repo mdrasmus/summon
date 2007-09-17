@@ -318,6 +318,8 @@ class Window (object):
         self.viewChangeListeners = set()
         self.focusChangeListeners = set()
         self.closeListeners = set()
+        self.resizeListeners = set()
+        self.moveListeners = set()
         self.viewLock = False
         self.focusLock = False
         summon_core.set_window_on_resize(self.winid, self._on_resize)
@@ -440,19 +442,29 @@ class Window (object):
     
     def _on_resize(self):
         """internal callback for SUMMON's use only"""
-        self.on_resize(* self.get_size())
+        width, height = self.get_size()
+        
+        for listener in self.resizeListeners:
+            listener(width, height)
     
-    def on_resize(self, width, height):
-        """a callback for when the window resizes"""
-        pass
+    def add_resize_listener(self, listener):
+        self.resizeListeners.add(listener)
+    
+    def remove_resize_listener(self, listener):
+        self.resizeListeners.remove(listener)
     
     def _on_move(self):
         """internal callback for SUMMON's use only"""
-        self.on_move(* self.get_position())
+        x, y = self.get_position()
+        
+        for listener in self.moveListeners:
+            listener(x, y)
     
-    def on_move(self, x, y):
-        """a callback for when the window moves"""
-        pass
+    def add_move_listener(self, listener):
+        self.moveListeners.add(listener)
+    
+    def remove_move_listener(self, listener):
+        self.moveListeners.remove(listener)
     
     def raise_window(self, raised=True):
         """raise or lower a window above others"""
