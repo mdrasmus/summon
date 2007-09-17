@@ -125,6 +125,21 @@ void GlutView::Close()
 }
 
 
+void GlutView::UpdatePosition()
+{
+    MakeCurrentWindow();
+    Vertex2i oldpos = m_windowPos;
+    m_windowPos.x = glutGet(GLUT_WINDOW_X) - m_windowOffset.x;
+    m_windowPos.y = glutGet(GLUT_WINDOW_Y) - m_windowOffset.y;
+
+    if (oldpos.x != m_windowPos.x || oldpos.y != m_windowPos.y) {
+        for (ListenerIter iter = m_listeners.begin(); 
+             iter != m_listeners.end(); iter++) {
+            GlutViewListener *listener = (*iter);
+            listener->ViewMove(this);
+        }
+    }
+}
 
 
 }

@@ -21,7 +21,8 @@ SummonController::SummonController(CommandExecutor *global, SummonView *view,
     m_view(view),
     m_world(world),
     m_screen(screen),
-    m_resizeProc(Scm_NONE)
+    m_resizeProc(Scm_NONE),
+    m_moveProc(Scm_NONE)
 {
     m_binding->Clear();
     m_view->AddListener(this);
@@ -102,6 +103,11 @@ void SummonController::ExecCommand(Command &command)
             m_resizeProc = resize->proc;
             } break;
         
+        case SET_WINDOW_ON_MOVE_COMMAND: {
+            SetWindowOnMoveCommand *move = (SetWindowOnMoveCommand*) &command;
+            m_moveProc = move->proc;
+            } break;
+        
         default:
             // execute default commands
             Glut2DController::ExecCommand(command);
@@ -160,5 +166,12 @@ void SummonController::ViewResize(GlutView *view)
     }
 }
 
+void SummonController::ViewMove(GlutView *view)
+{
+    if (m_moveProc != Scm_NONE) {
+        CallProcCommand proc(m_moveProc);
+        ExecCommand(proc);
+    }
+}
 
 }

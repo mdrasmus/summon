@@ -320,7 +320,8 @@ class Window (object):
         self.closeListeners = set()
         self.viewLock = False
         self.focusLock = False
-        summon_core.set_window_on_resize(self.winid, self._on_resize)        
+        summon_core.set_window_on_resize(self.winid, self._on_resize)
+        summon_core.set_window_on_move(self.winid, self._on_move)     
         
         # configure window
         self.set_name(name)
@@ -438,13 +439,23 @@ class Window (object):
         return summon_core.get_window_position(self.winid)
     
     def _on_resize(self):
-        return self.on_resize(* self.get_size())
+        """internal callback for SUMMON's use only"""
+        self.on_resize(* self.get_size())
     
     def on_resize(self, width, height):
         """a callback for when the window resizes"""
         pass
     
+    def _on_move(self):
+        """internal callback for SUMMON's use only"""
+        self.on_move(* self.get_position())
+    
+    def on_move(self, x, y):
+        """a callback for when the window moves"""
+        pass
+    
     def raise_window(self, raised=True):
+        """raise or lower a window above others"""
         summon_core.raise_window(self.winid, raised)
     
         

@@ -36,6 +36,7 @@ public:
 
     virtual void ViewRedraw(GlutView *view) {}
     virtual void ViewResize(GlutView *view);
+    virtual void ViewMove(GlutView *view);
     virtual void ViewClose(GlutView *view) {}
 
    
@@ -46,6 +47,7 @@ protected:
     SummonModel *m_world;
     SummonModel *m_screen;    
     Scm m_resizeProc;
+    Scm m_moveProc;
 };
 
 }

@@ -132,6 +132,7 @@ void summonCommandsInit()
     RegisterScriptCommand(HotspotClickCommand)      c()
     RegisterScriptCommand(GetMousePosCommand)       c()
     RegisterScriptCommand(SetWindowOnResizeCommand) c()
+    RegisterScriptCommand(SetWindowOnMoveCommand)   c()
     
     RegisterScriptCommand(CallProcCommand) g()
 

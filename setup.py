@@ -115,23 +115,3 @@ setup(
     )
 
 
-
-"""
-
-MAC OS X may need some of the following extra variables set
-
-include_dirs=[
-    "src/MVC",
-    "src/GlutMVC",
-    "src/Common",
-    "src/Summon",
-    "/sw/include/",
-    "/usr/X11R6/include",
-    "/Library/Frameworks/Python.framework/Versions/2.4/include/python2.4/"],
-library_dirs=[
-    "/sw/lib/",
-    "/Library/Frameworks/Python.framework/Versions/2.4/lib",
-    "/usr/X11R6/lib"],
-define_macros=[("NOGLUTEXT", "1")]
-
-"""

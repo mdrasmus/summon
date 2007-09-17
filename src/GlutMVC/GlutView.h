@@ -38,6 +38,7 @@ public:
     virtual void ViewRedraw(GlutView *view) {}
     virtual void ViewResize(GlutView *view) {}
     virtual void ViewClose(GlutView *view) {}
+    virtual void ViewMove(GlutView *view) {}
 };
 
 
@@ -88,12 +89,7 @@ public:
     { return m_windowPos; }
 
     
-    inline void UpdatePosition()
-    {
-        MakeCurrentWindow();
-        m_windowPos.x = glutGet(GLUT_WINDOW_X) - m_windowOffset.x;
-        m_windowPos.y = glutGet(GLUT_WINDOW_Y) - m_windowOffset.y;
-    }
+    void UpdatePosition();
     
     inline void SetOffset(Vertex2i &offset)
     { m_windowOffset = offset; }

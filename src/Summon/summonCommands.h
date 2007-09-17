@@ -108,6 +108,7 @@ enum {
     HOTSPOT_CLICK_COMMAND,
     GET_MOUSE_POS_COMMAND,
     SET_WINDOW_ON_RESIZE_COMMAND,
+    SET_WINDOW_ON_MOVE_COMMAND,
     
     // constructs
     
@@ -1681,6 +1682,26 @@ public:
     virtual const char *GetUsage() { return "id, func"; }
     virtual const char *GetDescription() 
     { return "registers a callback for window resize"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "dc", &windowid, &proc);
+    }
+    
+    Scm proc;
+};
+
+
+class SetWindowOnMoveCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new SetWindowOnMoveCommand(); }
+    virtual int GetId() { return SET_WINDOW_ON_MOVE_COMMAND; }
+
+    virtual const char *GetName() { return "set_window_on_move"; }
+    virtual const char *GetUsage() { return "id, func"; }
+    virtual const char *GetDescription() 
+    { return "registers a callback for window move"; }
     
     virtual bool Setup(Scm lst)
     {

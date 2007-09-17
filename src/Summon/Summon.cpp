@@ -717,6 +717,17 @@ public:
     }
     
     
+    void UpdateWindowPositions()
+    {
+        PyGILState_STATE gstate = PyGILState_Ensure();    
+        for (WindowIter i=m_windows.begin(); i!=m_windows.end(); i++) {
+            SummonView *view = (*i).second->GetView();            
+            view->UpdatePosition();
+        }
+        PyGILState_Release(gstate);
+    }
+    
+    
     // glut timer callback
     // This timer is necessary for frequent processing of queued commands
     static void Timer(int value)
@@ -733,9 +744,7 @@ public:
         g_summon->DeleteClosedWindows();
         
         // update window positions
-        for (WindowIter i=g_summon->m_windows.begin(); i!=g_summon->m_windows.end(); i++) {
-            (*i).second->GetView()->UpdatePosition();
-        }
+        g_summon->UpdateWindowPositions();
         
 
         if (g_summon->IsCommandWaiting()) {
