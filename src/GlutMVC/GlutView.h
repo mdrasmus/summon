@@ -17,8 +17,7 @@
 #include "Command.h"
 
 
-// Use GLUT extensions
-//#ifndef __WXMSW__
+// Use FREEGLUT extensions
 #ifndef NOGLUTEXT
 #  include <GL/freeglut_ext.h>
 #endif
@@ -118,6 +117,7 @@ protected:
     Vertex2i m_windowOffset;    // GLUT sometimes places the window offset
     string m_name;
     ListenerList m_listeners;
+    bool m_opened;
 };
 
 }
