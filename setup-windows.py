@@ -112,7 +112,7 @@ setup(
                           
                           "/dev/OpenGLUT-0.6.3",
                           "/dev/SDL-1.2.11/include"],
-            libraries=["OpenGLUT_static", "opengl32", "SDL"],
+            libraries=["OpenGLUT", "opengl32", "SDL"],
             extra_link_args=["/dev/OpenGLUT-0.6.3/OpenGLUT.lib"],
             library_dirs=["/dev/SDL-1.2.11/lib",
                           "/dev/OpenGLUT-0.6.3"],
