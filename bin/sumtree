@@ -56,12 +56,16 @@ def readTree(conf):
 
     if "ptree" in conf:
         tree.readParentTree(conf["ptree"], conf["labels"])
+        print "%s: %d nodes, %d leaves\n" % \
+          (conf["ptree"], len(tree.nodes), len(tree.leaves()))
+        
         
     elif "newick" in conf:
         tree.readNewick(conf["newick"])
-    
-    print "%s: %d nodes, %d leaves\n" % \
+        print "%s: %d nodes, %d leaves\n" % \
           (conf["newick"], len(tree.nodes), len(tree.leaves()))
+
+    
 
     util.toc()    
     return tree
