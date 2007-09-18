@@ -5,6 +5,7 @@ include Makefile
 # packaging 
 PACKAGE=summon-$(VERSION).tar.gz
 RPM=summon-$(VERSION)-1.i386.rpm
+WININST=summon-$(VERSION).win32-py2.4.exe
 WWWDIR=/scratch-sm/www/pub/summon
 WWWHOST=rasmus@compbio.mit.edu
 
@@ -22,8 +23,10 @@ dist/$(PACKAGE):
 pub: dist/$(PACKAGE)
 	scp dist/$(PACKAGE) $(WWWHOST):$(WWWDIR)
 	scp dist/$(RPM) $(WWWHOST):$(WWWDIR)
+	scp dist/$(WININST) $(WWWHOST):$(WWWDIR)
 	ssh $(WWWHOST) chmod o+r $(WWWDIR)/$(PACKAGE)
 	ssh $(WWWHOST) chmod o+r $(WWWDIR)/$(RPM)
+	ssh $(WWWHOST) chmod o+r $(WWWDIR)/$(WININST)
 	ssh $(WWWHOST) tar zxvf $(WWWDIR)/$(PACKAGE) -C $(WWWDIR)
 	ssh $(WWWHOST) chmod -R o+rx $(WWWDIR)/summon-$(VERSION)
 
