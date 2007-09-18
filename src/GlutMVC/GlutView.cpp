@@ -19,7 +19,8 @@ std::vector<GlutView*> g_windows;
 
 GlutView::GlutView(int width, int height, const char *name) :
    m_windowSize(width, height),
-   m_windowOffset(0, 0)
+   m_windowOffset(0, 0),
+   m_opened(true)
 {
     // set initial glut settings for window
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE); // | GLUT_ALPHA | GLUT_MULTISAMPLE);
@@ -43,7 +44,7 @@ GlutView::GlutView(int width, int height, const char *name) :
     glutDisplayFunc(GlutView::GlutDisplay);
     glutReshapeFunc(GlutView::GlutReshape);
     
-#ifndef NOGLUTEXT
+#ifdef GLUT_ACTION_ON_WINDOW_CLOSE
     glutCloseFunc(GlutView::GlutClose);
 #endif
 
@@ -110,6 +111,8 @@ void GlutView::Reshape(int width, int height)
 
 void GlutView::OnClose()
 {
+    m_opened = false;
+    
     // window has been closed
     for (ListenerIter iter = m_listeners.begin(); 
          iter != m_listeners.end(); iter++) {
@@ -121,6 +124,7 @@ void GlutView::OnClose()
 
 void GlutView::Close()
 {
+    m_opened = false;
     glutDestroyWindow(m_window);
 }
 

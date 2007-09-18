@@ -17,8 +17,7 @@
 #include "Command.h"
 
 
-// Use GLUT extensions
-//#ifndef __WXMSW__
+// Use FREEGLUT extensions
 #ifndef NOGLUTEXT
 #  include <GL/freeglut_ext.h>
 #endif
@@ -90,6 +89,8 @@ public:
     
     inline void UpdatePosition()
     {
+        if (!m_opened)
+            return;
         MakeCurrentWindow();
         m_windowPos.x = glutGet(GLUT_WINDOW_X) - m_windowOffset.x;
         m_windowPos.y = glutGet(GLUT_WINDOW_Y) - m_windowOffset.y;
@@ -122,6 +123,7 @@ protected:
     Vertex2i m_windowOffset;    // GLUT sometimes places the window offset
     string m_name;
     ListenerList m_listeners;
+    bool m_opened;
 };
 
 }

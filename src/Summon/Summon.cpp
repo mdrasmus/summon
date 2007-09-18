@@ -582,6 +582,7 @@ public:
     
     void CloseWindow(SummonWindow* window)
     {
+        m_windows.erase(window->GetId());
         // close the window
         window->Close();
     }
@@ -593,8 +594,7 @@ public:
         // it is now safe to delete the window after this function returns
         SummonWindow *window = m_closeWaiting[view];
         
-        // remove window from window list
-        m_windows.erase(window->GetId());
+        // remove window from window list        
         m_closeWaiting.erase(view);
         m_deleteWaiting.push_back(window);
         
@@ -952,7 +952,7 @@ SummonMainLoop(PyObject *self, PyObject *tup)
     
     // NOTE: requires freeglut > 2.4.0-1  (2005)
     // or another GLUT implementation with this extension
-#ifndef NOGLUTEXT    
+#ifdef GLUT_ACTION_ON_WINDOW_CLOSE
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 #endif
     
