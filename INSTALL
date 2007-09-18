@@ -2,6 +2,15 @@ SUMMON - visualization protyping python module
 Matt Rasmussen
 2007/6/20
 
+To install SUMMON, do the following:
+    1. install thrid-party libraries
+    2. install SUMMON by one of these strategies
+        1. distutils (ex: python setup.py install)
+        2. binary install (rpm, *.exe)
+        3. Makefile
+
+For more documentation see doc/summon_manual.pdf
+
 
 =============================================================================
 THIRD PARTY SOFTWARE
@@ -25,10 +34,21 @@ packages:
 Using fink to install third party packages:
 
     /sw/bin/fink install sdl glut
+    
+=== WINDOWS (XP, Vista)
+Download the windows version of GLUT from http://openglut.sourceforge.net/
+Make sure to copy OpenGLUT.dll to your C:\windows\system32 directory
+
+Download the windows version of SDL from http://www.libsdl.org/
+Make sure to copy SDL.dll to your C:\windows\system32 directory
+
+
 
 =============================================================================
 CROSSPLATFORM INSTALLATION WITH DISTUTILS (Ideally)
 
+
+=== UNIX (ex: Linux)
 To install summon with python distutils use the following command:
 
     python setup.py install
@@ -42,6 +62,34 @@ or to install in your home directory use:
 For installing on Mac OS X use the following command:
     
     python setup-macosx.py install
+
+
+=== WINDOWS
+It is recommended to use the Windows Install available from the SUMMON website
+(see below for more).
+
+However, if you are _really_ interested in using distutils, a windows specific
+version of the distutils file (setup-windows.py) is available.  You may need to
+edit it to properly configure the headers and linking of third part libraries
+(OpenGLUT, SDL, OpenGL).
+
+
+
+=============================================================================
+BINARY INSTALL
+
+=== LINUX RPM
+Download the rpm from the summon website
+
+rpm -i summon-XXX-1.i386.rpm
+
+
+=== WINDOWS 
+Download and run the Installer summon-XXX.win32-py2.4.exe
+
+For source code examples, you still need to download and unzip the tar file,
+summon-XXX.tar.gz
+
 
 
 =============================================================================
@@ -71,14 +119,13 @@ third party libraries.
     nmake -f Makefile.win
 
 For convenience, you can use winsh.bat to run the above command in a proper
-environment for Microsoft Visual Studio 8:
+environment for Microsoft Visual Studio 8.0:
 
     winsh.bat nmake -f Makefile.win
 
 
 
 === WINDOWS CYGWIN MAKE
-
 I have had trouble using setup.py for installing on CYGWIN, so I made a Makefile
 specifically for installing on CYGWIN.  
 Note: make sure that the *development* packages of freeglut and SDL are
@@ -96,6 +143,4 @@ Next, you must add the summon source directory to your python path using
 
 
 
-
-For more documentation see doc/summon_manual.pdf
 

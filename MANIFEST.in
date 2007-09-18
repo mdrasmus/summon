@@ -6,6 +6,7 @@ include Makefile.cygwin
 include Makefile.win
 include winsh.bat
 include setup-macosx.py
+include setup-windows.py
 recursive-include examples *.*
 recursive-include examples README*
 recursive-include src *.cpp *.h Makefile*
