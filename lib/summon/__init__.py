@@ -444,6 +444,10 @@ class Window (object):
         """internal callback for SUMMON's use only"""
         width, height = self.get_size()
         
+        # resizing can change the view, so notify listeners
+        self._on_view_change()
+        self._on_focus_change()
+        
         for listener in self.resizeListeners:
             listener(width, height)
     
