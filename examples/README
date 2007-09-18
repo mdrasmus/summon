@@ -1,0 +1,18 @@
+SUMMON Example usage
+
+These examples are provided to introduce the basic features of SUMMON.  They have
+been numbered by their complexity.  For a good tutorial, you can read each
+example and execute it through python.
+
+Examples can be executed either directly
+
+    ./01_basics.py
+
+Or with python and the interactive flag
+
+    python -i 01_basics.py
+
+
+The directories summatrix and sumtree contain examples specifically for the
+summatrix and sumtree scripts.  The advance directory contains examples of
+the experimental features of SUMMON.

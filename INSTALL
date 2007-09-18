@@ -73,6 +73,9 @@ version of the distutils file (setup-windows.py) is available.  You may need to
 edit it to properly configure the headers and linking of third part libraries
 (OpenGLUT, SDL, OpenGL).
 
+I have found that using mingw32 and the option
+    python setup-windows.py build --compiler=mingw32
+works best.  Although, Visual Studio 7.1 should also work.
 
 
 =============================================================================
