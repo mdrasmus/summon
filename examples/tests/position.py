@@ -17,3 +17,6 @@ for i in xrange(10):
     time.sleep(.2)
 
 
+
+win.set_position(200, 200, wait=True)
+print win.get_position()

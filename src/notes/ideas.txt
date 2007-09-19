@@ -4,6 +4,10 @@ Tue Sep 18 00:17:47 EDT 2007
 pythonw setup-windows.py bdist_wininst build --compiler=mingw32
 
 
+- remember! python cannot block waiting for SUMMON, if we are in a function call 
+from SUMMON.  Otherwise it is a deadlock!
+
+
 ==============================================================================
 Tue Sep 11 21:12:44 EDT 2007
 

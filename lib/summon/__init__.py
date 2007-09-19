@@ -426,7 +426,7 @@ class Window (object):
     
     def set_size(self, width, height):
         """sets the size of a window in pixels"""
-        return summon_core.set_window_size(self.winid, width, height)
+        summon_core.set_window_size(self.winid, width, height)
     
     def get_size(self):
         """gets the size of a window in pixels"""
@@ -434,7 +434,8 @@ class Window (object):
 
     def set_position(self, x, y):
         """sets the position of a window on the desktop"""
-        return summon_core.set_window_position(self.winid, x, y)
+        summon_core.set_window_position(self.winid, x, y)
+            
     
     def get_position(self):
         """gets the position of a window on the desktop"""

@@ -56,7 +56,7 @@ class WindowEnsemble:
         # record window positions and sizes
         for win in windows:
             self.pos[win] = win.get_position()
-            self.sizes[win] = win.get_size()        
+            self.sizes[win] = win.get_size()
         
         if master != None:
             if master_pos != None:
@@ -82,7 +82,7 @@ class WindowEnsemble:
 
         # setup window stacking
         if stackx or stacky:
-            self.stack(self.master)
+            self.stack(self.master, master_pos, master_size)
         
         
         # setup scrolling ties
@@ -162,11 +162,13 @@ class WindowEnsemble:
             self.raise_windows(win)      
                 
     
-    def stack(self, win):
+    def stack(self, win, target_pos=None, target_size=None):
         """restack windows together"""
         
-        target_pos = win.get_position()
-        target_size = win.get_size()
+        if target_pos == None:
+            target_pos = win.get_position()
+        if target_size == None:
+            target_size = win.get_size()
         
         # get window sizes
         widths = []
@@ -179,26 +181,27 @@ class WindowEnsemble:
         
         for win2 in self.windows:
             # update size
-            w2, h2 = win2.get_size()
-            
-            if self.samew:
-                w = target_size[0]
-            else:
-                w = w2
-            if self.sameh:
-                h = target_size[1]
-            else:
-                h = h2
-            
-            if win2 != win and (w,h) != (w2, h2):
-                win2.set_size(w, h)
-                self.invalidSize.add(win2)
-            self.sizes[win2] = (w, h)
-            
-            
-            # determine destination positions
             if win2 == win:
+                w, h = target_size
+                
+                # determine destination positions
                 target = [totalx, totaly]
+            else:
+                w2, h2 = win2.get_size()
+            
+                if self.samew:
+                    w = target_size[0]
+                else:
+                    w = w2
+                if self.sameh:
+                    h = target_size[1]
+                else:
+                    h = h2
+            
+                if (w,h) != (w2, h2):
+                    win2.set_size(w, h)
+                    self.invalidSize.add(win2)
+                    self.sizes[win2] = (w, h)
             
             widths.append(w)
             heights.append(h)
@@ -210,6 +213,9 @@ class WindowEnsemble:
         
         # set window positions
         for i, win2 in enumerate(self.windows):
+            if win == win2:
+                continue
+            
             if self.stackx:
                 newx = target_pos[0]
                 newy = target_pos[1] + y[i] - target[1]
@@ -220,11 +226,9 @@ class WindowEnsemble:
             oldpos = win2.get_position()
             self.pos[win2] = (newx, newy)
             
-            if win2 != win and (newx, newy) != oldpos:
+            if (newx, newy) != oldpos:
                 win2.set_position(newx, newy)
                 self.invalidPos.add(win2)
-            #else:
-            #    assert target_pos == (newx, newy), (target_pos, (newx, newy))
         
             
     def align(self, win):
