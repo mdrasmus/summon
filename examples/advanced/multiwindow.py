@@ -60,9 +60,9 @@ win1.set_visible(0, -50, -len(rows), 0)
 win3.set_visible(0, -50, -len(rows), 0)
 
        
-e = WindowEnsemble([win1, win2, win3], 
+e = WindowEnsemble([win1, win2, win3], master=win2,
                    stackx=True, samew=True, tiex=True)
-e = WindowEnsemble([win4, win2, win5], 
+e = WindowEnsemble([win4, win2, win5], master=win2,
                    stacky=True, sameh=True, tiey=True)
 
 win2.set_visible(0, -len(rows), len(cols), 0)

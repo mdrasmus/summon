@@ -18,5 +18,5 @@ for i in xrange(10):
 
 
 
-win.set_position(200, 200, wait=True)
+win.set_position(200, 200)
 print win.get_position()

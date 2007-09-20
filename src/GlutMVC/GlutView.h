@@ -80,8 +80,18 @@ public:
     inline void SetPosition(int x, int y)
     {
         glutPositionWindow(x, y);
-        //m_windowPos.x = x;
-        //m_windowPos.y = y;
+        Vertex2i oldpos = m_windowPos;
+        m_windowPos.x = x;
+        m_windowPos.y = y;
+        
+        // notify listeners        
+        if (oldpos.x != m_windowPos.x || oldpos.y != m_windowPos.y) {
+            for (ListenerIter iter = m_listeners.begin(); 
+                 iter != m_listeners.end(); iter++) {
+                GlutViewListener *listener = (*iter);
+                listener->ViewMove(this);
+            }
+        }        
     }
     
     inline Vertex2i GetPosition()

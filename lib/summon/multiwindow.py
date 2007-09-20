@@ -17,9 +17,7 @@ class WindowEnsemble:
                        tiex=False, tiey=False, pinx=False, piny=False,
                        coordsx=None, coordsy=None,
                        master=None,
-                       close_with_master=None,
-                       master_pos=None,
-                       master_size=None):
+                       close_with_master=None):
         self.windows = windows[:]
         self.pos = {}
         self.sizes = {}
@@ -58,14 +56,6 @@ class WindowEnsemble:
             self.pos[win] = win.get_position()
             self.sizes[win] = win.get_size()
         
-        if master != None:
-            if master_pos != None:
-                self.pos[master] = master_pos
-            if master_size != None:
-                self.sizes[master] = master_size
-        
-        
-        
         def make_listener(win):
             return util.Bundle(close=lambda: self._on_window_close(win),
                                resize=lambda w, h: self._on_window_resize(win, w, h),
@@ -82,7 +72,7 @@ class WindowEnsemble:
 
         # setup window stacking
         if stackx or stacky:
-            self.stack(self.master, master_pos, master_size)
+            self.stack(self.master)
         
         
         # setup scrolling ties
@@ -162,13 +152,11 @@ class WindowEnsemble:
             self.raise_windows(win)      
                 
     
-    def stack(self, win, target_pos=None, target_size=None):
+    def stack(self, win):
         """restack windows together"""
         
-        if target_pos == None:
-            target_pos = win.get_position()
-        if target_size == None:
-            target_size = win.get_size()
+        target_pos = win.get_position()
+        target_size = win.get_size()
         
         # get window sizes
         widths = []
