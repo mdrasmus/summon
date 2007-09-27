@@ -55,7 +55,7 @@ class WindowEnsemble:
         for win in windows:
             self.pos[win] = win.get_position()
             self.sizes[win] = win.get_size()
-        
+                    
         def make_listener(win):
             return util.Bundle(close=lambda: self._on_window_close(win),
                                resize=lambda w, h: self._on_window_resize(win, w, h),
@@ -79,16 +79,6 @@ class WindowEnsemble:
         if tiex or tiey:
             self.tie(windows, tiex=tiex, tiey=tiey, pinx=pinx, piny=piny,
                      coordsx=coordsx, coordsy=coordsy, master=master)
-
-        
-        # wait for all windows to be in valid positions and sizes
-        '''
-        waiting = 1
-        while waiting > 0 and \
-              (len(self.invalidPos) > 0 or len(self.invalidSize) > 0):
-            time.sleep(.1)
-            waiting -= .1
-        '''
             
     
     
@@ -157,6 +147,8 @@ class WindowEnsemble:
         
         target_pos = win.get_position()
         target_size = win.get_size()
+        self.pos[win] = target_pos
+        self.sizes[win] = target_size
         
         # get window sizes
         widths = []

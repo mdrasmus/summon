@@ -51,10 +51,10 @@ public:
     // TODO: think more about how window resizing is treated with threads
     virtual void Resize(int width, int height)
     {
+        m_windowSize = Vertex2i(width, height);
         MakeCurrentWindow(); 
         glutReshapeWindow(width, height);
         //Reshape(width, height);
-        m_windowSize = Vertex2i(width, height);
         glutPostRedisplay();
     }
 
@@ -79,19 +79,9 @@ public:
     
     inline void SetPosition(int x, int y)
     {
-        glutPositionWindow(x, y);
-        Vertex2i oldpos = m_windowPos;
         m_windowPos.x = x;
-        m_windowPos.y = y;
-        
-        // notify listeners        
-        if (oldpos.x != m_windowPos.x || oldpos.y != m_windowPos.y) {
-            for (ListenerIter iter = m_listeners.begin(); 
-                 iter != m_listeners.end(); iter++) {
-                GlutViewListener *listener = (*iter);
-                listener->ViewMove(this);
-            }
-        }        
+        m_windowPos.y = y;  
+        glutPositionWindow(x, y);          
     }
     
     inline Vertex2i GetPosition()
@@ -124,6 +114,7 @@ protected:
     int m_window;
     Vertex2i m_windowSize;
     Vertex2i m_windowPos;
+    Vertex2i m_windowPosLastKnown;
     Vertex2i m_windowOffset;    // GLUT sometimes places the window offset
     string m_name;
     ListenerList m_listeners;
