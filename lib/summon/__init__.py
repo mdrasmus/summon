@@ -446,8 +446,9 @@ class Window (object):
         width, height = self.get_size()
         
         # resizing can change the view, so notify listeners
-        self._on_view_change()
+        # NOTE: focus changed must be called before view changed
         self._on_focus_change()
+        self._on_view_change()
         
         for listener in self.resizeListeners:
             listener(width, height)
@@ -578,6 +579,7 @@ class Window (object):
     def set_visible(self, x1, y1, x2, y2):
         """sets the current view to the specified bounding box"""
         ret = summon_core.set_visible(self.winid, x1, y1, x2, y2)
+        # NOTE: focus changed must be called before view changed
         self._on_focus_change() # notify view has changed        
         self._on_view_change() # notify view has changed
         return ret

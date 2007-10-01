@@ -1,0 +1,7 @@
+
+
+Files that need to be updated when version changes
+- Makefile
+- setup.py
+- setup-macosx.py
+- doc/summon_manual.tex

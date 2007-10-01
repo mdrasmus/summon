@@ -1,3 +1,156 @@
+=============================================================================
+Thu Sep 27 14:24:42 EDT 2007
+
+Ideally, I should remove invalidPos and invalidSize from WindowEnsemble. 
+However, I must then handle the case where callbacks lag more than one 
+stack call of the target window.
+
+
+normal
+- stack1
+- callback1
+- stack2
+- callback2
+- stack3
+- callback3
+
+normal
+- stack1
+- stack2
+- stack3
+- callback1
+- a revert stack call
+- callback2
+- a revert stack call
+- callback3
+- a revert stack call
+- more callbacks from reverts
+
+
+questions:
+- do I need a count of callbacks to ignore.
+    - resize and position callbacks can also possible coalesce, so counting
+      exactly cannot be relied on
+- but what about externally prompted callbacks?
+    - how can I still process them?
+
+An additional complications is that the GLUT callback for window size,
+overwrites the 'possibly' new setting.  Eventually all callbacks are called.
+
+
+The key question is how to distignuish callbacks prompted by multiwindow (thus
+ignore) or prompted by external sources (thus should be processed for 
+restacking).
+
+- data structure
+recentMoves[win] = [pos1, pos2, pos3]
+
+def on_move(self, win, x, y):
+    if (x, y) in self.recentMoves[win]:
+        # remove everything up to pos (possible coalesence of events)
+        # and ignore this callback
+    else:
+        # new callback from external source, should be processed
+        
+        if len(self.recentMoves[win]) == 0:
+            # usually the recentMoves[win] will be empty
+            # thus process this event with stacking
+            self.stack(win)
+        else:
+            # but it could also be populated, 
+            # in which case we have backed up callbacks
+            # leave recentMoves alone and continue to ignore those events as
+            # they come in.
+            self.stack(win)
+
+What is the effect of external prompted callbacks that HAPPEN to match locally
+prompted callbacks
+
+
+normal:
+    set A
+        recent = [A]
+        GLUT buffer = [A]
+    set B
+        recent = [A, B]
+        GLUT buffer = [A, B]        
+    callback A
+        recent = [B]
+        GLUT buffer = [B]        
+    callback B
+        recent = []
+        GLUT buffer = []
+
+my example1:
+    set A
+        recent = [A]
+        GLUT buffer = [A]
+    set B
+        recent = [A, B]
+        GLUT buffer = [A, B]        
+    external set A'
+        GLUT buffer = [A, B, A']
+    callback A
+        recent = [B]
+        GLUT buffer = [B, A']
+    callback B
+        recent = []
+        GLUT buffer = [A']
+    callback A'
+        process A'
+This is correct
+
+
+my example2:
+    external set B'
+        GLUT buffer = [B']
+    set A
+        recent = [A]
+        GLUT buffer = [B',A]
+    set B
+        recent = [A, B]
+        GLUT buffer = [B', A, B]        
+    callback B'
+        - B' in recent
+        - ignore up to B in recent (assume coalescence)
+        recent = []
+        GLUT buffer = [A, B]
+        
+    callback A
+        process A
+    
+        set A
+            recent = [A]
+            GLUT buffer = [B, A]
+            
+    callback B
+        recent = [A]
+        GLUT buffer = [A]
+    
+        - B not in recent
+        - treat as new movement
+        process B
+        
+        set B
+            recent = [A, B]
+            GLUT buffer = [A, B]
+        
+    callback A
+        recent = [B]
+        GLUT buffer = [B]
+    
+    callback B
+        recent = []
+        GLUT buffer = []
+        
+
+A small jitter but should end on the correct state.
+
+
+
+
+
+=============================================================================
 Tue Sep 18 00:17:47 EDT 2007
 
 # how to compile summon on windows

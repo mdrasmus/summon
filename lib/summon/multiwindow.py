@@ -28,8 +28,8 @@ class WindowEnsemble:
         self.listeners = {}
         self.ties = {}
         self.lock = False
-        self.invalidPos = set()
-        self.invalidSize = set()
+        self.recentPos = util.Dict(default=[])
+        self.recentSize = util.Dict(default=[])
         
         
         # setup master window
@@ -55,7 +55,7 @@ class WindowEnsemble:
         for win in windows:
             self.pos[win] = win.get_position()
             self.sizes[win] = win.get_size()
-        
+                    
         def make_listener(win):
             return util.Bundle(close=lambda: self._on_window_close(win),
                                resize=lambda w, h: self._on_window_resize(win, w, h),
@@ -79,7 +79,6 @@ class WindowEnsemble:
         if tiex or tiey:
             self.tie(windows, tiex=tiex, tiey=tiey, pinx=pinx, piny=piny,
                      coordsx=coordsx, coordsy=coordsy, master=master)
-
             
     
     
@@ -116,10 +115,11 @@ class WindowEnsemble:
 
     
     def _on_window_resize(self, win, width, height):
-        # validate windows that have been changed by the ensemble
-        if win in self.invalidSize:
-            print "invalid", win.get_name()
-            self.invalidSize.remove(win)
+        # ignore windows that have been changed by the ensemble
+        size = (width, height)
+        if size in self.recentSize[win]:
+            ind = self.recentSize[win].index(size)
+            self.recentSize[win] = self.recentSize[win][ind+1:]
     
         # process windows that have been changed by outside forces
         elif self.sizes[win] != (width, height):
@@ -131,10 +131,11 @@ class WindowEnsemble:
     
     
     def _on_window_move(self, win, x, y):
-        # validate windows that have been changed by the ensemble    
-        if win in self.invalidPos:
-            print "invalid", win.get_name()
-            self.invalidPos.remove(win)
+        # ignore windows that have been changed by the ensemble
+        pos = (x, y)
+        if pos in self.recentPos[win]:
+            ind = self.recentPos[win].index(pos)
+            self.recentPos[win] = self.recentPos[win][ind+1:]
         
         # process windows that have been changed by outside forces        
         elif self.pos[win] != (x, y):
@@ -142,7 +143,7 @@ class WindowEnsemble:
                 self.stack(win)
             else:
                 self.align(win)
-            self.raise_windows(win)      
+            self.raise_windows(win)
                 
     
     def stack(self, win):
@@ -150,6 +151,8 @@ class WindowEnsemble:
         
         target_pos = win.get_position()
         target_size = win.get_size()
+        self.pos[win] = target_pos
+        self.sizes[win] = target_size
         
         # get window sizes
         widths = []
@@ -182,7 +185,7 @@ class WindowEnsemble:
                     h = h2
             
                 if (w,h) != (w2, h2):
-                    self.invalidSize.add(win2)
+                    self.recentSize[win2].append((w,h))
                     self.sizes[win2] = (w, h)
                     win2.set_size(w, h)
             
@@ -211,13 +214,12 @@ class WindowEnsemble:
                 newx = target_pos[0] + x[i] - target[0]
                 newy = target_pos[1]
             
-            oldpos = win2.get_position()
+            oldpos = self.pos[win2] #win2.get_position()
             self.pos[win2] = (newx, newy)
             
             if (newx, newy) != oldpos:
-                self.invalidPos.add(win2)
                 win2.set_position(newx, newy)
-                
+                self.recentPos[win2].append((newx, newy))
         
             
     def align(self, win):
@@ -233,7 +235,7 @@ class WindowEnsemble:
                 pos3 = [now[0] + pos2[0] - pos1[0],
                         now[1] + pos2[1] - pos1[1]]
                 win2.set_position(*pos3)
-                self.invalidPos.add(win2)
+                self.recentPos[win2].append(tuple(pos3))
                 self.pos[win2] = pos3
 
         # record new position for main window
