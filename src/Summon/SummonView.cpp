@@ -83,7 +83,7 @@ void SummonView::ExecCommand(Command &command)
             } break;
             
         case GET_WINDOW_POSITION_COMMAND: {
-            MakeCurrentWindow();
+            //MakeCurrentWindow();
             //UpdatePosition();
             Vertex2i pos = GetPosition();
             ((ScriptCommand*) &command)->SetReturn(
