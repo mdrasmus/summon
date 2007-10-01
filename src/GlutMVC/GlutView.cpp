@@ -137,9 +137,9 @@ void GlutView::UpdatePosition()
 
 
     MakeCurrentWindow();
-    //Vertex2i oldpos = m_windowPos;
-    m_windowPos.x = glutGet(GLUT_WINDOW_X) - m_windowOffset.x;
-    m_windowPos.y = glutGet(GLUT_WINDOW_Y) - m_windowOffset.y;
+    Vertex2i newpos(glutGet(GLUT_WINDOW_X) - m_windowOffset.x,
+                    glutGet(GLUT_WINDOW_Y) - m_windowOffset.y);
+    m_windowPos = newpos;
 
     if (m_windowPosLastKnown.x != m_windowPos.x || 
         m_windowPosLastKnown.y != m_windowPos.y)
