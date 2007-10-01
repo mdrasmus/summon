@@ -54,7 +54,8 @@ public:
         MakeCurrentWindow(); 
         glutReshapeWindow(width, height);
         //Reshape(width, height);
-        m_windowSize = Vertex2i(width, height);
+        m_windowSize.x = width
+        m_windowSize.y = height;
         glutPostRedisplay();
     }
 
@@ -91,7 +92,8 @@ public:
                 GlutViewListener *listener = (*iter);
                 listener->ViewMove(this);
             }
-        }        
+        }
+        MakeCurrentWindow();
     }
     
     inline Vertex2i GetPosition()

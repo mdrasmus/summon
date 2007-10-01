@@ -100,6 +100,9 @@ void GlutView::Display()
 
 void GlutView::Reshape(int width, int height)
 {
+    m_windowSize.x = width;
+    m_windowSize.y = height;
+
     // window has resized
     for (ListenerIter iter = m_listeners.begin(); 
          iter != m_listeners.end(); iter++) {

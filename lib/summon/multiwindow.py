@@ -80,15 +80,6 @@ class WindowEnsemble:
             self.tie(windows, tiex=tiex, tiey=tiey, pinx=pinx, piny=piny,
                      coordsx=coordsx, coordsy=coordsy, master=master)
 
-        
-        # wait for all windows to be in valid positions and sizes
-        '''
-        waiting = 1
-        while waiting > 0 and \
-              (len(self.invalidPos) > 0 or len(self.invalidSize) > 0):
-            time.sleep(.1)
-            waiting -= .1
-        '''
             
     
     
@@ -127,6 +118,7 @@ class WindowEnsemble:
     def _on_window_resize(self, win, width, height):
         # validate windows that have been changed by the ensemble
         if win in self.invalidSize:
+            print "invalid", win.get_name()
             self.invalidSize.remove(win)
     
         # process windows that have been changed by outside forces
@@ -141,6 +133,7 @@ class WindowEnsemble:
     def _on_window_move(self, win, x, y):
         # validate windows that have been changed by the ensemble    
         if win in self.invalidPos:
+            print "invalid", win.get_name()
             self.invalidPos.remove(win)
         
         # process windows that have been changed by outside forces        
@@ -167,6 +160,8 @@ class WindowEnsemble:
         totaly = 0
         target = []
         
+        print "target", win.name
+        
         for win2 in self.windows:
             # update size
             if win2 == win:
@@ -187,9 +182,11 @@ class WindowEnsemble:
                     h = h2
             
                 if (w,h) != (w2, h2):
-                    win2.set_size(w, h)
                     self.invalidSize.add(win2)
                     self.sizes[win2] = (w, h)
+                    win2.set_size(w, h)
+            
+            print win2.name, w, h
             
             widths.append(w)
             heights.append(h)
@@ -198,6 +195,9 @@ class WindowEnsemble:
             deco = win2.get_decoration()
             totalx += w + deco[0]
             totaly += h + deco[1]
+        
+        print x, y
+        print
         
         # set window positions
         for i, win2 in enumerate(self.windows):
@@ -215,8 +215,9 @@ class WindowEnsemble:
             self.pos[win2] = (newx, newy)
             
             if (newx, newy) != oldpos:
-                win2.set_position(newx, newy)
                 self.invalidPos.add(win2)
+                win2.set_position(newx, newy)
+                
         
             
     def align(self, win):
