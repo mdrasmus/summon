@@ -163,8 +163,6 @@ class WindowEnsemble:
         totaly = 0
         target = []
         
-        print "target", win.name
-        
         for win2 in self.windows:
             # update size
             if win2 == win:
@@ -189,8 +187,6 @@ class WindowEnsemble:
                     self.sizes[win2] = (w, h)
                     win2.set_size(w, h)
             
-            print win2.name, w, h
-            
             widths.append(w)
             heights.append(h)
             x.append(totalx)
@@ -198,9 +194,6 @@ class WindowEnsemble:
             deco = win2.get_decoration()
             totalx += w + deco[0]
             totaly += h + deco[1]
-        
-        print x, y
-        print
         
         # set window positions
         for i, win2 in enumerate(self.windows):

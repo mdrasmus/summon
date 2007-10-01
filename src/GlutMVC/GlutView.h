@@ -53,7 +53,7 @@ public:
     {
         MakeCurrentWindow(); 
         glutReshapeWindow(width, height);
-        m_windowSize.x = width
+        m_windowSize.x = width;
         m_windowSize.y = height;
         glutPostRedisplay();
     }
