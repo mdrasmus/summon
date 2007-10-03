@@ -16,7 +16,8 @@ namespace Summon
 
 class Glut2DView : public GlutView {
 public:
-    Glut2DView(int width = 800, int height = 600, const char *name="");
+    Glut2DView(int width = 800, int height = 600, const char *name="",
+               int left=-1, int top=-1);
     virtual ~Glut2DView();
 
     virtual void ExecCommand(Command &command);

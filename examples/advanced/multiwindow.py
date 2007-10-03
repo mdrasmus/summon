@@ -33,11 +33,11 @@ def make_labels(rows, rot=False):
     else:
         return group(*vis)
 
-win1 = summon.Window("window 1")
-win2 = summon.Window("window 2")
-win3 = summon.Window("window 3")
-win4 = summon.Window("window 4")
-win5 = summon.Window("window 5")
+win1 = summon.Window("window 1", size=(400, 100))
+win2 = summon.Window("window 2", size=(400, 400))
+win3 = summon.Window("window 3", size=(400, 100))
+win4 = summon.Window("window 4", size=(100, 400))
+win5 = summon.Window("window 5", size=(100, 400))
 
 for w in [win1, win2, win3, win4, win5]:
     w.set_bgcolor(1, 1, 1)
@@ -45,13 +45,6 @@ for w in [win1, win2, win3, win4, win5]:
 # create labels
 rows = ["row%d" % (x+1) for x in range(nrows)]
 cols = ["col%d" % (x+1) for x in range(ncols)]
-
-# set sizes
-win1.set_size(400, 100)
-win2.set_size(400, 400)
-win3.set_size(400, 100)
-win4.set_size(100, 400)
-win5.set_size(100, 400)
 
 # make side windows visible
 win4.set_visible(-50, 0, 0, -len(rows))

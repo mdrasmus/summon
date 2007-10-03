@@ -228,9 +228,19 @@ public:
     virtual int GetId() { return NEW_WINDOW_COMMAND; }
 
     virtual const char *GetName() { return "new_window"; }
-    virtual const char *GetUsage() { return ""; }
+    virtual const char *GetUsage() { return "name, width, height, left, top"; }
     virtual const char *GetDescription() 
     { return "creates a new window and returns its id"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(ErrorHelp(), lst, "sdddd", &name, &size.x, &size.y,
+                                                   &position.x, &position.y);
+    }
+    
+    string name;
+    Vertex2i size;
+    Vertex2i position;
 };
 
 

@@ -17,8 +17,10 @@ namespace Summon
 std::vector<GlutView*> g_windows;
 
 
-GlutView::GlutView(int width, int height, const char *name) :
+GlutView::GlutView(int width, int height, const char *name, 
+                   int left, int top) :
    m_windowSize(width, height),
+   m_windowPos(left, top),   
    m_windowOffset(0, 0),
    m_opened(true)
 {
@@ -27,10 +29,9 @@ GlutView::GlutView(int width, int height, const char *name) :
     //glutInitDisplayString( "rgba double samples>=4 ");         
     // NOTE: GLUT_ALPHA had problems on OSX
 
+    // set initial window size and position
     glutInitWindowSize(width, height);
-    
-    // use default position
-    glutInitWindowPosition(-1, -1);
+    glutInitWindowPosition(left, top);
     
     
     // create glut window and register it

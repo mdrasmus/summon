@@ -24,10 +24,11 @@ class SummonWindow
 {
 public:
     SummonWindow(int id, CommandExecutor *global,
-               int width=400, int height=400, const char *name="") :
+               int width=400, int height=400, const char *name="",
+               int left=-1, int top=-1) :
         m_id(id),
         m_global(global),
-        m_view(NULL, width, height, name),
+        m_view(NULL, width, height, name, left, top),
         m_controller(global, &m_view),
         m_worldModel(NULL),
         m_screenModel(NULL)

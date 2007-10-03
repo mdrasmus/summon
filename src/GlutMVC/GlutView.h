@@ -43,7 +43,8 @@ public:
 
 class GlutView : public View {
 public:
-    GlutView(int width = 800, int height = 600, const char *name="");
+    GlutView(int width = 800, int height = 600, const char *name="",
+             int left=-1, int top=-1);
     virtual ~GlutView();
 
     virtual void ExecCommand(Command &command);

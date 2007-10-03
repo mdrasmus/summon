@@ -117,6 +117,7 @@ class WindowEnsemble:
     def _on_window_resize(self, win, width, height):
         # ignore windows that have been changed by the ensemble
         size = (width, height)
+        #print self.recentSize
         if size in self.recentSize[win]:
             ind = self.recentSize[win].index(size)
             self.recentSize[win] = self.recentSize[win][ind+1:]

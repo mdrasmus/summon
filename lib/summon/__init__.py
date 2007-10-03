@@ -293,13 +293,29 @@ class Window (object):
        be in view, and should not be affected by scrolling and zooming.
     """
 
-    def __init__(self, name="SUMMON", world=None, screen=None,
+    def __init__(self, name="SUMMON", 
+                 position=(-1, -1), size=(400, 400),
+                 world=None, screen=None,
                  loadconfig=True):
+        """name       -- title on window
+           position   -- the initial position (x,y) of the window on the desktop
+           size       -- the initial size (width, height) of the window
+           world      -- the world model
+           screen     -- the screen model
+           loadconfig -- bool that specifies whether to load default 
+                         configuration for the window.  If loadconfig is a 
+                         function, the function will be called with the window
+                         as its argument.  Any duplicates of the window will
+                         also use the same configuration function.
+        """
+                
         # create new window
-        self.winid = summon_core.new_window()
+        self.winid = summon_core.new_window(name, size[0], size[1],
+                                            position[0], position[1])
         assert self.winid != None
         state.add_window(self)
-
+        
+        
         # setup world model
         if world != None:
             self.world = world
@@ -313,7 +329,7 @@ class Window (object):
         else:
             self.screen = Model()
         summon_core.assign_model(self.winid, "screen", self.screen.id)
-                
+        
         # listeners
         self.viewChangeListeners = set()
         self.focusChangeListeners = set()
@@ -326,7 +342,7 @@ class Window (object):
         summon_core.set_window_on_move(self.winid, self._on_move)     
         
         # configure window
-        self.set_name(name)
+        self.name = name
         self.antialias = True
         self.crosshair = False
         self.crosshair_color = None        
@@ -336,8 +352,12 @@ class Window (object):
         self.menuButton = 1  # middle mouse button
         
         # load default configuration
-        if loadconfig:
+        self.config = loadconfig
+        if isinstance(loadconfig, bool):
             self.load_config()
+        else:
+            self.config(self)
+        
     
     
     def set_world_model(self, model):
@@ -807,10 +827,14 @@ class Window (object):
         zoomy = (coords[3] - coords[1]) / size[1]
 
         # create new window with same model and coords    
-        win = Window(world=self.world)
-        win.set_size(* size)
-        win.set_position(* self.get_position())
-        win.set_name(self.get_name())
+        win = Window(self.get_name(), 
+                     position=self.get_position(),
+                     size=size, 
+                     world=self.world, 
+                     loadconfig=self.config)
+        #win.set_size(* size)
+        #win.set_position(* self.get_position())
+        #win.set_name(self.get_name())
         win.set_bgcolor(* bg)
         
         # make the view the same

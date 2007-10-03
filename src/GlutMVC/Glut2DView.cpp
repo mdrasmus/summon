@@ -17,8 +17,9 @@ namespace Summon
 
 
 
-Glut2DView::Glut2DView(int width, int height, const char *name) :
-   GlutView(width, height, name),
+Glut2DView::Glut2DView(int width, int height, const char *name,
+                       int left, int top) :
+   GlutView(width, height, name, left, top),
    m_trans(0, 0),
    m_zoom(1.0, 1.0)
 {

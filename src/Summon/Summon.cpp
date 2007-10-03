@@ -248,10 +248,13 @@ public:
                 } break;
             
 
-            case NEW_WINDOW_COMMAND:
+            case NEW_WINDOW_COMMAND: {
                 // create a new window
-                ((ScriptCommand*) &command)->SetReturn(Int2Scm(NewWindow()));
-                break;
+                NewWindowCommand *cmd = (NewWindowCommand*) &command;
+                
+                cmd->SetReturn(Int2Scm(NewWindow(cmd->name, cmd->size,
+                                                 cmd->position)));
+                } break;
                 
                         
             case CLOSE_WINDOW_COMMAND: {
@@ -558,10 +561,11 @@ public:
     }
     
     
-    int NewWindow()
+    int NewWindow(string name, Vertex2i size, Vertex2i position)
     {
         int id = m_nextWindowId;
-        m_windows[id] = new SummonWindow(id, this, 400, 400, "SUMMON");
+        m_windows[id] = new SummonWindow(id, this, size.x, size.y, 
+                                         name.c_str(), position.x, position.y);
         m_windows[id]->GetView()->SetOffset(m_windowOffset);
         m_windows[id]->GetView()->AddListener(this);
         m_closeWaiting[m_windows[id]->GetView()] = m_windows[id];

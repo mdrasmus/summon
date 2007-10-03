@@ -78,7 +78,7 @@ class SummonView : public Glut2DView
 {
 public:
     SummonView(SummonModel *model, int width = 320, int height = 320, 
-             const char *name="");
+               const char *name="", int left=-1, int top=-1);
     virtual ~SummonView();
 
     virtual void ExecCommand(Command &command);

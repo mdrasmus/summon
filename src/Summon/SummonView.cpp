@@ -18,8 +18,9 @@
 namespace Summon
 {
 
-SummonView::SummonView(SummonModel *model, int width, int height, const char *name) :
-    Glut2DView(width, height, name),
+SummonView::SummonView(SummonModel *model, int width, int height, 
+                       const char *name, int left, int top) :
+    Glut2DView(width, height, name, left, top),
     m_worldModel(model),
     m_screenModel(NULL),
     m_bgColor(0,0,0,0),
@@ -266,7 +267,7 @@ void SummonView::ExecCommand(Command &command)
         // menus
         case ATTACH_MENU_COMMAND: {
             AttachMenuCommand *cmd = (AttachMenuCommand*) &command;
-            int button;
+            int button = -1;
             
             MakeCurrentWindow();
             glutSetMenu(cmd->menuid);
@@ -276,17 +277,18 @@ void SummonView::ExecCommand(Command &command)
                 case 1: button = GLUT_MIDDLE_BUTTON; break;
                 case 2: button = GLUT_RIGHT_BUTTON; break;
                 default:
-                    Error("unknown menu button '%d'", button);
+                    Error("unknown menu button '%d'", cmd->button);
             }
             
-            glutAttachMenu(button);
+            if (button != -1)
+                glutAttachMenu(button);
             
             } break;
         
         
         case DETACH_MENU_COMMAND: {
             DetachMenuCommand *cmd = (DetachMenuCommand*) &command;
-            int button;
+            int button = -1;
             
             MakeCurrentWindow();
             glutSetMenu(cmd->menuid);
@@ -296,10 +298,11 @@ void SummonView::ExecCommand(Command &command)
                 case 1: button = GLUT_MIDDLE_BUTTON; break;
                 case 2: button = GLUT_RIGHT_BUTTON; break;
                 default:
-                    Error("unknown menu button '%d'", button);
+                    Error("unknown menu button '%d'", cmd->button);
             }
             
-            glutDetachMenu(button);
+            if (button != -1)
+                glutDetachMenu(button);
             
             } break;
         
