@@ -20,6 +20,8 @@ from summon.core import *
 from summon import util
 import summon.svg
 
+import summon_config
+
 
 VERSION = "1.8.2"
 VERSION_INFO = """\
@@ -296,17 +298,15 @@ class Window (object):
     def __init__(self, name="SUMMON", 
                  position=(-1, -1), size=(400, 400),
                  world=None, screen=None,
-                 loadconfig=True):
+                 winconfig=summon_config.config_window):
         """name       -- title on window
            position   -- the initial position (x,y) of the window on the desktop
            size       -- the initial size (width, height) of the window
            world      -- the world model
            screen     -- the screen model
-           loadconfig -- bool that specifies whether to load default 
-                         configuration for the window.  If loadconfig is a 
-                         function, the function will be called with the window
-                         as its argument.  Any duplicates of the window will
-                         also use the same configuration function.
+           winconfig -- a function that will be called with the window
+                        as its argument.  Any duplicates of the window will
+                        also use the same configuration function.
         """
                 
         # create new window
@@ -352,13 +352,10 @@ class Window (object):
         self.menuButton = 1  # middle mouse button
         
         # load default configuration
-        self.config = loadconfig
-        if isinstance(loadconfig, bool):
-            self.load_config()
-        else:
-            self.config(self)
+        self.winconfig = winconfig
+        self.load_config(winconfig)
         
-    
+
     
     def set_world_model(self, model):
         """sets a model to be the world model"""
@@ -372,24 +369,37 @@ class Window (object):
         self.screen = model
            
     
-    def load_config(self):
+    def load_config(self, winconfig=None):
         """loads a summon config file for a window"""
         state.current_window = self
         
-        # look for config in HOME directory
-        if "HOME" in os.environ:
+        if winconfig != None:
+            # if configuration function given, then use it
+            winconfig(self)
+        
+        elif "HOME" in os.environ:
+            # look for config in HOME directory
+        
             config_file = os.path.join(os.environ["HOME"], ".summon_config")
             if os.path.exists(config_file):
-                execfile(config_file)
-                return
-        
-        # try load config from python path
-        try:
-            import summon_config
-            reload(summon_config)
-        except Exception, e:
-            print "Warning: could not import summon_config"
-            print e
+                # execute config file
+                glob = {}
+                local = {}
+                execfile(config_file, glob, local)
+                
+                if "config_window" not in local:
+                    raise "Must define function 'config_window(win)' in '%s'" % config_file
+                
+                # run configuration function
+                local["config_window"](self)
+                
+        else:
+            # try to load config from python path
+            try:
+                summon_config.config_window(self)
+            except Exception, e:
+                print "Warning: could not import summon_config"
+                print e
 
     #===========================================================
     # window properties
@@ -831,7 +841,7 @@ class Window (object):
                      position=self.get_position(),
                      size=size, 
                      world=self.world, 
-                     loadconfig=self.config)
+                     winconfig=self.winconfig)
         #win.set_size(* size)
         #win.set_position(* self.get_position())
         #win.set_name(self.get_name())

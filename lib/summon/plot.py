@@ -1,5 +1,10 @@
-from summon.core import *
 import os
+import math
+
+import summon
+from summon.core import *
+from summon import util
+
 
 
 def plotList(arr):
@@ -45,7 +50,7 @@ class ScatterPlot (object):
         self.win.add_group(group(scale(self.scale[0], self.scale[1],
                                        self.draw())))
         
-        self.win.reset_binding(input_key('d'), self.clearSelection)
+        self.win.set_binding(input_key('d'), self.clearSelection)
         
         minx = util.INF
         maxx = -util.INF
