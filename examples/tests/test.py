@@ -6,7 +6,6 @@ import summon
 from summon import svg
 
 
-
 def func():
     win.remove_group(g)
 
@@ -27,10 +26,23 @@ g = group(l,
 win = summon.Window()
 win.add_group(g)
 
+#from rasmus import util
+#util.tic("old")
 q = group(lines(100, 0, 0, 100), 
           group(* (lines(i, 0, i, 100) 
                    for i in xrange(5000))))
 g.append(q)
+#util.toc()
+
+
+#util.tic("new")
+q = group()
+
+for i in xrange(5000):
+    q.append(lines(i, -200, i, -100))
+g.append(q)
+#util.toc()
+
 
 
 def walk(node, depth=0): 

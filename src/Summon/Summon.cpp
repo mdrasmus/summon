@@ -417,8 +417,12 @@ public:
                 glutChangeToSubMenu(cmd->index, cmd->text.c_str(), cmd->submenuid);
                 } break;
             
+            
             //=============================================================
             // element commands
+            // TODO: can I simplify this code?
+            
+            
             case APPEND_GROUP_COMMAND: {
                 // a group to another
                 AppendGroupCommand *cmd = (AppendGroupCommand*) &command;
@@ -427,9 +431,7 @@ public:
                 if (model)
                     model->AddElement(elm, cmd->code);
                 else {
-                    Element *child = elm->AddChild(cmd->code);
-                    //if (!child)
-                    //    Error("cannot add element");
+                    elm->AddChild(cmd->code);
                 }
                     
                 } break;
@@ -831,13 +833,26 @@ public:
             return;    
     
         int curThreadId = PyThread_get_thread_ident();
-    
+        
         if (curThreadId == m_threadId) {
             // execute command in this thread if we are in the summon thread
             ExecCommand(*command);
         } else {
             // we are the python thread, more care is needed
             
+            // try to execute element commands directly
+            if (command->HasAttr(&g_elementAttr)) {
+                ElementCommand *elmCmd = (ElementCommand*) command;
+                Element *elm = Id2Element(elmCmd->groupid);
+                SummonModel *model = GetModelOfElement(elm);                
+                
+                if (!model) {
+                    // direct execution
+                    ExecCommand(*command);
+                    return;
+                }                
+            }
+
             // commands that manipulate OpenGL must be passed to the other thread
             if (command->HasAttr(&g_glAttr)) {
                 // pass command to other thread
@@ -851,9 +866,9 @@ public:
                 Py_BEGIN_ALLOW_THREADS
                 WaitForExec();
                 Py_END_ALLOW_THREADS
-                
+
                 m_waiting = false;
-                
+
                 assert(m_commandWaiting == NULL);
 
             } else {

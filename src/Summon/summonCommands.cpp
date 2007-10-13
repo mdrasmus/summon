@@ -23,7 +23,7 @@ namespace Summon
 using namespace std;
 
 
-
+CommandAttr g_elementAttr;
 CommandAttr g_globalAttr;
 CommandAttr g_constructAttr;
 CommandAttr g_modelAttr;
@@ -41,6 +41,7 @@ void summonCommandsInit()
 {
     glutCommandsInit();
     
+#   define e() AddAttr(g_elementAttr)
 #   define g() AddAttr(g_globalAttr)
 #   define m() AddAttr(g_modelAttr)    
 #   define v() AddAttr(g_viewAttr)    
@@ -79,11 +80,11 @@ void summonCommandsInit()
     RegisterScriptCommand(DetachMenuCommand)      v() gl()
 
     
-    RegisterScriptCommand(AppendGroupCommand)   g() gl()
-    RegisterScriptCommand(RemoveGroupCommand2)  g() gl()
-    RegisterScriptCommand(ReplaceGroupCommand2) g() gl()
-    RegisterScriptCommand(ShowGroupCommand2)    g() gl()
-    RegisterScriptCommand(GetBoundingCommand2)  g()
+    RegisterScriptCommand(AppendGroupCommand)   e() g() gl()
+    RegisterScriptCommand(RemoveGroupCommand2)  e() g() gl()
+    RegisterScriptCommand(ReplaceGroupCommand2) e() g() gl()
+    RegisterScriptCommand(ShowGroupCommand2)    e() g() gl()
+    RegisterScriptCommand(GetBoundingCommand2)  e() g()
     
     // model commands
     RegisterScriptCommand(AddGroupCommand)      m() gl()

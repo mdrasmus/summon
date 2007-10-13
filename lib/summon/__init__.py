@@ -301,7 +301,7 @@ class Window (object):
     def __init__(self, name="SUMMON", 
                  position=(-1, -1), size=(400, 400),
                  world=None, screen=None,
-                 winconfig=summon_config.config_window):
+                 winconfig=None):
         """name       -- title on window
            position   -- the initial position (x,y) of the window on the desktop
            size       -- the initial size (width, height) of the window

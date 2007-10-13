@@ -171,6 +171,7 @@ bool ParseMod(Scm lst, int *mod);
 
 
 // attributes
+extern CommandAttr g_elementAttr;
 extern CommandAttr g_modelAttr;
 extern CommandAttr g_viewAttr;
 extern CommandAttr g_controllerAttr;
@@ -619,7 +620,14 @@ public:
 // element commands
 
 
-class AppendGroupCommand : public ScriptCommand
+class ElementCommand : public ScriptCommand
+{
+public:
+    int groupid;    
+};
+
+
+class AppendGroupCommand : public ElementCommand
 {
 public:
     virtual Command* Create() { return new AppendGroupCommand(); }
@@ -635,11 +643,10 @@ public:
         return ParseScm(ErrorHelp(), lst, "dc", &groupid, &code);
     }
     
-    int groupid;
     Scm code;
 };
 
-class RemoveGroupCommand2 : public ScriptCommand
+class RemoveGroupCommand2 : public ElementCommand
 {
 public:
     virtual Command* Create() { return new RemoveGroupCommand2(); }
@@ -673,12 +680,11 @@ public:
         return true;
     }
     
-    int groupid;
     vector<int> groupids;
 };
 
 
-class ReplaceGroupCommand2 : public ScriptCommand
+class ReplaceGroupCommand2 : public ElementCommand
 {
 public:
     virtual Command* Create() { return new ReplaceGroupCommand2(); }
@@ -699,13 +705,12 @@ public:
         }
     }
     
-    int groupid;
     int oldgroupid;
     Scm code;
 };
 
 
-class ShowGroupCommand2 : public ScriptCommand
+class ShowGroupCommand2 : public ElementCommand
 {
 public:
     virtual Command* Create() { return new ShowGroupCommand2(); }
@@ -721,11 +726,10 @@ public:
         return ParseScm(ErrorHelp(), lst, "db", &groupid, &visible);
     }
     
-    int groupid;
     bool visible;
 };
 
-class GetBoundingCommand2 : public ScriptCommand
+class GetBoundingCommand2 : public ElementCommand
 {
 public:
     virtual Command* Create() { return new GetBoundingCommand2(); }
@@ -740,8 +744,6 @@ public:
     {
         return ParseScm(ErrorHelp(), lst, "d", &groupid);
     }
-    
-    int groupid;
 };
 
 

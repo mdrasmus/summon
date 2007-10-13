@@ -12,7 +12,7 @@ MY_LIBS = \
         $(SRCPREFIX)/MVC/libMVC.a 
 
 COMPILE = -c \
-    -Wall -fno-strict-aliasing -O3 -fPIC  \
+    -Wall -fno-strict-aliasing -O3  \
     $(INCLUDE) 
 
 ifdef DEBUG
