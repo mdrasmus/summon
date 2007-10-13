@@ -118,7 +118,11 @@ class SummonTimer:
                 
                 if timer.delay <= 0:
                     # call user function
-                    timer.func()
+                    try:
+                        timer.func()
+                    except Exception, e:
+                        print "exception in SUMMON timer:", e
+                    
                     if timer.repeat:
                         # reset timer
                         timer.delay = timer.interval
@@ -137,12 +141,9 @@ class SummonTimer:
         
         
         # setup next call
-        #self.timestep = self.updateInterval
-        #timer_call(self.updateInterval, self.begin_updating)
-        
         if mindelay < util.INF:
             self.timestep = mindelay
-            timer_call(self.timestep, self.begin_updating)
+            summon_core.timer_call(self.timestep, self.begin_updating)
     
     
     def stop_updating(self):
@@ -250,7 +251,7 @@ def get_summon_state():
 
 
 def get_summon_window():
-    """returns the currently active summon window"""
+    """DEPRECATED: returns the currently active summon window"""
     return state.current_window
 
 # install summon window close callback for communication between C++ and python
@@ -258,6 +259,8 @@ def _window_close_callback(winid):
     state.windows[winid]._on_close()
 summon_core.set_window_close_callback(_window_close_callback)
 
+
+# window decoration
 _window_decoration = summon_core.get_window_decoration()
 def get_window_decoration():
     return _window_decoration
