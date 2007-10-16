@@ -28,6 +28,8 @@
 
 // python visible prototypes
 extern "C" {
+
+// function directly visible in python
 static PyObject *Exec(PyObject *self, PyObject *tup);
 static PyObject *SummonMainLoop(PyObject *self, PyObject *tup);
 static PyObject *SummonShutdown(PyObject *self, PyObject *tup);
@@ -37,6 +39,41 @@ static PyObject *DeleteConstruct(PyObject *self, PyObject *args);
 static PyObject *GetConstructChildren(PyObject *self, PyObject *args);
 static PyObject *GetConstructContents(PyObject *self, PyObject *args);
 static PyObject *GetConstructParent(PyObject *self, PyObject *args);
+
+// module method table
+static char *g_gatewayFunc = "__gatewayFunc";        
+static PyMethodDef g_summonMethods[] = {
+    // install main command
+    {g_gatewayFunc,  Exec, METH_VARARGS, ""},
+
+    // summon main loop
+    {"summon_main_loop", SummonMainLoop, METH_VARARGS, ""},
+
+    // gracefully shutdown glut from python
+    {"summon_shutdown", SummonShutdown, METH_VARARGS, ""},
+
+    // make construct
+    {"make_construct", MakeConstruct, METH_VARARGS, ""},
+
+    // delete a construct
+    {"delete_construct", DeleteConstruct, METH_VARARGS, ""},
+
+    // reference a construct
+    {"incref_construct", IncRefConstruct, METH_VARARGS, ""},
+
+    // get the children of a construct
+    {"get_construct_children", GetConstructChildren, METH_VARARGS, ""},
+
+    // get the contents of a construct
+    {"get_construct_contents", GetConstructContents, METH_VARARGS, ""},
+
+    // get the parent of a construct
+    {"get_construct_parent", GetConstructParent, METH_VARARGS, ""},
+
+    // cap the methods table with ending method
+    {NULL, NULL, 0, NULL}
+};
+
 }
 
 
@@ -90,7 +127,10 @@ public:
     // initialization
     bool Init()
     {
-        // init commands
+        // register all direction functions with python
+        PyObject *module = Py_InitModule(MODULE_NAME, g_summonMethods);
+        
+        // init summon commands
         summonCommandsInit();
         m_summonCommands.clear();
         
@@ -104,85 +144,7 @@ public:
             }
         }
         
-        static PyMethodDef *summonMethods = new PyMethodDef [10];
-
-        // install main command
-        int table = 0;
-        char *mainFunc = "__gatewayFunc";
-        summonMethods[table].ml_name  = mainFunc;
-        summonMethods[table].ml_meth  = Exec;
-        summonMethods[table].ml_flags = METH_VARARGS;
-        summonMethods[table].ml_doc   = "";
-        table++;
-
-        // summon main loop
-        summonMethods[table].ml_name  = "summon_main_loop";
-        summonMethods[table].ml_meth  = SummonMainLoop;
-        summonMethods[table].ml_flags = METH_VARARGS;
-        summonMethods[table].ml_doc   = "";
-        table++;
-
-        // gracefully shutdown glut from python
-        summonMethods[table].ml_name  = "summon_shutdown";
-        summonMethods[table].ml_meth  = SummonShutdown;
-        summonMethods[table].ml_flags = METH_VARARGS;
-        summonMethods[table].ml_doc   = "";
-        table++;
-
-        // make construct
-        summonMethods[table].ml_name  = "make_construct";
-        summonMethods[table].ml_meth  = MakeConstruct;
-        summonMethods[table].ml_flags = METH_VARARGS;
-        summonMethods[table].ml_doc   = "";
-        table++;
-        
-        // delete a construct
-        summonMethods[table].ml_name  = "delete_construct";
-        summonMethods[table].ml_meth  = DeleteConstruct;
-        summonMethods[table].ml_flags = METH_VARARGS;
-        summonMethods[table].ml_doc   = "";
-        table++;
-        
-        // reference a construct
-        summonMethods[table].ml_name  = "incref_construct";
-        summonMethods[table].ml_meth  = IncRefConstruct;
-        summonMethods[table].ml_flags = METH_VARARGS;
-        summonMethods[table].ml_doc   = "";
-        table++;
-
-        // get the children of a construct
-        summonMethods[table].ml_name  = "get_construct_children";
-        summonMethods[table].ml_meth  = GetConstructChildren;
-        summonMethods[table].ml_flags = METH_VARARGS;
-        summonMethods[table].ml_doc   = "";
-        table++;
-
-        // get the contents of a construct
-        summonMethods[table].ml_name  = "get_construct_contents";
-        summonMethods[table].ml_meth  = GetConstructContents;
-        summonMethods[table].ml_flags = METH_VARARGS;
-        summonMethods[table].ml_doc   = "";
-        table++;
-
-        // get the parent of a construct
-        summonMethods[table].ml_name  = "get_construct_parent";
-        summonMethods[table].ml_meth  = GetConstructParent;
-        summonMethods[table].ml_flags = METH_VARARGS;
-        summonMethods[table].ml_doc   = "";
-        table++;
-
-        // cap the methods table with ending method
-        summonMethods[table].ml_name  = NULL;
-        summonMethods[table].ml_meth  = NULL;
-        summonMethods[table].ml_flags = 0;
-        summonMethods[table].ml_doc   = NULL;
-        table++;
-
-        // register all methods with python
-        PyObject *module = Py_InitModule(MODULE_NAME, 
-                                         summonMethods);
-        
-
+        // register summon commands through gateway function
         for (unsigned int i=0; i<m_summonCommands.size(); i++) {
             // get command id
             string idstr = int2string(m_summonCommands[i]->GetId());
@@ -195,10 +157,8 @@ public:
             // create wrapper function
             string pyCommands =  "import " MODULE_NAME "\n"
                 "def " + name +  "(* args): " +
-                "  return " MODULE_NAME "." + mainFunc + "(" + 
-                    (m_summonCommands[i]->HasAttr(&g_scriptAttr) ?
-                        idstr :  string("'") + m_summonCommands[i]->GetName() + "'") +
-                ", args)\n" + 
+                "  return " MODULE_NAME "." + g_gatewayFunc + 
+                "(" + idstr + ", args)\n" + 
                 name + ".func_doc = \"" + help + "\"\n"
                 MODULE_NAME "." + name + " = " + name + "\n" +
                 "del " + name + "\n";
@@ -360,6 +320,8 @@ public:
 
 
             //=============================================================
+            // menu commands
+            
             case NEW_MENU_COMMAND: {
                 // create a new menu
                 int menuid = glutCreateMenu(SummonModule::MenuCallback);
@@ -424,7 +386,7 @@ public:
             
             
             case APPEND_GROUP_COMMAND: {
-                // a group to another
+                // append a group to another
                 AppendGroupCommand *cmd = (AppendGroupCommand*) &command;
                 Element *elm = Id2Element(cmd->groupid);
                 SummonModel *model = GetModelOfElement(elm);
@@ -437,7 +399,7 @@ public:
                 } break;
             
             case REMOVE_GROUP_COMMAND2: {
-                // a group to another
+                // remove a group
                 RemoveGroupCommand2 *cmd = (RemoveGroupCommand2*) &command;
                 Element *elm = Id2Element(cmd->groupid);
                 SummonModel *model = GetModelOfElement(elm);
@@ -471,9 +433,6 @@ public:
                 } else {
                     newelm = elm->ReplaceChild(oldelm, newcode);
                 }
-                
-                //if (!newelm)
-                //    Error("error replacing element");
                 
                 } break;
                 
@@ -617,7 +576,7 @@ public:
     }
     
     
-    void DeleteClosedWindows()
+    inline void DeleteClosedWindows()
     {
         if (m_deleteWaiting.size() > 0) {
             for (vector<SummonWindow*>::iterator i = m_deleteWaiting.begin();
@@ -630,6 +589,16 @@ public:
         }
     }
     
+    
+    inline void UpdateWindowPositions()
+    {
+        PyGILState_STATE gstate = PyGILState_Ensure();    
+        for (WindowIter i=m_windows.begin(); i!=m_windows.end(); i++) {
+            SummonView *view = (*i).second->GetView();            
+            view->UpdatePosition();
+        }
+        PyGILState_Release(gstate);
+    }    
         
     
     int NewModel(int kind)
@@ -651,10 +620,7 @@ public:
 
     
     
-    
-    
-    
-
+    //==================================================
     // synchronization and thread management    
     inline void Lock()
     {
@@ -684,7 +650,7 @@ public:
     }
     
     
-    
+    //======================================================
     // get number of milliseconds since program started
     inline int GetTime()
     { return SDL_GetTicks(); }
@@ -695,7 +661,7 @@ public:
         m_timerCommand = command;
     }
     
-    
+    //=======================================================
     // GLUT first timer
     // initialize window decoration size
     static void FirstTimer(int value)
@@ -707,30 +673,20 @@ public:
         int winx = glutGet(GLUT_WINDOW_X) - g_summon->m_windowOffset.x;
         int winy = glutGet(GLUT_WINDOW_Y) - g_summon->m_windowOffset.y;
         
+        // keep checking until window offset is consitent
         if (winx != INIT_WINDOW_X || winy != INIT_WINDOW_Y) {
             // get window offset
-
             g_summon->m_windowOffset.x = glutGet(GLUT_WINDOW_X) - INIT_WINDOW_X;
             g_summon->m_windowOffset.y = glutGet(GLUT_WINDOW_Y) - INIT_WINDOW_Y;
-            //glutIdleFunc(NULL);
             
+            // try again
             glutTimerFunc(0, FirstTimer, 1);
         } else {
+            // offset is now consistent, start the real timer
             glutHideWindow();                
             g_summon->m_initialized = true;      
             glutTimerFunc(0, Timer, 0);
         }
-    }
-    
-    
-    void UpdateWindowPositions()
-    {
-        PyGILState_STATE gstate = PyGILState_Ensure();    
-        for (WindowIter i=m_windows.begin(); i!=m_windows.end(); i++) {
-            SummonView *view = (*i).second->GetView();            
-            view->UpdatePosition();
-        }
-        PyGILState_Release(gstate);
     }
     
     
@@ -740,11 +696,9 @@ public:
     {
         static int delay = 0;
         
-        
-        if (!Py_IsInitialized()) {
-            // do nothing if python is not initialized
+        // do nothing if python is not initialized        
+        if (!Py_IsInitialized())
             return;
-        }
         
         // delete closed windows
         g_summon->DeleteClosedWindows();
@@ -752,68 +706,12 @@ public:
         // update window positions
         g_summon->UpdateWindowPositions();
         
-
-        if (g_summon->IsCommandWaiting()) {
-            if (g_summon->m_graphicsExec) {
-                // graphics command is executed in this thread
-                
-                // command may also call python so aquire the GIL
-                PyGILState_STATE gstate = PyGILState_Ensure();
-                
-                g_summon->ExecCommand(*g_summon->m_commandWaiting);
-                g_summon->m_commandWaiting = NULL;
-                g_summon->m_graphicsExec = false;
-                
-                PyGILState_Release(gstate);
-                
-                delay = 0;
-            } else {
-                // non-graphic command will be execute in other thread
-                // release lock on SUMMON
-                g_summon->Unlock();        
-
-                // sleep for  awhile to allow multiple non-graphics 
-                // commands to execute
-                while (g_summon->IsCommandWaiting() && 
-                       !g_summon->m_graphicsExec)
-                {
-                    if (g_summon->m_timerCommand) {
-                        // calculate time until timer goes off
-                        int remaining = g_summon->m_timerDelay -
-                                        g_summon->GetTime();
-                        if (remaining > 0) {
-                            SDL_Delay(remaining);
-                        }
-                        break;
-                    } else {
-                        SDL_Delay(10);
-                    }
-                }
-            
-                g_summon->Lock();
-                
-            }
-        }
-        
-        
-        // wake up python thread if it is waiting for a graphic command to
-        // complete
-        if (g_summon->m_waiting && !g_summon->m_graphicsExec)
-            g_summon->NotifyExecOccurred();
+        // process waiting commands commands
+        if (g_summon->ExecWaitingCommands())
+            delay = 0;
         
         // look at timer-delay function
-        if (g_summon->m_timerCommand && 
-            g_summon->GetTime() > g_summon->m_timerDelay) 
-        {
-            Command *cmd = g_summon->m_timerCommand;
-            g_summon->m_timerCommand = NULL;
-            
-            PyGILState_STATE gstate = PyGILState_Ensure();
-            g_summon->ExecCommand(*cmd);
-            PyGILState_Release(gstate);
-            
-            delete cmd;
-        }
+        g_summon->SummonTimer();
         
         // set the next
         if (g_summon->m_initialized)
@@ -824,11 +722,79 @@ public:
         if (delay < 10)
             delay++;
     }
+    
+    
+    inline void SummonTimer()
+    {
+        if (m_timerCommand && GetTime() > m_timerDelay) {
+            Command *cmd = m_timerCommand;
+            m_timerCommand = NULL;
+            
+            PyGILState_STATE gstate = PyGILState_Ensure();
+            ExecCommand(*cmd);
+            PyGILState_Release(gstate);
+            
+            delete cmd;
+        }
+    }
+    
+    
+    inline bool ExecWaitingCommands()
+    {
+        bool nodelay = false;
+    
+        if (IsCommandWaiting()) {
+            if (m_graphicsExec) {
+                // graphics command is executed in this thread
+                
+                // command may also call python so aquire the GIL
+                PyGILState_STATE gstate = PyGILState_Ensure();
+                
+                ExecCommand(*m_commandWaiting);
+                m_commandWaiting = NULL;
+                m_graphicsExec = false;
+                
+                PyGILState_Release(gstate);
+                
+                nodelay = true;
+            } else {
+                // non-graphic command will be execute in other thread
+                // release lock on SUMMON
+                Unlock();        
+
+                // sleep for  awhile to allow multiple non-graphics 
+                // commands to execute
+                while (IsCommandWaiting() && !m_graphicsExec)
+                {
+                    if (m_timerCommand) {
+                        // calculate time until timer goes off
+                        int remaining = m_timerDelay - GetTime();
+                        if (remaining > 0) {
+                            SDL_Delay(remaining);
+                        }
+                        break;
+                    } else {
+                        SDL_Delay(10);
+                    }
+                }
+            
+                Lock();
+            }
+        }
+        
+        // wake up python thread if it is waiting for a graphic command to
+        // complete
+        if (g_summon->m_waiting && !g_summon->m_graphicsExec)
+            g_summon->NotifyExecOccurred();        
+        
+        return nodelay;
+    }
 
     
     // execute a commond in a thread safe manner
     inline void ThreadSafeExecCommand(Command *command)
     {
+        // do nothing until summon is initialized
         if (!m_initialized)
             return;    
     
@@ -850,7 +816,8 @@ public:
                     // direct execution
                     ExecCommand(*command);
                     return;
-                }                
+                }
+                // element is attached to model, so fall through
             }
 
             // commands that manipulate OpenGL must be passed to the other thread
@@ -1033,86 +1000,42 @@ Exec(PyObject *self, PyObject *tup)
 {
     // hold reference to tup for safety
     Scm scmtup(tup);
-
-    if (ScmIntp(Py2Scm(PyTuple_GET_ITEM(tup, 0)))) {
-        // get command id
-        int commandid = (int) PyInt_AsLong(PyTuple_GET_ITEM(tup, 0));
     
-        // get command arguments
-        Scm args = Py2Scm(PyTuple_GET_ITEM(tup, 1));
-    
-        // treat command as a s-expression
-        ScriptCommand *cmd = (ScriptCommand*) 
-                         g_commandRegistry.Create((CommandId) commandid);
-        assert(cmd);
-    
-        if (cmd->Setup(args)) {
-            // execute command
-            g_summon->ThreadSafeExecCommand(cmd);
-            PyObject *ret = Scm2Py(cmd->GetReturn());
-            if (ret)
-                Py_INCREF(ret);
-            else {
-                // set error
-                PyErr_Format(PyExc_Exception, GetError());
-                ClearError();
-            }
-            delete cmd;
-            return ret;
-        } else {
-            PyErr_Format(PyExc_Exception, "error processing command '%s'", 
-                         cmd->GetName());
-            delete cmd;
-        }
-        
-    } else if (ScmStringp(Py2Scm(PyTuple_GET_ITEM(tup, 0)))) {
-        // TODO: is this case still needed?
-        // old style? what about "trans"
-        vector<string> args;
-        
-        args.push_back(Scm2String(Py2Scm(PyTuple_GET_ITEM(tup, 0))));
-        
-        PyObject *tupargs = PyTuple_GET_ITEM(tup, 1);
-        
-        // treat command as just a list of strings        
-        for (int i=0; i<PyTuple_GET_SIZE(tupargs); i++) {
-            Scm arg = Py2Scm(PyTuple_GET_ITEM(tupargs, i));
-            
-            if (ScmIntp(arg)) {
-                int num = Scm2Int(arg);
-                args.push_back(int2string(num));
-            } else if (ScmFloatp(arg)) {
-                float num = Scm2Float(arg);
-                char str[10];
-                snprintf(str, 10, "%f", num);
-                args.push_back(string(str));
-            } else if (ScmStringp(arg)) {
-                args.push_back(Scm2String(arg));
-            } else {
-                PyErr_Format(PyExc_Exception, "unknown argument type");
-                Py_RETURN_NONE;
-            }
-        }
+    // get command id
+    PyObject *header = PyTuple_GET_ITEM(tup, 0);
+    assert (ScmIntp(Py2Scm(header)));    
+    int commandid = (int) PyInt_AsLong(header);
 
-        // convert strings to char*
-        int argc = args.size();
-        char **argv = new char* [argc];    
-        for (int i=0; i<argc; i++)
-            argv[i] = (char*) args[i].c_str(); // NOTE: type loophole
+    // get command arguments
+    Scm args = Py2Scm(PyTuple_GET_ITEM(tup, 1));
+
+    // create command object
+    ScriptCommand *cmd = (ScriptCommand*) 
+                     g_commandRegistry.Create((CommandId) commandid);
+    assert(cmd);
+
+    // populate command and execute
+    if (cmd->Setup(args)) {
+        // execute command
+        g_summon->ThreadSafeExecCommand(cmd);
         
-        int consume;
-        StringCommand *cmd = GetCommand(g_summon->m_summonCommands, argc, argv, 
-                                        &consume, false, true);
-
-        if (cmd) {
-            g_summon->ThreadSafeExecCommand(cmd);
-            delete cmd;
+        // handle return value
+        PyObject *ret = Scm2Py(cmd->GetReturn());
+        if (ret)
+            Py_INCREF(ret);
+        else {
+            // set error
+            PyErr_Format(PyExc_Exception, GetError());
+            ClearError();
         }
-
-        delete [] argv;
+        delete cmd;
+        return ret;
     } else {
-        assert(0);
-    }
+        // populating command failed, raise exception
+        PyErr_Format(PyExc_Exception, "error processing command '%s'", 
+                     cmd->GetName());
+        delete cmd;
+    }    
     
     Py_RETURN_NONE;
 }
