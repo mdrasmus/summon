@@ -379,8 +379,9 @@ class Window (object):
         if winconfig != None:
             # if configuration function given, then use it
             winconfig(self)
+            return
         
-        elif "HOME" in os.environ:
+        if "HOME" in os.environ:
             # look for config in HOME directory
         
             config_file = os.path.join(os.environ["HOME"], ".summon_config")
@@ -395,14 +396,14 @@ class Window (object):
                 
                 # run configuration function
                 local["config_window"](self)
+                return
                 
-        else:
-            # try to load config from python path
-            try:
-                summon_config.config_window(self)
-            except Exception, e:
-                print "Warning: could not import summon_config"
-                print e
+        # try to load config from python path
+        try:
+            summon_config.config_window(self)
+        except Exception, e:
+            print "Warning: could not import summon_config"
+            print e
 
     #===========================================================
     # window properties
