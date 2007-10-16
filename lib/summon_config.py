@@ -33,8 +33,6 @@ def config_window(win):
     win.set_binding(input_key("left", "shift"), win.trans_camera(-60, 0))
     win.set_binding(input_key("up", "shift"), win.trans_camera(0, 60))
     win.set_binding(input_key("down", "shift"), win.trans_camera(0, -60))
-    win.set_binding(input_key("Z", "shift"), win.zoom_camera(1.2))
-    win.set_binding(input_key("z"), win.zoom_camera(.8333))
 
 
     # zooming
@@ -44,6 +42,13 @@ def config_window(win):
     win.set_binding(input_motion("right", "down"), "zoom")
     win.set_binding(input_motion("right", "down", "ctrl"), "zoomx")
     win.set_binding(input_motion("right", "down", "shift"), "zoomy")
+
+    win.set_binding(input_key("up", "shift"), win.zoom_camera(1, 1.2))
+    win.set_binding(input_key("down", "shift"), win.zoom_camera(1, 1/1.2))
+    win.set_binding(input_key("right", "shift"), win.zoom_camera(1.2, 1))
+    win.set_binding(input_key("left", "shift"), win.zoom_camera(1/1.2, 1))
+    win.set_binding(input_key("up", "ctrl"), win.zoom_camera(1.2))
+    win.set_binding(input_key("down", "ctrl"), win.zoom_camera(1/1.2))
 
 
     # hotspot clicking
