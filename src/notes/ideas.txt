@@ -1,4 +1,37 @@
 =============================================================================
+Tue Oct 16 16:19:05 EDT 2007
+
+Thinking about how to handle zoom_clamp
+
+- I will have to handle hotspots inside zoom_clamp's
+- What would multiple levels of zoom_clamps look like?
+
+- need to generalize Transform to include ZoomClamp
+
+- When do I use env?
+    - drawing
+        - using dynamic env is no problem since I recurse anyway
+    - hotspot clicking
+        - would be nice to treat dynamic hotspots separately
+        - mouse overs might be expensive
+    - bounding box
+        - using dynamic env is no problem since I recurse anyway
+    - svg would need to implement lin. alg.
+    - text
+
+- Dynamic Elements need transform list
+    - dynamic text
+    - dynamic transforms (zoom_clamp)
+    - hotspots inside dynamic transforms
+
+
+transform(env, zoom):
+    push I
+    translate(env.mat * (0, 0))
+    scale(clamp(zoom))
+
+
+=============================================================================
 Thu Sep 27 14:24:42 EDT 2007
 
 Ideally, I should remove invalidPos and invalidSize from WindowEnsemble. 

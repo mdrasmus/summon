@@ -133,7 +133,7 @@ void Transform::FindBounding(float *top, float *bottom,
                              float *left, float *right,
                              TransformMatrix *matrix)
 {
-    TransformMatrix matrix2; // = *matrix;
+    TransformMatrix matrix2;
     MultMatrix(matrix->mat, GetMatrix(), matrix2.mat);
 
     // loop through children of this element

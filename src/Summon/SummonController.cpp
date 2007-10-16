@@ -39,16 +39,15 @@ SummonController::~SummonController()
 void SummonController::ExecCommand(Command &command)
 {
     // route view commands to connected view
-    // XXX: why did I have this greater than GLUT_COMMANDS_BEGIN
-    //    To prevent an infinite loop (GLUT commands are processed here)
-    if (command.GetId() > GLUT_COMMANDS_END &&
-        g_viewAttr.Has(&command))
+    if (g_viewAttr.Has(&command))
     {
         m_view->ExecCommand(command);
         return;
     }
 
     // send SUMMON commands that are not for controller to global
+    // NOTE: why did I have this greater than GLUT_COMMANDS_BEGIN
+    //    To prevent an infinite loop (GLUT commands are processed here)    
     if (command.GetId() > GLUT_COMMANDS_END &&
         !g_controllerAttr.Has(&command))
     {
@@ -121,7 +120,7 @@ void SummonController::HotspotClick(Vertex2i pos)
     if (m_world) {
         // get all commands triggered by this click    
         Vertex2f pt = m_view->WindowToWorld(pos.x, pos.y);
-        list<Command*> cmdList = m_world->HotspotClick(pt);
+        list<Command*> cmdList = m_world->HotspotClick(pt, m_view->GetZoom());
 
         // execute and free all commands triggered
         for (list<Command*>::iterator i=cmdList.begin(); i!=cmdList.end(); i++)
@@ -136,7 +135,7 @@ void SummonController::HotspotClick(Vertex2i pos)
         // get all commands triggered by this click
         Vertex2i pt = m_view->WindowToScreen(pos.x, pos.y);
         Vertex2f pt2 = Vertex2f(pt.x, pt.y);
-        list<Command*> cmdList = m_screen->HotspotClick(pt2);
+        list<Command*> cmdList = m_screen->HotspotClick(pt2, Vertex2f(1, 1));
 
         // execute and free all commands triggered
         for (list<Command*>::iterator i=cmdList.begin(); i!=cmdList.end(); i++)

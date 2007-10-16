@@ -217,11 +217,14 @@ class zoom_clamp (Element):
                                 options)
 
 
+# TODO: it would be nice to get local x, y back
+# in order to implement hotspot_custom
 class hotspot (Element):
     """Designates a region of the screen to react to mouse clicks.
     
        When a mouse click (default: middle click) occurs within the specified
        rectangular region the given function will be called."""
+    
     def __init__(self, kind="click", x1=None, y1=None, x2=None, y2=None, 
                  func=None, **options):
         """kind - must be the string "click" (more options in future versions)

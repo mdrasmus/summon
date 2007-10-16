@@ -110,7 +110,7 @@ void SummonModel::ExecCommand(Command &command)
 
 // This function is called when a HotspotClick command is executed
 // Checks to see if any hotspots have been activated
-list<Command*> SummonModel::HotspotClick(Vertex2f pos)
+list<Command*> SummonModel::HotspotClick(Vertex2f pos, Vertex2f zoom)
 {
     list<Command*> cmds;
     
