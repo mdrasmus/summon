@@ -663,29 +663,32 @@ public:
     
     //=======================================================
     // GLUT first timer
-    // initialize window decoration size
-    static void FirstTimer(int value)
-    {
-        // do initialization that can only be done after first pump of the 
-        // GLUT event loop
+    
+    // dummy function needed for hidden window display
 
-        glutSetWindow(g_hidden_window);        
-        int winx = glutGet(GLUT_WINDOW_X) - g_summon->m_windowOffset.x;
-        int winy = glutGet(GLUT_WINDOW_Y) - g_summon->m_windowOffset.y;
-        
-        // keep checking until window offset is consitent
-        if (winx != INIT_WINDOW_X || winy != INIT_WINDOW_Y) {
-            // get window offset
-            g_summon->m_windowOffset.x = glutGet(GLUT_WINDOW_X) - INIT_WINDOW_X;
-            g_summon->m_windowOffset.y = glutGet(GLUT_WINDOW_Y) - INIT_WINDOW_Y;
-            
-            // try again
-            glutTimerFunc(0, FirstTimer, 1);
-        } else {
-            // offset is now consistent, start the real timer
-            glutHideWindow();                
-            g_summon->m_initialized = true;      
-            glutTimerFunc(0, Timer, 0);
+    static void FirstDisplay()
+    {}
+
+    // used to help initialize window decoration    
+    static void FirstReshape(int width, int height)
+    {
+        const static int SIZE = 20;
+    
+        if (!g_summon->m_initialized) {
+            if (glutGet(GLUT_WINDOW_WIDTH) != SIZE ||
+                glutGet(GLUT_WINDOW_HEIGHT) != SIZE)
+            {
+                glutReshapeWindow(SIZE, SIZE);
+            } else {
+                // get window offset
+                g_summon->m_windowOffset.x = glutGet(GLUT_WINDOW_X) - INIT_WINDOW_X;
+                g_summon->m_windowOffset.y = glutGet(GLUT_WINDOW_Y) - INIT_WINDOW_Y;
+
+                // offset is now consistent, start the real timer
+                glutHideWindow();                
+                g_summon->m_initialized = true;
+                glutTimerFunc(0, Timer, 0);
+            }
         }
     }
     
@@ -914,9 +917,6 @@ using namespace Summon;
 
 extern "C" {
 
-// dummy function needed for hidden window display
-void HiddenDisplay()
-{}
 
 
 // Begin Summon main loop
@@ -952,19 +952,18 @@ SummonMainLoop(PyObject *self, PyObject *tup)
 #endif
     
     // initialize hidden window
-    glutInitWindowSize(1, 1);
+    glutInitWindowSize(50, 50);
     glutInitWindowPosition(INIT_WINDOW_X, INIT_WINDOW_Y);
     g_hidden_window = glutCreateWindow("SUMMON");
-    glutDisplayFunc(HiddenDisplay);
+    glutDisplayFunc(Summon::SummonModule::FirstDisplay);
+    glutReshapeFunc(Summon::SummonModule::FirstReshape);
     
     g_summon->Lock();
 
     // store summon thread ID
     g_summon->m_threadId = PyThread_get_thread_ident();
 
-    // setup glut timer
-    glutTimerFunc(0, Summon::SummonModule::FirstTimer, 1);
-    
+
     
     // begin processing of GLUT events
     Py_BEGIN_ALLOW_THREADS
