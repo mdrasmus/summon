@@ -12,12 +12,31 @@ import summon
 
 
 class WindowEnsemble:
+    """This class coordinates the position, size, translation, and zoom of 
+       multiple SUMMON Windows.
+    """
+
     def __init__(self, windows, stackx=False, stacky=False, 
                        samew=False, sameh=False,
                        tiex=False, tiey=False, pinx=False, piny=False,
                        coordsx=None, coordsy=None,
                        master=None,
                        close_with_master=None):
+        """windows -- windows to coordinate
+           stackx  -- (bool) windows should stack with same x-coordinate
+           stacky  -- (bool) windows should stack with same y-coordinate
+           samew   -- (bool) windows should have same width
+           sameh   -- (bool) windows should have same height
+           tiex    -- (bool) translation along x-axis should be coordinated
+           tiey    -- (bool) translation along y-axis should be coordinated
+           pinx    -- (bool) translation along x-axis should be offset by window position
+           piny    -- (bool) translation along x-axis should be offset by window position
+           coordsx -- a list of x-offsets for translation
+           coordsy -- a list of y-offsets for translation
+           master  -- master window
+           close_with_master -- (bool) if true, all windows close with master
+        """
+        
         self.windows = windows[:]
         self.pos = {}
         self.sizes = {}
@@ -115,9 +134,10 @@ class WindowEnsemble:
 
     
     def _on_window_resize(self, win, width, height):
+        """callback for when a window resizes"""
+    
         # ignore windows that have been changed by the ensemble
         size = (width, height)
-        #print self.recentSize
         if size in self.recentSize[win]:
             ind = self.recentSize[win].index(size)
             self.recentSize[win] = self.recentSize[win][ind+1:]
@@ -132,6 +152,8 @@ class WindowEnsemble:
     
     
     def _on_window_move(self, win, x, y):
+        """callback for when a window moves"""
+    
         # ignore windows that have been changed by the ensemble
         pos = (x, y)
         if pos in self.recentPos[win]:
@@ -313,6 +335,9 @@ class WindowEnsemble:
 
 
 class WindowTie:
+    """This class coordinates the translation and zoom of multiple SUMMON Windows.
+    """
+
     def __init__(self, win, others, ensemble):
         self.win = win
         self.others = others

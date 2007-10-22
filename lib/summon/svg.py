@@ -31,11 +31,18 @@ class SvgWriter:
         pass
     
         
-    def write(self, win, outfile, group):
-         # print out svg code
-        (x, y, x2, y2) = win.get_visible()  
-        (width, height) = win.get_size()    
-        bgcolor = win.get_bgcolor()
+    def write(self, outfile, group, visible=(0.0, 0.0, 500.0, 500.0), 
+                    size=(500,500), bgcolor=(0, 0, 0), win=None):
+        """print out svg code"""
+         
+        # get camera properties
+        if win != None:
+            visible = win.get_visible()
+            size = win.get_size()
+            bgcolor = win.get_bgcolor()         
+        (x, y, x2, y2) = visible
+        (width, height) = size
+        print visible
         
         # determine camera transform
         boxWidth  = x2 - x
@@ -180,10 +187,11 @@ class SvgWriter:
 
 
 
-def writeSvg(win, outfile, group):
+def writeSvg(outfile, group, visible=(0.0, 0.0, 500.0, 500.0), size=(500, 500), 
+             bgcolor=(0, 0, 0), win=None):
     writer = SvgWriter()
     
-    writer.write(win, outfile, group)
+    writer.write(outfile, group, visible, size, bgcolor, win=win)
 
 
     
@@ -204,12 +212,12 @@ def printScreen(win, filename = None, visgroup=None):
     
     if filename.endswith(".svg"):
         outfile = file(filename, "w")    
-        writeSvg(win, outfile, visgroup)
+        writeSvg(outfile, visgroup, win=win)
         outfile.close()
     else:
         svgfile = filename + ".svg"
         outfile = file(svgfile, "w")    
-        writeSvg(outfile, visgroup)
+        writeSvg(outfile, visgroup, win=win)
         outfile.close()
         os.system("convert " +svgfile+ " " +filename)
         os.system("rm " + svgfile)

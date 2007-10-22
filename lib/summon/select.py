@@ -5,6 +5,7 @@
     This module provides the ability to select regions on a summon window using 
     mouse clicks and drags.
 
+    NOTE: This is still experimental.
 """
 
 from summon.core import *

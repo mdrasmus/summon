@@ -11,6 +11,9 @@
 # must then initialize the window with its default configuration (mouse and key
 # bindings, default background color, etc)
 #
+# If you need to import the summon module, do so inside the 'config_window' 
+# function.
+#
 
 
 from summon.core import *

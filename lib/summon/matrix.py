@@ -39,10 +39,12 @@ class Matrix (util.Dict):
         self.rowlabels = None
         self.collabels = None
         
-        self.rperm = [] # NOTE: maybe these should be None
-        self.cperm = []
-        self.rinv  = []
-        self.cinv  = []
+        self.rperm = None
+        self.cperm = None
+        self.rinv  = None
+        self.cinv  = None
+        self.rshow = None
+        self.cshow = None
         
         self.rpart = None
         self.cpart = None
@@ -52,11 +54,13 @@ class Matrix (util.Dict):
         self.cols = []
         self.vals = []
         
-        self.maxval = 0
-        self.minval = 0
+        #self.maxval = 0 # TODO: remove?
+        #self.minval = 0 # TODO: remove?
             
     
-    def setup(self, nrows=None, ncols=None, nnz=None):
+    def setup(self, nrows=None, ncols=None, nnz=None,
+              rowsample=False, colsample=False):
+        # set dimensions
         if nrows != None:
             self.nrows = nrows
         if ncols != None:
@@ -64,13 +68,27 @@ class Matrix (util.Dict):
         if nnz != None:
             self.nnz = nnz
 
-        if self.rperm == []:
+        # set permutations
+        if self.rperm == None:
             self.rperm = range(self.nrows)
-        if self.cperm == []:
+        if self.cperm == None:
             self.cperm = range(self.ncols)
 
+        # set inverse permutations
         self.rinv = util.invPerm(self.rperm)
         self.cinv = util.invPerm(self.cperm)
+    
+        # setup sampling
+        if rowsample != False:
+            self.rshow = set(random.sample(range(self.nrows), 
+                                           int(self.nrows * rowsample)))
+        else:
+            self.rshow = set(range(self.nrows))
+
+        if colsample != False:
+            self.cshow = random.sample(range(self.ncols), int(self.ncols * colsample))
+        else:
+            self.cshow = set(range(self.ncols))
     
     
     def from2DList(self, mat, cutoff=-util.INF):
@@ -82,8 +100,8 @@ class Matrix (util.Dict):
         self.rows, self.cols, self.vals = [], [], []
         rows, cols, vals = self.rows, self.cols, self.vals
         
-        maxval = -1e1000
-        minval = 1e1000
+        maxval = -util.INF
+        minval = util.INF
         
         for i in xrange(nrows):
             for j in xrange(ncols):
@@ -108,7 +126,8 @@ class Matrix (util.Dict):
 #
 
 
-def openCompRow(filename, mat, loadvals=False, sample=False):
+def openCompRow(filename, mat, loadvals=False, 
+                sample=False, rowsample=False, colsample=False):
     """reads a compressed row matrix file"""
     
     util.tic("reading '%s'" % filename)
@@ -159,7 +178,8 @@ def openCompRow(filename, mat, loadvals=False, sample=False):
     return mat
 
 
-def openImat(filename, mat, loadvals=False, sample=False):
+def openImat(filename, mat, loadvals=False,
+             sample=False, rowsample=False, colsample=False):
     """reads a index matrix file"""
     
     util.tic("reading '%s'" % filename)
@@ -199,7 +219,8 @@ def openImat(filename, mat, loadvals=False, sample=False):
 
 
 
-def openLabeledMatrix(filename, mat):
+def openLabeledMatrix(filename, mat,
+                      sample=False, rowsample=False, colsample=False):
     """reads a labeled matrix file"""
     
     util.tic("reading '%s'" % filename)
@@ -266,7 +287,8 @@ def openLabeledMatrix(filename, mat):
     
 
 
-def openDense(filename, mat, cutoff=-util.INF):
+def openDense(filename, mat, cutoff=-util.INF,
+              rowsample=False, colsample=False):
     """reads a dense matrix file"""
     
     util.tic("reading '%s'" % filename)
@@ -283,17 +305,25 @@ def openDense(filename, mat, cutoff=-util.INF):
     nnz = nrows * ncols
     util.log("%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz))
     
-    mat.setup(nrows, ncols, nnz)
+
+    # setup matrix
+    mat.setup(nrows, ncols, nnz, rowsample=rowsample, colsample=colsample)
     rows, cols, vals = (mat.rows, mat.cols, mat.vals)
     
     # read in whole matrix
-    maxval = -1e1000
-    minval = 1e1000
-    r = 0
+    maxval = -util.INF
+    minval = util.INF
     
-    for line in infile:
+    for r, line in enumerate(infile):
+        # sample rows
+        if r not in mat.rshow:
+            continue
+    
         entries = map(float, line.split())
         for c in xrange(len(entries)):
+            if c not in mat.cshow:
+                continue
+        
             if entries[c] >= cutoff:
                 rows.append(r)
                 cols.append(c)
@@ -301,7 +331,6 @@ def openDense(filename, mat, cutoff=-util.INF):
                 if entries[c] > maxval: maxval = entries[c]
                 if entries[c] < minval: minval = entries[c]
                 mat[r][c] = entries[c]
-        r += 1
     
     mat.maxval = maxval
     mat.minval = minval

@@ -102,13 +102,23 @@ options = [
          "parser": parseSize,
          "help": "specify initial window size (default: 400x400)"}],
     
-    "Miscellaneous",
+    "Sampling",
     ["s:", "sample=", "sample", "<sample fraction>",
         {"single": True,
          "parser": float,
-         "help": "choose a random subset of non-zeros to display"}],
+         "help": "choose a random subset of non-zeros to display (only for sparse matrices)"}],
+    ["", "rsample=", "rsample", "<sample fraction>",
+        {"single": True,
+         "parser": float,
+         "help": "choose a random subset of rows to display"}],
+    ["", "csample=", "csample", "<sample fraction>",
+        {"single": True,
+         "parser": float,
+         "help": "choose a random subset of columns to display"}],
+    
+    "Miscellaneous",
     ["", "cutoff=", "cutoff", "<value>",
-        {"default": -1e1000,
+        {"default": -util.INF,
          "parser": float,
          "single": True,
          "help": "if specified, only loads values greater than 'cutoff'"}],             
@@ -160,24 +170,36 @@ matfile = "summatrix"
 if "comprow" in conf:
     openCompRow(conf["comprow"], mat, 
                 loadvals=conf.get("loadvals", False),
-                sample=conf.get("sample", False))
+                sample=conf.get("sample", False),
+                rowsample=conf.get("rsample", False),
+                colsample=conf.get("csample", False),
+                )
     matfile = conf["comprow"]
     
 elif "imat" in conf:
     openImat(conf["imat"], mat, 
              loadvals=conf.get("loadvals", False),
-             sample=conf.get("sample", False))
+             sample=conf.get("sample", False),
+             rowsample=conf.get("rsample", False),
+             colsample=conf.get("csample", False))
     matfile = conf["imat"]
     
 elif "lmat" in conf:
     if "order" in conf:
-        openLabeledMatrix(conf["lmat"], mat)
+        openLabeledMatrix(conf["lmat"], mat,
+                          rowsample=conf.get("rsample", False),
+                          colsample=conf.get("csample", False))
     else:
-        openLabeledMatrix(conf["lmat"], mat)
+        openLabeledMatrix(conf["lmat"], mat,
+                          rowsample=conf.get("rsample", False),
+                          colsample=conf.get("csample", False))
     matfile = conf["lmat"]
     
 elif "dense" in conf:
-    openDense(conf["dense"], mat, cutoff=conf["cutoff"])
+    openDense(conf["dense"], mat, 
+              cutoff=conf["cutoff"],
+              rowsample=conf.get("rsample", False),
+              colsample=conf.get("csample", False))
     matfile = conf["dense"]
     
 else:
@@ -207,9 +229,29 @@ if "rcpart" in conf:
 if mat.rpart and not mat.rperm:
     mat.rperm = range(len(mat.rpart))
     mat.rperm.sort(key=lambda x: mat.rpart[x])
+    mat.rinv = util.invPerm(mat.rperm)
 if mat.cpart and not mat.cperm:
     mat.cperm = range(len(mat.cpart))
     mat.cperm.sort(key=lambda x: mat.cpart[x])
+    mat.cinv = util.invPerm(mat.cperm)
+
+# modify permutations if row/col sampling is choosen
+if len(mat.rshow) != None:
+    ind = util.sort(mat.rshow)
+    for i in xrange(mat.nrows):
+        if i not in mat.rshow:
+            ind.append(i)
+    mat.rperm = util.mget(mat.rperm, ind)
+    mat.rinv = util.invPerm(mat.rperm)
+    
+if len(mat.cshow) != None:
+    ind = util.sort(mat.cshow)
+    for i in xrange(mat.ncols):
+        if i not in mat.cshow:
+            ind.append(i)    
+    mat.cperm = util.mget(mat.cperm, ind)
+    mat.cinv = util.invPerm(mat.cperm)
+    
 
 # determine label settings
 if conf["showlabels"] == "inline":
