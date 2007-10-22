@@ -237,19 +237,19 @@ if mat.cpart and not mat.cperm:
 
 # modify permutations if row/col sampling is choosen
 if len(mat.rshow) != None:
-    ind = util.sort(mat.rshow)
-    for i in xrange(mat.nrows):
+    ind = util.sort(mat.rshow, key=lambda x: mat.rinv[x])
+    for i in mat.rperm:
         if i not in mat.rshow:
             ind.append(i)
-    mat.rperm = util.mget(mat.rperm, ind)
+    mat.rperm = ind
     mat.rinv = util.invPerm(mat.rperm)
     
 if len(mat.cshow) != None:
-    ind = util.sort(mat.cshow)
-    for i in xrange(mat.ncols):
+    ind = util.sort(mat.cshow, key=lambda x: mat.cinv[x])
+    for i in mat.cperm:
         if i not in mat.cshow:
-            ind.append(i)    
-    mat.cperm = util.mget(mat.cperm, ind)
+            ind.append(i)
+    mat.cperm = ind
     mat.cinv = util.invPerm(mat.cperm)
     
 
