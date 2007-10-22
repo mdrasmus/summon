@@ -413,12 +413,19 @@ class MatrixViewer (object):
         util.tic("drawing matrix")
         win = self.win
         
+        # set default colormap
         if mat.colormap == None:
             mat.colormap = colors.RainbowColorMap()
         
+        # customize colormap to matrix
+        if mat.maxval == None or mat.minval == None:
+            mat.maxval = max(mat.vals)
+            mat.minval = min(mat.vals)
         mat.colormap.max = mat.maxval
         mat.colormap.min = mat.minval
         mat.colormap.range = mat.maxval - mat.minval
+        
+        
         getcolor = mat.colormap.get
         chunksize = 10000
         rows, cols, vals = (mat.rows, mat.cols, mat.vals)
