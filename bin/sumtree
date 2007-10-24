@@ -88,7 +88,8 @@ elif "ptree" in conf:
     conf["usedist"] = 0
 vis = sumtree.SumTree(tree, name=filename, xscale=conf["usedist"], 
                       showLabels=not conf["noshowlabels"],
-                      vertical=conf["vertical"])
+                      vertical=conf["vertical"],
+                      colormap=sumtree.ensemblTreeColorMap)
 vis.show()
 
 if "winsize" in conf:

@@ -21,6 +21,50 @@ sys.setrecursionlimit(2000)
 # Drawing Code
 #
 
+def treeColorMap(leafmap=lambda x: (0, 0, 0)):
+    """Returns a simple color mixing colormap"""
+
+    def func(tree):
+        def walk(node):
+            if node.isLeaf():
+                node.color = leafmap(node)
+            else:
+                colors = []
+                for child in node.children:
+                    walk(child)
+                    colors.append(child.color)
+                node.color = colorMix(colors)
+        walk(tree.root)
+    return func
+    
+
+
+def ensemblTreeColorMap(tree):
+    """Example of a color map for a tree of Enseml genes"""
+    
+    def leafmap(node):
+        if type(node.name) == str:
+            if node.name.startswith("ENSG"): return [1,0,0]
+            elif node.name.startswith("ENSCAFG"): return [1,1,0]
+            elif node.name.startswith("ENSMUSG"): return [0,0,1]
+            elif node.name.startswith("ENSRNOG"): return [0,1,0]
+        return [0,0,0]
+    
+    return treeColorMap(leafmap)(tree)
+
+    
+def colorMix(colors):
+    sumcolor = [0, 0, 0]
+    for c in colors:
+        sumcolor[0] += c[0]
+        sumcolor[1] += c[1]
+        sumcolor[2] += c[2]                
+    for i in range(3):
+        sumcolor[i] /= float(len(colors))
+    return sumcolor
+
+
+
 class SumTree (object):
     """SUMMON Tree Visualizer"""
 
@@ -28,7 +72,8 @@ class SumTree (object):
                        showLabels=True, xscale=1.0,
                        vertical=False,
                        winsize=(400, 400),
-                       winpos=None):
+                       winpos=None,
+                       colormap=None):
         self.tree = tree   
         
         self.win = None
@@ -43,6 +88,7 @@ class SumTree (object):
         self.win = None
         self.vertical = vertical
         self.winsize = winsize
+        self.colormap = colormap
         
         self.setupTree(self.tree)
         
@@ -57,7 +103,7 @@ class SumTree (object):
             node.size = size
         
         self.setupNode(tree.root)
-        self.setColors(tree.root)
+        self.setColors(tree)
     
     
     def setupNode(self, node):
@@ -227,48 +273,14 @@ class SumTree (object):
         else:
             for child in node.children:
                 self.printNode(child)
+
     
-    
-    def colorMix(self, colors):
-        sumcolor = [0, 0, 0]
-        for c in colors:
-            sumcolor[0] += c[0]
-            sumcolor[1] += c[1]
-            sumcolor[2] += c[2]                
-        for i in range(3):
-            sumcolor[i] /= float(len(colors))
-        return sumcolor
-    
-    
-    def setColors(self, node):
-        if node.isLeaf():
-            if type(node.name) == str:
-                if node.name.startswith("ENSG"): node.color = [1,0,0]
-                elif node.name.startswith("ENSCAFG"): node.color = [1,1,0]
-                elif node.name.startswith("ENSMUSG"): node.color = [0,0,1]
-                elif node.name.startswith("ENSRNOG"): node.color = [0,1,0]
-                else:
-                    node.color = [0,0,0]
-            else:
-                node.color = [0,0,0]
+    def setColors(self, tree):
+        if self.colormap != None:
+            self.colormap(tree)
         else:
-            colors = []
-            for child in node.children:
-                self.setColors(child)
-                colors.append(child.color)
-            node.color = self.colorMix(colors)
-
-    
-    def colorKey(self):
-        print "color key"
-        print "---------"
-        print "human  red"
-        print "dog    yellow"
-        print "mouse  blue"
-        print "rat    green"
-
-
-
+            for node in tree:
+                node.color = (0, 0, 0)
 
     
     #======================================================================
