@@ -116,8 +116,26 @@ void SummonController::ExecCommand(Command &command)
 
 void SummonController::HotspotClick(Vertex2i pos)
 {
-    // process hotspots in world
-    if (m_world) {
+    bool clicked = false;
+
+    // process hotspots in screen
+    if (m_screen) {
+        // get all commands triggered by this click
+        Vertex2i pt = m_view->WindowToScreen(pos.x, pos.y);
+        Vertex2f pt2 = Vertex2f(pt.x, pt.y);
+        list<Command*> cmdList = m_screen->HotspotClick(pt2, Vertex2f(1, 1));
+
+        // execute and free all commands triggered
+        for (list<Command*>::iterator i=cmdList.begin(); i!=cmdList.end(); i++)
+        {
+            clicked = true;
+            ExecCommand(*(*i));
+            delete (*i);
+        }
+    }
+
+    // process hotspots in world (only if no hotspots clicked in screen)
+    if (m_world && !clicked) {
         // get all commands triggered by this click    
         Vertex2f pt = m_view->WindowToWorld(pos.x, pos.y);
         list<Command*> cmdList = m_world->HotspotClick(pt, m_view->GetZoom());
@@ -130,20 +148,7 @@ void SummonController::HotspotClick(Vertex2i pos)
         }
     }
     
-    // process hotspots in screen
-    if (m_screen) {
-        // get all commands triggered by this click
-        Vertex2i pt = m_view->WindowToScreen(pos.x, pos.y);
-        Vertex2f pt2 = Vertex2f(pt.x, pt.y);
-        list<Command*> cmdList = m_screen->HotspotClick(pt2, Vertex2f(1, 1));
-
-        // execute and free all commands triggered
-        for (list<Command*>::iterator i=cmdList.begin(); i!=cmdList.end(); i++)
-        {
-            ExecCommand(*(*i));
-            delete (*i);
-        }
-    }
+    
 }
 
 
