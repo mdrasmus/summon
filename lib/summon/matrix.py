@@ -397,8 +397,7 @@ class MatrixViewer (object):
         """shows the visualization window"""
         
         if self.win == None:
-            self.win = summon.Window(self.title)
-            self.win.set_size(* self.winsize)
+            self.win = summon.Window(self.title, size=self.winsize)
         else:
             self.win.clear_groups()
         self.win.set_antialias(False)
@@ -420,7 +419,6 @@ class MatrixViewer (object):
     
     def drawMatrix(self, mat, mouseClick=None):
         
-        util.tic("drawing matrix")
         win = self.win
         
         # set default colormap
@@ -493,8 +491,6 @@ class MatrixViewer (object):
             if self.showLabelWindows:
                 self.openLabelWindows()
             self.drawLabels()
-
-        util.toc()
     
     
     def toggleLabelWindows(self):

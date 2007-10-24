@@ -280,5 +280,7 @@ viewer = MatrixViewer(mat, bgcolor=conf["bgcolor"],
                            showLabelWindows=showLabelWindows,
                            winsize=conf["winsize"],
                            title=matfile)
+util.tic("drawing matrix")
 viewer.show()
+util.toc()
 

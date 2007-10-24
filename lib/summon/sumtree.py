@@ -44,6 +44,12 @@ class SumTree (object):
         self.vertical = vertical
         self.winsize = winsize
         
+        self.setupTree(self.tree)
+        
+    
+    def setTree(self, tree):
+        self.tree = tree
+        
         
     def setupTree(self, tree):
         sizes = treelib.countDescendents(tree.root)
@@ -52,7 +58,6 @@ class SumTree (object):
         
         self.setupNode(tree.root)
         self.setColors(tree.root)
-        self.tree = tree
     
     
     def setupNode(self, node):
@@ -68,8 +73,6 @@ class SumTree (object):
     
     def show(self):
         """shows visualization window"""
-        
-        util.tic("drawing")
         
         self.setupTree(self.tree)
         
@@ -95,7 +98,6 @@ class SumTree (object):
                     color(0,0,0),
                     self.drawTree(self.tree.root)))
 
-        util.toc()
         
         
         # draw branch length legend
@@ -119,6 +121,8 @@ class SumTree (object):
             self.win.home()
             self.win.focus(w/2, h/2)
             self.win.zoom(.9, .9)
+    
+
     
     
     #======================================================================
