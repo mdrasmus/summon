@@ -53,9 +53,6 @@ class Matrix (util.Dict):
         self.rows = []
         self.cols = []
         self.vals = []
-        
-        #self.maxval = 0 # TODO: remove?
-        #self.minval = 0 # TODO: remove?
             
     
     def setup(self, nrows=None, ncols=None, nnz=None,
@@ -146,9 +143,9 @@ def openCompRow(filename, mat, loadvals=False,
     
     util.log("%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz))
     
-    mat.setup(nrows, ncols, nnz)
+    mat.setup(nrows, ncols, nnz, rowsample=rowsample, colsample=colsample)
     rows, cols, vals = (mat.rows, mat.cols, mat.vals)
-        
+    
     row = 0
     maxval = -1e1000
     minval = 1e1000
@@ -158,10 +155,18 @@ def openCompRow(filename, mat, loadvals=False,
         if sample != False and random.random() > sample:
             row += 1
             continue
-
+        
+        if row not in mat.rshow:
+            row += 1
+            continue
+        
         for i in xrange(0, len(fields), 2):
             col = int(fields[i]) - 1
             val = float(fields[i+1])
+            
+            if col not in mat.cshow:
+                continue
+            
             rows.append(row)
             cols.append(col)
             vals.append(val)
@@ -189,7 +194,7 @@ def openImat(filename, mat, loadvals=False,
     (nrows, ncols, nnz) = map(int, infile.next().split())
     print "%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz)        
     
-    mat.setup(nrows, ncols, nnz)
+    mat.setup(nrows, ncols, nnz, rowsample=rowsample, colsample=colsample)
     rows, cols, vals = (mat.rows, mat.cols, mat.vals)
     
     i = 0
@@ -202,6 +207,10 @@ def openImat(filename, mat, loadvals=False,
         (row, col, val) = line.split()
         r, c = int(row), int(col)
         v = float(val)
+        
+        if r not in mat.rshow or c not in mat.cshow:
+            continue
+        
         rows.append(r)
         cols.append(c)
         vals.append(v)
@@ -271,7 +280,8 @@ def openLabeledMatrix(filename, mat,
     mat.rowlabels = rowlabels
     mat.collabels = collabels
     
-    mat.setup(len(rowlabels), len(collabels), nnz)
+    mat.setup(len(rowlabels), len(collabels), nnz, 
+              rowsample=rowsample, colsample=colsample)
     rows, cols, vals = (mat.rows, mat.cols, mat.vals)
     
     # store data

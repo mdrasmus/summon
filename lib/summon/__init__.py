@@ -299,7 +299,7 @@ class Window (object):
     """
 
     def __init__(self, name="SUMMON", 
-                 position=(-1, -1), size=(400, 400),
+                 position=None, size=(400, 400),
                  world=None, screen=None,
                  winconfig=None):
         """name       -- title on window
@@ -313,6 +313,9 @@ class Window (object):
         """
                 
         # create new window
+        if position == None:
+            position = (-1, -1)
+        
         self.winid = summon_core.new_window(name, size[0], size[1],
                                             position[0], position[1])
         assert self.winid != None

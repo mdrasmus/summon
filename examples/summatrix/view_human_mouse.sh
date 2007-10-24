@@ -1,4 +1,4 @@
 #!/bin/sh
 
 
-summatrix -i human_mouse.imat -c rainbow
+summatrix -i human_mouse.imat -c rainbow $*

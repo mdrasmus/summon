@@ -26,10 +26,14 @@ class SumTree (object):
 
     def __init__(self, tree, name="SUMTREE",
                        showLabels=True, xscale=1.0,
-                       vertical=False):
+                       vertical=False,
+                       winsize=(400, 400),
+                       winpos=None):
         self.tree = tree   
         
         self.win = None
+        self.winsize = winsize
+        self.winpos = winpos
         self.name = name 
         self.selnode = None
         self.markGroup = None
@@ -38,6 +42,7 @@ class SumTree (object):
         self.xscale = float(xscale)
         self.win = None
         self.vertical = vertical
+        self.winsize = winsize
         
         
     def setupTree(self, tree):
@@ -69,7 +74,8 @@ class SumTree (object):
         self.setupTree(self.tree)
         
         if self.win == None:
-            self.win = summon.Window(self.name)
+            self.win = summon.Window(self.name, size=self.winsize,
+                                     position=self.winpos)
             newwin = True
         else:
             self.win.clear_groups()
