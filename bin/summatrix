@@ -8,7 +8,8 @@
 # Matrix file formats:
 #   *.mat   compress row (-r option)
 #   *.imat  index matrix (-i option)
-#   *.lmat  label matrix 
+#   *.lmat  label matrix (-l option)
+#   *.mat   dense matrix (-d option)
 #
 
 # TODO: implement find, and marking
