@@ -72,8 +72,8 @@ class Matrix (util.Dict):
             self.cperm = range(self.ncols)
 
         # set inverse permutations
-        self.rinv = util.invPerm(self.rperm)
-        self.cinv = util.invPerm(self.cperm)
+        self.rinv = util.invperm(self.rperm)
+        self.cinv = util.invperm(self.cperm)
     
         # setup row/col sampling
         if rowsample != False:
@@ -89,6 +89,8 @@ class Matrix (util.Dict):
     
     
     def from2DList(self, mat, cutoff=-util.INF):
+        """Initialize matrix from a 2D list"""
+    
         assert util.equal(* map(len, mat)), "matrix has unequal row sizes"
     
         nrows, ncols = len(mat), len(mat[0])
@@ -119,6 +121,8 @@ class Matrix (util.Dict):
     
     
     def submatrix(self, rows=None, cols=None):
+        """Returns a submatrix"""
+        
         mat = Matrix()
         
         if rows == None:
@@ -126,13 +130,15 @@ class Matrix (util.Dict):
         
         if cols == None:
             cols = range(mat.ncols)
+                
         lookuprows = util.list2lookup(rows)
         lookupcols = util.list2lookup(cols)
         
+        # get subset of data
         rows2, cols2, vals2 = self.rows, self.cols, self.vals
         rows3, cols3, vals3 = mat.rows, mat.cols, mat.vals
-        
-        for i in xrange(self.nnz):
+                
+        for i in xrange(len(self.rows)):            
             r = rows2[i]
             c = cols2[i]
             v = vals2[i]
@@ -145,7 +151,25 @@ class Matrix (util.Dict):
             vals3.append(v)
             mat[r][c] = v
         
-        mat.setup(self, len(rows), len(cols), len(rows3))
+        # get subset of permutation        
+        ind = [self.rinv[i] for i in rows]
+        lookup = util.list2lookup(util.sort(ind))
+        mat.rinv = util.mget(lookup, ind)
+        mat.rperm = util.invperm(mat.rinv)
+        
+        ind = [self.cinv[i] for i in cols]
+        lookup = util.list2lookup(util.sort(ind))
+        mat.cinv = util.mget(lookup, ind)
+        mat.cperm = util.invperm(mat.cinv)
+        
+        # get subset of partition
+        if mat.rpart != None:
+            mat.rpart = util.mget(self.rpart, rows)
+        if mat.cpart != None:
+            mat.cpart = util.mget(self.cpart, cols)
+        
+        mat.setup(len(rows), len(cols), len(rows3))
+        return mat
         
 
 #=============================================================================
@@ -179,6 +203,7 @@ def openCompRow(filename, mat, loadvals=False,
     row = 0
     maxval = -1e1000
     minval = 1e1000
+    nnz = 0
     for line in infile:
         fields = line.split()
 
@@ -200,6 +225,7 @@ def openCompRow(filename, mat, loadvals=False,
             rows.append(row)
             cols.append(col)
             vals.append(val)
+            nnz += 1
             if val > maxval: maxval = val
             if val < minval: minval = val
             if loadvals:
@@ -209,6 +235,7 @@ def openCompRow(filename, mat, loadvals=False,
     
     mat.maxval = maxval
     mat.minval = minval
+    mat.nnz = nnz
     
     return mat
 
@@ -230,6 +257,7 @@ def openImat(filename, mat, loadvals=False,
     i = 0
     maxval = -1e1000
     minval = 1e1000
+    nnz = 0
     for line in infile:
         if sample != False and random.random() > sample:
             continue
@@ -244,6 +272,7 @@ def openImat(filename, mat, loadvals=False,
         rows.append(r)
         cols.append(c)
         vals.append(v)
+        nnz += 1
         if v > maxval: maxval = v
         if v < minval: minval = v
         if loadvals:
@@ -253,6 +282,7 @@ def openImat(filename, mat, loadvals=False,
     
     mat.maxval = maxval
     mat.minval = minval
+    mat.nnz = nnz
     
     return mat
 
@@ -353,6 +383,7 @@ def openDense(filename, mat, cutoff=-util.INF,
     # read in whole matrix
     maxval = -util.INF
     minval = util.INF
+    nnz = 0
     
     for r, line in enumerate(infile):
         # sample rows
@@ -368,12 +399,14 @@ def openDense(filename, mat, cutoff=-util.INF,
                 rows.append(r)
                 cols.append(c)
                 vals.append(entries[c])
+                nnz += 1
                 if entries[c] > maxval: maxval = entries[c]
                 if entries[c] < minval: minval = entries[c]
                 mat[r][c] = entries[c]
     
     mat.maxval = maxval
     mat.minval = minval
+    mat.nnz = nnz
         
     util.toc()
     return mat

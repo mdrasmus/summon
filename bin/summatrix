@@ -238,21 +238,8 @@ if mat.cpart and not mat.cperm:
     mat.cinv = util.invPerm(mat.cperm)
 
 # modify permutations if row/col sampling is choosen
-if len(mat.rshow) != None:
-    ind = util.sort(mat.rshow, key=lambda x: mat.rinv[x])
-    for i in mat.rperm:
-        if i not in mat.rshow:
-            ind.append(i)
-    mat.rperm = ind
-    mat.rinv = util.invPerm(mat.rperm)
-    
-if len(mat.cshow) != None:
-    ind = util.sort(mat.cshow, key=lambda x: mat.cinv[x])
-    for i in mat.cperm:
-        if i not in mat.cshow:
-            ind.append(i)
-    mat.cperm = ind
-    mat.cinv = util.invPerm(mat.cperm)
+if len(mat.rshow) < mat.nrows or len(mat.cshow) < mat.ncols:
+    mat = mat.submatrix(util.sort(mat.rshow), util.sort(mat.cshow))
     
 
 # determine label settings
