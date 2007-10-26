@@ -23,10 +23,10 @@ dist/$(PACKAGE):
 pub: dist/$(PACKAGE)
 	scp dist/$(PACKAGE) $(WWWHOST):$(WWWDIR)
 	scp dist/$(RPM) $(WWWHOST):$(WWWDIR)
-	scp dist/$(WININST) $(WWWHOST):$(WWWDIR)
+	if [ -f dist/$(WININST) ]; then scp dist/$(WININST) $(WWWHOST):$(WWWDIR); fi
 	ssh $(WWWHOST) chmod o+r $(WWWDIR)/$(PACKAGE)
 	ssh $(WWWHOST) chmod o+r $(WWWDIR)/$(RPM)
-	ssh $(WWWHOST) chmod o+r $(WWWDIR)/$(WININST)
+	if [ -f dist/$(WININST) ]; then ssh $(WWWHOST) chmod o+r $(WWWDIR)/$(WININST); fi
 	ssh $(WWWHOST) tar zxvf $(WWWDIR)/$(PACKAGE) -C $(WWWDIR)
 	ssh $(WWWHOST) chmod -R o+rx $(WWWDIR)/summon-$(VERSION)
 

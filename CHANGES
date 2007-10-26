@@ -1,7 +1,16 @@
 SUMMON Change Log
 -----------------
 
-2007/9/14
+2007/10/26 - summon-1.8.3
+- added colormap for sumtree
+- added row/col sampling for summatrix
+- fixed handling of hotspots in screen model
+- fixed initial window size and position
+- fixed window decoration detection (better multiwindow)
+- add support for fast direct methods on elements
+
+
+2007/9/14 - summon-1.8.2
 - added GLUT pop-up menus
 - added aGroup.get_parent()
 - added get_bounding() to Model
