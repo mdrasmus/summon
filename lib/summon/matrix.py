@@ -75,7 +75,7 @@ class Matrix (util.Dict):
         self.rinv = util.invPerm(self.rperm)
         self.cinv = util.invPerm(self.cperm)
     
-        # setup sampling
+        # setup row/col sampling
         if rowsample != False:
             self.rshow = set(random.sample(range(self.nrows), 
                                            int(self.nrows * rowsample)))
@@ -116,6 +116,36 @@ class Matrix (util.Dict):
         
         self.maxval = maxval
         self.minval = minval
+    
+    
+    def submatrix(self, rows=None, cols=None):
+        mat = Matrix()
+        
+        if rows == None:
+            rows = range(mat.nrows)
+        
+        if cols == None:
+            cols = range(mat.ncols)
+        lookuprows = util.list2lookup(rows)
+        lookupcols = util.list2lookup(cols)
+        
+        rows2, cols2, vals2 = self.rows, self.cols, self.vals
+        rows3, cols3, vals3 = mat.rows, mat.cols, mat.vals
+        
+        for i in xrange(self.nnz):
+            r = rows2[i]
+            c = cols2[i]
+            v = vals2[i]
+            
+            if r not in lookuprows or c not in lookupcols:
+                continue
+            
+            rows3.append(lookuprows[r])
+            cols3.append(lookupcols[c])
+            vals3.append(v)
+            mat[r][c] = v
+        
+        mat.setup(self, len(rows), len(cols), len(rows3))
         
 
 #=============================================================================

@@ -165,6 +165,7 @@ else:
 if "order" in conf:
     mat.order = conf["order"]
 
+
 # read matrix
 matfile = "summatrix"
 if "comprow" in conf:
