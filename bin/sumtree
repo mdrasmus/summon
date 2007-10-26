@@ -18,22 +18,35 @@ from summon import treelib
 
 # command line options
 options = [
+ "Data options",
  ["p:", "ptree=", "ptree", "<ptree file>",
-    {"single": True}],
+    {"single": True,
+     "help": "load a tree in parent tree format"}],
  ["l:", "labels=", "labels", "<leaf labels file>",
-    {"single": True}],
+    {"single": True,
+     "help": "give leaf labels for parent tree format"}],
  ["n:", "newick=", "newick", "<newick file>",
-    {"single": True}],
+    {"single": True,
+     "help": "load a tree in newick format"}],
+     
+ "Display options",
+ ["c:", "colormap=", "colormap", "<tree color map>",
+    {"single": True,
+     "help": "specify how to color branches of a tree"}],
  ["t:", "usedist=", "usedist", "<distance factor>",
     {"single": True,
      "default": 1.0,
-     "parser": float}],
+     "parser": float,
+     "help": "use distance information in tree (newick only)"}],
  ["L", "noshowlabels", "noshowlabels", "",
-    {"single": True}],
+    {"single": True,
+     "help": "disable leaf labels"}],
  ["V", "vertical", "vertical", "",
-    {"single": True}],
+    {"single": True,
+     "help": "display tree vertically"}],
  ["w:", "winsize=", "winsize", "<window width>x<window height>",
-    {"single": True}],
+    {"single": True,
+     "help": "set initial window size"}],
     
 ]
 
@@ -86,15 +99,27 @@ if "newick" in conf:
 elif "ptree" in conf:
     filename = conf["ptree"]
     conf["usedist"] = 0
+
+if "colormap" in conf:
+    colormap = sumtree.readTreeColorMap(conf["colormap"])
+else:
+    colormap = None
+
+if "winsize" in conf:
+    winsize = map(int, conf["winsize"].split("x"))
+else:
+    winsize = (400, 400)
+
+
 vis = sumtree.SumTree(tree, name=filename, xscale=conf["usedist"], 
                       showLabels=not conf["noshowlabels"],
                       vertical=conf["vertical"],
-                      colormap=sumtree.ensemblTreeColorMap)
+                      colormap=colormap,
+                      winsize=winsize)
+util.tic("drawing tree")
 vis.show()
+util.toc()
 
-if "winsize" in conf:
-    w, h = map(int, conf["winsize"].split("x"))
-    vis.win.set_size(w, h)
 
 
 # export a few functions to the global scope

@@ -201,8 +201,8 @@ def openCompRow(filename, mat, loadvals=False,
     rows, cols, vals = (mat.rows, mat.cols, mat.vals)
     
     row = 0
-    maxval = -1e1000
-    minval = 1e1000
+    maxval = -util.INF
+    minval = util.INF
     nnz = 0
     for line in infile:
         fields = line.split()
@@ -255,8 +255,8 @@ def openImat(filename, mat, loadvals=False,
     rows, cols, vals = (mat.rows, mat.cols, mat.vals)
     
     i = 0
-    maxval = -1e1000
-    minval = 1e1000
+    maxval = -util.INF
+    minval = util.INF
     nnz = 0
     for line in infile:
         if sample != False and random.random() > sample:

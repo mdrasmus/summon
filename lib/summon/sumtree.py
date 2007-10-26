@@ -16,10 +16,8 @@ import summon
 sys.setrecursionlimit(2000)
 
 
-
 #=============================================================================
-# Drawing Code
-#
+# Color map
 
 def treeColorMap(leafmap=lambda x: (0, 0, 0)):
     """Returns a simple color mixing colormap"""
@@ -64,6 +62,59 @@ def colorMix(colors):
     return sumcolor
 
 
+def makeMapping(maps):
+    # find exact matches and expressions
+    exacts = {}
+    exps = []
+    for key, val in maps:
+        if "*" not in key:
+            exacts[key] = val
+        else:
+            exps.append((key, val))
+    
+    # create mapping function
+    def mapping(key):
+        if key in exacts:
+            return exacts[key]    
+        
+        # return default color
+        if not isinstance(key, str):
+            return (0, 0, 0)
+        
+        # eval expressions first in order of appearance
+        for exp, val in exps:
+            if exp[-1] == "*":
+                if key.startswith(exp[:-1]):
+                    return val
+            elif exp[0] == "*":
+                if key.endswith(exp[1:]):
+                    return val
+        
+        raise Exception("Cannot map key '%s' to any value" % key)
+    return mapping
+
+
+def readTreeColorMap(filename):
+    """Reads a tree colormap from a file"""
+    
+    infile = util.openStream(filename)
+    maps = []
+    
+    for line in infile:
+        expr, red, green, blue = line.rstrip().split("\t")
+        maps.append([expr, map(float, (red, green, blue))])
+    
+    name2color = makeMapping(maps)
+    
+    def leafmap(node):
+        return name2color(node.name)
+
+    return treeColorMap(leafmap)
+
+
+#=============================================================================
+# Drawing Code
+#
 
 class SumTree (object):
     """SUMMON Tree Visualizer"""

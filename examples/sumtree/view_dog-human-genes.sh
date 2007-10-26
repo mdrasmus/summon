@@ -12,4 +12,5 @@ sumtree \
     -l dog-human-genes.label \
     --vertical \
     --noshowlabels \
-    --winsize 700x400
+    --winsize 700x400 \
+    -c ensembl.colormap $*

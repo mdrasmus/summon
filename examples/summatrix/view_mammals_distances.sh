@@ -12,5 +12,6 @@ summatrix \
     -o mammals_distances.labels \
     --bgcolor 1,1,1 \
     --style quads \
-    --showlabels panels
-    
+    --showlabels panels \
+    -c mammals_distances.colormap \
+    $*
