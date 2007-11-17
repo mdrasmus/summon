@@ -62,9 +62,15 @@ def config_window(win):
 
     # menus
     win.set_menu(summon.SummonMenu(win))
-    win.set_menu_button("left")
-    win.set_binding(input_key("`"), win.activate_menu)
-    win.add_binding(input_click("left", "up"), win.deactivate_menu)
+    #win.set_menu_button("left")
+    #win.set_binding(input_key("`"), win.activate_menu)
+    #win.add_binding(input_click("left", "click"), win.deactivate_menu)
+    #win.add_binding(input_click("left", "up"), win.deactivate_menu)    
+    win.set_menu_button("middle")
+    win.activate_menu()
+    #win.set_binding(input_key("`"), win.activate_menu)
+    #win.add_binding(input_click("left", "click"), win.deactivate_menu)
+    #win.add_binding(input_click("left", "up"), win.deactivate_menu)    
 
     # misc
     win.set_binding(input_key("h"), win.home)
