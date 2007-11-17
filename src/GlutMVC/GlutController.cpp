@@ -21,7 +21,8 @@ std::vector<GlutController*> g_controllers;
 GlutController::GlutController(int window):
     m_button(0),
     m_state(GLUT_UP),
-    m_mod(0)
+    m_mod(0),
+    m_drag(false)
 {
     if ((unsigned int) window >= g_controllers.size()) {
         g_controllers.resize(window+1);
@@ -128,6 +129,8 @@ void GlutController::Motion(int x, int y)
     input.button = m_button;
     input.state  = m_state;
     input.mod    = m_mod;
+    
+    m_drag = true;
 
     ProcessInput(input);
 
@@ -157,11 +160,16 @@ void GlutController::MouseClick(int button, int state, int x, int y)
     m_state  = state;
     m_mod    = glutGetModifiers();
 
+    if (state == GLUT_DOWN) {
+        m_drag = false;  // reset drag state
+    }
+
     MouseClickInput input;
     input.pos    = Vertex2i(x, y);
     input.button = m_button;
     input.state  = m_state;
     input.mod    = m_mod; 
+    input.drag   = m_drag;
 
     ProcessInput(input);
 

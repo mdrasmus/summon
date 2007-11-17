@@ -55,8 +55,9 @@ def config_window(win):
 
 
     # hotspot clicking
-    win.set_binding(input_click("middle", "up"), "hotspot_click")
-    win.set_binding(input_click("left", "up", "ctrl"), "hotspot_click")
+    #win.set_binding(input_click("middle", "up"), "hotspot_click")
+    #win.set_binding(input_click("left", "up", "ctrl"), "hotspot_click")
+    win.set_binding(input_click("left", "click"), "hotspot_click")
 
 
     # menus

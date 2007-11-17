@@ -376,6 +376,7 @@ bool ParseMouse(bool isClick, Scm lst, Input **input)
 {
     int button;
     int state;
+    bool drag;
 
     // check for correct types
     if (!ScmConsp(lst) || !ScmStringp(ScmCar(lst)) ||
@@ -396,9 +397,16 @@ bool ParseMouse(bool isClick, Scm lst, Input **input)
         return false;
     }
 
-    if (stateStr == "up")        state = GLUT_UP;
-    else if (stateStr == "down") state = GLUT_DOWN;
-    else {
+    if (stateStr == "up") {
+        state = GLUT_UP;
+        drag = true;
+    } else if (stateStr == "down") {
+        state = GLUT_DOWN;
+        drag = false;
+    } else if (stateStr == "click") {
+        state = GLUT_UP;
+        drag = false;
+    } else {
         Error("unknown state '%s'", stateStr.c_str());
         return false;
     }
@@ -408,6 +416,7 @@ bool ParseMouse(bool isClick, Scm lst, Input **input)
         MouseClickInput *mouse = new MouseClickInput();
         mouse->button = button;
         mouse->state  = state;
+        mouse->drag   = drag;
 
         if (!ParseMod(ScmCddr(lst), &(mouse->mod))) {
             delete mouse;

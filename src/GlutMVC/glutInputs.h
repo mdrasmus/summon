@@ -138,7 +138,7 @@ public:
 class MouseClickInput : public Input
 {
 public:
-    MouseClickInput() : mod(0), button(0), state(0) {}
+    MouseClickInput() : mod(0), button(0), state(0), drag(false) {}
     
     virtual Input* Create() { return new MouseClickInput(); }
     inline virtual InputId GetId() { return MOUSE_CLICK_INPUT; }
@@ -146,19 +146,22 @@ public:
         int hash = 0;
         
         switch (button) {
-            case GLUT_LEFT_BUTTON:   hash += 0; break;
-            case GLUT_MIDDLE_BUTTON: hash += 1; break;
-            case GLUT_RIGHT_BUTTON:  hash += 2; break;
+            case GLUT_LEFT_BUTTON:   hash |= 0x0; break;
+            case GLUT_MIDDLE_BUTTON: hash |= 0x1; break;
+            case GLUT_RIGHT_BUTTON:  hash |= 0x2; break;
         }
-        
-        hash *= 2;
         
         switch (state) {
-            case GLUT_UP:   hash += 0; break;
-            case GLUT_DOWN: hash += 1; break;
+            case GLUT_UP:   hash |= 0x0; break;
+            case GLUT_DOWN: hash |= 0x4; break;
         }
         
-        hash = hash | (mod << 8);
+        if (drag)
+            hash |= 0x8;
+        else
+            hash |= 0x0;
+        
+        hash = hash | (mod << 5);
         
         return hash;
     }
@@ -191,6 +194,7 @@ public:
     int mod;
     int button;
     int state;
+    bool drag;
     Vertex2i pos;
 };
 

@@ -42,6 +42,7 @@ protected:
    int m_button;  // TODO: not used?
    int m_state;   // TODO: not used?
    int m_mod;     // TODO: not used?
+   bool m_drag;
 };
 
 }
