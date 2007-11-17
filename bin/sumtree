@@ -101,7 +101,7 @@ elif "ptree" in conf:
     conf["usedist"] = 0
 
 if "colormap" in conf:
-    colormap = sumtree.readTreeColorMap(conf["colormap"])
+    colormap = treelib.readTreeColorMap(conf["colormap"])
 else:
     colormap = None
 

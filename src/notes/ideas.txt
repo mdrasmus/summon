@@ -23,7 +23,7 @@ Thinking about how to handle zoom_clamp
     - dynamic text
     - dynamic transforms (zoom_clamp)
     - hotspots inside dynamic transforms
-
+    - can the list be shared amonst elements?
 
 transform(env, zoom):
     push I
