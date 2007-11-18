@@ -19,9 +19,10 @@ import random
 import sys
 
 from summon.core import *
-from summon import *
-from summon import shapes, util
-from summon.matrix import *
+import summon
+from summon import shapes, util, treelib
+from summon import matrix
+from summon import sumtree
 
 
 def parseColor(colorstr):
@@ -72,6 +73,16 @@ options = [
     ["", "cpart=", "cpart", "<col partition ids>",
         {"single": True}],
     ["", "rcpart=", "rcpart", "<row & col partition ids>",
+        {"single": True}],
+
+    "Trees",
+    ["", "rptree=", "rptree", "<row parent tree file>",
+        {"single": True}],
+    ["", "cptree=", "cptree", "<column parent tree file>",
+        {"single": True}],
+    ["", "rtree=", "rtree", "<row tree newick file>",
+        {"single": True}],
+    ["", "ctree=", "ctree", "<column tree newick file>",
         {"single": True}],
 
     
@@ -141,7 +152,7 @@ print "SUMMATRIX (SUMMON Matrix Visualizer)"
 print "Matt Rasmussen 2005-2007"
 print
 
-mat = Matrix()
+mat = matrix.Matrix()
 
 # read permutations
 if "rperm" in conf:
@@ -170,7 +181,7 @@ if "order" in conf:
 # read matrix
 matfile = "summatrix"
 if "comprow" in conf:
-    openCompRow(conf["comprow"], mat, 
+    matrix.openCompRow(conf["comprow"], mat, 
                 loadvals=conf.get("loadvals", False),
                 sample=conf.get("sample", False),
                 rowsample=conf.get("rsample", False),
@@ -179,7 +190,7 @@ if "comprow" in conf:
     matfile = conf["comprow"]
     
 elif "imat" in conf:
-    openImat(conf["imat"], mat, 
+    matrix.openImat(conf["imat"], mat, 
              loadvals=conf.get("loadvals", False),
              sample=conf.get("sample", False),
              rowsample=conf.get("rsample", False),
@@ -188,17 +199,17 @@ elif "imat" in conf:
     
 elif "lmat" in conf:
     if "order" in conf:
-        openLabeledMatrix(conf["lmat"], mat,
+        matrix.openLabeledMatrix(conf["lmat"], mat,
                           rowsample=conf.get("rsample", False),
                           colsample=conf.get("csample", False))
     else:
-        openLabeledMatrix(conf["lmat"], mat,
+        matrix.openLabeledMatrix(conf["lmat"], mat,
                           rowsample=conf.get("rsample", False),
                           colsample=conf.get("csample", False))
     matfile = conf["lmat"]
     
 elif "dense" in conf:
-    openDense(conf["dense"], mat, 
+    matrix.openDense(conf["dense"], mat, 
               cutoff=conf["cutoff"],
               rowsample=conf.get("rsample", False),
               colsample=conf.get("csample", False))
@@ -240,7 +251,40 @@ if mat.cpart and not mat.cperm:
 # modify permutations if row/col sampling is choosen
 if len(mat.rshow) < mat.nrows or len(mat.cshow) < mat.ncols:
     mat = mat.submatrix(util.sort(mat.rshow), util.sort(mat.cshow))
-    
+
+
+# read trees
+rtree = None
+ctree = None
+if "rptree" in conf:
+    rtree = treelib.Tree()
+    rtree.readParentTree(conf["rptree"], labels=mat.rowlabels)
+if "cptree" in conf:
+    ctree = treelib.Tree()
+    ctree.readParentTree(conf["cptree"], labels=mat.collabels)
+if "rtree" in conf:
+    rtree = treelib.Tree()
+    rtree.readTree(conf["rtree"], labels=mat.rowlabels)
+if "ctree" in conf:
+    ctree = treelib.Tree()
+    ctree.readTree(conf["ctree"], labels=mat.collabels)
+
+if rtree:
+    leaves = rtree.leafNames()
+    if mat.rowlabels == None:
+        mat.rperm = map(int, leaves)
+    else:
+        lookup = util.list2lookup(mat.rowlabels)
+        mat.rperm = util.mget(lookup, leaves)
+    mat.rinv = util.invPerm(mat.rperm)
+if ctree:
+    if mat.collabels == None:
+        mat.cperm = map(int, leaves)
+    else:
+        lookup = util.list2lookup(mat.collabels)
+        mat.cperm = util.mget(lookup, leaves)
+    mat.cinv = util.invPerm(mat.cperm)
+
 
 # determine label settings
 if conf["showlabels"] == "inline":
@@ -262,14 +306,20 @@ for script in conf["REST"]:
 
 
 # create matrix viewer and display it
-viewer = MatrixViewer(mat, bgcolor=conf["bgcolor"], 
+viewer = matrix.MatrixViewer(mat, bgcolor=conf["bgcolor"], 
                            drawzeros=conf["drawzeros"], 
                            style=conf["style"],
                            showLabels=showLabels,
                            showLabelWindows=showLabelWindows,
                            winsize=conf["winsize"],
-                           title=matfile)
+                           title=matfile,
+                           rtree=rtree,
+                           ctree=ctree)
 util.tic("drawing matrix")
 viewer.show()
 util.toc()
 
+#if rtree:
+#    layout = treelib.layoutTreeHierarchical(rtree, 1, -1)
+#    treevis = sumtree.SumTree(rtree, name="row tree", xscale=0, layout=layout)
+#    treevis.show()

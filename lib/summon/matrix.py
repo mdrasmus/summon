@@ -432,7 +432,8 @@ class MatrixViewer (object):
     def __init__(self, mat=None, onClick=None, 
                  bgcolor=(0,0,0), drawzeros=False, style="points",
                  showLabels=False, showLabelWindows=False,
-                 winsize=(400,400), title="summatrix"):
+                 winsize=(400,400), title="summatrix",
+                 rtree=None, ctree=None):
         self.win = None
         self.mat = mat
         self.bgcolor = bgcolor
@@ -442,6 +443,8 @@ class MatrixViewer (object):
         self.showLabelWindows = showLabelWindows
         self.winsize = winsize[:]
         self.title = title
+        self.rtree = rtree
+        self.ctree = ctree
         
         self.labelWindows = None        
         self.ensemble1 = None
@@ -618,8 +621,8 @@ class MatrixViewer (object):
 
 
         # set visible
-        if self.mat.rowlabels != None:
-            left = summon.Window(" ")        
+        if self.mat.rowlabels:
+            left = summon.Window(" ")
             left.set_bgcolor(*self.win.get_bgcolor())
             maxLabelWidth = max(map(len, self.mat.rowlabels))
             left.set_size(maxLabelWidth*12, h)                
@@ -632,7 +635,7 @@ class MatrixViewer (object):
         else:
             left = None
         
-        if self.mat.collabels != None:
+        if self.mat.collabels:
             top = summon.Window(" ")        
             top.set_bgcolor(*self.win.get_bgcolor())
             maxLabelHeight = max(map(len, self.mat.collabels))

@@ -15,7 +15,6 @@ import summon
 
 
 
-
 #=============================================================================
 # Drawing Code
 #
@@ -28,7 +27,8 @@ class SumTree (object):
                        vertical=False,
                        winsize=(400, 400),
                        winpos=None,
-                       colormap=None):
+                       colormap=None,
+                       layout=None):
         self.tree = tree   
         
         self.win = None
@@ -44,39 +44,38 @@ class SumTree (object):
         self.vertical = vertical
         self.winsize = winsize
         self.colormap = colormap
-        
+        self.layout = layout
+
+
         self.setupTree(self.tree)
         
     
-    def setTree(self, tree):
+    def setTree(self, tree, layout=None):
+        """Changes the tree in the visualization"""
         self.tree = tree
+        self.layout = layout
+        self.setupTree(self.tree)
         
         
     def setupTree(self, tree):
-        sizes = treelib.countDescendents(tree.root)
-        for node, size in sizes.iteritems():
-            node.size = size
+        """Private function for configuring a new tree"""
+                
+        # setup layout
+        if self.layout == None:
+            if self.xscale > 0:
+                self.layout = treelib.layoutTree(self.tree, self.xscale, -1.0)
+            else:
+                self.layout = treelib.layoutTree(self.tree, 1.0, -1.0, minlen=1.0)
         
-        self.setupNode(tree.root)
+        # setup colors
         self.setColors(tree)
     
     
-    def setupNode(self, node):
-        if self.xscale == 0:
-            node.height = 1
-        else:
-            node.height = node.dist * self.xscale
-        
-
-        for child in node.children:
-            self.setupNode(child)
-    
     
     def show(self):
-        """shows visualization window"""
+        """Shows visualization window"""
         
-        self.setupTree(self.tree)
-        
+        # create window if needed
         if self.win == None:
             self.win = summon.Window(self.name, size=self.winsize,
                                      position=self.winpos)
@@ -86,20 +85,21 @@ class SumTree (object):
             newwin = False
         self.win.set_bgcolor(1,1,1)
         
+        
+        # draw tree
         if self.vertical:
             # draw vertical tree
             self.win.add_group(group(
                 color(0,0,0),
-                rotate(-90,                 
+                rotate(-90, 
                     self.drawTree(self.tree.root))))
                 
         else:        
             # draw horizontal tree
             self.win.add_group(group(
                     color(0,0,0),
-                    self.drawTree(self.tree.root)))
+                        self.drawTree(self.tree.root)))
 
-        
         
         # draw branch length legend
         if not self.vertical and self.xscale != 0:
@@ -111,9 +111,9 @@ class SumTree (object):
                 length = maxwidth / self.xscale
                 order = math.floor(math.log10(length))
                 length = 10 ** order
-    
-                self.win.add_group(self.drawScale(0, -self.tree.root.size/2.0 - 2 , 
-                                                  length, self.xscale))
+                
+                y = min(node.y for node in self.tree) - 2
+                self.win.add_group(self.drawScale(0, y, length, self.xscale))
         
 
         # put tree into view
@@ -133,83 +133,79 @@ class SumTree (object):
     def drawTree(self, node, sx=0, sy=0):
         vis = []
 
-        # draw root of tree
-        vis.append(self.drawNode(node, sx, sy, node.height))
+        # draw node
+        vis.append(self.drawNode(node))
+        
+        # recurse
+        try:
+            for child in node.children:
+                vis.append(self.drawTree(child))
+        except RuntimeError:
+            print sys.exc_type, ": Tree is too deep to draw"
 
-        # draw children
-        if len(node.children) > 0:
-            try:
-                y = -node.size/2.0
-                for child in node.children:
-                    y += child.size/2.0
-                    vis.append(self.drawTree(child, sx + node.height, sy - y))
-                    y += child.size/2.0
-            except RuntimeError:
-                print sys.exc_type, ": Tree is too deep to draw"
-
-        return group(*vis) 
+        return group(*vis)
     
+    
+    def drawNode(self, node):
+        vis = []
+        
+        # get relavent coordinates
+        nx, ny = self.layout[node]
+        if node.parent:
+            px = self.layout[node.parent][0]
+        else:
+            px = nx
+
+        # record node position in tree
+        node.x = nx
+        node.y = ny
+        
+        # draw branch
+        vis.append(lines(color(*node.color), 
+                         nx, ny, px, ny))
+        
+        # draw cross bar
+        if len(node.children) > 0:
+            bot = self.layout[node.children[-1]][1]
+            top = self.layout[node.children[0]][1]
+            
+            vis.append(lines(color(*node.color), nx, bot, nx, top))
+        else:
+            bot = ny -.5
+            top = ny + .5
+
+        # hotspot
+        def func():
+            self.selnode = node
+            self.nodeClick(node)
+        vis.append(hotspot("click", nx, bot, px, top, func))
+
+        # text label
+        if self.showLabels and node.isLeaf() and type(node.name) == str:
+            if self.vertical:
+                label = group(color(0,0,0),
+                              text_clip(node.name, nx, top, 
+                                        nx*10000, bot, 5, 12,
+                                        "left", "middle", "vertical"))
+            else:
+                label = group(color(0,0,0),
+                              text_clip(node.name, nx, top, 
+                                        nx*10000, bot, 5, 12,
+                                        "left", "middle"))
+        
+            self.labels.append(label)
+            vis.append(label)
+
+        
+        return group(*vis)
+        
     
     def drawScale(self, x, y, length, xscale):
-        
-        
         return group(color(0, 0, 1), lines(x, y, x + xscale*length, y),
                      text_clip("%.2f" % length, x + xscale*length, y-2, 
                                           x+10*xscale*length, y+2,
                                           3, 12,
                                 "left", "middle"))
-    
-    
-    def drawNode(self, node, sx, sy, height):
-        vis = []
-        vis.append(lines(color(*node.color), 
-                         sx, sy, sx + height, sy))
-
-        # record node position in tree
-        node.x = sx + node.height
-        node.y = sy
-
-        def func():
-            self.selnode = node
-            self.nodeClick(node)
-
-        vis.append(hotspot("click", 
-                           sx, sy - node.size/2.0,
-                           sx + height, sy + node.size/2.0,
-                           func))
-
-        
-        if self.showLabels and node.isLeaf() and type(node.name) == str:
-            if self.vertical:
-                label = group(
-                    translate(sx + height, sy - node.size/2.0,
-                            color(0,0,0),
-                            text_clip(node.name, 0, node.size*.1, 
-                                      node.size*1000, node.size*.9, 5, 12,
-                                      "left", "middle", "vertical")))
-            else:
-                label = group(
-                    translate(sx + height, sy - node.size/2.0,
-                            color(0,0,0),
-                            text_clip(node.name, 0, node.size*.1, 
-                                      node.size*1000, node.size*.9, 5, 12,
-                                      "left", "middle")))
-        
-            self.labels.append(label)
-            vis.append(label)
-            
-        
-        # draw vertical line
-        if len(node.children) > 0:
-            bottom = sy - node.size/2.0 + node.children[-1].size/2.0
-            top = sy + node.size/2.0 - node.children[0].size/2.0
-            
-            vis.append(lines(color(*node.color),
-                             sx + height, bottom,
-                             sx + height, top))
-        return group(*vis)
-
-
    
     
     def enableLabels(self, visible):
