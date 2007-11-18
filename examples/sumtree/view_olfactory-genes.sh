@@ -8,4 +8,5 @@ echo
 
 sumtree \
     -n olfactory-genes.tree \
-    -t 0 $*
+    -t 0 \
+    --colormap ensembl.colormap $*
