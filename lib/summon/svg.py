@@ -1,7 +1,7 @@
 #from summon_core import *
 from summon.core import *
 import summon
-from summon import util
+from summon import util, transform
 
 import os
 import math
@@ -28,7 +28,7 @@ def color2string(color):
 
 class SvgWriter:
     def __init__(self):
-        pass
+        self.trans = [transform.makeIdentityMatrix()]
     
         
     def write(self, outfile, group, visible=(0.0, 0.0, 500.0, 500.0), 
@@ -42,7 +42,6 @@ class SvgWriter:
             bgcolor = win.get_bgcolor()         
         (x, y, x2, y2) = visible
         (width, height) = size
-        print visible
         
         # determine camera transform
         boxWidth  = x2 - x
@@ -100,11 +99,14 @@ class SvgWriter:
         boxheight = y2 - y1
         boxwidth = x2 - x1
         
+        # TODO: add text_scale support
         if isinstance(elm, text_scale) or isinstance(elm, text_clip):
             textheight = 20.0
             textwidth = textheight * .75 * float(len(msg)) # TODO: approx for now
+            #mat = transform.multMatrixVec(self.trans[-1], (1.0, 1.0))
             
             scale = min(boxheight / textheight, boxwidth / textwidth)
+            
             
             print >>self.out, \
             """<g transform='translate(%f,%f) scale(%f,%f)'>
@@ -141,19 +143,31 @@ class SvgWriter:
         c = elm.get_contents()    
         if isinstance(elm, translate):
             print >>self.out, "<g transform='translate(%f,%f)'>" % (c[1], c[2])
+            mat = transform.makeTransMatrix(c)
+            
         elif isinstance(elm, scale):
             print >>self.out, "<g transform='scale(%f,%f)'>" % (c[1], c[2])
+            mat = transform.makeScaleMatrix(c)
+            
         elif isinstance(elm, rotate):
             print >>self.out, "<g transform='rotate(%f)'>" % c[3]
+            mat = transform.makeRotateMatrix(c)
+            
         elif isinstance(elm, flip):
             x, y = c[1], c[1]
             h = math.sqrt(x*x + y*y)
             angle = 180 / math.pi * math.acos(x / h)
             if y < 0:
                 angle *= -1
+            mat = transform.makeFlipMatrix(c)
             
             print >>self.out, "<g transform='rotate(%f) scale(-1, 1) rotate(%f)'>" % \
                 (-angle, angle)
+        else:
+            mat = transform.makeIdentityMatrix()
+        
+        self.trans.append(transform.multMatrix(mat, self.trans[-1]))
+        
     
     
     def printEndTransform(self, elm):
@@ -164,6 +178,8 @@ class SvgWriter:
            isinstance(elm, rotate) or \
            isinstance(elm, flip):
             print >>self.out, "</g>"
+        
+        self.trans.pop()
     
     
     def printElm(self, elm):

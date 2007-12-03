@@ -1119,9 +1119,11 @@ def iter_vertices(elm, curcolor=None):
                 elif isinstance(elm, lines):           nverts, nkeep = 2, 0
                 elif isinstance(elm, line_strip):      nverts, nkeep = 2, 1
                 elif isinstance(elm, triangles):       nverts, nkeep = 3, 0
-                elif isinstance(elm,  triangle_strip): nverts, nkeep = 3, 2
+                elif isinstance(elm, triangle_strip): nverts, nkeep = 3, 2
                 elif isinstance(elm, quads):           nverts, nkeep = 4, 0
                 elif isinstance(elm, quad_strip):      nverts, nkeep = 4, 2
+                else:
+                    nverts, keep = util.INF, 0
 
                 # yield vertices, when the appropriate number of vertices have 
                 # been collected
