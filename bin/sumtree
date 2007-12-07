@@ -41,6 +41,10 @@ options = [
  ["L", "noshowlabels", "noshowlabels", "",
     {"single": True,
      "help": "disable leaf labels"}],
+ ["", "layout=", "layout", "default|hierarchical",
+    {"single": True,
+     "default": "default",
+     "help": "specifies how to layout the tree for drawing"}],
  ["V", "vertical", "vertical", "",
     {"single": True,
      "help": "display tree vertically"}],
@@ -110,12 +114,20 @@ if "winsize" in conf:
 else:
     winsize = (400, 400)
 
+if conf["layout"] == "default":
+    layout = treelib.layoutTree(tree, conf["usedist"], 1)
+elif conf["layout"] == "hierarchical":
+    layout = treelib.layoutTreeHierarchical(tree, conf["usedist"], 1)
+else:
+    raise Exception("unknown tree layout")
+
 
 vis = sumtree.SumTree(tree, name=filename, xscale=conf["usedist"], 
                       showLabels=not conf["noshowlabels"],
                       vertical=conf["vertical"],
                       colormap=colormap,
-                      winsize=winsize)
+                      winsize=winsize,
+                      layout=layout)
 util.tic("drawing tree")
 vis.show()
 util.toc()
