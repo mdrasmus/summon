@@ -3,6 +3,9 @@
 * Matt Rasmussen
 * Summon.cpp
 *
+* This file creates main python interface to the SUMMON module.  The SUMMON 
+* module itself, it represented by a singleton class SummonModule.
+*
 ***************************************************************************/
  
 #include "first.h"
@@ -106,12 +109,20 @@ static const int INIT_WINDOW_Y = 100;
 const static int INIT_WINDOW_SIZE = 50;
 
 
+// module state
+enum {
+    SUMMON_STATE_UNINITIALIZED,
+    SUMMON_STATE_RUNNING,
+    SUMMON_STATE_STOPPING,
+    SUMMON_STATE_STOPPED
+};
+
+
 class SummonModule : public CommandExecutor, public GlutViewListener
 {
 public:
     SummonModule() :
-        m_initialized(false),
-        m_runtimer(true),
+        m_state(SUMMON_STATE_UNINITIALIZED),
         m_nextWindowId(1),
         m_nextModelId(1),
         
@@ -700,7 +711,44 @@ public:
     
     // get number of milliseconds since program started
     inline int GetTime()
-    { return SDL_GetTicks(); }
+    { 
+        return SDL_GetTicks(); 
+    }
+    
+    inline void SetThreadId()
+    { 
+        m_threadId = PyThread_get_thread_ident();
+    }
+    
+    //====================================================
+    // manage module state
+    inline void Start()
+    {
+        assert(m_state == SUMMON_STATE_UNINITIALIZED);
+        m_state = SUMMON_STATE_RUNNING;
+    }
+    
+    inline bool IsRunning()
+    {
+        return m_state == SUMMON_STATE_RUNNING;
+    }
+    
+    inline void Stop()
+    {
+        assert(m_state == SUMMON_STATE_RUNNING);
+        m_state = SUMMON_STATE_STOPPING;
+    }
+    
+    inline bool IsStopped()
+    {
+        return m_state == SUMMON_STATE_STOPPED;
+    }
+    
+    inline void ConfirmStop()
+    {
+        assert(m_state == SUMMON_STATE_STOPPING);
+        m_state = SUMMON_STATE_STOPPED;        
+    }
     
     
     //=======================================================
@@ -713,7 +761,9 @@ public:
     // used to help initialize window decoration    
     static void FirstReshape(int width, int height)
     {    
-        if (!g_summon->m_initialized) {
+        // if SUMMON is already initialized, then do not do any more 
+        // window decoration processing
+        if (!g_summon->IsRunning()) {
             if (glutGet(GLUT_WINDOW_WIDTH) != INIT_WINDOW_SIZE ||
                 glutGet(GLUT_WINDOW_HEIGHT) != INIT_WINDOW_SIZE)
             {
@@ -725,7 +775,7 @@ public:
 
                 // offset is now consistent, start the real timer
                 glutHideWindow();                
-                g_summon->m_initialized = true;
+                g_summon->Start();
                 glutTimerFunc(0, Timer, 0);
             }
         }
@@ -753,14 +803,14 @@ public:
         if (g_summon->ExecWaitingCommands())
             delay = 0;
         
-        // look at timer-delay function
+        // look user-defined timer function
         g_summon->SummonTimer();
         
-        // set the next
-        if (g_summon->m_initialized)
+        // set the next timer
+        if (g_summon->IsRunning())
             glutTimerFunc(delay, Timer, 0);
         else
-            g_summon->m_runtimer = false;
+            g_summon->ConfirmStop();
         
         if (delay < 10)
             delay++;
@@ -782,6 +832,9 @@ public:
     }
     
     
+    // Execute any commands waiting to be executed in the SUMMON/GLUT thread
+    // This function is periodically called by the GLUT timer.
+    // Returns true if command was executed
     inline bool ExecWaitingCommands()
     {
         bool nodelay = false;
@@ -806,19 +859,23 @@ public:
                 Unlock();        
 
                 // sleep for  awhile to allow multiple non-graphics 
-                // commands to execute
+                // commands to execute, as long as they are non-graphical
                 while (IsCommandWaiting() && !m_graphicsExec)
                 {
+                    // if there is a timer command, we cannot sleep past the
+                    // time at which it will go off.                
                     if (m_timerCommand) {
-                        // calculate time until timer goes off
+                        // sleep up until timer goes off
                         int remaining = m_timerDelay - GetTime();
-                        if (remaining > 0) {
+                        if (remaining > 0)
                             SDL_Delay(remaining);
-                        }
+                        // don't loop
                         break;
                     } else {
                         SDL_Delay(10);
                     }
+                    
+                    //nodelay = true;
                 }
             
                 Lock();
@@ -835,19 +892,25 @@ public:
 
     
     // Execute a command in a thread safe manner
+    // This function is called from python code.  Most of the time this is 
+    // call is from the non-GLUT thread, however if a GLUT-callback calls 
+    // python code that then calls a SUMMON command, then this could also be
+    // called in the GLUT thread.
     inline void ThreadSafeExecCommand(Command *command)
     {
-        // do nothing until summon is initialized
-        if (!m_initialized)
+        // do nothing until summon is initialized, shouldn't happen anyway
+        // NOTE: Maybe I could make this an assert instead
+        if (!IsRunning())
             return;    
     
         int curThreadId = PyThread_get_thread_ident();
         
+        // determine which thread we are in
         if (curThreadId == m_threadId) {
-            // execute command in this thread if we are in the summon thread
+            // execute command in this thread if we are in the summon/glut thread
             ExecCommand(*command);
         } else {
-            // we are the python thread, more care is needed
+            // we are the python/non-glut thread, more care is needed
             
             // try to execute element commands directly
             if (command->HasAttr(&g_elementAttr)) {
@@ -855,12 +918,13 @@ public:
                 Element *elm = Id2Element(elmCmd->groupid);
                 SummonModel *model = GetModelOfElement(elm);                
                 
+                // if element has no model, then locking is not necessary
                 if (!model) {
                     // direct execution
                     ExecCommand(*command);
                     return;
                 }
-                // element is attached to model, so fall through
+                // element is attached to model, so fall through for locking
             }
 
             // commands that manipulate OpenGL must be passed to the other thread
@@ -885,26 +949,32 @@ public:
                 // execute command in this thread once exclusive lock is obtained
                 assert(m_commandWaiting == NULL);
                 m_commandWaiting = command;
-
+                
+                // obtain exclusive lock to SUMMON module
                 Py_BEGIN_ALLOW_THREADS
                 Lock();
                 Py_END_ALLOW_THREADS
-
+                
+                // execute command in this thread
                 ExecCommand(*command);
+                
+                // release exclusive lock
                 m_commandWaiting = NULL;
                 Unlock();
             }
         }
     }
-    
-    //======================================================================
+
+//======================================================================
+private:    
+
     // a boolean for whether the summon module is ready for processing commands
-    bool m_initialized;
-    bool m_runtimer;
+    bool m_state;
 
     // indexes
     int m_nextWindowId;
     int m_nextModelId;
+
 
     // thread management
     Command *m_commandWaiting;
@@ -915,11 +985,10 @@ public:
     SDL_cond *m_cond;    
     SDL_mutex *m_condlock;    
 
-        
-    // time-delay command execution
+
+    // user-defined time-delay command execution
     Command *m_timerCommand;    
     int m_timerDelay;
-    
     
     
     // list of commands directly visible in python
@@ -930,13 +999,17 @@ public:
     typedef map<int, SummonModel*>::iterator ModelIter;
     map<int, SummonWindow*> m_windows;
     map<int, SummonModel*> m_models;
-   
+    
+    // waiting queues for closing and deleting a window
     map<GlutView*, SummonWindow*> m_closeWaiting;
     vector<SummonWindow*> m_deleteWaiting;
-    Vertex2i m_windowOffset;
-        
-    Scm m_windowCloseCallback;
     
+    // SUMMON window decoration size
+    Vertex2i m_windowOffset;
+    
+    // user-defined python function to call whenever a window closes    
+    Scm m_windowCloseCallback;
+   
     // menus
     int m_nextMenuItem;
     map<int, Scm> m_menuItems;
@@ -1002,8 +1075,7 @@ SummonMainLoop(PyObject *self, PyObject *tup)
     g_summon->Lock();
 
     // store summon thread ID
-    g_summon->m_threadId = PyThread_get_thread_ident();
-
+    g_summon->SetThreadId();
 
     
     // begin processing of GLUT events
@@ -1023,10 +1095,10 @@ SummonShutdown(PyObject *self, PyObject *tup)
 {
     if (g_summon) {
         // turn off initizalied flag
-        g_summon->m_initialized = false;
+        g_summon->Stop();
         
         // wait for timer to stop
-        while (g_summon->m_runtimer)
+        while (!g_summon->IsStopped())
             SDL_Delay(10);
     }
     Py_RETURN_NONE;
@@ -1051,7 +1123,7 @@ Exec(PyObject *self, PyObject *tup)
 
     // create command object
     ScriptCommand *cmd = (ScriptCommand*) 
-                     g_commandRegistry.Create((CommandId) commandid);
+                         g_commandRegistry.Create((CommandId) commandid);
     assert(cmd);
 
     // populate command and execute
@@ -1068,6 +1140,8 @@ Exec(PyObject *self, PyObject *tup)
             PyErr_Format(PyExc_Exception, GetError());
             ClearError();
         }
+        
+        // clean up and return result
         delete cmd;
         return ret;
     } else {
