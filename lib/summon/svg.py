@@ -1,4 +1,3 @@
-#from summon_core import *
 from summon.core import *
 import summon
 from summon import util, transform
@@ -143,15 +142,12 @@ class SvgWriter:
         c = elm.get_contents()    
         if isinstance(elm, translate):
             print >>self.out, "<g transform='translate(%f,%f)'>" % (c[1], c[2])
-            mat = transform.makeTransMatrix(c)
             
         elif isinstance(elm, scale):
             print >>self.out, "<g transform='scale(%f,%f)'>" % (c[1], c[2])
-            mat = transform.makeScaleMatrix(c)
             
         elif isinstance(elm, rotate):
             print >>self.out, "<g transform='rotate(%f)'>" % c[3]
-            mat = transform.makeRotateMatrix(c)
             
         elif isinstance(elm, flip):
             x, y = c[1], c[1]
@@ -159,17 +155,11 @@ class SvgWriter:
             angle = 180 / math.pi * math.acos(x / h)
             if y < 0:
                 angle *= -1
-            mat = transform.makeFlipMatrix(c)
             
             print >>self.out, "<g transform='rotate(%f) scale(-1, 1) rotate(%f)'>" % \
                 (-angle, angle)
-        else:
-            mat = transform.makeIdentityMatrix()
         
-        self.trans.append(transform.multMatrix(mat, self.trans[-1]))
-        
-    
-    
+
     def printEndTransform(self, elm):
         """write the closing tag for a transform"""
         
@@ -179,9 +169,7 @@ class SvgWriter:
            isinstance(elm, flip):
             print >>self.out, "</g>"
         
-        self.trans.pop()
-    
-    
+        
     def printElm(self, elm):
         """write the SVG an element and all of its children"""
         
@@ -193,6 +181,7 @@ class SvgWriter:
 
         if isinstance(elm, Transform):
             self.printBeginTransform(elm)
+            self.pushTransform(elm)
         
         # recurse
         for child in elm:
@@ -200,6 +189,37 @@ class SvgWriter:
 
         if isinstance(elm, Transform):
             self.printEndTransform(elm)
+            self.popTransform(elm)
+
+    
+    def pushTransform(self, elm):
+    
+        c = elm.get_contents()    
+        if isinstance(elm, translate):
+            mat = transform.makeTransMatrix(c)
+            
+        elif isinstance(elm, scale):
+            mat = transform.makeScaleMatrix(c)
+            
+        elif isinstance(elm, rotate):
+            mat = transform.makeRotateMatrix(c)
+            
+        elif isinstance(elm, flip):
+            x, y = c[1], c[1]
+            h = math.sqrt(x*x + y*y)
+            angle = 180 / math.pi * math.acos(x / h)
+            if y < 0:
+                angle *= -1
+            mat = transform.makeFlipMatrix(c)
+                        
+        else:
+            mat = transform.makeIdentityMatrix()
+        
+        self.trans.append(transform.multMatrix(mat, self.trans[-1]))
+    
+    
+    def popTransform(self, elm):
+        self.trans.pop()
 
 
 

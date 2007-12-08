@@ -4,32 +4,39 @@
 * Summon.cpp
 *
 ***************************************************************************/
-
+ 
 #include "first.h"
+
+// c/c++ headers
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <list>
 #include <map>
 #include <vector>
+
+// opengl headers
 #include <GL/glut.h>
 #include <GL/gl.h>
+
+// SDL headers
 #include <SDL/SDL_thread.h>
 #include <SDL/SDL_mutex.h>
 #include <SDL/SDL_timer.h>
 
+// summon headers
 #include "common.h"
 #include "SummonWindow.h"
 
 
-
+// constants
 #define MODULE_NAME "summon_core"
 
 
 // python visible prototypes
 extern "C" {
 
-// function directly visible in python
+// functions directly visible in python
 static PyObject *Exec(PyObject *self, PyObject *tup);
 static PyObject *SummonMainLoop(PyObject *self, PyObject *tup);
 static PyObject *SummonShutdown(PyObject *self, PyObject *tup);
@@ -40,41 +47,42 @@ static PyObject *GetConstructChildren(PyObject *self, PyObject *args);
 static PyObject *GetConstructContents(PyObject *self, PyObject *args);
 static PyObject *GetConstructParent(PyObject *self, PyObject *args);
 
-// module method table
-static char *g_gatewayFunc = "__gatewayFunc";        
+// python module method table
+// NOTE: the (char*) casts are needed to avoid compiler warnings.
+static const char *g_gatewayFunc = "__gatewayFunc";        
 static PyMethodDef g_summonMethods[] = {
     // install main command
-    {g_gatewayFunc,  Exec, METH_VARARGS, ""},
+    {(char*) g_gatewayFunc,  Exec, METH_VARARGS, (char*) ""},
 
     // summon main loop
-    {"summon_main_loop", SummonMainLoop, METH_VARARGS, ""},
+    {(char*) "summon_main_loop", SummonMainLoop, METH_VARARGS, (char*) ""},
 
     // gracefully shutdown glut from python
-    {"summon_shutdown", SummonShutdown, METH_VARARGS, ""},
+    {(char*) "summon_shutdown", SummonShutdown, METH_VARARGS, (char*) ""},
 
     // make construct
-    {"make_construct", MakeConstruct, METH_VARARGS, ""},
+    {(char*) "make_construct", MakeConstruct, METH_VARARGS, (char*) ""},
 
     // delete a construct
-    {"delete_construct", DeleteConstruct, METH_VARARGS, ""},
+    {(char*) "delete_construct", DeleteConstruct, METH_VARARGS, (char*) ""},
 
     // reference a construct
-    {"incref_construct", IncRefConstruct, METH_VARARGS, ""},
+    {(char*) "incref_construct", IncRefConstruct, METH_VARARGS, (char*) ""},
 
     // get the children of a construct
-    {"get_construct_children", GetConstructChildren, METH_VARARGS, ""},
+    {(char*) "get_construct_children", GetConstructChildren, METH_VARARGS, (char*) ""},
 
     // get the contents of a construct
-    {"get_construct_contents", GetConstructContents, METH_VARARGS, ""},
+    {(char*) "get_construct_contents", GetConstructContents, METH_VARARGS, (char*) ""},
 
     // get the parent of a construct
-    {"get_construct_parent", GetConstructParent, METH_VARARGS, ""},
+    {(char*) "get_construct_parent", GetConstructParent, METH_VARARGS, (char*) ""},
 
     // cap the methods table with ending method
     {NULL, NULL, 0, NULL}
 };
 
-}
+} // extern "C"
 
 
 namespace Summon {
@@ -86,8 +94,16 @@ using namespace std;
 class SummonModule;
 static SummonModule *g_summon;
 static int g_hidden_window;
+
+// NOTE: don't make this too small, some window managers don't allow windows
+// to be opened with their left-top corner off of the desktop
 static const int INIT_WINDOW_X = 100;
 static const int INIT_WINDOW_Y = 100;
+
+// NOTE: don't make this too small, some window mangers don't allow
+// values less than 20 (or so) thus the window will never attain the
+// correct size
+const static int INIT_WINDOW_SIZE = 50;
 
 
 class SummonModule : public CommandExecutor, public GlutViewListener
@@ -128,7 +144,7 @@ public:
     bool Init()
     {
         // register all direction functions with python
-        PyObject *module = Py_InitModule(MODULE_NAME, g_summonMethods);
+        Py_InitModule((char*) MODULE_NAME, g_summonMethods);
         
         // init summon commands
         summonCommandsInit();
@@ -507,6 +523,8 @@ public:
         }
     }
     
+    
+    // Callback for GLUT pop-up menu item click
     static void MenuCallback(int item)
     {
         PyGILState_STATE gstate = PyGILState_Ensure();
@@ -522,6 +540,10 @@ public:
     }
     
     
+    // Creates a new SUMMON window
+    //  name:       title of window
+    //  size:       size of window
+    //  position:   position of window on desktop
     int NewWindow(string name, Vertex2i size, Vertex2i position)
     {
         int id = m_nextWindowId;
@@ -536,6 +558,7 @@ public:
     }
         
     
+    // Gets the SUMMON window object associated with an window id
     SummonWindow *GetWindow(int id)
     {
         if (m_windows.find(id) != m_windows.end())
@@ -545,14 +568,21 @@ public:
     }
     
     
+    // Closes a SUMMON window
     void CloseWindow(SummonWindow* window)
     {
+        // remove window from set of open windows
         m_windows.erase(window->GetId());
+        
         // close the window
         window->Close();
     }
     
     
+    // Callback from GLUT notifying us that the window is closed and is ready
+    // to be deleted.  However, we cannot delete the window until one pump
+    // of the GLUT event queue.  Thus, we place the window on a delete waiting
+    // list
     void ViewClose(GlutView *view)
     {    
         // GLUT is done working with the window
@@ -561,10 +591,13 @@ public:
         
         // remove window from window list        
         m_closeWaiting.erase(view);
+        
+        // add this window to the deletion waiting list
         m_deleteWaiting.push_back(window);
         
-        // call the callback, if it exists
+        // call the user-defined callback, if it exists
         if (m_windowCloseCallback != Scm_EOL) {
+            // let python know window has been closed
             Scm ret = ScmApply(m_windowCloseCallback, 
                                ScmCons(Int2Scm(window->GetId()),
                                        Scm_EOL));
@@ -576,6 +609,8 @@ public:
     }
     
     
+    // Delete any windows that have been recently closed and are ready to be 
+    // deleted
     inline void DeleteClosedWindows()
     {
         if (m_deleteWaiting.size() > 0) {
@@ -590,6 +625,7 @@ public:
     }
     
     
+    // Take note of the new window positions
     inline void UpdateWindowPositions()
     {
         PyGILState_STATE gstate = PyGILState_Ensure();    
@@ -601,6 +637,7 @@ public:
     }    
         
     
+    // Create a new model (kind = WORLD, SCREEN)
     int NewModel(int kind)
     {
         int id = m_nextModelId;
@@ -609,6 +646,7 @@ public:
         return id;
     }    
     
+    // Get a SUMMON model by its id
     SummonModel *GetModel(int id)
     {
         if (m_models.find(id) != m_models.end())
@@ -617,53 +655,56 @@ public:
             return NULL;
     }
     
-
-    
-    
-    //==================================================
-    // synchronization and thread management    
-    inline void Lock()
-    {
-        assert(SDL_mutexP(m_lock) == 0);
-    }
-    
-    inline void Unlock()
-    {
-        assert(SDL_mutexV(m_lock) == 0);
-    }
-    
-    inline bool IsCommandWaiting()
-    {
-        return m_commandWaiting != NULL;
-    }
-    
-    inline void WaitForExec()
-    {
-        assert(SDL_mutexP(m_condlock) == 0);
-        assert(SDL_CondWait(m_cond, m_condlock) == 0);
-    }
-    
-    inline void NotifyExecOccurred()
-    {
-        m_commandWaiting = NULL;
-        assert(SDL_CondBroadcast(m_cond) == 0);
-    }
-    
-    
-    //======================================================
-    // get number of milliseconds since program started
-    inline int GetTime()
-    { return SDL_GetTicks(); }
-    
+    // Set the user-defined timer command
     inline void SetTimerCommand(float delay, Command *command)
     {
         m_timerDelay = GetTime() + int(delay * 1000);
         m_timerCommand = command;
     }
     
+    
+    //==================================================
+    // synchronization and thread management    
+    
+    // Lock the SUMMON module for exclusive command execution
+    inline void Lock()
+    {
+        assert(SDL_mutexP(m_lock) == 0);
+    }
+    
+    // Unlock the SUMMON model to allow other threads to execute commands
+    inline void Unlock()
+    {
+        assert(SDL_mutexV(m_lock) == 0);
+    }
+    
+    // Returns whether a command waiting to be executed
+    inline bool IsCommandWaiting()
+    {
+        return m_commandWaiting != NULL;
+    }
+    
+    // Wait for a submitted command to be executed
+    inline void WaitForExec()
+    {
+        assert(SDL_mutexP(m_condlock) == 0);
+        assert(SDL_CondWait(m_cond, m_condlock) == 0);
+    }
+    
+    // Notify those waiting that a command has been executed
+    inline void NotifyExecOccurred()
+    {
+        m_commandWaiting = NULL;
+        assert(SDL_CondBroadcast(m_cond) == 0);
+    }
+    
+    // get number of milliseconds since program started
+    inline int GetTime()
+    { return SDL_GetTicks(); }
+    
+    
     //=======================================================
     // GLUT first timer
-    
     // dummy function needed for hidden window display
 
     static void FirstDisplay()
@@ -671,14 +712,12 @@ public:
 
     // used to help initialize window decoration    
     static void FirstReshape(int width, int height)
-    {
-        const static int SIZE = 20;
-    
+    {    
         if (!g_summon->m_initialized) {
-            if (glutGet(GLUT_WINDOW_WIDTH) != SIZE ||
-                glutGet(GLUT_WINDOW_HEIGHT) != SIZE)
+            if (glutGet(GLUT_WINDOW_WIDTH) != INIT_WINDOW_SIZE ||
+                glutGet(GLUT_WINDOW_HEIGHT) != INIT_WINDOW_SIZE)
             {
-                glutReshapeWindow(SIZE, SIZE);
+                glutReshapeWindow(INIT_WINDOW_SIZE, INIT_WINDOW_SIZE);
             } else {
                 // get window offset
                 g_summon->m_windowOffset.x = glutGet(GLUT_WINDOW_X) - INIT_WINDOW_X;
@@ -692,9 +731,10 @@ public:
         }
     }
     
-    
-    // glut timer callback
-    // This timer is necessary for frequent processing of queued commands
+    //===========================================================
+    // GLUT timer callback
+    // This function executes periodically to process queued commands
+    // and to handle window operations
     static void Timer(int value)
     {
         static int delay = 0;
@@ -726,7 +766,7 @@ public:
             delay++;
     }
     
-    
+    // execute the user-defined timer function
     inline void SummonTimer()
     {
         if (m_timerCommand && GetTime() > m_timerDelay) {
@@ -794,7 +834,7 @@ public:
     }
 
     
-    // execute a commond in a thread safe manner
+    // Execute a command in a thread safe manner
     inline void ThreadSafeExecCommand(Command *command)
     {
         // do nothing until summon is initialized
@@ -937,7 +977,7 @@ SummonMainLoop(PyObject *self, PyObject *tup)
     // init glut
     int argc = 1;
     char **argv = new char* [1];
-    argv[0] = "summon";
+    argv[0] = (char*) "summon"; // avoid compiler warning (GLUT's fault)
     glutInit(&argc, argv);
     
     // create hidden window
@@ -951,8 +991,9 @@ SummonMainLoop(PyObject *self, PyObject *tup)
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 #endif
     
-    // initialize hidden window
-    glutInitWindowSize(50, 50);
+    // initialize first hidden window
+    // NOTE: this is needed in order to estimate window decoration size
+    glutInitWindowSize(INIT_WINDOW_SIZE, INIT_WINDOW_SIZE);
     glutInitWindowPosition(INIT_WINDOW_X, INIT_WINDOW_Y);
     g_hidden_window = glutCreateWindow("SUMMON");
     glutDisplayFunc(Summon::SummonModule::FirstDisplay);
@@ -1046,7 +1087,7 @@ MakeConstruct(PyObject *self, PyObject *args)
 {
     long elmid;
     PyObject *lst;
-    int ok = PyArg_ParseTuple(args, "lO", &elmid, &lst);
+    int ok = PyArg_ParseTuple(args, (char*) "lO", &elmid, &lst); // avoid compiler warning (python's fault)
         
     if (!ok)
         return NULL;
@@ -1160,7 +1201,7 @@ initsummon_core()
     // prepare the python environment for summon
     InitPython();
     
-    // create Summon module
+    // create Summon module (global singleton)
     g_summon = new Summon::SummonModule();    
     
     // initialize summon
