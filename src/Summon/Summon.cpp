@@ -1065,8 +1065,10 @@ SummonMainLoop(PyObject *self, PyObject *tup)
 #endif
     
     // initialize first hidden window
-    // NOTE: this is needed in order to estimate window decoration size
-    glutInitWindowSize(INIT_WINDOW_SIZE, INIT_WINDOW_SIZE);
+    // NOTE: this is needed in order to estimate window decoration size.
+    // make the window a size that we have to change later on (this is the
+    // reason for the 2*INIT_WINDOW_SIZE).
+    glutInitWindowSize(2*INIT_WINDOW_SIZE, 2*INIT_WINDOW_SIZE);
     glutInitWindowPosition(INIT_WINDOW_X, INIT_WINDOW_Y);
     g_hidden_window = glutCreateWindow("SUMMON");
     glutDisplayFunc(Summon::SummonModule::FirstDisplay);
