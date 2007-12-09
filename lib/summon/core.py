@@ -109,13 +109,13 @@ class Element:
         self.elementid = elementid
         
         if "ref" in options and options["ref"]:
-            # create a reference to an existing construct
+            # create a reference to an existing element
             self.ptr = code[0]
-            summon_core.incref_construct(code[0])
+            summon_core.incref_element(code[0])
         else:
-            # create a new construct
+            # create a new element
             try:
-                self.ptr = summon_core.make_construct(elementid, code)
+                self.ptr = summon_core.make_element(elementid, code)
                 #print "new", self.ptr
             except:
                 self.ptr = None
@@ -124,12 +124,12 @@ class Element:
     def __del__(self):
         #print "delete", self.ptr, self.elementid
         if self.ptr != None:
-            # when python interface is GC also delete C++ construct
-            summon_core.delete_construct(self.ptr)
+            # when python interface is GC also delete C++ element
+            summon_core.delete_element(self.ptr)
 
     def __iter__(self):
         """Iterates through this element's child elements"""
-        children = summon_core.get_construct_children(self.ptr)
+        children = summon_core.get_element_children(self.ptr)
         
         for i in xrange(0, len(children), 2):
             yield _make_ref(children[i], children[i+1])
@@ -152,7 +152,7 @@ class Element:
     def get_contents(self):
         """Returns the a tuple in a format specific to the content 
            of this element"""
-        return summon_core.get_construct_contents(self.ptr)
+        return summon_core.get_element_contents(self.ptr)
 
     def get_children(self):
         """Returns the children of this element as a list"""
@@ -160,12 +160,12 @@ class Element:
     
     def get_parent(self):
         """Returns the parent of this element or None if no parent exists"""
-        constructid, parent = summon_core.get_construct_parent(self.ptr)
+        elementid, parent = summon_core.get_element_parent(self.ptr)
         
         if parent == 0:
             return None
         else:
-            return _make_ref(constructid, parent)
+            return _make_ref(elementid, parent)
         
     
     def append(self, aGroup):

@@ -36,6 +36,7 @@
 #define MODULE_NAME "summon_core"
 
 
+//=============================================================================
 // python visible prototypes
 extern "C" {
 
@@ -43,12 +44,12 @@ extern "C" {
 static PyObject *Exec(PyObject *self, PyObject *tup);
 static PyObject *SummonMainLoop(PyObject *self, PyObject *tup);
 static PyObject *SummonShutdown(PyObject *self, PyObject *tup);
-static PyObject *MakeConstruct(PyObject *self, PyObject *args);
-static PyObject *IncRefConstruct(PyObject *self, PyObject *args);
-static PyObject *DeleteConstruct(PyObject *self, PyObject *args);
-static PyObject *GetConstructChildren(PyObject *self, PyObject *args);
-static PyObject *GetConstructContents(PyObject *self, PyObject *args);
-static PyObject *GetConstructParent(PyObject *self, PyObject *args);
+static PyObject *MakeElement(PyObject *self, PyObject *args);
+static PyObject *IncRefElement(PyObject *self, PyObject *args);
+static PyObject *DeleteElement(PyObject *self, PyObject *args);
+static PyObject *GetElementChildren(PyObject *self, PyObject *args);
+static PyObject *GetElementContents(PyObject *self, PyObject *args);
+static PyObject *GetElementParent(PyObject *self, PyObject *args);
 
 // python module method table
 // NOTE: the (char*) casts are needed to avoid compiler warnings.
@@ -63,31 +64,33 @@ static PyMethodDef g_summonMethods[] = {
     // gracefully shutdown glut from python
     {(char*) "summon_shutdown", SummonShutdown, METH_VARARGS, (char*) ""},
 
-    // make construct
-    {(char*) "make_construct", MakeConstruct, METH_VARARGS, (char*) ""},
+    // make element
+    {(char*) "make_element", MakeElement, METH_VARARGS, (char*) ""},
 
-    // delete a construct
-    {(char*) "delete_construct", DeleteConstruct, METH_VARARGS, (char*) ""},
+    // delete an element
+    {(char*) "delete_element", DeleteElement, METH_VARARGS, (char*) ""},
 
-    // reference a construct
-    {(char*) "incref_construct", IncRefConstruct, METH_VARARGS, (char*) ""},
+    // reference an element
+    {(char*) "incref_element", IncRefElement, METH_VARARGS, (char*) ""},
 
-    // get the children of a construct
-    {(char*) "get_construct_children", GetConstructChildren, METH_VARARGS, (char*) ""},
+    // get the children of an element
+    {(char*) "get_element_children", GetElementChildren, METH_VARARGS, (char*) ""},
 
-    // get the contents of a construct
-    {(char*) "get_construct_contents", GetConstructContents, METH_VARARGS, (char*) ""},
+    // get the contents of an element
+    {(char*) "get_element_contents", GetElementContents, METH_VARARGS, (char*) ""},
 
-    // get the parent of a construct
-    {(char*) "get_construct_parent", GetConstructParent, METH_VARARGS, (char*) ""},
+    // get the parent of an element
+    {(char*) "get_element_parent", GetElementParent, METH_VARARGS, (char*) ""},
 
-    // cap the methods table with ending method
+    // cap the methods table with NULL method
     {NULL, NULL, 0, NULL}
 };
 
 } // extern "C"
 
 
+
+//=============================================================================
 namespace Summon {
 
 using namespace std;
@@ -110,12 +113,12 @@ const static int INIT_WINDOW_SIZE = 50;
 
 
 // module state
-enum {
+typedef enum {
     SUMMON_STATE_UNINITIALIZED,
     SUMMON_STATE_RUNNING,
     SUMMON_STATE_STOPPING,
     SUMMON_STATE_STOPPED
-};
+} SummonState;
 
 
 class SummonModule : public CommandExecutor, public GlutViewListener
@@ -494,8 +497,10 @@ public:
                 
                 } break;
                 
+            //==============================================
+            // do command routing
             default:
-                // do command routing
+                
                 
                 if (g_globalAttr.Has(&command)) {
                     // global
@@ -540,9 +545,10 @@ public:
     {
         PyGILState_STATE gstate = PyGILState_Ensure();
         
+        // look up python function and call it
         Scm proc = g_summon->m_menuItems[item];
         Scm ret = ScmApply(proc, Scm_EOL);
-
+        
         //display exceptions
         if (Scm2Py(ret) == NULL)
             PyErr_Print();
@@ -550,7 +556,36 @@ public:
         PyGILState_Release(gstate);    
     }
     
+    // Callback from GLUT notifying us that the window is closed and is ready
+    // to be deleted.  However, we cannot delete the window until one pump
+    // of the GLUT event queue.  Thus, we place the window on a delete waiting
+    // list, and delete the window in the GLUT timer function
+    void ViewClose(GlutView *view)
+    {    
+        // GLUT is done working with the window
+        // it is now safe to delete the window after this function returns
+        SummonWindow *window = m_closeWaiting[view];
+        
+        // remove window from window list        
+        m_closeWaiting.erase(view);
+        
+        // add this window to the deletion waiting list
+        m_deleteWaiting.push_back(window);
+        
+        // call the user-defined callback, if it exists
+        if (m_windowCloseCallback != Scm_EOL) {
+            // let python know window has been closed
+            Scm ret = ScmApply(m_windowCloseCallback, 
+                               ScmCons(Int2Scm(window->GetId()),
+                                       Scm_EOL));
+                    
+            if (Scm2Py(ret) == NULL)
+                //display exceptions, return None
+                PyErr_Print();
+        }
+    }    
     
+private:    
     // Creates a new SUMMON window
     //  name:       title of window
     //  size:       size of window
@@ -587,36 +622,9 @@ public:
         
         // close the window
         window->Close();
-    }
-    
-    
-    // Callback from GLUT notifying us that the window is closed and is ready
-    // to be deleted.  However, we cannot delete the window until one pump
-    // of the GLUT event queue.  Thus, we place the window on a delete waiting
-    // list
-    void ViewClose(GlutView *view)
-    {    
-        // GLUT is done working with the window
-        // it is now safe to delete the window after this function returns
-        SummonWindow *window = m_closeWaiting[view];
         
-        // remove window from window list        
-        m_closeWaiting.erase(view);
-        
-        // add this window to the deletion waiting list
-        m_deleteWaiting.push_back(window);
-        
-        // call the user-defined callback, if it exists
-        if (m_windowCloseCallback != Scm_EOL) {
-            // let python know window has been closed
-            Scm ret = ScmApply(m_windowCloseCallback, 
-                               ScmCons(Int2Scm(window->GetId()),
-                                       Scm_EOL));
-                    
-            if (Scm2Py(ret) == NULL)
-                //display exceptions, return None
-                PyErr_Print();
-        }
+        // NOTE: ViewClose will be called-back when the close has been processed
+        // by GLUT
     }
     
     
@@ -676,7 +684,54 @@ public:
     
     //==================================================
     // synchronization and thread management    
-    
+
+public:
+    // Starts GLUT processing
+    void StartGlut()
+    {
+        // init glut
+        int argc = 1;
+        char **argv = new char* [1];
+        argv[0] = (char*) "summon"; // avoid compiler warning (GLUT's fault)
+        glutInit(&argc, argv);
+
+        // create hidden window
+        // so that GLUT does not get upset (it always wants one window)
+        //glutInitDisplayMode(GLUT_RGBA);
+        glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA | GLUT_MULTISAMPLE );
+
+        // NOTE: requires freeglut > 2.4.0-1  (2005)
+        // or another GLUT implementation with this extension
+#       ifdef GLUT_ACTION_ON_WINDOW_CLOSE
+            glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
+#       endif
+
+        // initialize first hidden window
+        // NOTE: this is needed in order to estimate window decoration size.
+        // make the window a size that we have to change later on (this is the
+        // reason for the 2*INIT_WINDOW_SIZE).
+        glutInitWindowSize(2*INIT_WINDOW_SIZE, 2*INIT_WINDOW_SIZE);
+        glutInitWindowPosition(INIT_WINDOW_X, INIT_WINDOW_Y);
+        g_hidden_window = glutCreateWindow("SUMMON");
+        glutDisplayFunc(Summon::SummonModule::FirstDisplay);
+        glutReshapeFunc(Summon::SummonModule::FirstReshape);
+        
+        
+        // aquire the SUMMON lock for this thread
+        Lock();
+        
+        // store summon thread ID
+        m_threadId = PyThread_get_thread_ident();
+
+
+        // begin processing of GLUT events
+        Py_BEGIN_ALLOW_THREADS
+        glutMainLoop();
+        Py_END_ALLOW_THREADS
+        
+    }
+
+private:  
     // Lock the SUMMON module for exclusive command execution
     inline void Lock()
     {
@@ -688,7 +743,7 @@ public:
     {
         assert(SDL_mutexV(m_lock) == 0);
     }
-    
+  
     // Returns whether a command waiting to be executed
     inline bool IsCommandWaiting()
     {
@@ -708,17 +763,15 @@ public:
         m_commandWaiting = NULL;
         assert(SDL_CondBroadcast(m_cond) == 0);
     }
+
     
     // get number of milliseconds since program started
     inline int GetTime()
     { 
         return SDL_GetTicks(); 
     }
-    
-    inline void SetThreadId()
-    { 
-        m_threadId = PyThread_get_thread_ident();
-    }
+
+public:
     
     //====================================================
     // manage module state
@@ -744,6 +797,7 @@ public:
         return m_state == SUMMON_STATE_STOPPED;
     }
     
+private:    
     inline void ConfirmStop()
     {
         assert(m_state == SUMMON_STATE_STOPPING);
@@ -755,6 +809,7 @@ public:
     // GLUT first timer
     // dummy function needed for hidden window display
 
+public:
     static void FirstDisplay()
     {}
 
@@ -816,6 +871,7 @@ public:
             delay++;
     }
     
+private:    
     // execute the user-defined timer function
     inline void SummonTimer()
     {
@@ -890,7 +946,7 @@ public:
         return nodelay;
     }
 
-    
+public:    
     // Execute a command in a thread safe manner
     // This function is called from python code.  Most of the time this is 
     // call is from the non-GLUT thread, however if a GLUT-callback calls 
@@ -968,10 +1024,11 @@ public:
 //======================================================================
 private:    
 
-    // a boolean for whether the summon module is ready for processing commands
-    bool m_state;
+    // the state of the SUMMON module indicating whether it is ready for 
+    // processing commands from python
+    SummonState m_state;
 
-    // indexes
+    // id numbers
     int m_nextWindowId;
     int m_nextModelId;
 
@@ -1047,44 +1104,7 @@ SummonMainLoop(PyObject *self, PyObject *tup)
     
     isGlutInit = true;
     
-    // init glut
-    int argc = 1;
-    char **argv = new char* [1];
-    argv[0] = (char*) "summon"; // avoid compiler warning (GLUT's fault)
-    glutInit(&argc, argv);
-    
-    // create hidden window
-    // so that GLUT does not get upset (it always wants one window)
-    //glutInitDisplayMode(GLUT_RGBA);
-    glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA | GLUT_MULTISAMPLE );
-    
-    // NOTE: requires freeglut > 2.4.0-1  (2005)
-    // or another GLUT implementation with this extension
-#ifdef GLUT_ACTION_ON_WINDOW_CLOSE
-    glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
-#endif
-    
-    // initialize first hidden window
-    // NOTE: this is needed in order to estimate window decoration size.
-    // make the window a size that we have to change later on (this is the
-    // reason for the 2*INIT_WINDOW_SIZE).
-    glutInitWindowSize(2*INIT_WINDOW_SIZE, 2*INIT_WINDOW_SIZE);
-    glutInitWindowPosition(INIT_WINDOW_X, INIT_WINDOW_Y);
-    g_hidden_window = glutCreateWindow("SUMMON");
-    glutDisplayFunc(Summon::SummonModule::FirstDisplay);
-    glutReshapeFunc(Summon::SummonModule::FirstReshape);
-    
-    g_summon->Lock();
-
-    // store summon thread ID
-    g_summon->SetThreadId();
-
-    
-    // begin processing of GLUT events
-    Py_BEGIN_ALLOW_THREADS
-    glutMainLoop();
-    Py_END_ALLOW_THREADS
-
+    g_summon->StartGlut();
     
     Py_RETURN_NONE;
 }
@@ -1108,7 +1128,8 @@ SummonShutdown(PyObject *self, PyObject *tup)
 
 
 
-// all thread safe command executions are done through this gateway
+// All thread safe command executions from python pass through this gateway
+// function
 static PyObject *
 Exec(PyObject *self, PyObject *tup)
 {
@@ -1157,9 +1178,9 @@ Exec(PyObject *self, PyObject *tup)
 }
 
 
-
+// Create a new Element
 static PyObject *
-MakeConstruct(PyObject *self, PyObject *args)
+MakeElement(PyObject *self, PyObject *args)
 {
     long elmid;
     PyObject *lst;
@@ -1186,8 +1207,9 @@ MakeConstruct(PyObject *self, PyObject *args)
 }
 
 
+// Delete an Element (or just decrement its reference count)
 static PyObject *
-DeleteConstruct(PyObject *self, PyObject *args)
+DeleteElement(PyObject *self, PyObject *args)
 {
     long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
     Element *elm = Id2Element(addr);
@@ -1205,8 +1227,9 @@ DeleteConstruct(PyObject *self, PyObject *args)
 }
 
 
+// Increase the reference count for an Element
 static PyObject *
-IncRefConstruct(PyObject *self, PyObject *args)
+IncRefElement(PyObject *self, PyObject *args)
 {
     long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
     Element *elm = Id2Element(addr);
@@ -1218,8 +1241,9 @@ IncRefConstruct(PyObject *self, PyObject *args)
 }
 
 
+// Returns the children of an Element
 static PyObject *
-GetConstructChildren(PyObject *self, PyObject *args)
+GetElementChildren(PyObject *self, PyObject *args)
 {
     long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
     Element *elm = Id2Element(addr);
@@ -1238,8 +1262,9 @@ GetConstructChildren(PyObject *self, PyObject *args)
 }
 
 
+// Returns the contents (Element-specific information) of an Element
 static PyObject *
-GetConstructContents(PyObject *self, PyObject *args)
+GetElementContents(PyObject *self, PyObject *args)
 {
     long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
     Element *elm = Id2Element(addr);
@@ -1254,8 +1279,9 @@ GetConstructContents(PyObject *self, PyObject *args)
 }
 
 
+// Returns the parent of an Element
 static PyObject *
-GetConstructParent(PyObject *self, PyObject *args)
+GetElementParent(PyObject *self, PyObject *args)
 {
     long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
     Element *elm = Id2Element(addr);
@@ -1270,7 +1296,7 @@ GetConstructParent(PyObject *self, PyObject *args)
 
 
 
-// gateway function to python
+// Module initialization for python
 PyMODINIT_FUNC
 initsummon_core()
 {
