@@ -98,8 +98,8 @@ using namespace std;
 
 // global prototypes
 class SummonModule;
-static SummonModule *g_summon;
-static int g_hidden_window;
+static SummonModule *g_summon;  // global singleton instance of module
+
 
 // NOTE: don't make this too small, some window managers don't allow windows
 // to be opened with their left-top corner off of the desktop
@@ -119,6 +119,14 @@ typedef enum {
     SUMMON_STATE_STOPPING,
     SUMMON_STATE_STOPPED
 } SummonState;
+
+
+// glut callbacks
+static void FirstDisplay() {}
+static void FirstReshape(int width, int height);
+static void MenuCallback(int item);
+static void Timer(int value);
+
 
 
 class SummonModule : public CommandExecutor, public GlutViewListener
@@ -354,7 +362,7 @@ public:
             
             case NEW_MENU_COMMAND: {
                 // create a new menu
-                int menuid = glutCreateMenu(SummonModule::MenuCallback);
+                int menuid = glutCreateMenu(Summon::MenuCallback);
                 ((DelMenuCommand*) &command)->SetReturn(Int2Scm(menuid));
                 
                 } break;
@@ -541,12 +549,12 @@ public:
     
     
     // Callback for GLUT pop-up menu item click
-    static void MenuCallback(int item)
+    void MenuCallback(int item)
     {
         PyGILState_STATE gstate = PyGILState_Ensure();
         
         // look up python function and call it
-        Scm proc = g_summon->m_menuItems[item];
+        Scm proc = m_menuItems[item];
         Scm ret = ScmApply(proc, Scm_EOL);
         
         //display exceptions
@@ -712,9 +720,9 @@ public:
         // reason for the 2*INIT_WINDOW_SIZE).
         glutInitWindowSize(2*INIT_WINDOW_SIZE, 2*INIT_WINDOW_SIZE);
         glutInitWindowPosition(INIT_WINDOW_X, INIT_WINDOW_Y);
-        g_hidden_window = glutCreateWindow("SUMMON");
-        glutDisplayFunc(Summon::SummonModule::FirstDisplay);
-        glutReshapeFunc(Summon::SummonModule::FirstReshape);
+        glutCreateWindow("SUMMON");
+        glutDisplayFunc(Summon::FirstDisplay);
+        glutReshapeFunc(Summon::FirstReshape);
         
         
         // aquire the SUMMON lock for this thread
@@ -810,28 +818,26 @@ private:
     // dummy function needed for hidden window display
 
 public:
-    static void FirstDisplay()
-    {}
 
     // used to help initialize window decoration    
-    static void FirstReshape(int width, int height)
+    void FirstReshape(int width, int height)
     {    
         // if SUMMON is already initialized, then do not do any more 
         // window decoration processing
-        if (!g_summon->IsRunning()) {
+        if (!IsRunning()) {
             if (glutGet(GLUT_WINDOW_WIDTH) != INIT_WINDOW_SIZE ||
                 glutGet(GLUT_WINDOW_HEIGHT) != INIT_WINDOW_SIZE)
             {
                 glutReshapeWindow(INIT_WINDOW_SIZE, INIT_WINDOW_SIZE);
             } else {
                 // get window offset
-                g_summon->m_windowOffset.x = glutGet(GLUT_WINDOW_X) - INIT_WINDOW_X;
-                g_summon->m_windowOffset.y = glutGet(GLUT_WINDOW_Y) - INIT_WINDOW_Y;
+                m_windowOffset.x = glutGet(GLUT_WINDOW_X) - INIT_WINDOW_X;
+                m_windowOffset.y = glutGet(GLUT_WINDOW_Y) - INIT_WINDOW_Y;
 
                 // offset is now consistent, start the real timer
                 glutHideWindow();                
-                g_summon->Start();
-                glutTimerFunc(0, Timer, 0);
+                Start();
+                glutTimerFunc(0, Summon::Timer, 0);
             }
         }
     }
@@ -840,7 +846,7 @@ public:
     // GLUT timer callback
     // This function executes periodically to process queued commands
     // and to handle window operations
-    static void Timer(int value)
+    void Timer(int value)
     {
         static int delay = 0;
         
@@ -849,23 +855,23 @@ public:
             return;
         
         // delete closed windows
-        g_summon->DeleteClosedWindows();
+        DeleteClosedWindows();
         
         // update window positions
-        g_summon->UpdateWindowPositions();
+        UpdateWindowPositions();
         
         // process waiting commands commands
-        if (g_summon->ExecWaitingCommands())
+        if (ExecWaitingCommands())
             delay = 0;
         
         // look user-defined timer function
-        g_summon->SummonTimer();
+        SummonTimer();
         
         // set the next timer
-        if (g_summon->IsRunning())
-            glutTimerFunc(delay, Timer, 0);
+        if (IsRunning())
+            glutTimerFunc(delay, Summon::Timer, 0);
         else
-            g_summon->ConfirmStop();
+            ConfirmStop();
         
         if (delay < 10)
             delay++;
@@ -940,8 +946,8 @@ private:
         
         // wake up python thread if it is waiting for a graphic command to
         // complete
-        if (g_summon->m_waiting && !g_summon->m_graphicsExec)
-            g_summon->NotifyExecOccurred();        
+        if (m_waiting && !m_graphicsExec)
+            NotifyExecOccurred();
         
         return nodelay;
     }
@@ -1073,6 +1079,21 @@ private:
 };
 
 
+static void FirstReshape(int width, int height)
+{    
+    g_summon->FirstReshape(width, height);
+}
+
+
+static void MenuCallback(int item)
+{
+    g_summon->MenuCallback(item);
+}
+
+static void Timer(int value)
+{
+    g_summon->Timer(value);
+}
 
 } // namespace Summon
 
