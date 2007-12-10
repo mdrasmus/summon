@@ -15,25 +15,30 @@
 # TODO: implement find, and marking
 
 
+# python libs
 import random
 import sys
 
-from summon.core import *
+# summon libs
 import summon
+from summon.core import *
 from summon import shapes, util, treelib
 from summon import matrix
 from summon import sumtree
 
 
 def parseColor(colorstr):
+    """Parse <r>,<g>,<b> into a list of three floats"""
     return map(float, colorstr.split(','))
 
 def parseSize(sizestr):
+    """Parse <width>x<hieght> into a list of two ints"""
     return map(int, sizestr.split('x'))
+
 
 # command line options
 options = [
-    "Matrix formats",
+    "Matrix input formats",
     ["r:", "rmat=", "comprow", "<compressed row matrix file>",
         {"single": True,
          "help": "load a compressed row matrix file (*.mat)"}],
@@ -307,14 +312,14 @@ for script in conf["REST"]:
 
 # create matrix viewer and display it
 viewer = matrix.MatrixViewer(mat, bgcolor=conf["bgcolor"], 
-                           drawzeros=conf["drawzeros"], 
-                           style=conf["style"],
-                           showLabels=showLabels,
-                           showLabelWindows=showLabelWindows,
-                           winsize=conf["winsize"],
-                           title=matfile,
-                           rtree=rtree,
-                           ctree=ctree)
+                            drawzeros=conf["drawzeros"], 
+                            style=conf["style"],
+                            showLabels=showLabels,
+                            showLabelWindows=showLabelWindows,
+                            winsize=conf["winsize"],
+                            title=matfile,
+                            rtree=rtree,
+                            ctree=ctree)
 util.tic("drawing matrix")
 viewer.show()
 util.toc()

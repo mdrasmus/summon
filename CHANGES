@@ -1,6 +1,15 @@
 SUMMON Change Log
 -----------------
 
+NEXT RELEASE
+- changed default keybinding to be more sensible 
+  - left click is hotspot activate
+  - left drag is scroll/translate
+  - middle click is popup menu
+- fixed freeze in KDE and other window managers with restrictions on min window
+  size.  Bug introduced in 1.8.2
+- added hierarchy layout to sumtree; useful for clustering visualization
+
 2007/10/26 - summon-1.8.3
 - added colormap for sumtree
 - added row/col sampling for summatrix
@@ -14,7 +23,7 @@ SUMMON Change Log
 - added GLUT pop-up menus
 - added aGroup.get_parent()
 - added get_bounding() to Model
-- fully implement exception raising
+- fully implement exception raising within SUMMON module
 - fixed summatrix label display with row/col permutation
 - fixed rare window resize bug
 - fixed rare window position bug (multiwindow "sliding")
@@ -84,11 +93,10 @@ More stability and more complete demos
 
 
 2005/8/26 - summon-1.0
-- main features
-    - embedded python engine
-    - fast OpenGL graphics    
-    - drawing arbitrary points, lines, polygons
-    - binding inputs (keyboard, mouse, hotspots) to any python function 
-    - SVG output (also PNG with ImageMagick)
-    - cross-platform (windows, linux)
+- embedded python engine
+- fast OpenGL graphics    
+- drawing arbitrary points, lines, polygons
+- binding inputs (keyboard, mouse, hotspots) to any python function 
+- SVG output (also PNG with ImageMagick)
+- cross-platform (windows, linux)
 

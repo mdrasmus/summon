@@ -16,14 +16,14 @@ Thinking about how to handle zoom_clamp
         - mouse overs might be expensive
     - bounding box
         - using dynamic env is no problem since I recurse anyway
-    - svg would need to implement lin. alg.
-    - text
+    - svg would need to implement lin. alg. [DONE]
+    - text drawing.
 
 - Dynamic Elements need transform list
     - dynamic text
     - dynamic transforms (zoom_clamp)
     - hotspots inside dynamic transforms
-    - can the list be shared amonst elements?
+    - can the list be shared amongst elements?
 
 transform(env, zoom):
     push I

@@ -1,7 +1,7 @@
 #!/usr/bin/env python-i
 # 13_gameoflife.py
 #
-# Game of Life
+# Conway's Game of Life
 #
 
 import random
@@ -41,6 +41,8 @@ class Game:
     
     
     def recordChange(self, x, y, alive):
+        """Record one change to the board"""
+        
         neighbors = self.neighbors
         changeset = self.changeset    
         
@@ -48,7 +50,7 @@ class Game:
             step = 1
         else:
             step = -1
-
+        
         changeset.add((x-1, y-1))
         changeset.add((x  , y-1))
         changeset.add((x+1, y-1))
@@ -69,7 +71,9 @@ class Game:
         neighbors[y+1][x+1] += step
     
     
-    def initBoard(self, ncreatures):
+    def initBoard(self, ncreatures=0):
+        """Initialize board"""
+    
         self.board = makeBoard(width, height)
         self.neighbors = makeBoard(width, height)
         self.changeset.clear()        
@@ -85,6 +89,8 @@ class Game:
 
     
     def evolve(self):
+        """Compute one iteration of evolution"""
+    
         board = self.board
         neighbors = self.neighbors
         changeset = self.changeset
@@ -92,14 +98,15 @@ class Game:
         height = self.height
         fate = {}
         
-        
+        # process add set
         for x, y in list(self.addset):
             if 1 <= x <= self.width and 1 <= y <= self.height and \
                board[y][x] == 0:
                 board[y][x] = 1
                 self.recordChange(x, y, 1)
         self.addset.clear()
-
+        
+        # process kill set
         for x, y in list(self.killset):
             if 1 <= x <= self.width and 1 <= y <= self.height and \
                board[y][x] == 1:
@@ -107,13 +114,15 @@ class Game:
                 self.recordChange(x, y, 0)
         self.killset.clear()
         
-        
+        # do not evolve if paused
         if self.pause:
             return
         
-
+        # apply evolution rules to every cell that has changed
         for (j, i) in changeset:
             if 1 <= j <= width and 1 <= i <= height:
+            
+                # evolve rules
                 if board[i][j] == 1:
                    if neighbors[i][j] < 2 or \
                       neighbors[i][j] > 3:
@@ -121,9 +130,9 @@ class Game:
                 else:
                     if neighbors[i][j] == 3:
                         fate[(j, i)] = 1
-        
         changeset.clear()
         
+        # recalculate neighbor counts and propogate changes
         for (j, i), alive in fate.iteritems():
             board[i][j] = alive
             
@@ -153,6 +162,8 @@ class Game:
 
 
 def makeBoard(width, height):
+    """Creates a matrix with width and height (plus size-1 borders)"""
+    
     # make board
     board = []
     for i in xrange(height+2):
@@ -163,6 +174,8 @@ def makeBoard(width, height):
 
 
 def drawBoard(board):
+    """Returns a SUMMON group representing the board"""
+    
     vis = []
     width = len(board[0]) - 2
     height = len(board) - 2
@@ -259,17 +272,28 @@ def createBigX():
         game.addset.add((x+i, y-i))
 
 
-def createGlider():
+def createPattern():
     x, y = [int(round(i)) for i in win.get_mouse_pos('world')]
+    addPattern(patterns[pattern_index].pattern, x, y)
     
-    mat = [[1, 1, 1],
-           [0, 0, 1],
-           [0, 1, 0]]
-    
-    for i in xrange(3):
-        for j in xrange(3):
-            if mat[i][j] == 1:
-                game.addset.add((x+j, y+i))
+def nextPattern():
+    global pattern_index
+    pattern_index = (pattern_index + 1) % len(patterns)
+    print "current pattern:", patterns[pattern_index].name
+
+def prevPattern():
+    global pattern_index
+    pattern_index = (pattern_index - 1) % len(patterns)
+    print "current pattern:", patterns[pattern_index].name
+
+def addPattern(pattern, x, y):
+    w = len(pattern[0])
+    h = len(pattern)
+
+    for i in xrange(h):
+        for j in xrange(w):
+            if pattern[i][j] != " ":
+                game.addset.add((x+j, y-i))
     
 
 def pauseGame():
@@ -289,6 +313,144 @@ def make_wave():
         game.board[height // 2][j] = 1
         game.recordChange(j, height // 2, 1)
 
+#=============================================================================
+# patterns
+# from http://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
+
+class Pattern:
+    def __init__(self, name, pattern):
+        self.name = name
+        self.pattern = pattern
+
+pattern_index = 0
+
+patterns = [
+    Pattern("glider",
+            ["###",
+             "#  ",
+             " # "]),
+
+    Pattern("lwss",
+            ["#### ",
+             "#   #",
+             "#    ",
+             " #  #"]),
+
+    Pattern("mwss",
+            ["##### ",
+             "#    #",
+             "#     ",
+             " #   #",
+             "   #  "]),
+    
+    Pattern("hwss",
+            ["###### ",
+             "#     #",
+             "#      ",
+             " #    #",
+             "   ##  "]),
+    
+    # http://home.interserv.com/~mniemiec/sship.htm
+    Pattern("puffer",
+            ["###   ###",
+             "#  # #  #",
+             "#       #",
+             "#       #",
+             " # # # # ",
+             "         ",
+             "    #    ",
+             "   ###   ",
+             "   ###   "]),
+    
+    Pattern("puffer2",
+            ["###              ",
+             "#  #             ",
+             "#      ###       ",
+             "#     #  #     # ",
+             " # #  ## #    ###",
+             "             ## #",
+             "             ### ",
+             "             ### ",
+             "              ## "]),
+    
+    Pattern("turle",
+            ["    ##    ",
+             "## #  # ##",
+             "##      ##",
+             "# #    # #",
+             "  ##  ##  ",
+             " ## ## ## ",
+             "   #  #   ",
+             " #      # ",
+             " #      # ",
+             "          ",
+             " ######## ",
+             "##      ##"]),
+
+    Pattern("s_spaceship",
+            ["    #     #    ",
+             "   ###   ###   ",
+             "  #  #   #  #  ",
+             " ###       ### ",
+             "  # #     # #  ",
+             "    ##   ##    ",
+             "#    #   #    #",
+             "     #   #     ",
+             "##   #   #   ##",
+             "  #  #   #  #  ",
+             "    #     #    "]),
+    
+    Pattern("pulsar",
+            ["  ##     ##  ",
+             "   ##   ##   ",
+             "#  # # # #  #",
+             "### ## ## ###",
+             " # # # # # # ",
+             "  ###   ###  ",
+             "             ",
+             "  ###   ###  ",
+             " # # # # # # ",
+             "### ## ## ###",
+             "#  # # # #  #",
+             "   ##   ##   ",
+             "  ##     ##  "]),
+    
+    Pattern("gosper_glider_gun",
+            ["                        #           ",
+             "                      # #           ",
+             "            ##      ##            ##",
+             "           #   #    ##            ##",
+             "##        #     #   ##              ",
+             "##        #   # ##    # #           ",
+             "          #     #       #           ",
+             "           #   #                    ",
+             "            ##                      "]),
+    
+    Pattern("infinite_smallest",
+            ["      # ",
+             "    # ##",
+             "    # # ",
+             "    #   ",
+             "  #     ",
+             "# #     "]),
+    
+    Pattern("infinite_compact",
+            ["### #",
+             "#    ",
+             "   ##",
+             " ## #",
+             "# # #"]),
+
+    Pattern("infinite_row",
+            ["######## #####   ###      ####### #####"]),
+ 
+    Pattern("eight_bit_metheuselah",
+            ["##  #",
+             "#   #",
+             "#  ##"])
+    
+]
+
 
 #=============================================================================
 # setup
@@ -298,13 +460,16 @@ print "Game of Life"
 print 
 print "press [spacebar] to pause evolution"
 print "press 'c' to create a cell under the mouse pointer"
-print "press 'k' to kill a cell under the mouse pointer"
-print "press 'l' to kill a whole region under the mouse pointer"
-print "press 'K' to kill all cells"
+print "press 'd' to delete a cell under the mouse pointer"
+print "press 'k' to kill a whole region under the mouse pointer"
+print "press 'D' to delete all cells"
 print "press 'w' to create a wave under the mouse pointer"
-print "press 'g' to create a glider under the mouse pointer"
 print "press 't' to create a cross under the mouse pointer"
 print "press 'x' to create an 'X' under the mouse pointer"
+print 
+print "press '.' to move to next pattern"
+print "press ',' to move to prev pattern"
+print "press 'p' to create pattern"
 print 
 print "initializing..."
 
@@ -314,28 +479,36 @@ win.add_group(hotspot("click", 0, 0, width, height, create))
 win.set_visible(0, 0, width, height)
 win.set_antialias(False)
 
+win.set_binding(input_key(" "), pauseGame)
 win.set_binding(input_key("c"), create)
 win.set_binding(input_key("C", "shift"), createArea)
-win.set_binding(input_key("k"), kill)
-win.set_binding(input_key("l"), killArea)
-win.set_binding(input_key("K", "shift"), killAll)
-win.set_binding(input_key("g"), createGlider)
+win.set_binding(input_key("d"), kill)
+win.set_binding(input_key("k"), killArea)
+win.set_binding(input_key("D", "shift"), killAll)
 win.set_binding(input_key("w"), createWave)
 win.set_binding(input_key("t"), createCross)
 win.set_binding(input_key("x"), createX)
 win.set_binding(input_key("X", "shift"), createBigX)
-win.set_binding(input_key(" "), pauseGame)
+
+win.set_binding(input_key(","), prevPattern)
+win.set_binding(input_key("."), nextPattern)
+win.set_binding(input_key("p"), createPattern)
+
 
 
 # create game state
 game = Game(width, height)
-game.initBoard(ncreatures)
-
 
 # parse arguments
 if len(sys.argv) > 1:
     if "wave" in sys.argv:
         make_wave()
+    
+    if "empty" in sys.argv:
+        game.initBoard(0)
+else:
+    game.initBoard(ncreatures)
+
 
 board = win.add_group(drawBoard(game.board))
 

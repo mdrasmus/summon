@@ -161,37 +161,37 @@ def add_update_func(func, win, interval=None):
     adds a function of no arguments to the list of functions called by SUMMON
     at regular intervals
     """
-    state.timer.add_update_func(func, win, interval)
+    _state.timer.add_update_func(func, win, interval)
 
 
 def remove_update_func(func):
     """
     removes a function from the list of SUMMON timer functions
     """
-    state.timer.remove_update_func(func)
+    _state.timer.remove_update_func(func)
 
 
 def is_update_func(func):
     """returns True if 'func' is currently registered as a SUMMON timer function"""
-    return state.timer.is_update_func(func)
+    return _state.timer.is_update_func(func)
 
 
 def get_update_funcs():
     """returns all functions registered as SUMMON timer functions"""
-    return state.timer.updateFuncs
+    return _state.timer.updateFuncs
 
 def set_update_interval(secs):
     """sets the timer interval between calls the to the timer function"""
-    state.timer.set_update_interval(secs)
+    _state.timer.set_update_interval(secs)
 
 
 def begin_updating():
     """starts the SUMMON timer"""
-    state.timer.begin_updating()
+    _state.timer.begin_updating()
     
 def stop_updating():
     """stops the SUMMON timer"""
-    state.timer.stop_updating()
+    _state.timer.stop_updating()
 
 
 
@@ -242,21 +242,21 @@ class SummonState (object):
             return None
 
 # global singleton
-state = SummonState()
+_state = SummonState()
 
 
 def get_summon_state():
     """returns the summon state singleton"""
-    return _summon_state
+    return _state
 
 
 def get_summon_window():
     """DEPRECATED: returns the currently active summon window"""
-    return state.current_window
+    return _state.current_window
 
 # install summon window close callback for communication between C++ and python
 def _window_close_callback(winid):
-    state.windows[winid]._on_close()
+    _state.windows[winid]._on_close()
 summon_core.set_window_close_callback(_window_close_callback)
 
 
@@ -319,7 +319,7 @@ class Window (object):
         self.winid = summon_core.new_window(name, size[0], size[1],
                                             position[0], position[1])
         assert self.winid != None
-        state.add_window(self)
+        _state.add_window(self)
         
         
         # setup world model
@@ -377,7 +377,7 @@ class Window (object):
     
     def load_config(self, winconfig=None):
         """loads a summon config file for a window"""
-        state.current_window = self
+        _state.current_window = self
         
         if winconfig != None:
             # if configuration function given, then use it
@@ -414,7 +414,7 @@ class Window (object):
     def is_open(self):
         """returns whether underling SUMMON window is open"""
         
-        return self.winid in state.windows
+        return self.winid in _state.windows
     
     def get_decoration(self):
         """returns the window decoration size (width, height)
@@ -436,7 +436,7 @@ class Window (object):
         """a callback for window close events"""
         
         # let the global summon state know, that this window is closed
-        state.remove_window(self)
+        _state.remove_window(self)
         
         # let all listeners know this window is closed
         for listener in list(self.closeListeners):
@@ -878,7 +878,7 @@ class Model (object):
             # create new window
             self.id = summon_core.new_model()
             assert self.id != None
-            state.add_model(self)
+            _state.add_model(self)
     
     # TODO: determine how to delete models
     
@@ -1053,7 +1053,7 @@ class VisObject (object):
         self.win = None
     
     def __del__(self):
-        if state != None:
+        if _state != None:
             self.enableUpdating(False)
     
     def update(self):
@@ -1079,6 +1079,9 @@ class VisObject (object):
     
     def get_window(self):
         return self.win
+    
+    def set_window(self, win):
+        self.win = win
 
 
 

@@ -32,6 +32,10 @@
 \newcommand{\version}{1.8.3}
 
 
+%
+% TODO: add SUMTREE documentation
+% TODO: add development documentation
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{document}
@@ -145,7 +149,7 @@ Before running or compiling SUMMON, the following libraries are required:
 
 \subsection{Compiling SUMMON}
 
-SUMMON can be installed using the standard distutils 
+It is recommend to install SUMMON using the standard distutils 
 (http://docs.python.org/inst/inst.html).  For example, in the
 \code{summon-\version} directory run:
 
@@ -154,6 +158,9 @@ SUMMON can be installed using the standard distutils
 To install SUMMON in another location other than in \code{/usr} use:
 
 \codeblock{python setup.py install --prefix=<another directory prefix>}
+
+For more information and other install options see 
+\code{summon-\version/INSTALL}.
 
 
 \subsection{Configuring SUMMON}
@@ -212,18 +219,20 @@ OpenGL window.  The following controls are available:
 
 \vspace{.1in}
 \begin{tabular}{ll}
-    left mouse button          & scroll \\
+    left mouse button          & activate/click \\
+    left mouse button drag     & scroll \\
     right mouse button         & zoom (down: zoom-out, up: zoom-in)\\
     Ctrl + right mouse button  & zoom x-axis (down: zoom-out, up: zoom-in)\\
     Shift + right mouse button & zoom y-axis (down: zoom-out, up: zoom-in)\\
     arrow keys                 & scroll \\
     Shift + arrow keys         & scroll faster \\
-    Ctrl + up                  & zoom in \\
-    Ctrl + down                & zoom out \\
-    Shift + up                 & zoom in (y-axis only) \\
-    Shift + down               & zoom out (y-axis only) \\
-    Shift + right              & zoom in (x-axis only) \\
-    Shift + left               & zoom out (x-axis only) \\
+    Ctrl + up key              & zoom in \\
+    Ctrl + down key            & zoom out \\
+    Shift + up key             & zoom in (y-axis only) \\
+    Shift + down key           & zoom out (y-axis only) \\
+    Shift + right key          & zoom in (x-axis only) \\
+    Shift + left key           & zoom out (x-axis only) \\
+    middle click               & display pop-up menu \\
     h                          & home (make all graphics visible) \\
     Ctrl + l                   & toggle anti-aliasing \\
     Ctrl + d                   & duplicate window \\
@@ -231,8 +240,6 @@ OpenGL window.  The following controls are available:
     Ctrl + Shift + p           & output PNG of the current view \\
     Ctrl + x                   & show/hide crosshair \\
     q                          & close window \\
-    \`\  + left click          & display pop-up menu (note: {\em back-tic} is
-                                 usually above {\em tab} key) \\
 \end{tabular}
 \vspace{.2in}
 
@@ -300,10 +307,10 @@ win.home()
 \vspace{.25in}
 
 
-The first line of the script imports the SUMMON module \code{summon} and all of 
-the basic SUMMON functions (\code{group}, \code{lines}, \code{color}, etc) from
-the \code{summon.core} module into the current environment.  
-A new SUMMON graphics window is created using the \code{summon.Window} object.
+The first two lines of the script import the SUMMON module \code{summon} and
+all of  the basic SUMMON functions (\code{group}, \code{lines}, \code{color},
+etc) from the \code{summon.core} module into the current environment.   A new
+SUMMON graphics window is created using the \code{summon.Window} object.
 
 All graphics are added and removed from the window in sets called {\em groups}. 
 Groups provide a way to organize graphical elements into a hierarchy.
@@ -332,7 +339,7 @@ inside a group.  Since each vertex in this example quad has a different color,
 OpenGL will draw a quadrilateral that blends these colors.
 
 Lastly, an example of text is shown.  Once again the text is added to the window
-using the \code{add\_group} function.  The arguments to the text function
+using the \code{add\_group} function.  The arguments to the \code{text} function
 specify the text to be displayed, a bounding box specified by two
 opposite  vertices, and then zero or more justifications ("left", "right",
 "center", "top", "bottom", "middle") that will affect how the text aligns 
@@ -366,8 +373,8 @@ etc.).  Since these visualization programs are simply python scripts,
 others can easily overlay and integrate their own data.  
 
 Also in both visualizations the underling data is accessible through global
-python variables.  That means if you have a very specific question like, "How
-many genes in my subtree have a particular GO term?", you can quickly write a
+python variables.  That means if you have a very specific question like, ``How
+many genes in my subtree have a particular GO term?'', you can quickly write a
 few lines of python to walk the tree and answer the question yourself.  It would
 be very difficult to anticipate all such questions during the development of a
 non-scriptable visualization.
@@ -544,7 +551,8 @@ windows, such that the labels are never out of view while zooming and scrolling.
 SUMMATRIX allows easy visualization of clustering.  However, you must use
 another  third-party program to actually cluster your data.  If you are looking
 for ideas, I recommend taking a look at the CLUTO clustering toolkit at 
-\code{http://glaros.dtc.umn.edu/gkhome/views/cluto}.
+\code{http://glaros.dtc.umn.edu/gkhome/views/cluto}.  Many of the file formats
+used by SUMMON are compatiable with this software package.
 
 \subsubsection{Row and column permutation}
 
