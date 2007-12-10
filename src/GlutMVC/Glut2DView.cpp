@@ -73,8 +73,9 @@ void Glut2DView::ExecCommand(Command &command)
 
 
 
-
+//=============================================================================
 // callbacks
+
 void Glut2DView::Display()
 {
    // clear screen and initialize coordinate system
@@ -144,7 +145,10 @@ void Glut2DView::Reshape(int w, int h)
 }
 
 
+
+//=============================================================================
 // drawing
+
 void Glut2DView::DrawWorld()
 {
    // default testing drawing
@@ -181,8 +185,13 @@ void Glut2DView::DrawScreen()
 
 
 
-
+//=============================================================================
 // manipulation
+
+// This sets the visible region creating a 1:1 zoom
+// There are other possible ways to set visible:
+//      2. maintain zoom aspect x:y
+//      3. set zoom aspect based on requested visible aspect
 void Glut2DView::SetVisible(float x, float y, float x2, float y2)
 {
     if (m_windowSize.x == 0 || m_windowSize.y == 0)

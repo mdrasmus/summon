@@ -74,10 +74,13 @@ def config_window(win):
 
     # misc
     win.set_binding(input_key("h"), win.home)
+    win.set_binding(input_key("h", "ctrl"), win.restore_zoom)
     win.set_binding(input_key("q"), win.close)
     win.set_binding(input_key("l", "ctrl"), win.toggle_aliasing)
     win.set_binding(input_key("x", "ctrl"), win.toggle_crosshair)
     win.set_binding(input_key("d", "ctrl"), win.duplicate)
+    win.set_binding(input_key("o", "ctrl"), lambda: summon.OverviewWindow(win))
+
 
 
     # add print screen bindings

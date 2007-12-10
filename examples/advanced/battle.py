@@ -112,7 +112,7 @@ class Ship (Player):
             ptr = group(color(self.color[0],
                               self.color[1],
                               self.color[2],
-                              .5),
+                              .9),
                               lines(self.pos[0], self.pos[1], 
                                     self.closest.pos[0], self.closest.pos[1]))
         else:
@@ -182,7 +182,7 @@ class Ship3 (Ship):
     
     def plan(self):
         # find closest actor
-        if self.closest == None:
+        if self.closest == None and random() < .01:
             self.closest = find_closest(self.pos, self.game.actors, 
                                         lambda other: 
                                         other != self and 
@@ -200,7 +200,7 @@ class Ship3 (Ship):
                 if len(self.seen) > 1:
                     self.seen.pop()
                 
-        elif random() < .0001:
+        elif self.closest != None and random() < .001:
             self.closest.follower = None
             self.closest = None
 
@@ -212,7 +212,7 @@ class Ship3 (Ship):
             if closest_dist > 100:
                 self.vel = vdivs(vsub(self.closest.pos, self.pos), log(closest_dist)*2)
             elif closest_dist < 90:
-                self.vel = vdivs(vsub(self.closest.pos, self.pos), -closest_dist/1)
+                self.vel = vdivs(vsub(self.closest.pos, self.pos), -closest_dist/2)
                 #pass
             else:
                 direct = vdivs(vsub(self.closest.pos, self.pos), closest_dist/20)
@@ -233,7 +233,7 @@ class Game (summon.VisObject):
         
         self.update()
         self.win.home()
-        self.enableUpdating(interval=.001)
+        self.enableUpdating(interval=.000)
         
         
     def add_actor(self, actor):
@@ -247,7 +247,7 @@ class Game (summon.VisObject):
 
 game = Game()
 
-team_colors = [(1, 0, 0), (0, 0, 1), (0, 1, 0)]
+team_colors = [(1, 0, 0), (0, 0, 1), (0, 1, 0), (1, 1, 0)]
 
 for i in xrange(100):
     team = randint(0, len(team_colors)-1)

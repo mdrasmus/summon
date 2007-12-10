@@ -631,6 +631,14 @@ class Window (object):
         """
         return summon_core.get_visible(self.winid)
 
+    def restore_zoom(self):
+        zoomx, zoomy = self.get_zoom()
+
+        if zoomx > zoomy:
+            self.zoomy(zoomx / zoomy)
+        else:
+            self.zoomx(zoomy / zoomx)
+
     
     #======================================================================
     # view listeners
@@ -834,38 +842,98 @@ class Window (object):
     # misc
     def duplicate(self):
         """returns a new window with same model and properties as this window"""
+        
+        return DuplicateWindow(self)
+        
+
+def copyWindowState(winSrc, winDst):
+    # get source window, model, and visible
+    coords = winSrc.get_visible()
+    size = winSrc.get_size()
+    bg = winSrc.get_bgcolor()
+
+    zoomx = (coords[2] - coords[0]) / size[0]
+    zoomy = (coords[3] - coords[1]) / size[1]
+
+    # make the view the same
+    winDst.set_bgcolor(* bg)
+    winDst.set_visible(*coords)
+    coords = winDst.get_visible()
+    zoomx2 = (coords[2] - coords[0]) / size[0]
+    zoomy2 = (coords[3] - coords[1]) / size[1]
+    winDst.focus(size[0] / 2, size[1] / 2)
+    winDst.zoom(zoomx2 / zoomx, zoomy2 / zoomy)
+
+
+class DuplicateWindow (Window):
+    def __init__(self, win):
+        Window.__init__(self, 
+                        win.get_name(), 
+                        position=win.get_position(),
+                        size=win.get_size(), 
+                        world=win.world, 
+                        winconfig=win.winconfig)
+        copyWindowState(win, self)
+
+
+class OverviewWindow (DuplicateWindow):
+    def __init__(self, win, frame_color=None, frame_fill=(0, 0, 1, .1)):
+        DuplicateWindow.__init__(self, win)
+        self.targetWin = win
+        self.frame_fill = frame_fill
+        
+        if frame_color == None:
+            col = self.get_bgcolor()
+            self.frame_color = (1-col[0], 1-col[1], 1-col[2], 1)
+        else:
+            self.frame_color = frame_color
+        
+        # set listeners
+        win.add_view_change_listener(self.update_frame)
+        self.add_view_change_listener(self.update_frame)
+        
+        # initialize frame
+        self.frameVis = group()
+        self.screen.add_group(self.frameVis)
+        self.update_frame()
+
     
-        # get current window, model, and visible
-        coords = self.get_visible()
-        size = self.get_size()
-        bg = self.get_bgcolor()
-
-        zoomx = (coords[2] - coords[0]) / size[0]
-        zoomy = (coords[3] - coords[1]) / size[1]
-
-        # create new window with same model and coords    
-        win = Window(self.get_name(), 
-                     position=self.get_position(),
-                     size=size, 
-                     world=self.world, 
-                     winconfig=self.winconfig)
-        #win.set_size(* size)
-        #win.set_position(* self.get_position())
-        #win.set_name(self.get_name())
-        win.set_bgcolor(* bg)
+    def _on_close(self):
+        self.targetWin.remove_view_change_listener(self.update_frame)
+        self.remove_view_change_listener(self.update_frame)
         
-        # make the view the same
-        win.set_visible(*coords)
-        coords = win.get_visible()
-        zoomx2 = (coords[2] - coords[0]) / size[0]
-        zoomy2 = (coords[3] - coords[1]) / size[1]
-        win.focus(size[0] / 2, size[1] / 2)
-        win.zoom(zoomx2 / zoomx, zoomy2 / zoomy)
+        DuplicateWindow._on_close(self)
+    
+    
+    def update_frame(self):
+        x1, y1, x2, y2 = self.targetWin.get_visible()
+        t = self.get_trans()
+        f = self.get_focus()
+        z = self.get_zoom()
         
-        return win                
-
-
-
+        # convert world to screen
+        def world2screen(pt, t, z, f):
+            return [t[0] + f[0] + z[0] * (pt[0] - f[0]),
+                    t[1] + f[1] + z[1] * (pt[1] - f[1])]
+        
+        x1, y1 = world2screen([x1, y1], t, z, f)
+        x2, y2 = world2screen([x2, y2], t, z, f)
+        
+        vis = group(color(*self.frame_color),
+                    line_strip(x1, y1, 
+                               x1, y2, 
+                               x2, y2, 
+                               x2, y1,
+                               x1, y1),
+                    color(*self.frame_fill),
+                    quads(x1, y1,
+                          x1, y2,
+                          x2, y2,
+                          x2, y1))
+        
+        self.frameVis = self.screen.replace_group(self.frameVis, vis)
+        
+        
 
 class Model (object):
     """A Model contains graphics for display.
