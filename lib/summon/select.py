@@ -51,9 +51,9 @@ class Select:
         
         # TODO: remove hard-coded bindings
         # setup bindings
-        self.win.add_binding(input_click("middle", "down"), self.click)
-        self.win.add_binding(input_motion("middle", "down"), self.drag)
-        self.win.add_binding(input_click("middle", "up"), self.done)
+        self.win.add_binding(input_click("left", "down", "ctrl"), self.click)
+        self.win.add_binding(input_motion("left", "down", "ctrl"), self.drag)
+        self.win.add_binding(input_click("left", "up", "ctrl"), self.done)
         
     
     def click(self):

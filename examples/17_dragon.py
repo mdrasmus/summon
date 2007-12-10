@@ -74,7 +74,7 @@ def dragon(p, depth):
 
 
 
-
+print "generating fractal..."
 win = summon.Window("17_dragon")
 pencil = Pencil()
 win.add_group(line_strip(* dragon(pencil, 14)))

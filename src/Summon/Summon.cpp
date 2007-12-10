@@ -467,9 +467,9 @@ public:
                 Element *newelm = NULL;
                 
                 if (model) {
-                    newelm = model->ReplaceElement(oldelm, newcode);
+                    newelm = model->ReplaceElement(oldelm, ScmCar(newcode));
                 } else {
-                    newelm = elm->ReplaceChild(oldelm, newcode);
+                    newelm = elm->ReplaceChild(oldelm, ScmCar(newcode));
                 }
                 
                 } break;

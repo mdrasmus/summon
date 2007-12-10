@@ -1,4 +1,6 @@
 
+from math import sqrt
+
 def vdot(u, v):
     assert len(u) == len(v)
     
@@ -47,6 +49,17 @@ def vidiv(u, v):
     else:
         return map(lambda a,b: a / b, u, v)
 
+def vmag(v):
+    tot = 0.0
+    for i in v:
+        tot += i*i
+    return sqrt(tot)
+
+def vdist(u, v):
+    tot = 0.0
+    for i in xrange(len(v)):
+        tot += (u[i] - v[i])**2
+    return sqrt(tot)    
 
 #
 # vector and scalar
