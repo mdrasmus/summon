@@ -847,6 +847,8 @@ class Window (object):
         
 
 def copyWindowState(winSrc, winDst):
+    """Copies the state of one window to another"""
+    
     # get source window, model, and visible
     coords = winSrc.get_visible()
     size = winSrc.get_size()
@@ -866,6 +868,8 @@ def copyWindowState(winSrc, winDst):
 
 
 class DuplicateWindow (Window):
+    """Creates a duplicate of another window"""
+
     def __init__(self, win):
         Window.__init__(self, 
                         win.get_name(), 
@@ -877,10 +881,13 @@ class DuplicateWindow (Window):
 
 
 class OverviewWindow (DuplicateWindow):
+    """Creates an overview of another"""
+
     def __init__(self, win, frame_color=None, frame_fill=(0, 0, 1, .1)):
         DuplicateWindow.__init__(self, win)
         self.targetWin = win
         self.frame_fill = frame_fill
+        self.set_name("overview of '%s'" % self.get_name())
         
         if frame_color == None:
             col = self.get_bgcolor()
@@ -891,6 +898,7 @@ class OverviewWindow (DuplicateWindow):
         # set listeners
         win.add_view_change_listener(self.update_frame)
         self.add_view_change_listener(self.update_frame)
+        win.add_close_listener(self.on_target_close)
         
         # initialize frame
         self.frameVis = group()
@@ -899,13 +907,31 @@ class OverviewWindow (DuplicateWindow):
 
     
     def _on_close(self):
-        self.targetWin.remove_view_change_listener(self.update_frame)
-        self.remove_view_change_listener(self.update_frame)
-        
+        """Callback for when overwindow is closed"""
+        self.detach()
         DuplicateWindow._on_close(self)
     
     
+    def on_target_close(self):
+        """Callback for when target window closes
+           detach self from target.
+        """
+        self.detach()
+    
+    
+    def detach(self):
+        """Detach from target window"""
+        
+        if self.targetWin:
+            if self.targetWin.is_open():
+                self.targetWin.remove_view_change_listener(self.update_frame)
+            self.remove_view_change_listener(self.update_frame)
+            self.frameVis = self.screen.replace_group(self.frameVis, group())
+            self.targetWin = None
+    
     def update_frame(self):
+        """Update view frame"""
+    
         x1, y1, x2, y2 = self.targetWin.get_visible()
         t = self.get_trans()
         f = self.get_focus()
