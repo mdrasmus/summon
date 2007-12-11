@@ -13,4 +13,5 @@ sumtree \
     --vertical \
     --noshowlabels \
     --winsize 700x400 \
+    -t 0 \
     -c ensembl.colormap $*

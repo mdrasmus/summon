@@ -114,10 +114,16 @@ if "winsize" in conf:
 else:
     winsize = (400, 400)
 
+minlen = -util.INF
+if conf["usedist"] == 0.0:
+    minlen = 1.0
+    conf["usedist"] = 1.0
+
 if conf["layout"] == "default":
-    layout = treelib.layoutTree(tree, conf["usedist"], 1)
+    layout = treelib.layoutTree(tree, conf["usedist"], -1.0, 
+                                minlen=minlen)
 elif conf["layout"] == "hierarchical":
-    layout = treelib.layoutTreeHierarchical(tree, conf["usedist"], 1)
+    layout = treelib.layoutTreeHierarchical(tree, conf["usedist"], -1.0)
 else:
     raise Exception("unknown tree layout")
 
