@@ -937,11 +937,6 @@ class OverviewWindow (DuplicateWindow):
         f = self.get_focus()
         z = self.get_zoom()
         
-        # convert world to screen
-        def world2screen(pt, t, z, f):
-            return [t[0] + f[0] + z[0] * (pt[0] - f[0]),
-                    t[1] + f[1] + z[1] * (pt[1] - f[1])]
-        
         x1, y1 = world2screen([x1, y1], t, z, f)
         x2, y2 = world2screen([x2, y2], t, z, f)
         
@@ -959,6 +954,28 @@ class OverviewWindow (DuplicateWindow):
         
         self.frameVis = self.screen.replace_group(self.frameVis, vis)
         
+
+#=============================================================================
+# coordinate system conversions
+
+
+def world2screen(pt, trans, zoom, focus):
+    """convert world to screen"""
+    return [trans[0] + focus[0] + zoom[0] * (pt[0] - focus[0]),
+            trans[1] + focus[1] + zoom[1] * (pt[1] - focus[1])]
+
+
+def window2screen(pt, win_height):
+    return Vertex2i(pt[0], win_height - pt[1])
+
+def screen2world(pt, trans, zoom, focus):
+    return [(pt[0] - trans[0] - focus[0]) / zoom[0] + focus[0],
+            (pt[1] - trans[1] - focus[1]) / zoom[1] + focus[1]]
+
+
+def window2world(pt, trans, zoom, focus, win_height):
+    return [(pt[0] - trans[0] - focus[0]) / zoom[0] + focus[0],
+            (win_height - p[1] - trans[1] - focus[1]) / zoom[1] + focus[1]]
         
 
 class Model (object):
@@ -1125,10 +1142,12 @@ class SummonMenu (Menu):
     def __init__(self, win):
         Menu.__init__(self)
         
-        self.add_entry("home   (h)", win.home)        
-        self.add_toggle("crosshair   (ctrl+x)", win.toggle_crosshair, False)
-        self.add_toggle("smooth   (ctrl+l)", win.toggle_aliasing, True)
-        self.add_entry("duplicate window   (ctrl+d)", win.duplicate)
+        self.add_entry("home   (h)", win.home)
+        self.add_entry("zoom 1:1   (ctrl+h)", win.restore_zoom)
+        self.add_entry("toggle crosshair   (ctrl+x)", win.toggle_crosshair)
+        self.add_entry("toggle smoothing   (ctrl+l)", win.toggle_aliasing)
+        self.add_entry("duplicate   (ctrl+d)", win.duplicate)
+        self.add_entry("overview   (ctrl+o)", lambda: OverviewWindow(win))
         
         self.print_screen_menu = Menu()
         self.print_screen_menu.add_entry("svg   (ctrl+p)", 
