@@ -147,12 +147,12 @@ class SvgWriter:
             print >>self.out, "<g transform='scale(%f,%f)'>" % (c[1], c[2])
             
         elif isinstance(elm, rotate):
-            print >>self.out, "<g transform='rotate(%f)'>" % c[3]
+            print >>self.out, "<g transform='rotate(%f)'>" % c[1]
             
         elif isinstance(elm, flip):
-            x, y = c[1], c[1]
+            x, y = c[0], c[1]
             h = math.sqrt(x*x + y*y)
-            angle = 180 / math.pi * math.acos(x / h)
+            angle = 180.0 / math.pi * math.acos(x / h)
             if y < 0:
                 angle *= -1
             
@@ -194,7 +194,7 @@ class SvgWriter:
     
     def pushTransform(self, elm):
     
-        c = elm.get_contents()    
+        c = elm.get_contents()[1:]
         if isinstance(elm, translate):
             mat = transform.makeTransMatrix(c)
             
@@ -202,14 +202,9 @@ class SvgWriter:
             mat = transform.makeScaleMatrix(c)
             
         elif isinstance(elm, rotate):
-            mat = transform.makeRotateMatrix(c)
+            mat = transform.makeRotateMatrix(c[0], [0, 0])
             
         elif isinstance(elm, flip):
-            x, y = c[1], c[1]
-            h = math.sqrt(x*x + y*y)
-            angle = 180 / math.pi * math.acos(x / h)
-            if y < 0:
-                angle *= -1
             mat = transform.makeFlipMatrix(c)
                         
         else:

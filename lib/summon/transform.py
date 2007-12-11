@@ -23,6 +23,7 @@ def multMatrix(mat1, mat2):
         for j in (0, 1, 2, 3):
             for k in (0, 1, 2, 3):
                 mat3[i][j] += mat1[i][k] * mat2[k][j]
+    return mat3
 
 def makeTransMatrix(vec):
     return [[1.0, 0.0, 0.0, vec[0]],
@@ -42,7 +43,7 @@ def makeRotateMatrix(angle, vec):
     c = cos(angle * (3.1415926/180.0))
     t = 1 - c
     x, y = vec
-    z = 0.0
+    z = 1.0
     n = sqrt(x*x + y*y + z*z)
     
     # normalize
@@ -90,8 +91,8 @@ def makeScaleMatrix3(vec):
 
 def makeFlipMatrix(vec):
     x, y = vec
-    h = math.sqrt(x*x + y*y)
-    angle = 180 / math.pi * math.acos(x / h)
+    h = sqrt(x*x + y*y)
+    angle = 180 / pi * acos(x / h)
     if y < 0:
         angle *= -1
     
