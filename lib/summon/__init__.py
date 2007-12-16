@@ -613,13 +613,73 @@ class Window (object):
            box[3] < util.INF:
             self.set_visible(*box)
 
-    def set_visible(self, x1, y1, x2, y2):
-        """sets the current view to the specified bounding box"""
-        ret = summon_core.set_visible(self.winid, x1, y1, x2, y2)
+    def set_visible(self, x1, y1, x2, y2, mode="one2one"):
+        """sets the current view to the specified bounding box
+        
+        mode -- specifies the zoom using one of the following
+                "one2one" sets zoom to 1:1
+                "keep"    keeps zoom at current ratio
+                "exact"   sets zoom exactly as bounding box implies
+        """
+
+        # ensure coordinates are properly ordered
+        if x1 > x2:
+            x1, x2 = x2, x1
+        if y1 > y2:
+            y1, y2 = y2, y1
+
+        # do not allow empty bounding box
+        if x1 == x2 or y1 == y2:
+            raise Exception("can't set visible to an empty bounding box")
+
+        
+        # set visible according to mode
+        if mode == "one2one":
+            summon_core.set_visible(self.winid, x1, y1, x2, y2)
+            
+        elif mode == "keep":
+            winw, winh = map(float, self.get_size())
+            zoomx, zoomy = summon_core.get_zoom(self.winid)
+            zoomratio = zoomx / zoomy
+            worldw = x2 - x1
+            worldh = y2 - y1
+            vieww = worldw * zoomx
+            viewh = worldh * zoomy
+            
+            # determine which dimension is tight
+            if vieww / viewh < winw / winh:
+                # height is tight
+                zoomy2 = winh / worldh
+                zoomx2 = zoomy2 * zoomratio
+                
+                worldw2 = winw / zoomx2
+                offset = [- (worldw2 - worldw) / 2.0, 0.0]
+            else:
+                # width is tight
+                zoomx2 = winw / worldw
+                zoomy2 = zoomx2 / zoomratio
+                
+                worldh2 = winh / zoomh2
+                offset = [0.0, - (worldh2 - worldh) / 2.0]
+            
+            summon_core.set_focus(self.winid, x1 + offset[0], y1 + offset[1])
+            summon_core.set_zoom(self.winid, zoomx2, zoomy2)
+            summon_core.set_trans(self.winid, -x1 - offset[0], -y1 - offset[1])
+
+            
+        elif mode == "exact":
+            w, h = self.get_size()
+            summon_core.set_focus(self.winid, x1, y1)
+            summon_core.set_zoom(self.winid, w / float(x2 - x1), h / float(y2 - y1))
+            summon_core.set_trans(self.winid, -x1, -y1)
+            
+        else:
+            raise Exception("unknown zoom mode '%s'" % mode)
+        
         # NOTE: focus changed must be called before view changed
         self._on_focus_change() # notify view has changed        
         self._on_view_change() # notify view has changed
-        return ret
+        
     
     def get_visible(self):
         """returns the current view as x1, y1, x2, y2
@@ -632,6 +692,8 @@ class Window (object):
         return summon_core.get_visible(self.winid)
 
     def restore_zoom(self):
+        """restores zoom to a 1:1 ratio"""
+        
         zoomx, zoomy = self.get_zoom()
 
         if zoomx > zoomy:

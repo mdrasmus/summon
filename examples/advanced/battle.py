@@ -182,7 +182,7 @@ class Ship3 (Ship):
     
     def plan(self):
         # find closest actor
-        if self.closest == None and random() < .01:
+        if self.closest == None and random() < .05:
             self.closest = find_closest(self.pos, self.game.actors, 
                                         lambda other: 
                                         other != self and 
@@ -200,7 +200,7 @@ class Ship3 (Ship):
                 if len(self.seen) > 1:
                     self.seen.pop()
                 
-        elif self.closest != None and random() < .001:
+        elif self.closest != None and random() < .0001:
             self.closest.follower = None
             self.closest = None
 
@@ -249,10 +249,10 @@ game = Game()
 
 team_colors = [(1, 0, 0), (0, 0, 1), (0, 1, 0), (1, 1, 0)]
 
-for i in xrange(100):
+for i in xrange(500):
     team = randint(0, len(team_colors)-1)
     ship = Ship3(game, 
-                [uniform(0, 10000), uniform(0, 10000)], 
+                [uniform(0, 100000), uniform(0, 100000)], 
                 team=team,
                 color=team_colors[team])
     ship.vel = [uniform(-5, 5), uniform(-5, 5)]

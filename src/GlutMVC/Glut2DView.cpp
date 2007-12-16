@@ -192,6 +192,7 @@ void Glut2DView::DrawScreen()
 // There are other possible ways to set visible:
 //      2. maintain zoom aspect x:y
 //      3. set zoom aspect based on requested visible aspect
+//      I will probably implement these in python
 void Glut2DView::SetVisible(float x, float y, float x2, float y2)
 {
     if (m_windowSize.x == 0 || m_windowSize.y == 0)
@@ -268,7 +269,7 @@ void Glut2DView::ZoomTo(float x, float y)
 }
 
 void Glut2DView::SetFocus(float x, float y) { 
-   Vertex2f focus2 = Vertex2f(x, y);
+   Vertex2f focus2(x, y);
    m_trans.x = m_trans.x + (m_focus.x - focus2.x) * (1 - m_zoom.x);
    m_trans.y = m_trans.y + (m_focus.y - focus2.y) * (1 - m_zoom.y);   
    m_focus = focus2;
