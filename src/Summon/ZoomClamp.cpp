@@ -15,9 +15,10 @@ namespace Summon {
 
 bool ZoomClamp::Build(int header, const Scm &code)
 {
-    if (!ParseScm("Bad format for zoom_clamp construct", code,
-                  "ffffbb", &minx, &miny, &maxx, &maxy, &clip, &linked))
+    if (!ParseScm(code, "ffffbb", &minx, &miny, &maxx, &maxy, &clip, &linked)) {
+        Error("Bad format for zoom_clamp construct");
         return false;
+    }
     
     return Element::Build(header, ScmCdddr(ScmCdddr(code)));
 }
@@ -25,8 +26,7 @@ bool ZoomClamp::Build(int header, const Scm &code)
 
 Scm ZoomClamp::GetContents()
 {
-    return Py2ScmTake(Py_BuildValue("ffffbb", minx, miny, maxx, maxy, 
-                                    clip, linked));
+    return BuildScm("ffffbb", minx, miny, maxx, maxy, clip, linked);
 }
 
 

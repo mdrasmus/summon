@@ -32,7 +32,6 @@ Glut2DView::~Glut2DView()
 
 void Glut2DView::ExecCommand(Command &command)
 {
-    // translate
     switch (command.GetId()) {
         case TRANSLATE_COMMAND: {
             TranslateBy(((TranslateCommand*)(&command))->trans.x, 
@@ -62,8 +61,7 @@ void Glut2DView::ExecCommand(Command &command)
             
         case FOCUS_COMMAND: {
             FocusCommand* cmd = (FocusCommand*) &command;
-            Vertex2i pt = WindowToScreen(cmd->focus.x, cmd->focus.y);
-            Vertex2f focus = ScreenToWorld(pt.x, pt.y);
+            Vertex2f focus = WindowToWorld(cmd->focus.x, cmd->focus.y);
             SetFocus(focus.x, focus.y);
             } break;
         default:

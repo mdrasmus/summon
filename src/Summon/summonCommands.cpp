@@ -137,6 +137,7 @@ void summonCommandsInit()
     
     RegisterScriptCommand(CallProcCommand) g()
 
+#   undef e
 #   undef g
 #   undef m
 #   undef v
@@ -174,95 +175,6 @@ void summonCommandsInit()
     g_elementFactory.Register(new Transform(), FLIP_CONSTRUCT);
 }
 
-bool ParseScm(string errorMsg, Scm lst, const char *fmt, ...)
-{
-    va_list ap;   
-    
-    bool status = true;
-    int *d;
-    float *f;
-    string *str;
-    Scm *proc;
-    Scm *code;
-    bool *b;
-    
-    va_start(ap, fmt);
-
-       
-    // loop through format string
-    int i=1;
-    for (const char *argtype = fmt; *argtype; argtype++, i++) {
-        // ensure lst is a list
-        if (!ScmConsp(lst)) {
-            status = false;
-            break;
-        }
-        
-        
-        // get next arg in lst
-        Scm arg = ScmCar(lst);
-        lst = ScmCdr(lst);
-        
-        switch (*argtype) {
-            case 'd':
-                if (!ScmIntp(arg)) {
-                    Error("expected integer for argument %d", i);
-                    status = false;
-                    break;
-                }
-                
-                d = va_arg(ap, int *);
-                *d = Scm2Int(arg);
-                break;
-            case 'f':
-                if (!ScmFloatp(arg)) {
-                    Error("expected float for argument %d", i);
-                    status = false;
-                    break;
-                }
-                
-                f = va_arg(ap, float *);
-                *f = Scm2Float(arg);
-                break;
-            case 's':
-                if (!ScmStringp(arg)) {
-                    Error("expected string for argument %d", i);
-                    status = false;
-                    break;
-                }
-                
-                str = va_arg(ap, string *);
-                *str = Scm2String(arg);
-                break;
-            case 'b':
-                b = va_arg(ap, bool *);
-                *b = (arg != Scm_FALSE);
-                break;
-            case 'p':
-                if (!ScmProcedurep(arg)) {
-                    Error("expected procedure for argument %d", i);
-                    status = false;
-                    break;
-                }
-                
-                proc = va_arg(ap, Scm *);
-                *proc = arg;
-                break;
-            case 'c':
-                code = va_arg(ap, Scm *);
-                *code = arg;
-                break;
-        }
-    }
-    
-    va_end(ap);
-    
-    if (!status) {
-        Error(errorMsg.c_str());
-    }
-    
-    return status;
-}
 
 
 bool ParseCommand(Scm procScm, Command **command)
@@ -285,7 +197,7 @@ bool ParseCommand(Scm procScm, Command **command)
     } else if (ScmProcedurep(procScm)) {
         *command = new CallProcCommand(procScm);
     } else {
-        Error("command must be command name or scheme procedure");
+        Error("command must be command name or procedure");
         return false;
     }
 

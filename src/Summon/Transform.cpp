@@ -112,15 +112,10 @@ Scm Transform::GetContents()
         case TRANSLATE_CONSTRUCT:
         case SCALE_CONSTRUCT:
         case FLIP_CONSTRUCT:
-            return ScmCons(Int2Scm(m_kind),
-                     ScmCons(Float2Scm(m_param1),
-                       ScmCons(Float2Scm(m_param2),
-                         Scm_EOL)));
+            return BuildScm("dff", m_kind, m_param1, m_param2);
 
         case ROTATE_CONSTRUCT:
-            return ScmCons(Int2Scm(m_kind),
-                     ScmCons(Float2Scm(m_param1),
-                       Scm_EOL));
+            return BuildScm("df", m_kind, m_param1);
             
         default:
             Error("Unknown transform");

@@ -87,10 +87,7 @@ void SummonView::ExecCommand(Command &command)
             //MakeCurrentWindow();
             //UpdatePosition();
             Vertex2i pos = GetPosition();
-            ((ScriptCommand*) &command)->SetReturn(
-                ScmCons(Int2Scm(pos.x),
-                    ScmCons(Int2Scm(pos.y),
-                        Scm_EOL)));
+            ((ScriptCommand*) &command)->SetReturn(BuildScm("dd", pos.x, pos.y));
             } break;
 
         
@@ -102,9 +99,7 @@ void SummonView::ExecCommand(Command &command)
         
         case GET_WINDOW_SIZE_COMMAND: {
             Vertex2i size = GetWindowSize();
-            ((ScriptCommand*) &command)->SetReturn(
-                ScmCons(Int2Scm(size.x),
-                    ScmCons(Int2Scm(size.y), Scm_EOL)));
+            ((ScriptCommand*) &command)->SetReturn(BuildScm("dd", size.x, size.y));
             } break;
             
         
@@ -128,8 +123,7 @@ void SummonView::ExecCommand(Command &command)
         
         case GET_TRANS_COMMAND: {
             ((ScriptCommand*) &command)->SetReturn(
-                ScmCons(Float2Scm(m_trans.x),
-                    ScmCons(Float2Scm(m_trans.y), Scm_EOL)));
+                BuildScm("ff", m_trans.x, m_trans.y));
             } break;
             
         case SET_ZOOM_COMMAND: {
@@ -141,8 +135,7 @@ void SummonView::ExecCommand(Command &command)
             
         case GET_ZOOM_COMMAND: {
             ((ScriptCommand*) &command)->SetReturn(
-                ScmCons(Float2Scm(m_zoom.x),
-                    ScmCons(Float2Scm(m_zoom.y), Scm_EOL)));
+                BuildScm("ff", m_zoom.x, m_zoom.y));
             } break;
     
         case SET_FOCUS_COMMAND: {
@@ -152,9 +145,8 @@ void SummonView::ExecCommand(Command &command)
             
         case GET_FOCUS_COMMAND: {
             ((ScriptCommand*) &command)->SetReturn(
-                ScmCons(Float2Scm(m_focus.x),
-                    ScmCons(Float2Scm(m_focus.y), Scm_EOL)));
-            } break;    
+                BuildScm("ff", m_focus.x, m_focus.y));
+            } break;
     
         case SET_BGCOLOR_COMMAND:
             MakeCurrentWindow();
@@ -164,9 +156,7 @@ void SummonView::ExecCommand(Command &command)
 
         case GET_BGCOLOR_COMMAND:
             ((GetBgColorCommand*) &command)->SetReturn(
-                ScmCons(Float2Scm(m_bgColor.r),
-                 ScmCons(Float2Scm(m_bgColor.g),
-                  ScmCons(Float2Scm(m_bgColor.b), Scm_EOL))));
+                BuildScm("fff", m_bgColor.r, m_bgColor.g, m_bgColor.b));
             break;
         
         case SET_VISIBLE_COMMAND: {
@@ -183,10 +173,7 @@ void SummonView::ExecCommand(Command &command)
             Vertex2f pos2 = ScreenToWorld(size.x, size.y);
             
             ((GetVisibleCommand*) &command)->SetReturn(
-                ScmCons(Float2Scm(pos1.x),
-                 ScmCons(Float2Scm(pos1.y),
-                  ScmCons(Float2Scm(pos2.x),
-                   ScmCons(Float2Scm(pos2.y), Scm_EOL)))));
+                BuildScm("ffff", pos1.x, pos1.y, pos2.x, pos2.y));
             } break;
         
         
@@ -243,8 +230,7 @@ void SummonView::ExecCommand(Command &command)
             
         case FOCUS_SCRIPT_COMMAND: {
             FocusScriptCommand* cmd = (FocusScriptCommand*) &command;
-            Vertex2i pt = WindowToScreen(cmd->focus.x, cmd->focus.y);
-            Vertex2f focus = ScreenToWorld(pt.x, pt.y);
+            Vertex2f focus = WindowToWorld(cmd->focus.x, cmd->focus.y);
             SetFocus(focus.x, focus.y);
             } break;
         

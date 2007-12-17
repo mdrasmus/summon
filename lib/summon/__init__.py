@@ -632,13 +632,18 @@ class Window (object):
         if x1 == x2 or y1 == y2:
             raise Exception("can't set visible to an empty bounding box")
 
+        # get window dimensions
+        winw, winh = map(float, self.get_size())
+        
+        # do nothing if window has zero width or height
+        if winw == 0 or winh == 0:
+            return        
         
         # set visible according to mode
         if mode == "one2one":
             summon_core.set_visible(self.winid, x1, y1, x2, y2)
             
-        elif mode == "keep":
-            winw, winh = map(float, self.get_size())
+        elif mode == "keep":            
             zoomx, zoomy = summon_core.get_zoom(self.winid)
             zoomratio = zoomx / zoomy
             worldw = x2 - x1
@@ -668,9 +673,9 @@ class Window (object):
 
             
         elif mode == "exact":
-            w, h = self.get_size()
             summon_core.set_focus(self.winid, x1, y1)
-            summon_core.set_zoom(self.winid, w / float(x2 - x1), h / float(y2 - y1))
+            summon_core.set_zoom(self.winid, winw / float(x2 - x1), 
+                                             winh / float(y2 - y1))
             summon_core.set_trans(self.winid, -x1, -y1)
             
         else:
@@ -943,7 +948,7 @@ class DuplicateWindow (Window):
 
 
 class OverviewWindow (DuplicateWindow):
-    """Creates an overview of another"""
+    """Creates an overview of another window"""
 
     def __init__(self, win, frame_color=None, frame_fill=(0, 0, 1, .1)):
         DuplicateWindow.__init__(self, win)
@@ -1022,20 +1027,23 @@ class OverviewWindow (DuplicateWindow):
 
 
 def world2screen(pt, trans, zoom, focus):
-    """convert world to screen"""
+    """converts a world point to a screen point"""
     return [trans[0] + focus[0] + zoom[0] * (pt[0] - focus[0]),
             trans[1] + focus[1] + zoom[1] * (pt[1] - focus[1])]
 
 
 def window2screen(pt, win_height):
+    """converts a window point to a screen point"""
     return Vertex2i(pt[0], win_height - pt[1])
 
 def screen2world(pt, trans, zoom, focus):
+    """converts a screen point to a world point"""
     return [(pt[0] - trans[0] - focus[0]) / zoom[0] + focus[0],
             (pt[1] - trans[1] - focus[1]) / zoom[1] + focus[1]]
 
 
 def window2world(pt, trans, zoom, focus, win_height):
+    """converts a window to a world point"""
     return [(pt[0] - trans[0] - focus[0]) / zoom[0] + focus[0],
             (win_height - p[1] - trans[1] - focus[1]) / zoom[1] + focus[1]]
         
@@ -1297,7 +1305,7 @@ def iter_vertices(elm, curcolor=None):
                 elif isinstance(elm, lines):           nverts, nkeep = 2, 0
                 elif isinstance(elm, line_strip):      nverts, nkeep = 2, 1
                 elif isinstance(elm, triangles):       nverts, nkeep = 3, 0
-                elif isinstance(elm, triangle_strip): nverts, nkeep = 3, 2
+                elif isinstance(elm, triangle_strip):  nverts, nkeep = 3, 2
                 elif isinstance(elm, quads):           nverts, nkeep = 4, 0
                 elif isinstance(elm, quad_strip):      nverts, nkeep = 4, 2
                 else:

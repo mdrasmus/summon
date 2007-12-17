@@ -7,6 +7,7 @@
 *
 ***************************************************************************/
 
+// TODO: slowly refactoring scheme-like interface away
 
 #ifndef SCRIPT_H
 #define SCRIPT_H
@@ -22,11 +23,24 @@ namespace Summon {
 using namespace std;
 
 
+// old comments, rework into code when refactoring is done
+    // NOTE: PyTuple_GetSlice makes a new reference.  However, it is my
+    // convention that GetPy() always returns a borrowed reference.  
+    // Therefore, I store the new reference in a local variable called
+    // 'slice' and derefence it some time later (next GetPy() or
+    // deconstructor).  slice does not need to be copied in the copy
+    // constructor.  I cannot deference slice before returning, however,
+    // because that may destroy the slice before I even return it.
+
+
+
+
 class Scm {
 public:
     Scm(PyObject* o = NULL, bool take = true) :
         py(o),
-        start(0)
+        start(0)//,
+        //slice(NULL)
     {
         if (o != NULL && take)
             Py_INCREF(o);
@@ -44,6 +58,8 @@ public:
     {
         if (py != NULL)
             Py_DECREF(py);
+        //if (slice != NULL)
+        //    Py_DECREF(py);
     }
         
     inline int Size() const
@@ -66,6 +82,7 @@ public:
         if (start == 0)
             return py;
         else {
+            
             // NOTE: this might be a bug
             // get slice makes a new reference.  However, it is my convention
             // that GetPy() always returns a borrowed reference
@@ -73,6 +90,10 @@ public:
                                            PyTuple_GET_SIZE(py));
             Py_DECREF(o);
             return o;
+            
+            
+            
+            //return slice;
         }
     }
     
@@ -106,9 +127,22 @@ public:
     {
         return !(*this == s);
     }
+    
+    /*
+    inline SetStart(int newStart)
+    {
+        start = newStart;
+        // unreference old an slice
+        if (slice)
+            Py_DECREF(slice);
+
+        slice = PyTuple_GetSlice(py, start, PyTuple_GET_SIZE(py));
+    }
+    */
         
     PyObject* py;
     int start;
+    //PyObject *slice;
 };
 
 extern Scm Scm_NULL;
@@ -128,8 +162,8 @@ void DestroyPython();
 void Error(const char *fmt, ...);
 char *GetError();
 void ClearError();
-
-
+bool ParseScm(Scm lst, const char *fmt, ...);
+Scm BuildScm(const char *fmt, ...);
 
 inline Scm ScmEvalStr(const char *str)
 {

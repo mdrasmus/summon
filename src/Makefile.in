@@ -12,11 +12,13 @@ MY_LIBS = \
         $(SRCPREFIX)/MVC/libMVC.a 
 
 COMPILE = -c \
-    -Wall -fno-strict-aliasing -O3  \
+    -Wall -fno-strict-aliasing  \
     $(INCLUDE) 
 
 ifdef DEBUG
 	COMPILE := $(COMPILE) -g
+else
+    COMPILE := $(COMPILE) -O3
 endif
 
 # Profiling code

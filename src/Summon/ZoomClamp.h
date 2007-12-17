@@ -9,23 +9,20 @@
 #define ZOOM_CLAMP_H
 
 #include "Script.h"
-#include <algorithm>
-#include "types.h"
-#include "Element.h"
+#include "Transform.h"
 
 
 namespace Summon {
 
 
 
-class ZoomClamp : public Element
+class ZoomClamp : public Transform
 {
 public:
     ZoomClamp() : 
-        Element(ZOOM_CLAMP_CONSTRUCT)
+        Transform(ZOOM_CLAMP_CONSTRUCT, false)
     {
     }
-    
     
     virtual Element *Create()
     { return new ZoomClamp(); }
@@ -34,7 +31,8 @@ public:
     
     virtual bool Build(int header, const Scm &code);
     virtual Scm GetContents();
-    
+
+protected:
     float minx;
     float miny;
     float maxx;
@@ -47,3 +45,4 @@ public:
 } // namespace Summon
 
 #endif
+

@@ -338,9 +338,7 @@ public:
             case GET_WINDOW_DECORATION_COMMAND: {
                 // get the size of window decoration
                 ((ScriptCommand*) &command)->SetReturn(
-                    ScmCons(Int2Scm(m_windowOffset.x),
-                            ScmCons(Int2Scm(m_windowOffset.y),
-                                    Scm_EOL)));
+                    BuildScm("dd", m_windowOffset.x, m_windowOffset.y));
                 } break;
             
             case SET_WINDOW_CLOSE_CALLBACK_COMMAND: {
@@ -495,10 +493,7 @@ public:
                     Vertex2f pos1, pos2;
                     model->FindBounding(elm, &pos1, &pos2);
             
-                    cmd->SetReturn(ScmCons(Float2Scm(pos1.x),
-                                 ScmCons(Float2Scm(pos1.y),
-                                   ScmCons(Float2Scm(pos2.x),
-                                     ScmCons(Float2Scm(pos2.y), Scm_EOL)))));
+                    cmd->SetReturn(BuildScm("ffff", pos1.x, pos1.y, pos2.x, pos2.y));
                 } else {
                     Error("element must be added to a model to find its bounding box");
                 }
@@ -584,8 +579,7 @@ public:
         if (m_windowCloseCallback != Scm_EOL) {
             // let python know window has been closed
             Scm ret = ScmApply(m_windowCloseCallback, 
-                               ScmCons(Int2Scm(window->GetId()),
-                                       Scm_EOL));
+                               BuildScm("d", window->GetId()));
                     
             if (Scm2Py(ret) == NULL)
                 //display exceptions, return None

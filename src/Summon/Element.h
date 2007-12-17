@@ -127,7 +127,7 @@ inline int Element2Id(Element *elm)
 
 
 Element *GetElementFromObject(PyObject *obj);
-
+Element *GetElementFromObject(const Scm code);
 
 // element factory and registration
 class Element;

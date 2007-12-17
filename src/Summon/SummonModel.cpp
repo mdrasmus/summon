@@ -96,11 +96,7 @@ void SummonModel::ExecCommand(Command &command)
             Vertex2f pos1, pos2;
             FindBounding(elm, &pos1, &pos2);
             
-            show->SetReturn(ScmCons(Float2Scm(pos1.x),
-                              ScmCons(Float2Scm(pos1.y),
-                                ScmCons(Float2Scm(pos2.x),
-                                  ScmCons(Float2Scm(pos2.y), Scm_EOL)))));
-        
+            show->SetReturn(BuildScm("ffff", pos1.x, pos1.y, pos2.x, pos2.y));
             } break;
         default:
             // unknown command given
@@ -168,7 +164,7 @@ BuildEnv SummonModel::GetEnv(BuildEnv &env, Element *start, Element *end)
 
 Element *SummonModel::AddElement(Element *parent, Scm code)
 {
-    Element *elm = GetElementFromObject(code.GetPy());
+    Element *elm = GetElementFromObject(code);
     
     // verify that this is a group
     if (!elm) {
@@ -385,8 +381,8 @@ void SummonModel::RemoveHotspots(Element *elm)
 void SummonModel::FindBounding(Element *elm, Vertex2f *pos1, Vertex2f *pos2)
 {
 
-    float FLOAT_MIN = -1e307;
-    float FLOAT_MAX = 1e307;
+    const float FLOAT_MIN = -1e307;
+    const float FLOAT_MAX = 1e307;
 
     // find smallest bouding box
     float top    = FLOAT_MIN, 

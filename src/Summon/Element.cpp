@@ -13,8 +13,8 @@ namespace Summon {
 
 Element *GetElementFromObject(PyObject *obj)
 {
-    if (PyObject_HasAttrString(obj, "ptr")) {
-        PyObject* ptr = PyObject_GetAttrString(obj, "ptr");
+    if (PyObject_HasAttrString(obj, (char*) "ptr")) {
+        PyObject* ptr = PyObject_GetAttrString(obj, (char*) "ptr");
         long addr = PyLong_AsLong(ptr);
         Py_DECREF(ptr);
         
@@ -48,6 +48,12 @@ Element *GetElementFromObject(PyObject *obj)
 }
 
 
+Element *GetElementFromObject(const Scm code)
+{
+    return GetElementFromObject(code.GetPy());
+}
+
+
 Element::Element(int id) : 
     m_id(id), 
     m_parent(NULL),
@@ -74,9 +80,6 @@ Element::~Element()
 // recursively build child elements and if sucessful, add them as children
 bool Element::Build(int header, const Scm &code)
 {
-    //PyObject_Print(code.GetPy(), stdout, 0);
-    //printf("\n");
-
     // process children
     for (Scm children = code; 
          ScmConsp(children); 
@@ -91,7 +94,7 @@ bool Element::Build(int header, const Scm &code)
 
 Element *Element::AddChild(Scm code)
 {
-    Element *elm = GetElementFromObject(code.GetPy());
+    Element *elm = GetElementFromObject(code);
 
     // if error with child, report error
     if (!elm)

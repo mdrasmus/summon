@@ -17,9 +17,11 @@ bool TextElement::Build(int header, const Scm &code2)
 {
     //int header;
     float x1, y1, x2, y2;
-    if (!ParseScm("Bad format for text construct", code2,
-                  "sffff", &text, &x1, &y1, &x2, &y2))
+    if (!ParseScm(code2, "sffff", &text, &x1, &y1, &x2, &y2))
+    {
+        Error("Bad format for text construct");
         return false;
+    }
     
     Scm code = ScmCddr(ScmCdddr(code2));
     
@@ -34,9 +36,10 @@ bool TextElement::Build(int header, const Scm &code2)
     
     // clip text takes two more arguments
     if (kind == KIND_CLIP) {
-        if (!ParseScm("Bad format for text construct", code,
-                  "ff", &minHeight, &maxHeight))
+        if (!ParseScm(code, "ff", &minHeight, &maxHeight)) {
+            Error("Bad format for text construct");
             return false;
+        }
         code = ScmCddr(code);
     }
     
@@ -112,8 +115,8 @@ Scm TextElement::GetContents()
             assert(0);
     }
     
-    return ScmAppend(Py2ScmTake(Py_BuildValue("isffff", id, text.c_str(), 
-                                              pos1.x, pos1.y, pos2.x, pos2.y)),
+    return ScmAppend(BuildScm("isffff", id, text.c_str(), 
+                                        pos1.x, pos1.y, pos2.x, pos2.y),
                     just);
 
 }

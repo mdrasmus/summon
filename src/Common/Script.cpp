@@ -33,7 +33,7 @@ void InitPython()
     Scm_FALSE = Py2Scm(Py_False);
     Scm_EOL   = Py2ScmTake(PyTuple_New(0));
     
-    python_globals = PyModule_GetDict(PyImport_AddModule("__main__"));
+    python_globals = PyModule_GetDict(PyImport_AddModule((char*) "__main__"));
     Py_INCREF(python_globals);
 }
 
@@ -84,6 +84,161 @@ string int2string(int num)
     return str;
 }
 
+
+
+bool ParseScm(Scm lst, const char *fmt, ...)
+{
+    va_list ap;   
+    
+    bool status = true;
+    int *d;
+    float *f;
+    string *str;
+    Scm *proc;
+    Scm *code;
+    bool *b;
+    
+    va_start(ap, fmt);
+
+       
+    // loop through format string
+    int i=1;
+    for (const char *argtype = fmt; *argtype; argtype++, i++) {
+        // ensure lst is a list
+        if (!ScmConsp(lst)) {
+            status = false;
+            break;
+        }
+        
+        
+        // get next arg in lst
+        Scm arg = ScmCar(lst);
+        lst = ScmCdr(lst);
+        
+        switch (*argtype) {
+            case 'd':
+                if (!ScmIntp(arg)) {
+                    Error("expected integer for argument %d", i);
+                    status = false;
+                    break;
+                }
+                
+                d = va_arg(ap, int *);
+                *d = Scm2Int(arg);
+                break;
+            case 'f':
+                if (!ScmFloatp(arg)) {
+                    Error("expected float for argument %d", i);
+                    status = false;
+                    break;
+                }
+                
+                f = va_arg(ap, float *);
+                *f = Scm2Float(arg);
+                break;
+            case 's':
+                if (!ScmStringp(arg)) {
+                    Error("expected string for argument %d", i);
+                    status = false;
+                    break;
+                }
+                
+                str = va_arg(ap, string *);
+                *str = Scm2String(arg);
+                break;
+            case 'b':
+                b = va_arg(ap, bool *);
+                *b = (arg != Scm_FALSE);
+                break;
+            case 'p':
+                if (!ScmProcedurep(arg)) {
+                    Error("expected procedure for argument %d", i);
+                    status = false;
+                    break;
+                }
+                
+                proc = va_arg(ap, Scm *);
+                *proc = arg;
+                break;
+            case 'c':
+                code = va_arg(ap, Scm *);
+                *code = arg;
+                break;
+        }
+    }
+    
+    va_end(ap);
+    
+    return status;
+}
+
+
+// the 's' format is for char* only
+// Scm objects must be passed by pointers
+Scm BuildScm(const char *fmt, ...)
+{
+    va_list ap;   
+        
+    PyObject *tup = PyTuple_New(strlen(fmt));
+    
+    // argument pointers
+    int d;
+    float f;
+    char *str;
+    Scm *proc;
+    Scm *code;
+    int b;
+    
+    va_start(ap, fmt);
+
+       
+    // loop through format string
+    int i=0;
+    for (const char *argtype = fmt; *argtype; argtype++, i++) {        
+        switch (*argtype) {
+            case 'd': {
+                d = va_arg(ap, int);
+                PyObject *py = PyInt_FromLong((long) d);
+                assert(py != NULL);
+                PyTuple_SET_ITEM(tup, i, py);
+                } break;
+            case 'f': {
+                f = va_arg(ap, double);
+                PyObject *py = PyFloat_FromDouble(f);
+                assert(py != NULL);
+                PyTuple_SET_ITEM(tup, i, py);
+                } break;
+            case 's': {
+                str = va_arg(ap, char *);
+                PyObject *py = PyString_FromString(str);
+                assert(py != NULL);
+                PyTuple_SET_ITEM(tup, i, py);
+                } break;
+            case 'b': {
+                b = va_arg(ap, int);
+                PyObject *py = (b) ? Py_True : Py_False;
+                Py_INCREF(py);
+                PyTuple_SET_ITEM(tup, i, py);
+                } break;
+            case 'p': {
+                proc = va_arg(ap, Scm *);
+                PyObject *py = proc->GetPy();
+                Py_INCREF(py);
+                PyTuple_SET_ITEM(tup, i, py);
+                } break;
+            case 'c': {
+                code = va_arg(ap, Scm *);
+                PyObject *py = code->GetPy();
+                Py_INCREF(py);
+                PyTuple_SET_ITEM(tup, i, py);
+                } break;
+        }
+    }
+    
+    va_end(ap);
+    
+    return Py2ScmTake(tup);
+}
 
 
 } // namespace Summon

@@ -162,7 +162,6 @@ enum {
 void summonCommandsInit();
 
 // common parsing functions
-bool ParseScm(string errorMsg, Scm lst, const char *fmt, ...);
 bool ParseCommand(Scm procScm, Command **command);
 bool ParseInput(Scm lst, Input **input);
 bool ParseKeyInput(Scm lst, Input **input);
@@ -177,7 +176,6 @@ extern CommandAttr g_viewAttr;
 extern CommandAttr g_controllerAttr;
 extern CommandAttr g_globalAttr;
 extern CommandAttr g_glAttr;
-
 
 
 
@@ -235,8 +233,8 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "sdddd", &name, &size.x, &size.y,
-                                                   &position.x, &position.y);
+        return ParseScm(lst, "sdddd", &name, &size.x, &size.y,
+                                                     &position.x, &position.y);
     }
     
     string name;
@@ -259,7 +257,7 @@ public:
     virtual bool Setup(Scm lst)
     {
         if (ScmLength(lst) > 0)
-            return ParseScm(ErrorHelp(), lst, "d", &windowid);
+            return ParseScm(lst, "d", &windowid);
         else {
             windowid = -1;
             return true;
@@ -311,7 +309,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "dsd", &windowid, &kind, &modelid);
+        return ParseScm(lst, "dsd", &windowid, &kind, &modelid);
     }
     
     int windowid;
@@ -334,7 +332,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "d", &modelid);
+        return ParseScm(lst, "d", &modelid);
     }
     
     int modelid;
@@ -372,7 +370,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "p", &callback);
+        return ParseScm(lst, "p", &callback);
     }
     
     Scm callback;
@@ -393,7 +391,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "fp", &delay, &proc);
+        return ParseScm(lst, "fp", &delay, &proc);
     }
     
     float delay;
@@ -415,7 +413,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "p", &proc);
+        return ParseScm(lst, "p", &proc);
     }
     
     Scm proc;
@@ -452,7 +450,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "d", &menuid);
+        return ParseScm(lst, "d", &menuid);
     }
     
     int menuid;
@@ -472,7 +470,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "dsp", &menuid, &text, &func);
+        return ParseScm(lst, "dsp", &menuid, &text, &func);
     }
     
     int menuid;
@@ -495,7 +493,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "dsd", &menuid, &text, &submenuid);
+        return ParseScm(lst, "dsd", &menuid, &text, &submenuid);
     }
     
     int menuid;
@@ -518,7 +516,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "dd", &menuid, &index);
+        return ParseScm(lst, "dd", &menuid, &index);
     }
     
     int menuid;
@@ -540,7 +538,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "ddsp", &menuid, &index, &text, &func);
+        return ParseScm(lst, "ddsp", &menuid, &index, &text, &func);
     }
     
     int menuid;
@@ -563,7 +561,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "ddsd", &menuid, &index, &text, &submenuid);
+        return ParseScm(lst, "ddsd", &menuid, &index, &text, &submenuid);
     }
     
     int menuid;
@@ -587,7 +585,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "ddd", &windowid, &menuid, &button);
+        return ParseScm(lst, "ddd", &windowid, &menuid, &button);
     }
     
     int menuid;
@@ -609,7 +607,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "ddd", &windowid, &menuid, &button);
+        return ParseScm(lst, "ddd", &windowid, &menuid, &button);
     }
     
     int menuid;
@@ -640,7 +638,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "dc", &groupid, &code);
+        return ParseScm(lst, "dc", &groupid, &code);
     }
     
     Scm code;
@@ -697,7 +695,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        if (ParseScm(ErrorHelp(), lst, "dd", &groupid, &oldgroupid)) {
+        if (ParseScm(lst, "dd", &groupid, &oldgroupid)) {
             code = ScmCddr(lst);
             return true;
         } else {
@@ -723,7 +721,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "db", &groupid, &visible);
+        return ParseScm(lst, "db", &groupid, &visible);
     }
     
     bool visible;
@@ -742,7 +740,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "d", &groupid);
+        return ParseScm(lst, "d", &groupid);
     }
 };
 
@@ -773,7 +771,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "dc", &modelid, &code);
+        return ParseScm(lst, "dc", &modelid, &code);
     }
     
     Scm code;
@@ -792,7 +790,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "ddc", &modelid, &groupid, &code);
+        return ParseScm(lst, "ddc", &modelid, &groupid, &code);
     }
     
     int groupid;
@@ -851,7 +849,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        if (ParseScm(ErrorHelp(), lst, "dd", &modelid, &groupid)) {
+        if (ParseScm(lst, "dd", &modelid, &groupid)) {
             code = ScmCddr(lst);
             return true;
         } else {
@@ -877,7 +875,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "d", &modelid);
+        return ParseScm(lst, "d", &modelid);
     }
 };
 
@@ -895,7 +893,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "ddb", &modelid, &groupid, &visible);
+        return ParseScm(lst, "ddb", &modelid, &groupid, &visible);
     }
     
     int groupid;
@@ -916,7 +914,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "d", &modelid);
+        return ParseScm(lst, "d", &modelid);
     }
 };
 
@@ -935,7 +933,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "dd", &modelid, &groupid);
+        return ParseScm(lst, "dd", &modelid, &groupid);
     }
     
     int groupid;
@@ -961,7 +959,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "ds", &windowid, &name);
+        return ParseScm(lst, "ds", &windowid, &name);
     }
     
     string name;
@@ -981,7 +979,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+        return ParseScm(lst, "d", &windowid);
     }
 };
 
@@ -999,7 +997,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "ddd", &windowid, &x, &y);
+        return ParseScm(lst, "ddd", &windowid, &x, &y);
     }
     
     int x, y;
@@ -1018,7 +1016,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+        return ParseScm(lst, "d", &windowid);
     }
 };
 
@@ -1036,7 +1034,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "ddd", &windowid, &width, &height);
+        return ParseScm(lst, "ddd", &windowid, &width, &height);
     }
     
     
@@ -1058,7 +1056,7 @@ public:
 
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+        return ParseScm(lst, "d", &windowid);
     }    
 };
 
@@ -1076,7 +1074,7 @@ public:
 
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "db", &windowid, &raise);
+        return ParseScm(lst, "db", &windowid, &raise);
     }
     
     bool raise;
@@ -1096,7 +1094,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "dff", &windowid, &x, &y);
+        return ParseScm(lst, "dff", &windowid, &x, &y);
     }
     
     float x, y;
@@ -1115,7 +1113,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+        return ParseScm(lst, "d", &windowid);
     }
 };
 
@@ -1133,7 +1131,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "dff", &windowid, &x, &y);
+        return ParseScm(lst, "dff", &windowid, &x, &y);
     }
     
     float x, y;
@@ -1152,7 +1150,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+        return ParseScm(lst, "d", &windowid);
     }
 };
 
@@ -1170,7 +1168,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "dff", &windowid, &x, &y);
+        return ParseScm(lst, "dff", &windowid, &x, &y);
     }
     
     float x, y;
@@ -1189,7 +1187,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+        return ParseScm(lst, "d", &windowid);
     }
 };
 
@@ -1209,7 +1207,7 @@ public:
     {
         float r, g, b;
         
-        if (ParseScm(ErrorHelp(), lst, "dfff", &windowid, &r, &g, &b)) {
+        if (ParseScm(lst, "dfff", &windowid, &r, &g, &b)) {
             color = Color(r, g, b);
             return true;
         } else
@@ -1233,7 +1231,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+        return ParseScm(lst, "d", &windowid);
     }
 };
 
@@ -1251,7 +1249,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "dffff", &windowid,
+        return ParseScm(lst, "dffff", &windowid,
                         &data[0], &data[1], &data[2], &data[3]);
     }
     
@@ -1272,7 +1270,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+        return ParseScm(lst, "d", &windowid);
     }
 };
 
@@ -1290,7 +1288,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "db", &windowid, &enabled);
+        return ParseScm(lst, "db", &windowid, &enabled);
     }
     
     bool enabled;
@@ -1310,7 +1308,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "db", &windowid, &enabled);
+        return ParseScm(lst, "db", &windowid, &enabled);
     }
     
     bool enabled;
@@ -1333,12 +1331,12 @@ public:
         float r, g, b, a;
         
         if (ScmLength(lst) == 4 && 
-            ParseScm(ErrorHelp(), lst, "dfff", &windowid, &r, &g, &b))
+            ParseScm(lst, "dfff", &windowid, &r, &g, &b))
         {
             color = Color(r, g, b, 1);
             return true;
         } else if (ScmLength(lst) == 5 && 
-                   ParseScm(ErrorHelp(), lst, "dffff", &windowid, &r, &g, &b, &a))
+                   ParseScm(lst, "dffff", &windowid, &r, &g, &b, &a))
         {
             color = Color(r, g, b, a);
             return true;
@@ -1386,7 +1384,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "dff", &windowid, &trans.x, &trans.y);
+        return ParseScm(lst, "dff", &windowid, &trans.x, &trans.y);
     }
     
     Vertex2f trans;
@@ -1420,7 +1418,7 @@ public:
     virtual const char *GetDescription() { return "zoom view by a factor"; }
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "dff", &windowid, &zoom.x, &zoom.y);
+        return ParseScm(lst, "dff", &windowid, &zoom.x, &zoom.y);
     }
     
     enum { MAX_ZOOM = 20 };
@@ -1459,7 +1457,7 @@ public:
     virtual bool Setup(Scm lst)
     {
         zoom.y = 1.0;
-        return ParseScm(ErrorHelp(), lst, "df", &windowid, &zoom.x);
+        return ParseScm(lst, "df", &windowid, &zoom.x);
     }
     
     enum { MAX_ZOOM = 20 };
@@ -1498,7 +1496,7 @@ public:
     virtual bool Setup(Scm lst)
     {
         zoom.x = 1.0;
-        return ParseScm(ErrorHelp(), lst, "df", &windowid, &zoom.y);
+        return ParseScm(lst, "df", &windowid, &zoom.y);
     }
     
     enum { MAX_ZOOM = 20 };
@@ -1525,7 +1523,7 @@ public:
     virtual const char *GetDescription() { return "focus the view on (x,y)"; }
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "ddd", &windowid, &focus.x, &focus.y);
+        return ParseScm(lst, "ddd", &windowid, &focus.x, &focus.y);
     }
     
     Vertex2i focus;
@@ -1556,7 +1554,7 @@ public:
         Scm inputArg;
         Scm commandArg;
         
-        if (!ParseScm(ErrorHelp(), lst, "dcc", &windowid, &inputArg, &commandArg)) {
+        if (!ParseScm(lst, "dcc", &windowid, &inputArg, &commandArg)) {
             Error("must specify an input and command/procedure");
             return false;
         }
@@ -1601,7 +1599,7 @@ public:
     {
         Scm inputArg;
     
-        if (!ParseScm(ErrorHelp(), lst, "dc", &windowid, &inputArg)) {
+        if (!ParseScm(lst, "dc", &windowid, &inputArg)) {
             Error("must specify an input");
             return false;
         }
@@ -1630,7 +1628,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "d", &windowid);
+        return ParseScm(lst, "d", &windowid);
     }
 };
 
@@ -1676,7 +1674,7 @@ public:
 
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "ds", &windowid, &kind);
+        return ParseScm(lst, "ds", &windowid, &kind);
     }
     
     string kind;
@@ -1697,7 +1695,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "dc", &windowid, &proc);
+        return ParseScm(lst, "dc", &windowid, &proc);
     }
     
     Scm proc;
@@ -1717,7 +1715,7 @@ public:
     
     virtual bool Setup(Scm lst)
     {
-        return ParseScm(ErrorHelp(), lst, "dc", &windowid, &proc);
+        return ParseScm(lst, "dc", &windowid, &proc);
     }
     
     Scm proc;

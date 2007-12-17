@@ -21,10 +21,13 @@ bool Hotspot::Build(int header, const Scm &code)
     Scm procCode;
     
     // parse the scm code for a hotspot
-    if (!ParseScm("Bad format for Hotspot", code,
+    if (!ParseScm(code,
                   "sffffp", &kindstr, 
                    &pos1.x, &pos1.y, &pos2.x, &pos2.y, &procCode))
+    {
+        Error("Bad format for hotspot\n");
         return false;
+    }
 
     // parse hotspot kind
     if (kindstr == "click") {
@@ -60,12 +63,12 @@ Scm Hotspot::GetContents()
     char *skind;
 
     if (kind == CLICK) {
-        skind = "click";
+        skind = (char*) "click";
     } else {
         assert(0);
     }
     
-    return Py2ScmTake(Py_BuildValue("sffffO", skind, 
+    return Py2ScmTake(Py_BuildValue("sffffO", (char*) skind, 
                                     pos1.x, pos1.y, pos2.x, pos2.y,
                                     Scm2Py(GetProc()->GetScmProc())));
 }
