@@ -134,5 +134,18 @@ TransformMatrix &Element::GetTransform(TransformMatrix &matrix)
 }
 
 
+void Element::SetTransformParent()
+{
+    assert(m_parent != NULL);
+    m_transformParent = m_parent->GetTransfromParent();
+}
+
+
+Element *Element::GetTransformParent()
+{
+    return m_transformParent;
+}
+
+
 
 } // namespace Summon

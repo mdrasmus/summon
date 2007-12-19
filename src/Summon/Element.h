@@ -63,7 +63,7 @@ public:
         m_children.push_back(elm); 
         elm->SetParent(this);        
         elm->IncRef();
-        SetTransformParent();
+        elm->SetTransformParent();
     }
     
     Element *AddChild(Scm code);
@@ -118,7 +118,6 @@ public:
     inline void *GetModel() { return m_model; }
     
     virtual TransformMatrix &GetTransform(TransformMatrix &matrix);
-    void SetTransformParent() {}
     
     virtual void FindBounding(float *top, float *bottom, float *left, float *right,
                       TransformMatrix *matrix);
@@ -132,6 +131,9 @@ public:
     
     
 protected:
+    void SetTransformParent();
+    virtual Element *GetTransformParent();
+
     ElementId m_id; 
     bool m_visible;
     Element *m_parent;

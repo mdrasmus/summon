@@ -6,6 +6,9 @@ Tue Dec 18 15:34:14 EST 2007
   hotspots and other transforms for now.
   - That is don't recurse the Update throught a ZoomClamp
 
+
+- think about how to include transformParent maintance in Model::Update
+
 =============================================================================
 Tue Oct 16 16:19:05 EDT 2007
 

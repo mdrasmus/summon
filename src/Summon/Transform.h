@@ -68,8 +68,15 @@ public:
     void FindBounding(float *top, float *bottom, float *left, float *right,
                       TransformMatrix *matrix);
     
+    
 protected:
-    void Set(int kind, float param1, float param2 = 0.0);
+    Element *Element::GetTransformParent()
+    {
+        return this;
+    }
+
+
+    void Set(int kind, float param1, float param2=0.0);
 
     int m_kind;
     float m_param1;
