@@ -20,6 +20,7 @@
 #include "Graphic.h"
 #include "TextElement.h"
 #include "Transform.h"
+#include "ZoomClamp.h"
 
 
 namespace Summon
@@ -115,6 +116,7 @@ protected:
     void DrawElement(Element *elm, bool createTasks=true); 
     void DrawGraphic(Graphic *graphic);
     void DrawTextElement(TextElement *elm);
+    bool DrawZoomClamp(ZoomClamp *zoomClamp);
     
     void DrawText(void *font, string text, float x, float y);
     inline void SetColor(Color &color)

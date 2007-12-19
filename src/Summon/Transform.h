@@ -68,9 +68,10 @@ public:
     void FindBounding(float *top, float *bottom, float *left, float *right,
                       TransformMatrix *matrix);
     
+    TransformMatrix &GetTransform(TransformMatrix &matrix);
     
 protected:
-    Element *Element::GetTransformParent()
+    virtual Element *GetTransformParent()
     {
         return this;
     }

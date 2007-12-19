@@ -1,4 +1,4 @@
-from summon import *
+from summon.core import *
 
 red    = color(1, 0, 0)
 orange = color(1, .5, 0)

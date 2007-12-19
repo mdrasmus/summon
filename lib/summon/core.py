@@ -481,7 +481,7 @@ class zoom_clamp (Transform):
            maxx         -- maximum x-zoom level
            maxy         -- maximum y-zoom level
            clip         -- a bool whether elements are cliped when too small
-           linked       -- a bool whether x- and y-axis of elements
+           link         -- a bool whether x- and y-axis of elements
                            should always zoom together
         """
         
@@ -489,11 +489,20 @@ class zoom_clamp (Transform):
         miny = options.get("miny", 0.0)
         maxx = options.get("maxx", _INF)
         maxy = options.get("maxy", _INF)
-        clip = options.get("clip", True)
-        linked = options.get("linked", False)        
+        clip = options.get("clip", False)
+        link = options.get("link", False)        
+        
+        if link:
+            low = max(minx, miny)
+            high = min(maxx, maxy)
+            
+            if low > high:
+                raise Exception("x and y clamp range must intersect if linked")
+            minx = miny = low
+            maxx = maxy = high
         
         Element.__init__(self, _ZOOM_CLAMP_CONSTRUCT, 
-                         _tuple(minx, miny, maxx, maxy, clip, linked, *elements), 
+                         _tuple(minx, miny, maxx, maxy, clip, link, *elements), 
                                 options)
 
  

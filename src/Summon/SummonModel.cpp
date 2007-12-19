@@ -26,6 +26,7 @@ SummonModel::SummonModel(int id, ModelKind kind) :
     m_root = new Group();
     m_root->SetModel(this);
     m_root->IncRef();
+    Update();
 }    
 
 
@@ -249,6 +250,7 @@ void SummonModel::Update(Element *element, BuildEnv *env)
     BuildEnv *env2 = NULL;
     
     element->SetModel(this);
+    element->SetTransformParent();
     
     // perform element-specific updating
     switch (element->GetId()) {

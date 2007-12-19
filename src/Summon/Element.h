@@ -63,7 +63,6 @@ public:
         m_children.push_back(elm); 
         elm->SetParent(this);        
         elm->IncRef();
-        elm->SetTransformParent();
     }
     
     Element *AddChild(Scm code);
@@ -128,10 +127,10 @@ public:
     inline void IncRef() { m_referenced++; }
     inline void DecRef() { m_referenced--; }    
     inline bool IsReferenced() { return m_referenced > 0; }
-    
+
+    void SetTransformParent();    
     
 protected:
-    void SetTransformParent();
     virtual Element *GetTransformParent();
 
     ElementId m_id; 

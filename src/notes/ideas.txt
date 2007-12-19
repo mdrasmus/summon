@@ -8,6 +8,16 @@ Tue Dec 18 15:34:14 EST 2007
 
 
 - think about how to include transformParent maintance in Model::Update
+  - just call elm->SetTransformParent in a preorder recursion.
+
+
+- I have implemented zoom_clamp
+  - next I needed to make it more efficent by caching matrix multiplications
+  - m_transformParent should point to last DYNAMIC transform (right now it
+    points to last transform).
+  - I think I can replace alot of the bookmark Updating done for text and
+    hotspots to use my new transformParent data structure.  I could also remove
+    BuildEnv probably.
 
 =============================================================================
 Tue Oct 16 16:19:05 EDT 2007

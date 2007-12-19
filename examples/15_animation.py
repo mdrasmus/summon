@@ -11,7 +11,7 @@ import summon
 
 
 # parameters (feel free to change these here and WHILE the animation is running!)
-rate = 0
+rate = .02
 winsize = 300
 maxballsize = 20
 balls = []
@@ -65,20 +65,20 @@ def drawBall(ball):
         ball.activate = 1
         
     val = (ball.vy + 3) / 6
-    ball.group = translate(ball.x, ball.y,
-                           color(val, ball.activate, 1),
-                           shapes.regularPoly(20, ball.size),
-                           hotspot("click", - 2 * ball.size, - 2*ball.size,
-                                   2*ball.size, 2*ball.size,
-                                   func))
-    win.add_group(ball.group)
+    vis = translate(ball.x, ball.y,
+                    color(val, ball.activate, 1),
+                    shapes.regularPoly(20, ball.size),
+                    hotspot("click", - 2 * ball.size, - 2*ball.size,
+                            2*ball.size, 2*ball.size,
+                            func))
+    if ball.group == None:
+        ball.group = win.add_group(vis)
+    else:
+        ball.group = win.replace_group(ball.group, vis)
 
 
 def drawFrame():
     for ball in balls:
-        if ball.group != None:
-            win.remove_group(ball.group)
-
         # update position and velocity
         ball.x += ball.vx
         ball.y += ball.vy

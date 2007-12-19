@@ -125,7 +125,7 @@ void Element::FindBounding(float *top, float *bottom,
 
 TransformMatrix &Element::GetTransform(TransformMatrix &matrix)
 {
-    if (m_transformParent == NULL) {
+    if (m_transformParent == this) {
         matrix.SetIdentity();
         return matrix;
     } else {
@@ -136,8 +136,10 @@ TransformMatrix &Element::GetTransform(TransformMatrix &matrix)
 
 void Element::SetTransformParent()
 {
-    assert(m_parent != NULL);
-    m_transformParent = m_parent->GetTransfromParent();
+    if (m_parent == NULL) 
+        m_transformParent = this;
+    else
+        m_transformParent = m_parent->GetTransformParent();
 }
 
 

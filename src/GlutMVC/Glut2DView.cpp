@@ -19,9 +19,9 @@ namespace Summon
 
 Glut2DView::Glut2DView(int width, int height, const char *name,
                        int left, int top) :
-   GlutView(width, height, name, left, top),
-   m_trans(0, 0),
-   m_zoom(1.0, 1.0)
+    GlutView(width, height, name, left, top),
+    m_trans(0, 0),
+    m_zoom(1.0, 1.0)
 {
 }
 
@@ -39,26 +39,26 @@ void Glut2DView::ExecCommand(Command &command)
             RedisplayCommand redisplay;
             GlutView::ExecCommand(redisplay);
             } break;
-    
+
         case ZOOM_COMMAND: {
             ZoomBy(((ZoomCommand*) &command)->zoom.x,
                    ((ZoomCommand*) &command)->zoom.y);
             RedisplayCommand redisplay;
             GlutView::ExecCommand(redisplay);
             } break;
-        
+
         case ZOOM_X_COMMAND: {
             ZoomBy(((ZoomCommand*) &command)->zoom.x, 1.0);
             RedisplayCommand redisplay;
             GlutView::ExecCommand(redisplay);
             } break;
-        
+
         case ZOOM_Y_COMMAND: {
             ZoomBy(1.0, ((ZoomCommand*) &command)->zoom.y);
             RedisplayCommand redisplay;
             GlutView::ExecCommand(redisplay);
             } break;
-            
+
         case FOCUS_COMMAND: {
             FocusCommand* cmd = (FocusCommand*) &command;
             Vertex2f focus = WindowToWorld(cmd->focus.x, cmd->focus.y);
@@ -76,34 +76,34 @@ void Glut2DView::ExecCommand(Command &command)
 
 void Glut2DView::Display()
 {
-   // clear screen and initialize coordinate system
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-   glMatrixMode(GL_MODELVIEW);
-   glLoadIdentity();
-   
-   // draw world in its own coordinate system
-   glPushMatrix();
-   TransformWorld();
-   DrawWorld();
-   glPopMatrix();   
-   
-   // draw graphics with the screen coordinate system
-   DrawScreen();
-   
-   // display new frame
-   glutSwapBuffers();
+    // clear screen and initialize coordinate system
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    // draw world in its own coordinate system
+    glPushMatrix();
+    TransformWorld();
+    DrawWorld();
+    glPopMatrix();   
+
+    // draw graphics with the screen coordinate system
+    DrawScreen();
+
+    // display new frame
+    glutSwapBuffers();
 }
 
 
 void Glut2DView::TransformWorld()
 {
-   // perform translation
-   glTranslatef(m_trans.x , m_trans.y, 0);
-   
-   // perform a zoom with respect to a focus point
-   glTranslatef(m_focus.x, m_focus.y, 0);
-   glScalef(m_zoom.x, m_zoom.y, 1.0);
-   glTranslatef(-m_focus.x, -m_focus.y, 0);
+    // perform translation
+    glTranslatef(m_trans.x , m_trans.y, 0);
+
+    // perform a zoom with respect to a focus point
+    glTranslatef(m_focus.x, m_focus.y, 0);
+    glScalef(m_zoom.x, m_zoom.y, 1.0);
+    glTranslatef(-m_focus.x, -m_focus.y, 0);
 }
 
 void Glut2DView::Reshape(int w, int h)
@@ -136,7 +136,8 @@ void Glut2DView::Reshape(int w, int h)
   
     // window has resized
     for (ListenerIter iter = m_listeners.begin(); 
-         iter != m_listeners.end(); iter++) {
+         iter != m_listeners.end(); iter++) 
+    {
         (*iter)->ViewResize(this);
     }
     MakeCurrentWindow();
@@ -149,36 +150,36 @@ void Glut2DView::Reshape(int w, int h)
 
 void Glut2DView::DrawWorld()
 {
-   // default testing drawing
-   glColor3f(1, 1, 1);
-   glBegin(GL_LINES);
-      glVertex3f(0, 0, 0);
-      glVertex3f(10, 10, 0);
-      glVertex3f(0, 10, 0);
-      glVertex3f(10, 0, 0);
-   glEnd();
+    // default testing drawing
+    glColor3f(1, 1, 1);
+    glBegin(GL_LINES);
+        glVertex3f(0, 0, 0);
+        glVertex3f(10, 10, 0);
+        glVertex3f(0, 10, 0);
+        glVertex3f(10, 0, 0);
+    glEnd();
 
-   glTranslatef(m_focus.x, m_focus.y, 0);
+    glTranslatef(m_focus.x, m_focus.y, 0);
 
-   glColor3f(1, 0, 0);
-   glBegin(GL_LINES);
-      glVertex3f(0, -5, 0);
-      glVertex3f(0, 5, 0);
-      glVertex3f(5, 0, 0);
-      glVertex3f(-5, 0, 0);
-   glEnd();   
+    glColor3f(1, 0, 0);
+    glBegin(GL_LINES);
+        glVertex3f(0, -5, 0);
+        glVertex3f(0, 5, 0);
+        glVertex3f(5, 0, 0);
+        glVertex3f(-5, 0, 0);
+    glEnd();   
 }
 
 void Glut2DView::DrawScreen()
 {
-   // default testing drawing
-   glColor3f(1, 1, 0);
-   glBegin(GL_LINES);
-      glVertex3f(0, -10, 0);
-      glVertex3f(0, 10, 0);
-      glVertex3f(10, 0, 0);
-      glVertex3f(-10, 0, 0);
-   glEnd();
+    // default testing drawing
+    glColor3f(1, 1, 0);
+    glBegin(GL_LINES);
+        glVertex3f(0, -10, 0);
+        glVertex3f(0, 10, 0);
+        glVertex3f(10, 0, 0);
+        glVertex3f(-10, 0, 0);
+    glEnd();
 }
 
 
@@ -190,7 +191,7 @@ void Glut2DView::DrawScreen()
 // There are other possible ways to set visible:
 //      2. maintain zoom aspect x:y
 //      3. set zoom aspect based on requested visible aspect
-//      I will probably implement these in python
+//      I have implemented these in python
 void Glut2DView::SetVisible(float x, float y, float x2, float y2)
 {
     if (m_windowSize.x == 0 || m_windowSize.y == 0)
@@ -244,33 +245,33 @@ void Glut2DView::SetVisible(float x, float y, float x2, float y2)
 
 void Glut2DView::TranslateBy(float x, float y)
 {
-   m_trans = m_trans - Vertex2f(x, y);
+    m_trans = m_trans - Vertex2f(x, y);
 }
 
 
 void Glut2DView::TranslateTo(float x, float y)
 {
-   m_trans = Vertex2f(x, y);
+    m_trans = Vertex2f(x, y);
 }
 
 
 void Glut2DView::ZoomBy(float x, float y)
 {
-   m_zoom.x *= x;
-   m_zoom.y *= y;
+    m_zoom.x *= x;
+    m_zoom.y *= y;
 }
 
 
 void Glut2DView::ZoomTo(float x, float y)
 {
-   m_zoom = Vertex2f(x, y);  
+    m_zoom = Vertex2f(x, y);  
 }
 
 void Glut2DView::SetFocus(float x, float y) { 
-   Vertex2f focus2(x, y);
-   m_trans.x = m_trans.x + (m_focus.x - focus2.x) * (1 - m_zoom.x);
-   m_trans.y = m_trans.y + (m_focus.y - focus2.y) * (1 - m_zoom.y);   
-   m_focus = focus2;
+    Vertex2f focus2(x, y);
+    m_trans.x = m_trans.x + (m_focus.x - focus2.x) * (1 - m_zoom.x);
+    m_trans.y = m_trans.y + (m_focus.y - focus2.y) * (1 - m_zoom.y);   
+    m_focus = focus2;
 }
 
 }

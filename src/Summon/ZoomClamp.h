@@ -32,13 +32,14 @@ public:
     virtual bool Build(int header, const Scm &code);
     virtual Scm GetContents();
 
-protected:
+    virtual TransformMatrix &GetTransform(TransformMatrix &matrix);
+
     float minx;
     float miny;
     float maxx;
     float maxy;
     bool clip;
-    bool linked;
+    bool link;
 };
 
 

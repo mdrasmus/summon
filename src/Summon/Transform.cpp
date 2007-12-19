@@ -138,4 +138,18 @@ void Transform::FindBounding(float *top, float *bottom,
 }
 
 
+TransformMatrix &Transform::GetTransform(TransformMatrix &matrix)
+{
+    if (m_transformParent == this) {
+        matrix.SetIdentity();
+    } else {
+        m_transformParent->GetTransform(matrix);
+    }
+
+    float tmp[16];
+    MultMatrix(matrix.mat, m_matrix, tmp);
+    CopyMatrix(matrix.mat, tmp);
+    return matrix;
+}
+
 }

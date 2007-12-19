@@ -76,7 +76,7 @@ protected:
 
 
 
-}
+} // namespace Summon
 
 #endif
 

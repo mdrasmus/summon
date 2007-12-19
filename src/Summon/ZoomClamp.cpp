@@ -15,7 +15,7 @@ namespace Summon {
 
 bool ZoomClamp::Build(int header, const Scm &code)
 {
-    if (!ParseScm(code, "ffffbb", &minx, &miny, &maxx, &maxy, &clip, &linked)) {
+    if (!ParseScm(code, "ffffbb", &minx, &miny, &maxx, &maxy, &clip, &link)) {
         Error("Bad format for zoom_clamp construct");
         return false;
     }
@@ -26,8 +26,19 @@ bool ZoomClamp::Build(int header, const Scm &code)
 
 Scm ZoomClamp::GetContents()
 {
-    return BuildScm("ffffbb", minx, miny, maxx, maxy, clip, linked);
+    return BuildScm("ffffbb", minx, miny, maxx, maxy, clip, link);
 }
 
+
+TransformMatrix &ZoomClamp::GetTransform(TransformMatrix &matrix)
+{
+    if (m_transformParent == this) {
+        matrix.SetIdentity();
+    } else {
+        m_transformParent->GetTransform(matrix);
+    }
+    
+    return matrix;
+}
 
 } // namespace Summon
