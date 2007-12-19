@@ -52,25 +52,22 @@ def config_window(win):
     win.set_binding(input_key("left", "shift"), win.zoom_camera(1/1.2, 1))
     win.set_binding(input_key("up", "ctrl"), win.zoom_camera(1.2))
     win.set_binding(input_key("down", "ctrl"), win.zoom_camera(1/1.2))
+    
+    # selection
+    win.add_binding(input_click("left", "down", "ctrl"), win.select.click)
+    win.add_binding(input_motion("left", "down", "ctrl"), win.select.drag)
+    win.add_binding(input_click("left", "up", "ctrl"), win.select.done)
 
 
     # hotspot clicking
-    #win.set_binding(input_click("middle", "up"), "hotspot_click")
-    #win.set_binding(input_click("left", "up", "ctrl"), "hotspot_click")
     win.set_binding(input_click("left", "click"), "hotspot_click")
 
 
     # menus
     win.set_menu(summon.SummonMenu(win))
-    #win.set_menu_button("left")
-    #win.set_binding(input_key("`"), win.activate_menu)
-    #win.add_binding(input_click("left", "click"), win.deactivate_menu)
-    #win.add_binding(input_click("left", "up"), win.deactivate_menu)    
     win.set_menu_button("middle")
     win.activate_menu()
-    #win.set_binding(input_key("`"), win.activate_menu)
-    #win.add_binding(input_click("left", "click"), win.deactivate_menu)
-    #win.add_binding(input_click("left", "up"), win.deactivate_menu)    
+
 
     # misc
     win.set_binding(input_key("h"), win.home)

@@ -516,6 +516,14 @@ void SummonView::DrawElement(Element *element, bool createTasks)
                 }
             }
             break;
+        
+        case ZOOM_CLAMP_CONSTRUCT:
+            glPushMatrix();
+            glLoadIdentity();
+            //translate(env.mat * (0, 0))
+            //scale(clamp(zoom))            
+            
+            break;
 
         // do nothing
         case HOTSPOT_CONSTRUCT:
@@ -544,6 +552,7 @@ void SummonView::DrawElement(Element *element, bool createTasks)
     // postprocess element
     switch (element->GetId()) {
         case TRANSFORM_CONSTRUCT:
+        case ZOOM_CLAMP_CONSTRUCT:
             glPopMatrix();
             break;
     }

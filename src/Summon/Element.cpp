@@ -54,12 +54,13 @@ Element *GetElementFromObject(const Scm code)
 }
 
 
-Element::Element(int id) : 
+Element::Element(ElementId id) : 
     m_id(id), 
-    m_parent(NULL),
+    m_visible(true),   
+    m_parent(NULL),    
+    m_referenced(0),
     m_model(NULL),
-    m_visible(true),
-    m_referenced(0)
+    m_transformParent(NULL)
 {}
     
 
@@ -68,12 +69,8 @@ Element::~Element()
     // delete all child elements
     for (Iterator i=Begin(); i!=End(); i++) {
         (*i)->DecRef();
-        if (!(*i)->IsReferenced()) {
-            // just detach parent pointer and let python garbage collect child
-            //(*i)->SetParent(NULL);
-        //} else {
+        if (!(*i)->IsReferenced())
             delete (*i);
-        }
     }
 }
 
@@ -123,6 +120,16 @@ void Element::FindBounding(float *top, float *bottom,
     // loop through children of this element
     for (Element::Iterator i=Begin(); i!=End(); i++) {
         (*i)->FindBounding(top, bottom, left, right, matrix);
+    }
+}
+
+TransformMatrix &Element::GetTransform(TransformMatrix &matrix)
+{
+    if (m_transformParent == NULL) {
+        matrix.SetIdentity();
+        return matrix;
+    } else {
+        return m_transformParent->GetTransform(matrix);
     }
 }
 

@@ -24,7 +24,7 @@ def regularPoly(nsides, radius, fill=True):
         pts.append(radius * math.cos(i))
         pts.append(radius * math.sin(i))
         i += (2 * 3.14159 / nsides)
-        
+    
     if fill:
         return polygon(*pts)
     else:

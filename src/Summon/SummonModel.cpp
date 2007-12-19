@@ -18,7 +18,7 @@ namespace Summon
 
 
 
-SummonModel::SummonModel(int id, int kind) :
+SummonModel::SummonModel(int id, ModelKind kind) :
     m_id(id),
     m_kind(kind),
     m_hotspotClickSet(1000)

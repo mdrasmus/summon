@@ -17,44 +17,53 @@ class Select:
        mouse.
     """
 
-    def __init__(self, win, func, mindrag=3, strokeColor=None, fillColor=None,
+    def __init__(self, win, func, mindrag=3, stroke_color=None, fill_color=None,
                        coords="world"):
         self.win = win    
         self.func = func
         self.mindrag = mindrag
         self.coords = coords
         
-        if strokeColor == None:
+        if stroke_color == None:
             if win.get_bgcolor() == (0, 0, 0):
                 self.strokeColor = (1, 1, 1, 1)
             else:
                 self.strokeColor = (0, 0, 0, 1)
         else:
-            self.strokeColor = strokeColor
+            self.strokeColor = stroke_color
         
-        if fillColor == None:
-            self.fillColor = (0, 0, 0, 0)
+        if fill_color == None:
+            self.fillColor = (0, .5, 1, .2)
         else:
-            self.fillColor = fillColor
+            self.fillColor = fill_color
         
         
         self.pos1 = None
         self.pos2 = None
         self.worldpos1 = None
         self.worldpos2 = None
-        self.selbox = None    
+        self.selbox = None
     
-        self.start()    
     
-    def start(self):
-        """initialize mouse bindings"""
+    
+    def set_fill_color(self, col):
+        self.fillColor = col
+    
+    def set_stroke_color(self, col):
+        self.strokeColor = col
         
-        # TODO: remove hard-coded bindings
-        # setup bindings
-        self.win.add_binding(input_click("left", "down", "ctrl"), self.click)
-        self.win.add_binding(input_motion("left", "down", "ctrl"), self.drag)
-        self.win.add_binding(input_click("left", "up", "ctrl"), self.done)
-        
+    def set_min_drag(self, mindrag):
+        self.mindrag = mindrag
+    
+    def set_callback(self, func):
+        self.func = func
+    
+    def set_coords(self, coords):
+        self.coords = coords
+    
+    
+    #==========================================
+    # callbacks
     
     def click(self):
         """starting click"""

@@ -52,6 +52,7 @@ win = summon.Window("selection")
 win.drag = False
 win.clear_binding(input_click("middle", "up"))
 win.set_binding(input_motion("middle", "down", "ctrl"), "hotspot_click")
-sel = select.Select(win, selected, strokeColor=(1, .5, 1, .8), 
-                            fillColor=(0, .5, 1, .5))
+win.select.set_callback(selected)
+#sel = select.Select(win, selected, strokeColor=(1, .5, 1, .8), 
+#                         fillColor=(0, .5, 1, .5))
 

@@ -659,7 +659,7 @@ private:
         
     
     // Create a new model (kind = WORLD, SCREEN)
-    int NewModel(int kind)
+    int NewModel(ModelKind kind)
     {
         int id = m_nextModelId;
         m_models[id] = new SummonModel(id, kind);
@@ -1231,8 +1231,7 @@ DeleteElement(PyObject *self, PyObject *args)
     
     elm->DecRef();
     
-    // if element has a parent, then parent owns element and
-    // element will be deleted by parent
+    // if there are no more references then delete element
     if (!elm->IsReferenced()) { // && elm->GetParent() == NULL) {
         //printf("delete: %p\n", elm);
         delete elm;

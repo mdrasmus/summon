@@ -148,7 +148,6 @@ void summonCommandsInit()
     // structure
     g_elementFactory.Register(new Group(), GROUP_CONSTRUCT);
     g_elementFactory.Register(new Hotspot(), HOTSPOT_CONSTRUCT);
-    g_elementFactory.Register(new ZoomClamp(), ZOOM_CLAMP_CONSTRUCT);
     
     // graphics
     g_elementFactory.Register(new Graphic(), POINTS_CONSTRUCT);
@@ -173,6 +172,7 @@ void summonCommandsInit()
     g_elementFactory.Register(new Transform(), ROTATE_CONSTRUCT);
     g_elementFactory.Register(new Transform(), SCALE_CONSTRUCT);
     g_elementFactory.Register(new Transform(), FLIP_CONSTRUCT);
+    g_elementFactory.Register(new ZoomClamp(), ZOOM_CLAMP_CONSTRUCT);
 }
 
 

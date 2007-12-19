@@ -42,7 +42,6 @@ _i = iter(xrange(2000, 2000+200))
 _GROUP_CONSTRUCT = _i.next()
 _i.next()
 _HOTSPOT_CONSTRUCT = _i.next()
-_ZOOM_CLAMP_CONSTRUCT = _i.next()
 
 _POINTS_CONSTRUCT = _i.next()
 _LINES_CONSTRUCT = _i.next()
@@ -65,6 +64,7 @@ _TRANSLATE_CONSTRUCT = _i.next()
 _ROTATE_CONSTRUCT = _i.next()
 _SCALE_CONSTRUCT = _i.next()
 _FLIP_CONSTRUCT = _i.next()
+_ZOOM_CLAMP_CONSTRUCT = _i.next()
 _i.next()
 _i.next()
    
@@ -73,6 +73,8 @@ _INPUT_KEY_CONSTRUCT = _i.next()
 _INPUT_CLICK_CONSTRUCT = _i.next()
 _INPUT_MOTION_CONSTRUCT = _i.next()
 
+
+_INF = float("inf")
 
 #=============================================================================
 # Element classes
@@ -194,29 +196,6 @@ class group (Element):
     def __init__(self, *elements, **options):
         Element.__init__(self, _GROUP_CONSTRUCT, elements, options)
     
-
-
-class zoom_clamp (Element):
-    """Restricts the zoom-level of its contents"""
-    
-    def __init__(self, minx=None, miny=None, maxx=None, maxy=None, 
-                 *elements, **options):
-        """minx         -- minimum x-zoom level
-           miny         -- minimum y-zoom level (default=minx)
-           maxx         -- maximum x-zoom level
-           maxy         -- maximum y-zoom level (default=maxx)
-           *elements    -- elements to apply clamp to
-           clip         -- a bool whether elements are cliped when too small
-           linked       -- a bool whether x- and y-axis of elements
-                           should always zoom together
-        """
-        
-        clip = options.get("clip", True)
-        linked = options.get("linked", False)
-        
-        Element.__init__(self, _ZOOM_CLAMP_CONSTRUCT, 
-                         _tuple(minx, miny, maxx, maxy, clip, linked, *elements), 
-                                options)
 
 
 # TODO: it would be nice to get local x, y back
@@ -487,6 +466,35 @@ class flip (Transform):
         """
         Element.__init__(self, _FLIP_CONSTRUCT, 
                          _tuple(x, y, *elements), options)
+
+
+
+
+class zoom_clamp (Transform):
+    """Restricts the zoom-level of its contents"""
+    
+    def __init__(self, 
+                 *elements, **options):
+        """*elements    -- elements to apply clamp to
+           minx         -- minimum x-zoom level
+           miny         -- minimum y-zoom level
+           maxx         -- maximum x-zoom level
+           maxy         -- maximum y-zoom level
+           clip         -- a bool whether elements are cliped when too small
+           linked       -- a bool whether x- and y-axis of elements
+                           should always zoom together
+        """
+        
+        minx = options.get("minx", 0.0)
+        miny = options.get("miny", 0.0)
+        maxx = options.get("maxx", _INF)
+        maxy = options.get("maxy", _INF)
+        clip = options.get("clip", True)
+        linked = options.get("linked", False)        
+        
+        Element.__init__(self, _ZOOM_CLAMP_CONSTRUCT, 
+                         _tuple(minx, miny, maxx, maxy, clip, linked, *elements), 
+                                options)
 
  
 #=============================================================================

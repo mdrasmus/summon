@@ -18,33 +18,52 @@ namespace Summon {
 using namespace std;
 
 
-enum {
+// Model types
+typedef enum {
     MODEL_SCREEN,
     MODEL_WORLD
-};
+} ModelKind;
+// NOTE: this is placed here (instead of in SummonModel.h) so that TextElement 
+// has access without needing to include SummonModel.h (a circular include)
 
+
+
+typedef short ElementId;
 
 class Element
 {
 public:
-    Element(int id = -1);
+    Element(ElementId id = -1);
     virtual ~Element();
     
-    
+    inline int GetId() { return m_id; }
+    virtual int GetSpecificId() { return m_id; }
+    inline void SetId(int id) { m_id = id; }
+        
+    // Returns a new Element (needed by factory)
     virtual Element *Create() {
         return new Element();
     }
     
-    virtual bool Build(int header, const Scm &code);
-    virtual Scm GetContents();    
     
+    // Populate element from python code
+    virtual bool Build(int header, const Scm &code);
+    
+    // Return the contents this element in form of python code
+    virtual Scm GetContents();        
+    
+    //===================================
+    // Children functions
+
+    // Iterator for children of element
     typedef list<Element*>::iterator Iterator;
     
     inline void AddChild(Element* elm)
     {
         m_children.push_back(elm); 
-        elm->SetParent(this);
+        elm->SetParent(this);        
         elm->IncRef();
+        SetTransformParent();
     }
     
     Element *AddChild(Scm code);
@@ -80,54 +99,67 @@ public:
     
     inline int NumChildren()
     { return m_children.size(); }
-    
-    inline int GetId() { return m_id; }
-    virtual int GetSpecificId() { return m_id; }
-    inline void SetId(int id) { m_id = id; }
-    
+
     inline Iterator Begin() { return m_children.begin(); }
     inline Iterator End() { return m_children.end(); }
+
+        
+    
     inline void SetParent(Element *elm) { m_parent = elm; }
     inline Element *GetParent() { return m_parent; }
     virtual bool IsDynamic() { return false; }
-    inline bool IsVisible() { return m_visible; }
-    inline void SetVisible(bool vis) { m_visible = vis; }    
+    
+    // Sets whether this element (and its descendents) are visible on screen
+    inline void SetVisible(bool vis) { m_visible = vis; }
+    inline bool IsVisible() { return m_visible; }    
+    
+    // Get and set the model for this element    
     inline void SetModel(void *model) { m_model = model; }
     inline void *GetModel() { return m_model; }
-
+    
+    virtual TransformMatrix &GetTransform(TransformMatrix &matrix);
+    void SetTransformParent() {}
     
     virtual void FindBounding(float *top, float *bottom, float *left, float *right,
                       TransformMatrix *matrix);
     
     
+    //==========================================
+    // Reference counting
     inline void IncRef() { m_referenced++; }
-    inline void DecRef() { m_referenced--; }
-    
+    inline void DecRef() { m_referenced--; }    
     inline bool IsReferenced() { return m_referenced > 0; }
     
+    
 protected:
-    int m_id;
+    ElementId m_id; 
+    bool m_visible;
     Element *m_parent;
+    int m_referenced;
     void *m_model;
     list<Element*> m_children;
-    bool m_visible;    
-    int m_referenced;
+    Element *m_transformParent;
 };
 
 
+// Convert an Element id (used in python) to an Element pointer
 inline Element *Id2Element(int id)
 {
     return (Element*) id;
 }
 
+
+// Convert an Element pointer to an Element id (used in python)
 inline int Element2Id(Element *elm)
 {
     return (int) elm;
 }
 
 
+// Get an Element pointer from a python object
 Element *GetElementFromObject(PyObject *obj);
 Element *GetElementFromObject(const Scm code);
+
 
 // element factory and registration
 class Element;

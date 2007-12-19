@@ -44,10 +44,10 @@ struct BuildEnv
 class SummonModel : public Model
 {
 public:
-    SummonModel(int id, int kind=MODEL_WORLD);
+    SummonModel(int id, ModelKind kind=MODEL_WORLD);
 
     inline int GetId() { return m_id; }
-    void SetKind(int kind) { m_kind = kind; }    
+    void SetKind(ModelKind kind) { m_kind = kind; }    
     
     // model manipulation
     virtual void ExecCommand(Command &command);
@@ -56,6 +56,7 @@ public:
     bool ReplaceElement(Element *oldelm, Element *newelm);
     Element *ReplaceElement(Element *oldelm, Scm code);
     
+    // book keeping
     void Update();
     void Update(Element *element);
 
@@ -82,7 +83,7 @@ protected:
 
 
     int m_id;
-    int m_kind;
+    ModelKind m_kind;
     Element *m_root;
     list<Hotspot*> m_hotspotClicks;
     HashTable<Hotspot*, bool, HashPointer> m_hotspotClickSet;

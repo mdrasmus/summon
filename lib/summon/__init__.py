@@ -17,7 +17,7 @@
 import os, sys
 
 from summon.core import *
-from summon import util
+from summon import util, select
 import summon.svg
 
 import summon_config
@@ -44,11 +44,81 @@ def timer_call(delay, func):
     summon_core.timer_call(delay, func)
 
 
+#=============================================================================S
+# python state of SUMMON
+#
+class SummonState (object):
+    """SUMMON State
+    
+       This class is instantiated as a singleton when the summon module is 
+       loaded.  It maintains the list of open windows and models as well as
+       the global summon timer object.  This class and singleton object should
+       not be used directly by users.
+    """
+
+    def __init__(self):
+        self.current_window = None
+        self.windows = {}
+        self.models = {}
+        self.timer = SummonTimer()
+        
+    
+    def add_window(self, win):
+        self.windows[win.winid] = win
+    
+    def remove_window(self, win):
+        if win.winid in self.windows:
+            del self.windows[win.winid]
+    
+    def get_window(self, winid):
+        if winid in self.windows:
+            return self.windows[winid]
+        else:
+            return None
+    
+    def add_model(self, model):
+        self.models[model.id] = model
+    
+    def remove_model(self, model):
+        summon_core.del_model(model.id)
+        if model.id in self.models:
+            del self.models[model.id]
+
+    def get_model(self, modelid):
+        if modelid in self.models:
+            return self.models[modelid]
+        else:
+            return None
+
+def get_summon_state():
+    """returns the summon state singleton"""
+    return _state
+
+
+def get_summon_window():
+    """DEPRECATED: returns the currently active summon window"""
+    return _state.current_window
+
+# install summon window close callback for communication between C++ and python
+def _window_close_callback(winid):
+    _state.windows[winid]._on_close()
+summon_core.set_window_close_callback(_window_close_callback)
+
+
+# window decoration
+_window_decoration = summon_core.get_window_decoration()
+def get_window_decoration():
+    return _window_decoration
+
+def set_window_decoration(xoffset, yoffset):
+    global _window_decoration
+    _window_decoration = (xoffset, yoffset)
+
+
+
 #=============================================================================
 # Dynamic updating interface
 #
-
-
 
 class FunctionTimer:
     def __init__(self, func, win, interval=None, repeat=True):
@@ -195,83 +265,9 @@ def stop_updating():
 
 
 
-#=============================================================================S
-# python state of SUMMON
-#
-class SummonState (object):
-    """SUMMON State
-    
-       This class is instantiated as a singleton when the summon module is 
-       loaded.  It maintains the list of open windows and models as well as
-       the global summon timer object.  This class and singleton object should
-       not be used directly by users.
-    """
-
-    def __init__(self):
-        self.current_window = None
-        self.windows = {}
-        self.models = {}
-        self.timer = SummonTimer()
-        
-    
-    def add_window(self, win):
-        self.windows[win.winid] = win
-    
-    def remove_window(self, win):
-        if win.winid in self.windows:
-            del self.windows[win.winid]
-    
-    def get_window(self, winid):
-        if winid in self.windows:
-            return self.windows[winid]
-        else:
-            return None
-    
-    def add_model(self, model):
-        self.models[model.id] = model
-    
-    def remove_model(self, model):
-        summon_core.del_model(model.id)
-        if model.id in self.models:
-            del self.models[model.id]
-
-    def get_model(self, modelid):
-        if modelid in self.models:
-            return self.models[modelid]
-        else:
-            return None
-
-# global singleton
-_state = SummonState()
-
-
-def get_summon_state():
-    """returns the summon state singleton"""
-    return _state
-
-
-def get_summon_window():
-    """DEPRECATED: returns the currently active summon window"""
-    return _state.current_window
-
-# install summon window close callback for communication between C++ and python
-def _window_close_callback(winid):
-    _state.windows[winid]._on_close()
-summon_core.set_window_close_callback(_window_close_callback)
-
-
-# window decoration
-_window_decoration = summon_core.get_window_decoration()
-def get_window_decoration():
-    return _window_decoration
-
-def set_window_decoration(xoffset, yoffset):
-    global _window_decoration
-    _window_decoration = (xoffset, yoffset)
-
 
 #=============================================================================
-# Visdraw window objects
+# Window and Model
 #
 
 class Window (object):
@@ -356,6 +352,9 @@ class Window (object):
         # menu
         self.menu = None
         self.menuButton = 1  # middle mouse button
+
+        # selection
+        self.select = select.Select(self, lambda x,y:None)        
         
         # load default configuration
         self.winconfig = winconfig
@@ -1328,118 +1327,9 @@ def iter_vertices(elm, curcolor=None):
     
 
 
-'''
-
-
-def is_graphic(elm):
-    return is_points(elm) or \
-           is_lines(elm) or \
-           is_line_strip(elm) or \
-           is_triangles(elm) or \
-           is_triangle_strip(elm) or \
-           is_triangle_fan(elm) or \
-           is_quads(elm) or \
-           is_quad_strip(elm) or \
-           is_polygon(elm)
-
-def is_text_elm(elm):
-    return is_text(elm) or \
-           is_text_scale(elm) or \
-           is_text_clip(elm)
-
-def is_primitive(elm):
-    return is_vertices(elm) or is_color(elm)
-
-
-def is_transform(elm):
-    return is_translate(elm) or \
-           is_scale(elm) or \
-           is_rotate(elm) or \
-           is_flip(elm)
-
-def graphic_contents(elm):
-    return elm[1:]
-
-
-def element_contents(elm):
-    if is_group(elm):
-        return group_contents(elm)
-    elif is_translate(elm):
-        #return translate_content(elm)[2:]
-        return elm[3:]
-    elif is_scale(elm):
-        #return scale_contents(elm)[2:]
-        return elm[3:]
-    elif is_flip(elm):
-        return flip_contents(elm)[2:]
-        return elm[3:]
-    elif is_rotate(elm):
-        return rotate_contents(elm)[1:]
-        return elm[2:]
-    else:
-        return ()
-
-
-def visitElements(elm, beginFunc, endFunc):
-    beginFunc(elm)
-    for elm in element_contents(elm):
-        visitElements(elm, beginFunc, endFunc)
-    endFunc(elm)
-
-    
-
-def visitGraphics(elm, func):
-    closure = {
-        'verts': [],
-        'color': [1, 1, 1, 1]
-    }
-
-    def processGraphic(elm, nverts, nkeep):
-        if len(closure['verts']) == nverts:
-            func(elm, closure['verts'], closure['color'])
-            if nkeep == 0:
-                closure['verts'] = []
-            else:
-                closure['verts'] = closure['verts'][-nkeep:]
-
-    def beginElement(elm):
-        if is_graphic(elm):
-            closure["verts"] = []
-            for prim in graphic_contents(elm):
-                if is_color(prim):
-                    rgb = list(color_contents(prim))
-                    if len(rgb) == 3:
-                        rgb.append(1)
-                    closure['color'] = rgb
-
-                elif is_vertices(prim):
-                    coords = vertices_contents(prim)
-                    for i in range(0, len(coords), 2):
-                         # push a new vertex                    
-                         closure['verts'].append(coords[i:i+2])
-
-                         if is_points(elm):           processGraphic(elm, 1, 0)
-                         elif is_lines(elm):          processGraphic(elm, 2, 0)
-                         elif is_line_strip(elm):     processGraphic(elm, 2, 1)
-                         elif is_triangles(elm):      processGraphic(elm, 3, 0)
-                         elif is_triangle_strip(elm): processGraphic(elm, 3, 2)
-                         elif is_quads(elm):          processGraphic(elm, 4, 0)
-                         elif is_quad_strip(elm):     processGraphic(elm, 4, 2)
-            if is_polygon(elm):
-                processGraphic(elm, len(closure['verts']), 0)
-        elif is_text_elm(elm):
-            verts = text_contents(elm)[1:5]
-            func(elm, [verts[:2], verts[2:]], closure['color'])
-        else:
-            func(elm, [], closure['color'])
-
-    def endElement(elm):
-        return None
-
-    visitElements(elm, beginElement, endElement)
-
-'''
-
+#=============================================================================
+# global singleton
+_state = SummonState()
 
 
 #=============================================================================

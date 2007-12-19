@@ -1,4 +1,12 @@
 =============================================================================
+Tue Dec 18 15:34:14 EST 2007
+
+- Is the main issue with ZoomClamp is hotspots in them?
+- Try to implement ZoomClamp w/o special handling of transforms.  Exclude
+  hotspots and other transforms for now.
+  - That is don't recurse the Update throught a ZoomClamp
+
+=============================================================================
 Tue Oct 16 16:19:05 EDT 2007
 
 Thinking about how to handle zoom_clamp
