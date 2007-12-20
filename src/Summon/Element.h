@@ -27,6 +27,22 @@ typedef enum {
 // has access without needing to include SummonModel.h (a circular include)
 
 
+class Camera
+{
+public:
+    Camera() {}
+    
+    Camera(const Vertex2f &trans, const Vertex2f &zoom, const Vertex2f &focus) :
+        trans(trans),
+        zoom(zoom),
+        focus(focus)
+    {}
+        
+    Vertex2f trans;
+    Vertex2f zoom;
+    Vertex2f focus;
+};
+
 
 typedef short ElementId;
 
@@ -123,7 +139,7 @@ public:
     virtual void Update();
     virtual Element *GetTransformParent();    
     virtual const TransformMatrix *GetTransform(TransformMatrix *matrix,
-                                                const Vertex2f &cameraZoom);
+                                                const Camera &camera);
     
     
     //==========================================

@@ -20,7 +20,7 @@ bool ZoomClamp::Build(int header, const Scm &code)
         return false;
     }
     
-    return Element::Build(header, ScmCdddr(ScmCdddr(code)));
+    return Element::Build(header, ScmSlice(code, 6));
 }
 
 
@@ -31,9 +31,9 @@ Scm ZoomClamp::GetContents()
 
 
 const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
-                                               const Vertex2f &cameraZoom)
+                                               const Camera &camera)
 {
-    float zoom[3] = { cameraZoom.x, cameraZoom.y, 1.0 };
+    float zoom[3] = { camera.zoom.x, camera.zoom.y, 1.0 };
 
     // determine desired clamped zoom
     if (zoom[0] < minx) zoom[0] = minx;
@@ -51,13 +51,13 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
     
     
     // calculate zoom adjustment needed
-    zoom[0] /= cameraZoom.x;
-    zoom[1] /= cameraZoom.y;
+    zoom[0] /= camera.zoom.x;
+    zoom[1] /= camera.zoom.y;
 
     // determine translation to zoom clamp origin
     float trans[3] = { 0.0, 0.0, 0.0 };    
     if (m_transformParent != NULL) {
-        const TransformMatrix *parent = m_transformParent->GetTransform(matrix, cameraZoom);
+        const TransformMatrix *parent = m_transformParent->GetTransform(matrix, camera);
         parent->VecMult(0, 0, &trans[0], &trans[1]);
     }
     

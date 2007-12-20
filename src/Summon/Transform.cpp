@@ -156,7 +156,7 @@ void Transform::Update()
 
 
 const TransformMatrix *Transform::GetTransform(TransformMatrix *matrix,
-                                               const Vertex2f &cameraZoom)
+                                               const Camera &camera)
 {
     if (m_transformParent == NULL) {
         //CopyMatrix(matrix.mat, m_matrix);
@@ -164,7 +164,7 @@ const TransformMatrix *Transform::GetTransform(TransformMatrix *matrix,
     } else {
         // caching upto dynamicTransformParent goes here.
     
-        const TransformMatrix *parent = m_transformParent->GetTransform(matrix, cameraZoom);
+        const TransformMatrix *parent = m_transformParent->GetTransform(matrix, camera);
         //float tmp[16];
         MultMatrix(parent->mat, m_matrix.mat, matrix->mat);
         //CopyMatrix(matrix.mat, tmp);

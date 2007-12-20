@@ -33,7 +33,7 @@ public:
     virtual Scm GetContents();
 
     virtual const TransformMatrix *GetTransform(TransformMatrix *matrix,
-                                                const Vertex2f &cameraZoom);
+                                                const Camera &camera);
 
     float minx;
     float miny;

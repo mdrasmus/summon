@@ -584,7 +584,8 @@ bool SummonView::DrawZoomClamp(ZoomClamp *zoomClamp)
         
         // perform zoom clamp transform
         TransformMatrix matrix;  // working temp space
-        const TransformMatrix *trans = zoomClamp->GetTransform(&matrix, m_zoom);
+        Camera camera(m_trans, m_zoom, m_focus);
+        const TransformMatrix *trans = zoomClamp->GetTransform(&matrix, camera);
 
         // convert matrix to column-major
         // TODO: switch my matrices to column-major

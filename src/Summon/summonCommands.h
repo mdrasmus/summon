@@ -658,17 +658,18 @@ public:
     virtual bool Setup(Scm lst)
     {
         // parse groupid
-        if (ScmConsp(lst) && ScmIntp(ScmCar(lst))) {
-            groupid = Scm2Int(ScmCar(lst));
-            lst = ScmCdr(lst);
+        if (ScmIsList(lst) && ScmIsInt(lst.GetScm(0))) {
+            groupid = Scm2Int(lst.GetScm(0));
+            lst.Pop();
         } else {
             return false;
         }
     
         // parse group ids
-        for (; ScmConsp(lst); lst = ScmCdr(lst)) {
-            if (ScmIntp(ScmCar(lst))) {
-                groupids.push_back(Scm2Int(ScmCar(lst)));
+        for (int i=0; i<lst.Size(); i++) {
+            Scm elmid = lst.GetScm(i);
+            if (ScmIsInt(elmid)) {
+                groupids.push_back(Scm2Int(elmid));
             } else {
                 Error("Can only remove with group id");
                 return false;
@@ -812,17 +813,18 @@ public:
     virtual bool Setup(Scm lst)
     {
         // parse modelid
-        if (ScmConsp(lst) && ScmIntp(ScmCar(lst))) {
-            modelid = Scm2Int(ScmCar(lst));
-            lst = ScmCdr(lst);
+        if (ScmIsList(lst) && ScmIsInt(lst.GetScm(0))) {
+            modelid = Scm2Int(lst.GetScm(0));
+            lst.Pop();
         } else {
             return false;
         }
     
         // parse group ids
-        for (; ScmConsp(lst); lst = ScmCdr(lst)) {
-            if (ScmIntp(ScmCar(lst))) {
-                groupids.push_back(Scm2Int(ScmCar(lst)));
+        for (int i=0; i<lst.Size(); i++) {
+            Scm elmid = lst.GetScm(i);
+            if (ScmIsInt(elmid)) {
+                groupids.push_back(Scm2Int(elmid));
             } else {
                 Error("Can only remove with group id");
                 return false;

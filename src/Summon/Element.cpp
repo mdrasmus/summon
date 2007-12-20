@@ -124,12 +124,12 @@ void Element::FindBounding(float *top, float *bottom,
 }
 
 const TransformMatrix *Element::GetTransform(TransformMatrix *matrix,
-                                             const Vertex2f &cameraZoom)
+                                             const Camera &camera)
 {
     if (m_transformParent == NULL) {
         return &g_transformIndentity;
     } else {
-        return m_transformParent->GetTransform(matrix, cameraZoom);
+        return m_transformParent->GetTransform(matrix, camera);
     }
 }
 

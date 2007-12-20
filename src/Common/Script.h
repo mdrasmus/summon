@@ -39,8 +39,7 @@ class Scm {
 public:
     Scm(PyObject* o = NULL, bool take = true) :
         py(o),
-        start(0)//,
-        //slice(NULL)
+        start(0)
     {
         if (o != NULL && take)
             Py_INCREF(o);
@@ -58,8 +57,6 @@ public:
     {
         if (py != NULL)
             Py_DECREF(py);
-        //if (slice != NULL)
-        //    Py_DECREF(py);
     }
         
     inline int Size() const
@@ -77,6 +74,11 @@ public:
         return PyTuple_GET_ITEM(py, start + i);
     }
     
+    inline Scm GetScm(int i) const
+    {
+        return Scm(PyTuple_GET_ITEM(py, start + i));
+    }
+    
     inline PyObject *GetPy() const
     {
         if (start == 0)
@@ -90,12 +92,10 @@ public:
                                            PyTuple_GET_SIZE(py));
             Py_DECREF(o);
             return o;
-            
-            
-            
-            //return slice;
         }
     }
+    
+    
     
     inline bool IsTuple()  const { return PyTuple_Check(py); }
     inline bool IsInt()    const { return PyInt_Check(py); }
@@ -128,21 +128,14 @@ public:
         return !(*this == s);
     }
     
-    /*
-    inline SetStart(int newStart)
+    inline void Pop(int i=1)
     {
-        start = newStart;
-        // unreference old an slice
-        if (slice)
-            Py_DECREF(slice);
-
-        slice = PyTuple_GetSlice(py, start, PyTuple_GET_SIZE(py));
+        start += i;
     }
-    */
+    
         
     PyObject* py;
     int start;
-    //PyObject *slice;
 };
 
 extern Scm Scm_NULL;
@@ -202,6 +195,11 @@ inline bool ScmConsp(const Scm &scm)
     return scm.IsTuple() && scm.Size() > 0;
 }
 
+inline bool ScmIsList(const Scm &scm)
+{
+    return scm.IsTuple() && scm.Size() > 0;
+}
+
 inline Scm ScmCons(const Scm &a, const Scm &b)
 { 
     int len = b.Size();
@@ -238,24 +236,38 @@ inline Scm ScmCddr(const Scm &scm)
 }
 inline Scm ScmCaddr(const Scm &scm)
 { return scm.Get(2); }
-inline Scm ScmCdddr(const Scm &scm) {
+inline Scm ScmCdddr(const Scm &scm)
+{
     Scm scm2 = scm;
     scm2.start += 3;
     return scm2;
 }
 inline Scm ScmCadddr(const Scm &scm)
 { return scm.Get(3); }
-inline Scm ScmCddddr(const Scm &scm) {
+inline Scm ScmCddddr(const Scm &scm)
+{
     Scm scm2 = scm;
     scm2.start += 4;
     return scm2;
 }
 
 
+inline Scm ScmSlice(const Scm &scm, int i)
+{
+    Scm scm2 = scm;
+    scm2.start += i;
+    return scm2;
+}
+
 
 inline bool ScmIntp(const Scm &scm)
 { return (bool) scm.IsInt() ||
          (bool) scm.IsLong(); }
+
+inline bool ScmIsInt(const Scm &scm)
+{ return (bool) scm.IsInt() ||
+         (bool) scm.IsLong(); }
+
 
 inline int Scm2Int(const Scm &num)
 {

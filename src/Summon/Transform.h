@@ -70,7 +70,7 @@ public:
                       TransformMatrix *matrix);
     
     virtual const TransformMatrix *GetTransform(TransformMatrix *matrix,
-                                                const Vertex2f &cameraZoom);
+                                                const Camera &camera);
     
     virtual void Update();
     virtual Element *GetTransformParent()
