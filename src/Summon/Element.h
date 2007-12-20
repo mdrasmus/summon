@@ -116,7 +116,8 @@ public:
     inline void SetModel(void *model) { m_model = model; }
     inline void *GetModel() { return m_model; }
     
-    virtual TransformMatrix &GetTransform(TransformMatrix &matrix);
+    virtual TransformMatrix &GetTransform(TransformMatrix &matrix,
+                                          const Vertex2f &cameraZoom);
     
     virtual void FindBounding(float *top, float *bottom, float *left, float *right,
                       TransformMatrix *matrix);

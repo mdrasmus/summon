@@ -32,7 +32,8 @@ public:
     virtual bool Build(int header, const Scm &code);
     virtual Scm GetContents();
 
-    virtual TransformMatrix &GetTransform(TransformMatrix &matrix);
+    virtual TransformMatrix &GetTransform(TransformMatrix &matrix,
+                                          const Vertex2f &cameraZoom);
 
     float minx;
     float miny;

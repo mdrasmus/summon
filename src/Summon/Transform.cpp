@@ -138,18 +138,19 @@ void Transform::FindBounding(float *top, float *bottom,
 }
 
 
-TransformMatrix &Transform::GetTransform(TransformMatrix &matrix)
+TransformMatrix &Transform::GetTransform(TransformMatrix &matrix,
+                                         const Vertex2f &cameraZoom)
 {
-    if (m_transformParent == this) {
-        matrix.SetIdentity();
+    if (m_transformParent == NULL) {
+        CopyMatrix(matrix.mat, m_matrix);
+        return matrix;
     } else {
-        m_transformParent->GetTransform(matrix);
+        m_transformParent->GetTransform(matrix, cameraZoom);
+        float tmp[16];
+        MultMatrix(matrix.mat, m_matrix, tmp);
+        CopyMatrix(matrix.mat, tmp);
+        return matrix;        
     }
-
-    float tmp[16];
-    MultMatrix(matrix.mat, m_matrix, tmp);
-    CopyMatrix(matrix.mat, tmp);
-    return matrix;
 }
 
-}
+} // namespace Summon

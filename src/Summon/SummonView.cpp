@@ -520,6 +520,7 @@ void SummonView::DrawElement(Element *element, bool createTasks)
             break;
         
         case ZOOM_CLAMP_CONSTRUCT:
+            glPushMatrix();
             drawChildren = DrawZoomClamp((ZoomClamp*) element);
             
             break;
@@ -569,59 +570,34 @@ void SummonView::DrawElement(Element *element, bool createTasks)
 
 bool SummonView::DrawZoomClamp(ZoomClamp *zoomClamp)
 {
-    Vertex2f zoom = m_zoom;
-    bool clip = false;
-
     // determine desired clamped zoom
-    if (zoom.x < zoomClamp->minx) {
-        if (zoomClamp->clip)
-            clip = true;
-        zoom.x = zoomClamp->minx;
-    }
-    if (zoom.y < zoomClamp->miny) {
-        if (zoomClamp->clip)
-            clip = true;
-        zoom.y = zoomClamp->miny;
-    }
-    
-    if (zoom.x > zoomClamp->maxx) zoom.x = zoomClamp->maxx;
-    if (zoom.y > zoomClamp->maxy) zoom.y = zoomClamp->maxy;
-    
-    // if axises are linked, use larger one
-    if (zoomClamp->link) {
-        if (zoom.x > zoom.y)
-            zoom.y = zoom.x;
-        else
-            zoom.x = zoom.y;
-    }
+    if (zoomClamp->clip && 
+        (m_zoom.x < zoomClamp->minx ||
+         m_zoom.y < zoomClamp->miny))
+    {
+        // clip children
+        return false;
+    } else {
+        // reset transform to simply camera transform
+        glLoadIdentity();
+        TransformWorld();
         
-    
-    // calculate zoom adjustment needed
-    Vertex2f zoom2(zoom.x / m_zoom.x, zoom.y / m_zoom.y);
-    
-    // reset transform
-    glPushMatrix();
-    glLoadIdentity();
+        // perform zoom clamp transform
+        TransformMatrix matrix;
+        zoomClamp->GetTransform(matrix, m_zoom);
 
-    // perform translation
-    glTranslatef(m_trans.x , m_trans.y, 0);
+        // convert matrix to column-major
+        // TODO: switch my matrices to column-major
+        float *m = matrix.mat;
+        float tmp[16] = {m[0], m[4], m[8],  m[12],
+                         m[1], m[5], m[9],  m[13],
+                         m[2], m[6], m[10], m[14],
+                         m[3], m[7], m[11], m[15]};
 
-    // perform camera zoom with respect to a focus point
-    glTranslatef(m_focus.x, m_focus.y, 0);
-    glScalef(m_zoom.x, m_zoom.y, 1.0);
-    glTranslatef(-m_focus.x, -m_focus.y, 0);            
-
-    // perform parental transforms
-    Vertex2f trans;
-    TransformMatrix matrix;
-    zoomClamp->GetTransform(matrix);
-    matrix.VecMult(0, 0, &trans.x, &trans.y);    
-    glTranslatef(trans.x, trans.y, 0);
-
-    // perform zoom adjustment according to clamping
-    glScalef(zoom2.x, zoom2.y, 1.0);
-    
-    return !clip;
+        glMultMatrixf(tmp);
+        
+        return true;
+    }
 }
 
 

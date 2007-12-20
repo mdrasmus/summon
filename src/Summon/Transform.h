@@ -68,7 +68,8 @@ public:
     void FindBounding(float *top, float *bottom, float *left, float *right,
                       TransformMatrix *matrix);
     
-    TransformMatrix &GetTransform(TransformMatrix &matrix);
+    TransformMatrix &GetTransform(TransformMatrix &matrix,
+                                  const Vertex2f &cameraZoom);
     
 protected:
     virtual Element *GetTransformParent()
