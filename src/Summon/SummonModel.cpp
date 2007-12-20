@@ -250,7 +250,7 @@ void SummonModel::Update(Element *element, BuildEnv *env)
     BuildEnv *env2 = NULL;
     
     element->SetModel(this);
-    element->SetTransformParent();
+    element->Update();
     
     // perform element-specific updating
     switch (element->GetId()) {
@@ -285,6 +285,8 @@ void SummonModel::Update(Element *element, BuildEnv *env)
 
 void SummonModel::UpdateHotspot(Hotspot *hotspot, BuildEnv *env)
 {
+    // TODO: when using my new GetTransform() method, this computing would be 
+    // done at click time (fairly fast too)
     Vertex2f pos1, pos2;
     env->trans.VecMult(hotspot->pos1.x, hotspot->pos1.y, &pos1.x, &pos1.y);
     env->trans.VecMult(hotspot->pos2.x, hotspot->pos2.y, &pos2.x, &pos2.y);
@@ -307,7 +309,13 @@ void SummonModel::UpdateHotspot(Hotspot *hotspot, BuildEnv *env)
 
 void SummonModel::UpdateTextElement(TextElement *textElm, BuildEnv *env)
 {
+    // TODO: think about where I would put this line
     textElm->modelKind = env->modelKind;
+    
+    
+    // TODO: when using my new GetTransform() method, this computing would be 
+    // done for every draw.  It would be nice to have some kind of mechanism
+    // for asking if transform has changed; if not then use cached result
     
     // find scaling
     Vertex2f orgin;

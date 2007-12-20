@@ -24,7 +24,13 @@ void CopyMatrix(float *des, const float *src);
 class TransformMatrix
 {
 public:
-    inline void VecMult(float x1, float y1, float *x2, float *y2)
+    TransformMatrix() {}
+    TransformMatrix(bool initIdentity) {
+        if (initIdentity)
+            SetIdentity();
+    }
+
+    inline void VecMult(float x1, float y1, float *x2, float *y2) const 
     {
         *x2 = x1*mat[0] + y1*mat[1] + mat[3];
         *y2 = x1*mat[4] + y1*mat[5] + mat[7];
@@ -43,6 +49,8 @@ public:
     float mat[16];
 };
 
+
+extern TransformMatrix g_transformIndentity;
 
 } // namespace Summon
 

@@ -115,12 +115,15 @@ public:
     // Get and set the model for this element    
     inline void SetModel(void *model) { m_model = model; }
     inline void *GetModel() { return m_model; }
-    
-    virtual TransformMatrix &GetTransform(TransformMatrix &matrix,
-                                          const Vertex2f &cameraZoom);
+
     
     virtual void FindBounding(float *top, float *bottom, float *left, float *right,
                       TransformMatrix *matrix);
+
+    virtual void Update();
+    virtual Element *GetTransformParent();    
+    virtual const TransformMatrix *GetTransform(TransformMatrix *matrix,
+                                                const Vertex2f &cameraZoom);
     
     
     //==========================================
@@ -129,10 +132,8 @@ public:
     inline void DecRef() { m_referenced--; }    
     inline bool IsReferenced() { return m_referenced > 0; }
 
-    void SetTransformParent();    
     
 protected:
-    virtual Element *GetTransformParent();
 
     ElementId m_id; 
     bool m_visible;
@@ -140,6 +141,8 @@ protected:
     int m_referenced;
     void *m_model;
     list<Element*> m_children;
+    
+    // NOTE: must be of actual type Transform
     Element *m_transformParent;
 };
 

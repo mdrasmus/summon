@@ -123,19 +123,18 @@ void Element::FindBounding(float *top, float *bottom,
     }
 }
 
-TransformMatrix &Element::GetTransform(TransformMatrix &matrix,
-                                       const Vertex2f &cameraZoom)
+const TransformMatrix *Element::GetTransform(TransformMatrix *matrix,
+                                             const Vertex2f &cameraZoom)
 {
     if (m_transformParent == NULL) {
-        matrix.SetIdentity();
-        return matrix;
+        return &g_transformIndentity;
     } else {
         return m_transformParent->GetTransform(matrix, cameraZoom);
     }
 }
 
 
-void Element::SetTransformParent()
+void Element::Update()
 {
     if (m_parent == NULL) 
         m_transformParent = NULL;

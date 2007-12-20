@@ -30,8 +30,8 @@ Scm ZoomClamp::GetContents()
 }
 
 
-TransformMatrix &ZoomClamp::GetTransform(TransformMatrix &matrix,
-                                         const Vertex2f &cameraZoom)
+const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
+                                               const Vertex2f &cameraZoom)
 {
     float zoom[3] = { cameraZoom.x, cameraZoom.y, 1.0 };
 
@@ -56,11 +56,9 @@ TransformMatrix &ZoomClamp::GetTransform(TransformMatrix &matrix,
 
     // determine translation to zoom clamp origin
     float trans[3] = { 0.0, 0.0, 0.0 };    
-    if (m_transformParent == NULL) {
-        matrix.SetIdentity();
-    } else {
-        m_transformParent->GetTransform(matrix, cameraZoom);
-        matrix.VecMult(0, 0, &trans[0], &trans[1]);
+    if (m_transformParent != NULL) {
+        const TransformMatrix *parent = m_transformParent->GetTransform(matrix, cameraZoom);
+        parent->VecMult(0, 0, &trans[0], &trans[1]);
     }
     
     // translate to zoom_clamp origin
@@ -70,7 +68,7 @@ TransformMatrix &ZoomClamp::GetTransform(TransformMatrix &matrix,
     // perform zoom adjustment according to clamping
     float tmp2[16];
     MakeScaleMatrix(zoom, tmp2);
-    MultMatrix(tmp, tmp2, matrix.mat);
+    MultMatrix(tmp, tmp2, matrix->mat);
         
     return matrix;
 }

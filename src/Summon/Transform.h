@@ -42,7 +42,8 @@ public:
     // a ambiguous definition bewteen this constructor and the next one.
     // Used by ZoomClamp
     Transform(int id, bool placeHolder) :
-        Element(id)
+        Element(id),
+        m_dynamicTransformParent(NULL)
     {}
     Transform(int kind=-1, float param1 = 0.0, float param2 = 0.0);
     
@@ -55,10 +56,10 @@ public:
     inline int GetKind() { return m_kind; }
     inline float GetParam1() { return m_param1; }    
     inline float GetParam2() { return m_param2; }    
-    inline float *GetMatrix() { return m_matrix; }
+    inline float *GetMatrix() { return m_matrix.mat; }
     inline void SetMatrix(float *mat)
     {
-        CopyMatrix(m_matrix, mat);
+        CopyMatrix(m_matrix.mat, mat);
     }
     
     
@@ -68,22 +69,31 @@ public:
     void FindBounding(float *top, float *bottom, float *left, float *right,
                       TransformMatrix *matrix);
     
-    TransformMatrix &GetTransform(TransformMatrix &matrix,
-                                  const Vertex2f &cameraZoom);
+    virtual const TransformMatrix *GetTransform(TransformMatrix *matrix,
+                                                const Vertex2f &cameraZoom);
     
-protected:
+    virtual void Update();
     virtual Element *GetTransformParent()
     {
         return this;
     }
-
+    
+    virtual Element *GetDynamicTransformParent()
+    {
+        return m_dynamicTransformParent;
+    }
+    
+    
+protected:
+    
 
     void Set(int kind, float param1, float param2=0.0);
 
     int m_kind;
     float m_param1;
     float m_param2;
-    float m_matrix[16];
+    TransformMatrix m_matrix;
+    Element *m_dynamicTransformParent;
 };
 
 

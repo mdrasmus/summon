@@ -583,12 +583,12 @@ bool SummonView::DrawZoomClamp(ZoomClamp *zoomClamp)
         TransformWorld();
         
         // perform zoom clamp transform
-        TransformMatrix matrix;
-        zoomClamp->GetTransform(matrix, m_zoom);
+        TransformMatrix matrix;  // working temp space
+        const TransformMatrix *trans = zoomClamp->GetTransform(&matrix, m_zoom);
 
         // convert matrix to column-major
         // TODO: switch my matrices to column-major
-        float *m = matrix.mat;
+        const float *m = trans->mat;
         float tmp[16] = {m[0], m[4], m[8],  m[12],
                          m[1], m[5], m[9],  m[13],
                          m[2], m[6], m[10], m[14],

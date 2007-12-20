@@ -32,8 +32,8 @@ public:
     virtual bool Build(int header, const Scm &code);
     virtual Scm GetContents();
 
-    virtual TransformMatrix &GetTransform(TransformMatrix &matrix,
-                                          const Vertex2f &cameraZoom);
+    virtual const TransformMatrix *GetTransform(TransformMatrix *matrix,
+                                                const Vertex2f &cameraZoom);
 
     float minx;
     float miny;
@@ -41,6 +41,12 @@ public:
     float maxy;
     bool clip;
     bool link;
+    
+protected:
+    virtual Element *GetDynamicTransformParent()
+    {
+        return this;
+    }
 };
 
 

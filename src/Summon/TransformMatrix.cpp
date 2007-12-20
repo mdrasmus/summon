@@ -11,6 +11,9 @@
 
 namespace Summon {
 
+TransformMatrix g_transformIndentity(true);
+
+
 /*
 void MultMatrix(const float *mat1, const float *mat2, float *mat3)
 {

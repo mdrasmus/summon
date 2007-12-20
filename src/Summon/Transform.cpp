@@ -13,7 +13,8 @@ namespace Summon {
 
 
 Transform::Transform(int kind, float param1, float param2) :
-    Element(TRANSFORM_CONSTRUCT)
+    Element(TRANSFORM_CONSTRUCT),
+    m_dynamicTransformParent(NULL)
 {
     Set(kind, param1, param2);
 }
@@ -35,28 +36,28 @@ void Transform::Set(int kind, float param1, float param2)
             vec[0] = param1;
             vec[1] = param2;
             vec[2] = 0;
-            MakeTransMatrix(vec, m_matrix);
+            MakeTransMatrix(vec, m_matrix.mat);
             break;
             
         case ROTATE_CONSTRUCT:
             vec[0] = 0;
             vec[1] = 0;
             vec[2] = 1;
-            MakeRotateMatrix(param1, vec, m_matrix);            
+            MakeRotateMatrix(param1, vec, m_matrix.mat);            
             break;
         
         case SCALE_CONSTRUCT:
             vec[0] = param1;
             vec[1] = param2;
             vec[2] = 0;
-            MakeScaleMatrix(vec, m_matrix);
+            MakeScaleMatrix(vec, m_matrix.mat);
             break;
         
         case FLIP_CONSTRUCT:
             vec[0] = param1;
             vec[1] = param2;
             vec[2] = 0;
-            MakeRotateMatrix(180, vec, m_matrix);            
+            MakeRotateMatrix(180, vec, m_matrix.mat);            
             break;
         
         default:
@@ -138,18 +139,36 @@ void Transform::FindBounding(float *top, float *bottom,
 }
 
 
-TransformMatrix &Transform::GetTransform(TransformMatrix &matrix,
-                                         const Vertex2f &cameraZoom)
+void Transform::Update()
+{
+    if (m_parent == NULL) {
+        m_transformParent = NULL;        
+    } else {
+        m_transformParent = m_parent->GetTransformParent();
+    }
+    
+    if (m_transformParent == NULL) {
+        m_dynamicTransformParent = NULL;
+    } else {
+        m_dynamicTransformParent = ((Transform *) m_transformParent)->GetDynamicTransformParent();
+    }
+}
+
+
+const TransformMatrix *Transform::GetTransform(TransformMatrix *matrix,
+                                               const Vertex2f &cameraZoom)
 {
     if (m_transformParent == NULL) {
-        CopyMatrix(matrix.mat, m_matrix);
-        return matrix;
+        //CopyMatrix(matrix.mat, m_matrix);
+        return &m_matrix;
     } else {
-        m_transformParent->GetTransform(matrix, cameraZoom);
-        float tmp[16];
-        MultMatrix(matrix.mat, m_matrix, tmp);
-        CopyMatrix(matrix.mat, tmp);
-        return matrix;        
+        // caching upto dynamicTransformParent goes here.
+    
+        const TransformMatrix *parent = m_transformParent->GetTransform(matrix, cameraZoom);
+        //float tmp[16];
+        MultMatrix(parent->mat, m_matrix.mat, matrix->mat);
+        //CopyMatrix(matrix.mat, tmp);
+        return matrix;
     }
 }
 
