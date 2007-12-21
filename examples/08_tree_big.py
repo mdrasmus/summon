@@ -17,15 +17,17 @@ win = summon.Window("08_tree_big")
 # size of node toggle buttons
 button_size = .25
 
-# class for node in tree
+
 class Node:
+    """class for node in tree"""
     def __init__(self, grp):
         self.shown = True
         self.group = grp
 
 
-# a class for a tree
+
 class Tree:
+    """a class for a tree"""
     children = []
     width = 1
 
@@ -53,10 +55,12 @@ def MakeRandomTree(depth, chance, mult):
     return tree        
 
 
-# draw tree recursively
-def drawTree(tree, height):  
-    width = tree.width
 
+def drawTree(tree, height):  
+    """draw tree recursively"""
+    
+    width = tree.width
+    
     # draw two children by recursing
     if len(tree.children) > 0:
         left  = -width/2.0 + tree.children[0].width/2.0

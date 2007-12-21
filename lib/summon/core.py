@@ -496,10 +496,12 @@ class zoom_clamp (Transform):
             low = max(minx, miny)
             high = min(maxx, maxy)
             
-            if low > high:
-                raise Exception("x and y clamp range must intersect if linked")
+            assert low <= high, Exception("x and y clamp range must intersect if linked")
             minx = miny = low
             maxx = maxy = high
+        else:
+            assert minx <= maxx, Exception("minx cannot be greater than maxx")
+            assert miny <= maxy, Exception("miny cannot be greater than maxy")
         
         Element.__init__(self, _ZOOM_CLAMP_CONSTRUCT, 
                          _tuple(minx, miny, maxx, maxy, clip, link, *elements), 

@@ -17,10 +17,11 @@ def box(x1, y1, x2, y2, fill=True):
 
 
 
-def regularPoly(nsides, radius, fill=True):
-    i = 0
+def regularPoly(nsides, radius, fill=True, rotate=0.0):
+    rotate *= 3.14159 / 180.0
+    i = rotate
     pts = []
-    while i < 2 * 3.14159:
+    while i < rotate + 2 * 3.14159:
         pts.append(radius * math.cos(i))
         pts.append(radius * math.sin(i))
         i += (2 * 3.14159 / nsides)
