@@ -71,7 +71,7 @@ protected:
     
     // book keeping
     void Update(Element *element, BuildEnv *env);
-    void UpdateHotspot(Hotspot *hotspot, BuildEnv *env);
+    void UpdateHotspot(Hotspot *hotspot);
     void UpdateTextElement(TextElement *textElm, BuildEnv *env);
     void RemoveHotspots(Element *elm);
 

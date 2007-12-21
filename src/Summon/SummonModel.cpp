@@ -255,7 +255,7 @@ void SummonModel::Update(Element *element, BuildEnv *env)
     switch (element->GetId()) {
         case HOTSPOT_CONSTRUCT:
             // apply current env transform to coordinates
-            UpdateHotspot((Hotspot*) element, env);      
+            UpdateHotspot((Hotspot*) element);      
             break;
         
         case TEXT_CONSTRUCT:
@@ -282,22 +282,8 @@ void SummonModel::Update(Element *element, BuildEnv *env)
 }
 
 
-void SummonModel::UpdateHotspot(Hotspot *hotspot, BuildEnv *env)
-{
-    // TODO: when using my new GetTransform() method, this computing would be 
-    // done at click time (fairly fast too)
-    Vertex2f pos1, pos2;
-    env->trans.VecMult(hotspot->pos1.x, hotspot->pos1.y, &pos1.x, &pos1.y);
-    env->trans.VecMult(hotspot->pos2.x, hotspot->pos2.y, &pos2.x, &pos2.y);
-    
-    if (pos1.x > pos2.x)
-        swap(pos1.x, pos2.x);
-    if (pos1.y > pos2.y)
-        swap(pos1.y, pos2.y);
-    
-    hotspot->envpos1 = pos1;
-    hotspot->envpos2 = pos2;
-    
+void SummonModel::UpdateHotspot(Hotspot *hotspot)
+{    
     // register hotspot
     if (!m_hotspotClickSet.HasKey(hotspot)) {
         m_hotspotClickSet.Insert(hotspot, true);

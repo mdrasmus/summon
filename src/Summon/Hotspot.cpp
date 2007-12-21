@@ -90,9 +90,6 @@ bool Hotspot::IsCollide(const Vertex2f &pt, const Camera &camera)
 
     return (pt.x >= a.x && pt.x <= b.x &&
             pt.y >= a.y && pt.y <= b.y);
-    
-    //return (pt.x >= envpos1.x && pt.x <= envpos2.x &&
-    //        pt.y >= envpos1.y && pt.y <= envpos2.y);
 }
 
 
