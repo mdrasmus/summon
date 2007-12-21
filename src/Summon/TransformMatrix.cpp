@@ -98,4 +98,13 @@ void CopyMatrix(float *m, const float *n)
     m[12]=n[12]; m[13]=n[13]; m[14]=n[14]; m[15]=n[15];
 }
 
+
+void PrintMatrix(const float *mat, FILE *out)
+{
+    for (int i=0; i<4; i++) {
+        fprintf(out, "%8.2f %8.2f %8.2f %8.2f\n", mat[i], mat[i+1], mat[i+2], mat[i+3]);
+    }
+}
+
+
 }

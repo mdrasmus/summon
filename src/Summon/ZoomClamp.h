@@ -43,7 +43,7 @@ public:
     bool link;
     
 protected:
-    virtual Element *GetDynamicTransformParent()
+    virtual Transform *GetDynamicTransformParent()
     {
         return this;
     }

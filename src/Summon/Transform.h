@@ -43,6 +43,7 @@ public:
     // Used by ZoomClamp
     Transform(int id, bool placeHolder) :
         Element(id),
+        m_cached(false),
         m_dynamicTransformParent(NULL)
     {}
     Transform(int kind=-1, float param1 = 0.0, float param2 = 0.0);
@@ -78,10 +79,12 @@ public:
         return this;
     }
     
-    virtual Element *GetDynamicTransformParent()
+    virtual Transform *GetDynamicTransformParent()
     {
         return m_dynamicTransformParent;
     }
+    
+    TransformMatrix *GetCacheTransform();
     
     
 protected:
@@ -92,8 +95,10 @@ protected:
     int m_kind;
     float m_param1;
     float m_param2;
+    bool m_cached;
     TransformMatrix m_matrix;
-    Element *m_dynamicTransformParent;
+    TransformMatrix m_matrixCache;
+    Transform *m_dynamicTransformParent;
 };
 
 

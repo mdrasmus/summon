@@ -20,7 +20,7 @@ bool ZoomClamp::Build(int header, const Scm &code)
         return false;
     }
     
-    return Element::Build(header, ScmSlice(code, 6));
+    return Element::Build(header, code.Slice(6));
 }
 
 

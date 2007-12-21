@@ -133,6 +133,13 @@ public:
         start += i;
     }
     
+    inline Scm Slice(int i) const
+    {
+        Scm scm2(*this);
+        scm2.start += i;
+        return scm2;
+    }
+    
         
     PyObject* py;
     int start;
@@ -248,14 +255,6 @@ inline Scm ScmCddddr(const Scm &scm)
 {
     Scm scm2 = scm;
     scm2.start += 4;
-    return scm2;
-}
-
-
-inline Scm ScmSlice(const Scm &scm, int i)
-{
-    Scm scm2 = scm;
-    scm2.start += i;
     return scm2;
 }
 

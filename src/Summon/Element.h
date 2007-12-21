@@ -158,7 +158,7 @@ protected:
     void *m_model;
     list<Element*> m_children;
     
-    // NOTE: must be of actual type Transform
+    // NOTE: actual type must be Transform*
     Element *m_transformParent;
 };
 
