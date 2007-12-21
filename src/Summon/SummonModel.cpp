@@ -107,18 +107,17 @@ void SummonModel::ExecCommand(Command &command)
 
 // This function is called when a HotspotClick command is executed
 // Checks to see if any hotspots have been activated
-list<Command*> SummonModel::HotspotClick(Vertex2f pos, Vertex2f zoom)
+list<Command*> SummonModel::HotspotClick(Vertex2f pos, const Camera camera)
 {
     list<Command*> cmds;
     
     for (list<Hotspot*>::iterator i=m_hotspotClicks.begin(); 
          i!=m_hotspotClicks.end(); i++)
     {
-        if (pos.x >= (*i)->envpos1.x && pos.x <= (*i)->envpos2.x &&
-            pos.y >= (*i)->envpos1.y && pos.y <= (*i)->envpos2.y)
-        {
+        //if (pos.x >= (*i)->envpos1.x && pos.x <= (*i)->envpos2.x &&
+        //    pos.y >= (*i)->envpos1.y && pos.y <= (*i)->envpos2.y)
+        if ((*i)->IsCollide(pos, camera))
             cmds.push_back((*i)->GetProc()->Create());
-        }
     }
     
     return cmds;

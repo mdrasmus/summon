@@ -103,7 +103,7 @@ bool ParseScm(Scm lst, const char *fmt, ...)
        
     // loop through format string
     int i=1;
-    for (const char *argtype = fmt; *argtype; argtype++, i++) {
+    for (const char *argtype = fmt; *argtype && status; argtype++, i++) {
         // ensure lst is a list
         if (!ScmConsp(lst)) {
             status = false;

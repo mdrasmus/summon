@@ -22,6 +22,7 @@ public:
     ZoomClamp() : 
         Transform(ZOOM_CLAMP_CONSTRUCT, false)
     {
+        MakeIdentityMatrix(m_matrix.mat);
     }
     
     virtual Element *Create()

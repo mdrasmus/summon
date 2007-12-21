@@ -41,7 +41,10 @@ public:
     
     inline CallProcCommand *GetProc()
     { return m_proc; }
-
+    
+    bool IsCollide(const Vertex2f &pt, const Camera &camera);
+    
+    
     enum {
         CLICK,
         OVER,

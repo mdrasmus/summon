@@ -61,7 +61,7 @@ public:
     void Update(Element *element);
 
     // model queries
-    list<Command*> HotspotClick(Vertex2f pos, Vertex2f zoom);    
+    list<Command*> HotspotClick(Vertex2f pos, const Camera camera);    
     void FindBounding(Element *elm, Vertex2f *pos1, Vertex2f *pos2);
     inline Element *GetRoot()
     { return m_root; }

@@ -37,6 +37,7 @@ public:
         zoom(zoom),
         focus(focus)
     {}
+    
         
     Vertex2f trans;
     Vertex2f zoom;

@@ -9,6 +9,8 @@
 #include "Color.h"
 #include "SummonController.h"
 #include "SummonWindow.h"
+#include "Element.h"
+
 
 namespace Summon
 {
@@ -117,13 +119,14 @@ void SummonController::ExecCommand(Command &command)
 void SummonController::HotspotClick(Vertex2i pos)
 {
     bool clicked = false;
+    const Camera screenCamera(Vertex2f(0, 0), Vertex2f(1, 1), Vertex2f(0, 0));
 
     // process hotspots in screen
     if (m_screen) {
         // get all commands triggered by this click
         Vertex2i pt = m_view->WindowToScreen(pos.x, pos.y);
         Vertex2f pt2 = Vertex2f(pt.x, pt.y);
-        list<Command*> cmdList = m_screen->HotspotClick(pt2, Vertex2f(1, 1));
+        list<Command*> cmdList = m_screen->HotspotClick(pt2, screenCamera);
 
         // execute and free all commands triggered
         for (list<Command*>::iterator i=cmdList.begin(); i!=cmdList.end(); i++)
@@ -138,8 +141,8 @@ void SummonController::HotspotClick(Vertex2i pos)
     if (m_world && !clicked) {
         // get all commands triggered by this click    
         Vertex2f pt = m_view->WindowToWorld(pos.x, pos.y);
-        list<Command*> cmdList = m_world->HotspotClick(pt, m_view->GetZoom());
-
+        list<Command*> cmdList = m_world->HotspotClick(pt, m_view->GetCamera());
+        
         // execute and free all commands triggered
         for (list<Command*>::iterator i=cmdList.begin(); i!=cmdList.end(); i++)
         {

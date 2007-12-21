@@ -104,6 +104,18 @@ public:
 
     void SetMousePos(int x, int y);
 
+    
+    inline void UpdateCamera()
+    {
+        m_camera.trans = m_trans;
+        m_camera.zoom = m_zoom;
+        m_camera.focus = m_focus;
+    }
+    
+    inline Camera GetCamera()
+    {
+        return Camera(m_trans, m_zoom, m_focus);
+    }
 
 protected:
 
@@ -138,7 +150,9 @@ protected:
     Color m_bgColor;
     bool m_active;
     vector<DrawTask*> m_tasks;
-        
+    
+    Camera m_camera;
+    
     // crosshair
     bool m_showCrosshair;
     Color m_crosshairColor;

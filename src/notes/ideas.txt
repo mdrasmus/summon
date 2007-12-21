@@ -25,12 +25,18 @@ Tue Dec 18 15:34:14 EST 2007
   - DONE
 
 - what else needs to be done?
-  - add caching between dynamic transforms.  In doing so, I will probably
+  - add caching between dynamic transforms.  
+    DONE.
+    
+    In doing so, I will probably
     implement a mechanism that allows queries for whether any changes have
     occured in the transform (this would be useful for TextElement).
+        - maybe I could delay this as an optimization later on
+    
   - add proper svg support for zoom_clamp
   - hotspots in zoom_clamp are not implemented as of now
   - add support for bounding box and dynamic transform
+    - less important.  As of now assume identity transform
 
 - other ideas:
   - can I add mouse wheele binding?
@@ -41,7 +47,10 @@ Tue Dec 18 15:34:14 EST 2007
     hotspot("click", x1, y1, x2, y2, func, return_pt=True)
     
     func(x, y) will be called where x, y are local coordinates of click
-  - add datastructures for key bindings.  Can be done in python.
+    
+    - I can then also implement hotspots of arbitrary shape!
+    
+  - add data structures for key bindings.  Can be done in python.
   - rename/refactor the Scm interface to 'Pyref'.  Remove Car and Cdr.
 
 =============================================================================

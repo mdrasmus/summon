@@ -68,10 +68,33 @@ Scm Hotspot::GetContents()
         assert(0);
     }
     
-    return Py2ScmTake(Py_BuildValue("sffffO", (char*) skind, 
-                                    pos1.x, pos1.y, pos2.x, pos2.y,
-                                    Scm2Py(GetProc()->GetScmProc())));
+    Scm proc = GetProc()->GetScmProc();
+    return BuildScm("sffffp", skind, pos1.x, pos1.y, pos2.x, pos2.y, &proc);
+    
 }
+
+
+bool Hotspot::IsCollide(const Vertex2f &pt, const Camera &camera)
+{
+    TransformMatrix tmp;
+    const TransformMatrix *matrix = GetTransform(&tmp, camera);
+    
+    Vertex2f a, b;
+    matrix->VecMult(pos1.x, pos1.y, &a.x, &a.y);
+    matrix->VecMult(pos2.x, pos2.y, &b.x, &b.y);
+    
+    if (a.x > b.x)
+        swap(a.x, b.x);
+    if (a.y > b.y)
+        swap(a.y, b.y);
+
+    return (pt.x >= a.x && pt.x <= b.x &&
+            pt.y >= a.y && pt.y <= b.y);
+    
+    //return (pt.x >= envpos1.x && pt.x <= envpos2.x &&
+    //        pt.y >= envpos1.y && pt.y <= envpos2.y);
+}
+
 
 
 } // namespace Summon
