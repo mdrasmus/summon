@@ -1,5 +1,8 @@
+import copy
+
 from summon.core import *
 
+# color constants
 red    = color(1, 0, 0)
 orange = color(1, .5, 0)
 yellow = color(1, 1, 0)
@@ -9,6 +12,7 @@ purple = color(1, 0, 1)
 white  = color(1, 1, 1)
 black  = color(0, 0, 0)
 grey   = color(.5, .5, .5)
+brown  = color(.7, .4, 0)
 
 
 class ColorMap:
@@ -31,7 +35,7 @@ class ColorMap:
         within table.
         
         """
-        self.table = table
+        self.table = copy.copy(table)
         
         self.table.sort(key=lambda x: x[0])
     
