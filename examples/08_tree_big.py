@@ -90,14 +90,16 @@ def drawTree(tree, height):
             # draw toggle button
             color(1, 0, 0),
             translate(0, -height, 
-                quads(-button_size, -button_size,
-                      -button_size, button_size,
-                      button_size, button_size,
-                      button_size, -button_size),
-                hotspot("click", 
-                    -button_size, -button_size,
-                    button_size, button_size,
-                    func)))
+                zoom_clamp(
+                    quads(-button_size, -button_size,
+                          -button_size, button_size,
+                          button_size, button_size,
+                          button_size, -button_size),
+                    hotspot("click", 
+                        -button_size, -button_size,
+                        button_size, button_size,
+                        func),
+                    minx=5, miny=5, maxx=40, maxy=40, link=True, clip=True)))
     else:
         return group(color(0,0,0), lines(0, 0, 0, -height))    
 
@@ -108,7 +110,7 @@ def drawTree(tree, height):
 win.set_bgcolor(1, 1, 1)
 
 # make a random tree
-tree = MakeRandomTree(30, 1, .96)
+tree = MakeRandomTree(15, 1, .96)
 
 # draw the tree
 win.add_group(group(color(0, 0, 0), drawTree(tree, 1)))

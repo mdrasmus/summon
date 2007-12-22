@@ -1246,6 +1246,9 @@ static PyObject *
 IncRefElement(PyObject *self, PyObject *args)
 {
     long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
+    if (addr == -1)
+        return NULL;
+    
     Element *elm = Id2Element(addr);
     
     //printf("incref %p\n", elm);

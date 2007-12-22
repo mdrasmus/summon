@@ -44,17 +44,17 @@ public:
 };
 
 template <class T>
-Vertex2<T> operator+ (Vertex2<T> u, Vertex2<T> v) {
+Vertex2<T> operator+ (const Vertex2<T> &u, const Vertex2<T> &v) {
    return Vertex2<T>(u.x + v.x, u.y + v.y);
 }
 
 template <class T>
-Vertex2<T> operator- (Vertex2<T> u, Vertex2<T> v) {
+Vertex2<T> operator- (const Vertex2<T> &u, const Vertex2<T> &v) {
    return Vertex2<T>(u.x - v.x, u.y - v.y);
 }
 
 template <class T>
-Vertex2<T> operator* (Vertex2<T> v, T a) {
+Vertex2<T> operator* (const Vertex2<T> &v, T a) {
    return Vertex2<T>(v.x * a, v.y * a);
 }
 

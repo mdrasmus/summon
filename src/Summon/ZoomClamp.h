@@ -29,6 +29,9 @@ public:
     { return new ZoomClamp(); }
     
     virtual bool IsDynamic() { return true; }
+    virtual int GetSpecificId()
+    { return m_id; }
+        
     
     virtual bool Build(int header, const Scm &code);
     virtual Scm GetContents();
@@ -42,6 +45,8 @@ public:
     float maxy;
     bool clip;
     bool link;
+    bool linkType;
+    Vertex2f origin;
     
 protected:
     virtual Transform *GetDynamicTransformParent()

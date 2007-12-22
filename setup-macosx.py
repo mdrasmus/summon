@@ -78,8 +78,7 @@ setup(
     ext_modules=[
         Extension(
             'summon_core', 
-            ["src/Common/Matrix.cpp",
-             "src/Common/Script.cpp",
+            ["src/Common/Script.cpp",
              "src/Common/ScriptCommand.cpp",
              "src/GlutMVC/Glut2DController.cpp",
              "src/GlutMVC/Glut2DView.cpp",

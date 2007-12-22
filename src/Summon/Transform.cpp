@@ -76,27 +76,27 @@ bool Transform::Build(int header, const Scm &code)
         case TRANSLATE_CONSTRUCT:
         case SCALE_CONSTRUCT:
         case FLIP_CONSTRUCT: {
-            Scm first  = ScmCar(code);
-            Scm second = ScmCadr(code);
+            Scm first  = code.GetScm(0);
+            Scm second = code.GetScm(1);
 
             if (!ScmFloatp(first) || !ScmFloatp(second))
                 return false;
 
             Set(m_kind, Scm2Float(first), Scm2Float(second));
 
-            Scm code2 = ScmCddr(code);
+            Scm code2 = code.Slice(2);
             return Element::Build(header, code2);
             }
 
         case ROTATE_CONSTRUCT: {
-            Scm first  = ScmCar(code);
+            Scm first  = code.GetScm(0);
 
             if (!ScmFloatp(first))
                 return false;
             
             Set(m_kind, Scm2Float(first));
 
-            Scm code2 = ScmCdr(code);
+            Scm code2 = code.Slice(1);
             return Element::Build(header, code2);
             }
             

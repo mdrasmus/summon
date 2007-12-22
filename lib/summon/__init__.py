@@ -1097,7 +1097,7 @@ class Model (object):
     
     def get_root(self):
         """get the root group of the model"""
-        return group(summon_core.get_root_id(self.id), ref=True)
+        return group(ref=summon_core.get_root_id(self.id))
     
     def get_bounding(self, aGroup=None):
         """get the bounding box for a group and its contents
@@ -1112,7 +1112,7 @@ class Model (object):
     
     # DEPRECATED
     def get_root_id(self):
-        return group(summon_core.get_root_id(self.id), ref=True)
+        return group(ref=summon_core.get_root_id(self.id))
 
 
 

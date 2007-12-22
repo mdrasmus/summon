@@ -107,13 +107,21 @@ class Element:
     def __init__(self, elementid, code, options={}):
         """Create a new element from the SUMMON extension module.
            This class is typically not instantiated directly by user code.
+           
+           NOTE: To create a reference to an existing element include the
+           optional argument options["ref"] = ptr, where 'ptr' is a valid
+           element pointer of type int.  The 'code' can be empty.  
+           
+           NOTE: all subclasses of Element must allow initiation with 
+           no positional arguments and the optional argument 'ref'.  This call
+           is used by _make_ref().
         """
         self.elementid = elementid
         
-        if "ref" in options and options["ref"]:
+        if "ref" in options:
             # create a reference to an existing element
-            self.ptr = code[0]
-            summon_core.incref_element(code[0])
+            self.ptr = options["ref"]
+            summon_core.incref_element(self.ptr)
         else:
             # create a new element
             try:
@@ -137,7 +145,14 @@ class Element:
             yield _make_ref(children[i], children[i+1])
 
     def __getitem__(self, i):
-        return list(self)[i]
+        if isinstance(i, int):
+            children = summon_core.get_element_children(self.ptr)
+            if i < 0 or 2*i+1 >= len(children):
+                raise IndexError("child index out of range")
+        
+            return _make_ref(children[2*i], children[2*i+1])
+        else:
+            return list(self)[i]
     
     def __eq__(self, other):
         return self.ptr == hash(other)
@@ -476,13 +491,21 @@ class zoom_clamp (Transform):
     def __init__(self, 
                  *elements, **options):
         """*elements    -- elements to apply clamp to
-           minx         -- minimum x-zoom level
-           miny         -- minimum y-zoom level
-           maxx         -- maximum x-zoom level
-           maxy         -- maximum y-zoom level
+           minx         -- minimum x-zoom level (default: 0.0)
+           miny         -- minimum y-zoom level (default: 0.0)
+           maxx         -- maximum x-zoom level (default: inf)
+           maxy         -- maximum y-zoom level (default: inf)
            clip         -- a bool whether elements are cliped when too small
+                           (default: False)
            link         -- a bool whether x- and y-axis of elements
-                           should always zoom together
+                           should always zoom together (default: False)
+           link_type    -- a string indicating the rule for linking
+                           "smaller" use the smaller of the x and y zooms
+                           "larger" use the larger of the x and zooms
+                           (default: "larger")
+           origin       -- a tuple (x, y) that defines the point at which the
+                           zoom_clamp is stationary with its parent .
+                           (default: (0,0))
         """
         
         minx = options.get("minx", 0.0)
@@ -490,7 +513,11 @@ class zoom_clamp (Transform):
         maxx = options.get("maxx", _INF)
         maxy = options.get("maxy", _INF)
         clip = options.get("clip", False)
-        link = options.get("link", False)        
+        link = options.get("link", False)
+        link_type = options.get("link_type", "larger")
+        origin = options.get("origin", (0.0, 0.0))
+        
+        assert len(origin) == 2, Exception("origin must be a tuple of 2 floats")
         
         if link:
             low = max(minx, miny)
@@ -503,9 +530,19 @@ class zoom_clamp (Transform):
             assert minx <= maxx, Exception("minx cannot be greater than maxx")
             assert miny <= maxy, Exception("miny cannot be greater than maxy")
         
+        if link_type == "smaller":
+            link_type = False
+        elif link_type == "larger":
+            link_type = True
+        else:
+            raise Exception("unknown link_type '%s'" % link_type)
+        
         Element.__init__(self, _ZOOM_CLAMP_CONSTRUCT, 
-                         _tuple(minx, miny, maxx, maxy, clip, link, *elements), 
-                                options)
+                         _tuple(minx, miny, maxx, maxy, clip, link, link_type,
+                                origin[0], origin[1], *elements), 
+                         options)
+    
+    # TODO: add wrapper for get_contents to convert link_type back to a str
 
  
 #=============================================================================
@@ -608,12 +645,13 @@ _element_table = {
     _TRANSLATE_CONSTRUCT:      translate,
     _ROTATE_CONSTRUCT:         rotate,
     _SCALE_CONSTRUCT:          scale,
-    _FLIP_CONSTRUCT:           flip
+    _FLIP_CONSTRUCT:           flip,
+    _ZOOM_CLAMP_CONSTRUCT:     zoom_clamp
 }
 
 
 def _make_ref(elementid, ptr):
-    return _element_table[elementid](ptr, ref=True)
+    return _element_table[elementid](ref=ptr)
 
 
 def _tuple(*args):

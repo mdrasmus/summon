@@ -23,7 +23,7 @@ bool TextElement::Build(int header, const Scm &code2)
         return false;
     }
     
-    Scm code = ScmCddr(ScmCdddr(code2));
+    Scm code = code2.Slice(5); //ScmCddr(ScmCdddr(code2));
     
     switch (header) {
         case TEXT_CONSTRUCT:        kind = KIND_BITMAP; break;
@@ -40,15 +40,16 @@ bool TextElement::Build(int header, const Scm &code2)
             Error("Bad format for text construct");
             return false;
         }
-        code = ScmCddr(code);
+        code = code.Slice(2);
     }
     
     
     // parse justification
     justified = 0; 
-    for (; ScmConsp(code) && ScmStringp(ScmCar(code)); code = ScmCdr(code)) {
-        string str = Scm2String(ScmCar(code));
-        
+    
+    for (int i=0; i<code.Size(); i++) {
+        string str = Scm2String(code.GetScm(i));
+                
         if (str == "left")          justified |= TextElement::LEFT;
         else if (str == "center")   justified |= TextElement::CENTER;
         else if (str == "right")    justified |= TextElement::RIGHT;

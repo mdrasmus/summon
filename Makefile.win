@@ -59,8 +59,7 @@ LIBS=\
     $(MSSDK_LIB)
     
 
-OBJS=src/Common/Matrix.obj \
-     src/Common/Script.obj \
+OBJS=src/Common/Script.obj \
      src/Common/ScriptCommand.obj \
      src/GlutMVC/glut2DCommands.obj \
      src/GlutMVC/Glut2DController.obj \
@@ -88,8 +87,7 @@ OBJS=src/Common/Matrix.obj \
      src/Summon/ZoomClamp.obj
 
 
-OBJS2=$(BUILD_DIR)/src/Common/Matrix.obj \
-      $(BUILD_DIR)/src/Common/Script.obj \
+OBJS2=$(BUILD_DIR)/src/Common/Script.obj \
       $(BUILD_DIR)/src/Common/ScriptCommand.obj \
       $(BUILD_DIR)/src/GlutMVC/glut2DCommands.obj \
       $(BUILD_DIR)/src/GlutMVC/Glut2DController.obj \

@@ -1,7 +1,6 @@
 SRCPREFIX = ..
 LIB = libCommon.a
-OBJS =  Matrix.o \
-        Script.o \
+OBJS =  Script.o \
         ScriptCommand.o \
 
 all: $(LIB)

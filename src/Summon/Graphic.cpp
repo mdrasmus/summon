@@ -27,12 +27,11 @@ Graphic::~Graphic()
 }
 
 
-bool Graphic::Build(int header, const Scm &code2)   // code2
+bool Graphic::Build(int header, const Scm &code2)
 {
     //PyObject_Print(code2.GetPy(), stdout, 0);
 
     SetId(header);
-    //Scm code = ScmCdr(code2);
     Scm code = code2;
     
     //printf("graphic: %d\n", m_id);

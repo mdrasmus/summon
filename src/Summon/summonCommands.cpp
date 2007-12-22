@@ -207,19 +207,19 @@ bool ParseCommand(Scm procScm, Command **command)
 
 bool ParseInput(Scm lst, Input **input)
 {
-    if (!ScmConsp(lst) || !ScmIntp(ScmCar(lst))) {
+    if (!ScmIsList(lst) || !ScmIsInt(lst.GetScm(0))) {
         Error("Bad input");
         return false;
     }
 
-    int header = Scm2Int(ScmCar(lst));
+    int header = Scm2Int(lst.GetScm(0));
     switch (header) {
         case INPUT_KEY_CONSTRUCT: 
-            return ParseKeyInput(ScmCdr(lst), input);
+            return ParseKeyInput(lst.Slice(1), input);
         case INPUT_CLICK_CONSTRUCT:
-            return ParseMouse(true, ScmCdr(lst), input);
+            return ParseMouse(true, lst.Slice(1), input);
         case INPUT_MOTION_CONSTRUCT:
-            return ParseMouse(false, ScmCdr(lst), input);
+            return ParseMouse(false, lst.Slice(1), input);
         default:
             Error("unknown input");
             return false;
@@ -228,18 +228,18 @@ bool ParseInput(Scm lst, Input **input)
 
 bool ParseKeyInput(Scm lst, Input **input)
 {
-    if (!ScmConsp(lst) || !ScmStringp(ScmCar(lst))) {
+    if (!ScmIsList(lst) || !lst.GetScm(0).IsString()) {
         Error("input key must be given as a string");
         return false;
     }
 
-    string key = Scm2String(ScmCar(lst));
+    string key = Scm2String(lst.GetScm(0));
 
     if (key.size() == 1) {
         KeyboardInput *keyInput = new KeyboardInput();
         keyInput->key = key[0];
 
-        if (!ParseMod(ScmCdr(lst), &(keyInput->mod))) {
+        if (!ParseMod(lst.Slice(1), &(keyInput->mod))) {
             delete keyInput;
             return false;
         }
@@ -274,7 +274,7 @@ bool ParseKeyInput(Scm lst, Input **input)
             return false;
         }
 
-        if (!ParseMod(ScmCdr(lst), &(keyInput->mod))) {
+        if (!ParseMod(lst.Slice(1), &(keyInput->mod))) {
             delete keyInput;
             return false;
         }
@@ -291,15 +291,15 @@ bool ParseMouse(bool isClick, Scm lst, Input **input)
     bool drag;
 
     // check for correct types
-    if (!ScmConsp(lst) || !ScmStringp(ScmCar(lst)) ||
-        !ScmConsp(ScmCdr(lst)) || !ScmStringp(ScmCadr(lst)))
+    if (!ScmIsList(lst) || lst.Size() < 2 || !lst.GetScm(0).IsString() ||
+        !lst.GetScm(1).IsString())
     {
         Error("bad mouse input");
         return false;
     }
 
-    string buttonStr = Scm2String(ScmCar(lst));
-    string stateStr  = Scm2String(ScmCadr(lst));
+    string buttonStr = Scm2String(lst.GetScm(0));
+    string stateStr  = Scm2String(lst.GetScm(1));
 
     if (buttonStr == "left")        button = GLUT_LEFT_BUTTON;
     else if (buttonStr == "middle") button = GLUT_MIDDLE_BUTTON;
@@ -330,7 +330,7 @@ bool ParseMouse(bool isClick, Scm lst, Input **input)
         mouse->state  = state;
         mouse->drag   = drag;
 
-        if (!ParseMod(ScmCddr(lst), &(mouse->mod))) {
+        if (!ParseMod(lst.Slice(2), &(mouse->mod))) {
             delete mouse;
             return false;
         }
@@ -340,7 +340,7 @@ bool ParseMouse(bool isClick, Scm lst, Input **input)
         mouse->button = button;
         mouse->state  = state;
 
-        if (!ParseMod(ScmCddr(lst), &(mouse->mod))) {
+        if (!ParseMod(lst.Slice(2), &(mouse->mod))) {
             delete mouse;
             return false;
         }
@@ -354,14 +354,17 @@ bool ParseMouse(bool isClick, Scm lst, Input **input)
 bool ParseMod(Scm lst, int *mod)
 {
     *mod = 0;
-
-    for (; ScmConsp(lst); lst = ScmCdr(lst)) {
-        if (!ScmStringp(ScmCar(lst))) {
+    
+    if (!ScmIsList(lst))
+        return true;
+    
+    for (int i=0; i<lst.Size(); i++) {
+        if (!lst.GetScm(i).IsString()) {
             Error("modifier must be a string");
             return false;
         }
 
-        string str = Scm2String(ScmCar(lst));
+        string str = Scm2String(lst.GetScm(i));
 
         if (str == "shift")     *mod = *mod | GLUT_ACTIVE_SHIFT;
         else if (str == "ctrl") *mod = *mod | GLUT_ACTIVE_CTRL;

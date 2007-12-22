@@ -35,6 +35,11 @@ Element *GetElementFromObject(PyObject *obj)
         int elmid = (int) PyInt_AsLong(PyTuple_GET_ITEM(obj, 0));
 
         Element *elm = g_elementFactory.Create(elmid);
+        if (elm == NULL) {
+            // invalid elmid, return error
+            return NULL;
+        }
+        
         Scm code = Py2ScmTake(PyTuple_GetSlice(obj, 1, PyTuple_GET_SIZE(obj)));
         
         if (!elm->Build(elmid, code)) {
@@ -80,9 +85,9 @@ bool Element::Build(int header, const Scm &code)
     // process children
     for (Scm children = code; 
          ScmConsp(children); 
-         children = ScmCdr(children))
+         children = children.Slice(1))
     {
-        Scm child = ScmCar(children);
+        Scm child = children.GetScm(0);
         if (!AddChild(child))
             return false;
     }
