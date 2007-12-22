@@ -27,6 +27,8 @@ def text_box(msg, x1, y1, x2, y2):
 
 
 win.add_group(group(text_box("hello", 0, 0, 100, 100),
-                    text_box("goodbye", 100, 0, 200, 100)))
+                    text_box("goodbye", 100, 0, 200, 100),
+                    translate(200, 200,
+                        rotate(45, text_box("hi", 0, 0, 100, 100)))))
 
 win.home()

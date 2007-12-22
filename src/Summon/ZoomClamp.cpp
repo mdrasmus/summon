@@ -59,15 +59,16 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
     zoom[1] /= camera.zoom.y;
 
     // determine translation to zoom clamp origin
-    float trans[3] = { 0.0, 0.0, 0.0 };    
+    float trans[3];
     if (m_transformParent != NULL) {
         const TransformMatrix *parent = m_transformParent->GetTransform(matrix, camera);
-        parent->VecMult(-origin.x, -origin.y, &trans[0], &trans[1]);
+        parent->VecMult(origin.x, origin.y, &trans[0], &trans[1]);
     } else {
         trans[0] = origin.x;
         trans[1] = origin.y;
     }
-        
+    trans[2] = 0.0;
+    
     // translate to zoom_clamp origin
     float tmp[16];
     MakeTransMatrix(trans, tmp);
@@ -79,8 +80,8 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
     if (origin.x == 0.0 && origin.y == 0.0) {
         MultMatrix(tmp, tmp2, matrix->mat);
     } else {
-        trans[0] *= -1;
-        trans[1] *= -1;
+        trans[0] = -origin.x;
+        trans[1] = -origin.y;
         float tmp3[16];
         MultMatrix(tmp, tmp2, tmp3);
         MakeTransMatrix(trans, tmp);
