@@ -74,8 +74,8 @@ public:
     string text;
     Vertex2f pos1;
     Vertex2f pos2;
-    int justified;
-    int kind;
+    unsigned char justified;
+    unsigned char kind;
     float minHeight;
     float maxHeight;
     int modelKind;

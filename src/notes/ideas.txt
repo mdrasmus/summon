@@ -36,11 +36,13 @@ Tue Dec 18 15:34:14 EST 2007
   - hotspots in zoom_clamp are not implemented as of now
     DONE
   
-  - text is now properly handled in GetTransform framework   
+  - text is now properly handled in GetTransform framework
+    DONE   
  
   - add proper svg support for zoom_clamp
   - add support for bounding box and dynamic transform
     - less important.  As of now assume identity transform
+
 
 - other ideas:
   - can I add mouse wheele binding?
