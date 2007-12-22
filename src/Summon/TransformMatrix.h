@@ -36,6 +36,13 @@ public:
         *x2 = x1*mat[0] + y1*mat[1] + mat[3];
         *y2 = x1*mat[4] + y1*mat[5] + mat[7];
     }
+
+    // Returns the vector transform(<1,1>)-transform(<0,0>)
+    inline void GetScaling(float *zoomx, float *zoomy) const
+    {
+        *zoomx = mat[0] + mat[1];
+        *zoomy = mat[4] + mat[5];
+    }
     
     inline void SetIdentity()
     {

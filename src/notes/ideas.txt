@@ -32,9 +32,13 @@ Tue Dec 18 15:34:14 EST 2007
     implement a mechanism that allows queries for whether any changes have
     occured in the transform (this would be useful for TextElement).
         - maybe I could delay this as an optimization later on
-    
-  - add proper svg support for zoom_clamp
+
   - hotspots in zoom_clamp are not implemented as of now
+    DONE
+  
+  - text is now properly handled in GetTransform framework   
+ 
+  - add proper svg support for zoom_clamp
   - add support for bounding box and dynamic transform
     - less important.  As of now assume identity transform
 

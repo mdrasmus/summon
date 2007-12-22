@@ -124,43 +124,6 @@ list<Command*> SummonModel::HotspotClick(Vertex2f pos, const Camera camera)
 }
 
 
-// Gets the environment of a group.
-// env is the starting environment
-// start is the starting element of the descent
-BuildEnv SummonModel::GetEnv(BuildEnv &env, Element *start, Element *end)
-{
-    list<Element*> elms;
-    BuildEnv env2 = env;
-
-    // the default value for start is the root
-    if (start == NULL) {
-        start = GetRoot();
-    }
-    
-    // find path from end to start through parent pointers
-    for (Element *i = end->GetParent(); i && i != start; i = i->GetParent()) {
-        elms.push_front(i);
-    }
-    elms.push_front(start);
-
-    
-    // traceback down parent pointers to calc env
-    for (list<Element*>::iterator i=elms.begin(); i!=elms.end(); i++) {
-        switch ((*i)->GetId()) {
-            case TRANSFORM_CONSTRUCT: {
-                // modify environment for child elements
-                float tmp[16];
-                MultMatrix(env2.trans.mat, ((Transform*) (*i))->GetMatrix(), 
-                           tmp);
-                CopyMatrix(env2.trans.mat, tmp);
-                break;
-            }
-        }
-    }
-    
-    return env2;
-}
-
 
 Element *SummonModel::AddElement(Element *parent, Scm code)
 {
@@ -226,28 +189,19 @@ Element *SummonModel::ReplaceElement(Element *oldelm, Scm code)
 }
 
 
-void SummonModel::Update()
-{
-    Element *element = GetRoot();
-    BuildEnv env(true, m_kind);
-    Update(element, &env);
-    ModelChanged();
-}
-
 
 void SummonModel::Update(Element *element)
 {
-    BuildEnv env(true, m_kind);
-    BuildEnv env2 = GetEnv(env, NULL, element);
-    Update(element, &env2);
+    if (element == NULL)
+        element = GetRoot();
+
+    UpdateRecurse(element);
     ModelChanged();
 }
 
 
-void SummonModel::Update(Element *element, BuildEnv *env)
-{
-    BuildEnv *env2 = NULL;
-    
+void SummonModel::UpdateRecurse(Element *element)
+{    
     element->SetModel(this);
     element->Update();
     
@@ -259,26 +213,14 @@ void SummonModel::Update(Element *element, BuildEnv *env)
             break;
         
         case TEXT_CONSTRUCT:
-            UpdateTextElement((TextElement*) element, env);
-            break;
-        
-        case TRANSFORM_CONSTRUCT: {
-            Transform *trans = (Transform*) element;
-            env2 = new BuildEnv(false, env->modelKind);
-            MultMatrix(env->trans.mat, trans->GetMatrix(), env2->trans.mat);
-            env = env2;
-            } break;
+            ((TextElement*) element)->modelKind = m_kind;
+            break;        
     }
     
-
     // recurse through children
     for (Element::Iterator i=element->Begin(); i!=element->End(); i++) {
-        Update(*i, env);
+        UpdateRecurse(*i);
     }
-    
-    // free the build environment if a new was created
-    if (env2)
-        delete env2;
 }
 
 
@@ -289,35 +231,6 @@ void SummonModel::UpdateHotspot(Hotspot *hotspot)
         m_hotspotClickSet.Insert(hotspot, true);
         m_hotspotClicks.push_back(hotspot);
     }
-}
-
-
-void SummonModel::UpdateTextElement(TextElement *textElm, BuildEnv *env)
-{
-    // TODO: think about where I would put this line
-    textElm->modelKind = env->modelKind;
-    
-    
-    // TODO: when using my new GetTransform() method, this computing would be 
-    // done for every draw.  It would be nice to have some kind of mechanism
-    // for asking if transform has changed; if not then use cached result
-    
-    // find scaling
-    Vertex2f orgin;
-    env->trans.VecMult(0.0, 0.0, &orgin.x, &orgin.y);
-    env->trans.VecMult(1.0, 1.0, &textElm->scale.x, &textElm->scale.y);
-    textElm->scale = textElm->scale - orgin;
-    
-
-    // find environment position
-    env->trans.VecMult(textElm->pos1.x, textElm->pos1.y, 
-                       &textElm->envpos1.x, &textElm->envpos1.y);
-    env->trans.VecMult(textElm->pos2.x, textElm->pos2.y, 
-                       &textElm->envpos2.x, &textElm->envpos2.y);
-    if (textElm->envpos1.x > textElm->envpos2.x)
-        swap(textElm->envpos1.x, textElm->envpos2.x);
-    if (textElm->envpos1.y > textElm->envpos2.y)
-        swap(textElm->envpos1.y, textElm->envpos2.y);
 }
 
 
@@ -373,9 +286,10 @@ void SummonModel::RemoveHotspots(Element *elm)
 }
 
 
+// TODO: this needs a camera argument, but maybe not.
 void SummonModel::FindBounding(Element *elm, Vertex2f *pos1, Vertex2f *pos2)
 {
-
+    const Camera camera;
     const float FLOAT_MIN = -1e307;
     const float FLOAT_MAX = 1e307;
 
@@ -388,15 +302,14 @@ void SummonModel::FindBounding(Element *elm, Vertex2f *pos1, Vertex2f *pos2)
     TransformMatrix matrix;
     
     if (elm) {
-        BuildEnv env(true, m_kind);    
-        BuildEnv env2 = GetEnv(env, NULL, elm);
-        CopyMatrix(matrix.mat, env.trans.mat);
+        const TransformMatrix *tmp = elm->GetTransform(&matrix, camera);
+        CopyMatrix(matrix.mat, tmp->mat);
     } else {
         elm = GetRoot();
         MakeIdentityMatrix(matrix.mat);
     }
         
-    
+    // TODO: should probably send camera?  or would that be more expensive?
     elm->FindBounding(&top, &bottom, &left, &right, &matrix);
     
     pos1->x = left;

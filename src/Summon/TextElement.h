@@ -74,9 +74,6 @@ public:
     string text;
     Vertex2f pos1;
     Vertex2f pos2;
-    Vertex2f envpos1;
-    Vertex2f envpos2;
-    Vertex2f scale;
     int justified;
     int kind;
     float minHeight;

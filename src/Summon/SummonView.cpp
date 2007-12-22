@@ -324,6 +324,8 @@ void SummonView::ExecuteTasks()
 
 void SummonView::Display()
 {
+    UpdateCamera();
+
     glClearColor(m_bgColor.r, m_bgColor.g, m_bgColor.b, m_bgColor.a);
 
     // clear screen and initialize coordinate system
@@ -666,21 +668,44 @@ bool SummonView::WithinView(const Vertex2f &pos1, const Vertex2f &pos2)
 void SummonView::DrawTextElement(TextElement *elm)
 {
     const unsigned char *text = (const unsigned char*) elm->text.c_str();
-
+    
     // get text bounding box
     Vertex2f pos1 = elm->pos1;
     Vertex2f pos2 = elm->pos2;
+    
+    // TODO: remove envpos and scale from TextElement
+    
+    
+    // find scaling
+    Vertex2f scale;
+    TransformMatrix tmp;
+    const TransformMatrix *matrix = elm->GetTransform(&tmp, m_camera);
+    matrix->GetScaling(&scale.x, &scale.y);
+    
+    
+    // find environment position
+    Vertex2f envpos1, envpos2;
+    
+    matrix->VecMult(pos1.x, pos1.y, &envpos1.x, &envpos1.y);
+    matrix->VecMult(pos2.x, pos2.y, &envpos2.x, &envpos2.y);
+    if (envpos1.x > envpos2.x)
+        swap(envpos1.x, envpos2.x);
+    if (envpos1.y > envpos2.y)
+        swap(envpos1.y, envpos2.y);    
+    
     
     // do not draw text that is not visible
     // get bounding visible view
     
     if (elm->modelKind == MODEL_WORLD && 
-        !WithinView(elm->envpos1, elm->envpos2)) 
+        !WithinView(envpos1, envpos2)) 
     {
         return;
     }
     
     if (elm->kind == TextElement::KIND_BITMAP) {
+        // Bitmap text
+        
         void *font = GLUT_BITMAP_8_BY_13;
         Vertex2f zoom = GetZoom();
         if (elm->modelKind == MODEL_SCREEN) {
@@ -689,9 +714,8 @@ void SummonView::DrawTextElement(TextElement *elm)
         }
 
         // find text on-screen size
-        float textWidth  = glutBitmapLength(font, text) / zoom.x
-                            / elm->scale.x;
-        float textHeight = 13.0 / zoom.y / elm->scale.y;
+        float textWidth  = glutBitmapLength(font, text) / zoom.x / scale.x;
+        float textHeight = 13.0 / zoom.y / scale.y;
         float boxWidth   = pos2.x - pos1.x;
         float boxHeight  = pos2.y - pos1.y;
 
@@ -705,6 +729,8 @@ void SummonView::DrawTextElement(TextElement *elm)
         DrawText(font, elm->text, pos.x, pos.y);
         
     } else if (elm->kind == TextElement::KIND_SCALE) {
+        // Scale text
+    
         void *font = GLUT_STROKE_MONO_ROMAN;
         float const fontSize = 119.05;
         
@@ -719,10 +745,10 @@ void SummonView::DrawTextElement(TextElement *elm)
 
         float xscale = boxWidth / textWidth;
         float yscale = boxHeight / textHeight;
-        float scale = min(xscale, yscale);
+        float tscale = min(xscale, yscale);
 
-        textWidth *= scale;
-        textHeight *= scale;
+        textWidth *= tscale;
+        textHeight *= tscale;
 
         Vertex2f pos = JustifyBox(elm->justified, pos1, pos2, 
                                   textWidth, textHeight, boxWidth, boxHeight);
@@ -736,6 +762,7 @@ void SummonView::DrawTextElement(TextElement *elm)
         glPopMatrix();
         
     } else if (elm->kind == TextElement::KIND_CLIP) {
+        // Clip text
         // TODO: must properly use elm->scale
     
         void *font = GLUT_STROKE_MONO_ROMAN;
@@ -767,10 +794,10 @@ void SummonView::DrawTextElement(TextElement *elm)
         
         float xscale = boxWidth / textWidth;
         float yscale = boxHeight / textHeight;
-        float scale = min(xscale, yscale);
+        float tscale = min(xscale, yscale);
 
-        textWidth *= scale;
-        textHeight *= scale;
+        textWidth *= tscale;
+        textHeight *= tscale;
         
         
         // clip text if it falls outside its height restrictions

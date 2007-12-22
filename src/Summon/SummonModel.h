@@ -25,22 +25,6 @@ namespace Summon
 
 
 
-struct BuildEnv
-{
-    BuildEnv(bool identity = false, int kind=MODEL_WORLD) :
-        modelKind(kind)
-    {
-        if (identity) {
-            trans.SetIdentity();
-        }
-    } 
-    
-    
-    TransformMatrix trans;
-    int modelKind;
-};
-
-
 class SummonModel : public Model
 {
 public:
@@ -57,8 +41,7 @@ public:
     Element *ReplaceElement(Element *oldelm, Scm code);
     
     // book keeping
-    void Update();
-    void Update(Element *element);
+    void Update(Element *element=NULL);
 
     // model queries
     list<Command*> HotspotClick(Vertex2f pos, const Camera camera);    
@@ -66,13 +49,10 @@ public:
     inline Element *GetRoot()
     { return m_root; }
     
-protected:
-    BuildEnv GetEnv(BuildEnv &env, Element *start, Element *end);
-    
+protected:    
     // book keeping
-    void Update(Element *element, BuildEnv *env);
+    void UpdateRecurse(Element *element);
     void UpdateHotspot(Hotspot *hotspot);
-    void UpdateTextElement(TextElement *textElm, BuildEnv *env);
     void RemoveHotspots(Element *elm);
 
     inline void ModelChanged()
