@@ -89,6 +89,19 @@ void MakeIdentityMatrix(float *m)
 }
 
 
+void MakeTransScaleMatrix(const float *trans, const float *zoom, float *m)
+{
+    //  zx 0  0  tx
+    //  0  zy 0  ty
+    //  0  0  zz tz
+    //  0  0  0  1
+    
+    m[0] =zoom[0]; m[1] =0;       m[2] =0;       m[3] =trans[0];
+    m[4] =0;       m[5] =zoom[1]; m[6] =0;       m[7] =trans[1];
+    m[8] =0;       m[9] =0;       m[10]=zoom[2]; m[11]=trans[2];
+    m[12]=0;       m[13]=0;       m[14]=0;       m[15]=1;
+}
+
 void CopyMatrix(float *m, const float *n)
 {
     // for speed

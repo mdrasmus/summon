@@ -19,6 +19,7 @@ void MakeTransMatrix(const float *vec, float *m);
 void MakeRotateMatrix(float angle, const float *vec, float *m);
 void MakeScaleMatrix(const float *vec, float *m);
 void MakeIdentityMatrix(float *m);
+void MakeTransScaleMatrix(const float *trans, const float *zoom, float *m);
 void CopyMatrix(float *des, const float *src);
 void PrintMatrix(const float *mat, FILE *out=stdout);
 
