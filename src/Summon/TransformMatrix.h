@@ -12,11 +12,14 @@
 
 namespace Summon {
 
-// TODO: add optimized Translate function
 
 void MultMatrix(const float *mat1, const float *mat2, float *mat3);
 void MakeTransMatrix(const float *vec, float *m);
 void MakeRotateMatrix(float angle, const float *vec, float *m);
+
+// Assume a vector of <0, 0, 1>
+void MakeRotateMatrix(float angle, float *m);
+
 void MakeScaleMatrix(const float *vec, float *m);
 void MakeIdentityMatrix(float *m);
 void MakeTransScaleMatrix(const float *trans, const float *zoom, float *m);

@@ -490,22 +490,25 @@ class zoom_clamp (Transform):
     
     def __init__(self, 
                  *elements, **options):
-        """*elements    -- elements to apply clamp to
-           minx         -- minimum x-zoom level (default: 0.0)
-           miny         -- minimum y-zoom level (default: 0.0)
-           maxx         -- maximum x-zoom level (default: inf)
-           maxy         -- maximum y-zoom level (default: inf)
-           clip         -- a bool whether elements are cliped when too small
-                           (default: False)
-           link         -- a bool whether x- and y-axis of elements
-                           should always zoom together (default: False)
-           link_type    -- a string indicating the rule for linking
-                           "smaller" use the smaller of the x and y zooms
-                           "larger" use the larger of the x and zooms
-                           (default: "larger")
-           origin       -- a tuple (x, y) that defines the point at which the
-                           zoom_clamp is stationary with its parent .
-                           (default: (0,0))
+        """*elements  -- elements to apply clamp to
+           minx       -- minimum x-zoom level (default: 0.0)
+           miny       -- minimum y-zoom level (default: 0.0)
+           maxx       -- maximum x-zoom level (default: inf)
+           maxy       -- maximum y-zoom level (default: inf)
+           clip       -- a bool whether elements are cliped when too small
+                         (default: False)
+           link       -- a bool whether x- and y-axis of elements
+                         should always zoom together (default: False)
+           link_type  -- a string indicating the rule for linking
+                         "smaller" use the smaller of the x and y zooms
+                         "larger" use the larger of the x and zooms
+                         (default: "larger")
+           origin     -- a tuple (x, y) that defines the point at which the
+                         zoom_clamp is stationary with its parent .
+                         (default: (0,0))
+           axis       -- a tuple (ax, ay) that together with origin define
+                         a line that is stationary with is parent
+                         (default: (origin[0]+1, origin[1]))
         """
         
         minx = options.get("minx", 0.0)
@@ -516,8 +519,11 @@ class zoom_clamp (Transform):
         link = options.get("link", False)
         link_type = options.get("link_type", "larger")
         origin = options.get("origin", (0.0, 0.0))
+        axis = options.get("axis", origin)
+        
         
         assert len(origin) == 2, Exception("origin must be a tuple of 2 floats")
+        assert len(axis) == 2, Exception("axis must be a tuple of 2 floats")
         
         if link:
             low = max(minx, miny)
@@ -539,7 +545,8 @@ class zoom_clamp (Transform):
         
         Element.__init__(self, _ZOOM_CLAMP_CONSTRUCT, 
                          _tuple(minx, miny, maxx, maxy, clip, link, link_type,
-                                origin[0], origin[1], *elements), 
+                                origin[0], origin[1], axis[0], axis[1],
+                                *elements), 
                          options)
     
     # TODO: add wrapper for get_contents to convert link_type back to a str

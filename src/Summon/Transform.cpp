@@ -41,10 +41,7 @@ void Transform::Set(int kind, float param1, float param2)
             break;
             
         case ROTATE_CONSTRUCT:
-            vec[0] = 0;
-            vec[1] = 0;
-            vec[2] = 1;
-            MakeRotateMatrix(param1, vec, m_matrix.mat);            
+            MakeRotateMatrix(param1, m_matrix.mat);            
             break;
         
         case SCALE_CONSTRUCT:
@@ -70,7 +67,7 @@ void Transform::Set(int kind, float param1, float param2)
 
 bool Transform::Build(int header, const Scm &code)
 {
-    m_kind = header; //Scm2Int(ScmCar(code));
+    m_kind = header;
     
     switch (m_kind) {
         case TRANSLATE_CONSTRUCT:

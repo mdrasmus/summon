@@ -573,9 +573,7 @@ void SummonView::DrawElement(Element *element, bool createTasks)
 bool SummonView::DrawZoomClamp(ZoomClamp *zoomClamp)
 {
     // determine desired clamped zoom
-    if (zoomClamp->clip && 
-        (m_zoom.x < zoomClamp->minx ||
-         m_zoom.y < zoomClamp->miny))
+    if (zoomClamp->IsClipped(m_camera))
     {
         // clip children
         return false;
@@ -585,9 +583,8 @@ bool SummonView::DrawZoomClamp(ZoomClamp *zoomClamp)
         TransformWorld();
         
         // perform zoom clamp transform
-        TransformMatrix matrix;  // working temp space
-        Camera camera(m_trans, m_zoom, m_focus);
-        const TransformMatrix *trans = zoomClamp->GetTransform(&matrix, camera);
+        TransformMatrix matrix;  // working temp space        
+        const TransformMatrix *trans = zoomClamp->GetTransform(&matrix, m_camera);
 
         // convert matrix to column-major
         // TODO: switch my matrices to column-major

@@ -1174,9 +1174,8 @@ Exec(PyObject *self, PyObject *tup)
         if (ret)
             Py_INCREF(ret);
         else {
-            // set error
-            PyErr_Format(PyExc_Exception, GetError());
-            ClearError();
+            // set python exception
+            SetException();
         }
         
         // clean up and return result
@@ -1184,8 +1183,8 @@ Exec(PyObject *self, PyObject *tup)
         return ret;
     } else {
         // populating command failed, raise exception
-        PyErr_Format(PyExc_Exception, "error processing command '%s'", 
-                     cmd->GetName());
+        Error("error processing command '%s'", cmd->GetName());
+        SetException();
         delete cmd;
     }    
     
@@ -1209,7 +1208,8 @@ MakeElement(PyObject *self, PyObject *args)
     Element *elm = g_elementFactory.Create(elmid);
     
     if (elm == NULL || !elm->Build(elmid, code)) {
-        PyErr_Format(PyExc_Exception, "error constructing element");
+        Error("error constructing element");
+        SetException();
         return NULL;
     }
     elm->IncRef();
@@ -1246,9 +1246,6 @@ static PyObject *
 IncRefElement(PyObject *self, PyObject *args)
 {
     long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
-    if (addr == -1)
-        return NULL;
-    
     Element *elm = Id2Element(addr);
     
     //printf("incref %p\n", elm);

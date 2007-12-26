@@ -20,7 +20,8 @@ class ZoomClamp : public Transform
 {
 public:
     ZoomClamp() : 
-        Transform(ZOOM_CLAMP_CONSTRUCT, false)
+        Transform(ZOOM_CLAMP_CONSTRUCT, false),
+        m_useAxis(false)
     {
         MakeIdentityMatrix(m_matrix.mat);
     }
@@ -39,16 +40,23 @@ public:
     virtual const TransformMatrix *GetTransform(TransformMatrix *matrix,
                                                 const Camera &camera);
 
-    float minx;
-    float miny;
-    float maxx;
-    float maxy;
-    bool clip;
-    bool link;
-    bool linkType;
-    Vertex2f origin;
-    
+    inline bool IsClipped(const Camera &camera) const
+    {
+        return m_clip && (camera.zoom.x < m_minx || camera.zoom.y < m_miny);
+    }
+
 protected:
+    float m_minx;
+    float m_miny;
+    float m_maxx;
+    float m_maxy;
+    bool m_clip;
+    bool m_link;
+    bool m_linkType;
+    bool m_useAxis;
+    Vertex2f m_origin;
+    Vertex2f m_axis;
+    
     virtual Transform *GetDynamicTransformParent()
     {
         return this;

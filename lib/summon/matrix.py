@@ -660,7 +660,7 @@ class MatrixViewer (object):
     
         # draw boundary 
         self.win.add_group(group(color(* getDrawColor(self.bgcolor)), 
-                           shapes.boxStroke(-.5,.5,ncols-.5, -nrows+.5)))
+                           shapes.box(-.5,.5,ncols-.5, -nrows+.5, fill=False)))
 
     
     def drawPartitions(self, mat):

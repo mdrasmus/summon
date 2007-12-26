@@ -160,8 +160,9 @@ extern PyObject *python_globals;
 void InitPython();
 void DestroyPython();
 void Error(const char *fmt, ...);
-char *GetError();
+const char *GetError();
 void ClearError();
+void SetException();
 bool ParseScm(Scm lst, const char *fmt, ...);
 Scm BuildScm(const char *fmt, ...);
 

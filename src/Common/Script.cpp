@@ -10,6 +10,7 @@
 #include "Script.h"
 #include <stdarg.h>
 
+
 namespace Summon {
 
 using namespace std;
@@ -22,7 +23,8 @@ Scm Scm_FALSE;
 
 PyObject *python_globals;
 
-static char *g_errorMsg = NULL;
+static string g_errorMsg;
+static int g_nerrors = 0;
 
 
 void InitPython()
@@ -45,31 +47,49 @@ void DestroyPython()
 
 void Error(const char *format, ...)
 {
-    char text[500];
     const int maxtext = 500;
-
+    char text[maxtext];
+    char errornum[10];
+    
+    // process variable number of arguments 
     va_list args;   
     va_start(args, format);
     
-    // set error message to global variable
-    vsnprintf(text, maxtext, format, args);
-    g_errorMsg = strdup(text);
+    // count the number of errors
+    g_nerrors++;
     
+    // format error
+    vsnprintf(text, maxtext, format, args);
+    snprintf(errornum, 10, "[%d] ", g_nerrors);
+    
+    // append error text to existing errors, if they exist
+    if (g_errorMsg.size() > 0)
+        g_errorMsg += "\n";
+    g_errorMsg += errornum;
+    g_errorMsg += text;
+    
+    // cleanup variable number of arguments
     va_end(args);
 }
 
 
-char *GetError()
+const char *GetError()
 {
-    return g_errorMsg;
+    return g_errorMsg.c_str();
 }
 
 void ClearError()
 {
-    free(g_errorMsg);
-    g_errorMsg = NULL;
+    g_errorMsg = "";
+    g_nerrors = 0;
 }
 
+
+void SetException()
+{
+    PyErr_Format(PyExc_Exception, GetError());
+    ClearError();
+}
 
 string int2string(int num)
 {
