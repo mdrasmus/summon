@@ -1,0 +1,12 @@
+digraph pcspec {
+    initReq  ->  req;
+    req -> procSpec -> pcSpec;
+    req -> diskSpec -> pcSpec;
+    req -> ioSpec -> pcSpec;
+    req -> otherSpec -> pcSpec;
+    pcSpec -> reviewedSpec;
+    reviewedSpec -> approvedSpec ;
+    reviewedSpec -> rejectedSpec ;
+    rejectedSpec -> req;
+    approvedSpec -> customerConfiguation;
+}

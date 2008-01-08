@@ -1,0 +1,29 @@
+digraph pcspec {
+	node [label="\N"];
+	graph [bb="0,0,420,496"];
+	initReq [pos="227,476", width="1.94", height="0.56"];
+	req [pos="227,400", width="0.75", height="0.56"];
+	procSpec [pos="40,324", width="1.11", height="0.56"];
+	pcSpec [pos="227,248", width="0.94", height="0.56"];
+	diskSpec [pos="137,324", width="1.08", height="0.56"];
+	ioSpec [pos="227,324", width="0.92", height="0.56"];
+	otherSpec [pos="320,324", width="1.17", height="0.56"];
+	reviewedSpec [pos="238,172", width="1.47", height="0.56"];
+	approvedSpec [pos="238,96", width="1.47", height="0.56"];
+	rejectedSpec [pos="369,96", width="1.36", height="0.56"];
+	customerConfiguration [pos="238,20", width="2.11", height="0.56"];
+	initReq -> req [pos="e,227,420 227,456 227,448 227,439 227,430"];
+	req -> procSpec [pos="e,71,337 203,390 176,379 129,360 89,344 86,343 83,342 81,341"];
+	procSpec -> pcSpec [pos="e,199,259 71,311 77,309 83,306 89,304 123,291 162,275 190,263"];
+	req -> diskSpec [pos="e,157,341 209,385 196,374 179,360 165,347"];
+	diskSpec -> pcSpec [pos="e,207,265 157,307 169,296 185,283 199,272"];
+	req -> ioSpec [pos="e,227,344 227,380 227,372 227,363 227,354"];
+	ioSpec -> pcSpec [pos="e,227,268 227,304 227,296 227,287 227,278"];
+	req -> otherSpec [pos="e,299,341 245,385 258,375 276,360 291,347"];
+	otherSpec -> pcSpec [pos="e,247,264 298,306 285,296 269,282 255,271"];
+	pcSpec -> reviewedSpec [pos="e,235,192 230,228 231,220 232,211 233,202"];
+	reviewedSpec -> approvedSpec [pos="e,238,116 238,152 238,144 238,135 238,126"];
+	reviewedSpec -> rejectedSpec [pos="e,341,113 267,155 286,145 311,130 332,118"];
+	rejectedSpec -> req [pos="e,253,394 376,116 391,161 420,273 371,344 358,362 301,381 263,391"];
+	approvedSpec -> customerConfiguration [pos="e,238,40 238,76 238,68 238,59 238,50"];
+}

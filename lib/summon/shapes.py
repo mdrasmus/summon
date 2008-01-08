@@ -24,8 +24,7 @@ def box(x1, y1, x2, y2, fill=True):
         return line_strip(x1, y1, x2, y1, x2, y2, x1, y2, x1, y1)
 
 
-
-def regularPoly(nsides, radius, fill=True, rotate=0.0):
+def regularPolygon(x, y, nsides, radius, fill=True, rotate=0.0):
     """
     Draws a regular 'nsides'-sided polygon with size 'radius'
     
@@ -37,8 +36,8 @@ def regularPoly(nsides, radius, fill=True, rotate=0.0):
     i = rotate
     pts = []
     while i < rotate + 2 * 3.14159:
-        pts.append(radius * math.cos(i))
-        pts.append(radius * math.sin(i))
+        pts.append(x + radius * math.cos(i))
+        pts.append(y + radius * math.sin(i))
         i += (2 * 3.14159 / nsides)
     
     if fill:
@@ -47,6 +46,13 @@ def regularPoly(nsides, radius, fill=True, rotate=0.0):
         pts.append(radius)
         pts.append(0)
         return line_strip(*pts)
+
+
+def regularPoly(nsides, radius, fill=True, rotate=0.0):
+    """
+    DEPRECATED: use regularPolygon()
+    """
+    return regularPolygon(0, 0, nsides, radius, fill, rotate)
 
 
 def arrow(headx, heady, tailx, taily, *tail, **options):
