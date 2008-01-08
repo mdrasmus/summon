@@ -94,8 +94,8 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
         worldVector.Normalize();
         float worldAngle = vertex2angle(worldVector);
         
-        Vertex2f clampVector((m_axis.x - m_origin.x) * zoom[0],
-                             (m_axis.y - m_origin.y) * zoom[1]);
+        Vertex2f clampVector((m_axis.x - m_origin.x) * zoom[0] * camera.zoom.x,
+                             (m_axis.y - m_origin.y) * zoom[1] * camera.zoom.y);
         clampVector.Normalize();
         float clampAngle = vertex2angle(clampVector);                     
         float diffAngle = worldAngle - clampAngle;

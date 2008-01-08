@@ -58,25 +58,32 @@ def regularPoly(nsides, radius, fill=True, rotate=0.0):
 def arrow(headx, heady, tailx, taily, *tail, **options):
     style = options.get("style", "solid")
     head_size = options.get("head_size", 10)
-
-    # compute arrow head vector (unit vector)
-    vecx = headx - tailx
-    vecy = heady - taily
-    length = math.sqrt(vecx*vecx + vecy*vecy)
-    vecx *= head_size / length
-    vecy *= head_size / length
+    offset = options.get("offset", (headx, heady))
     
     if style == "solid":
         return group(line_strip(headx, heady, tailx, taily, *tail),
                      zoom_clamp(
-                        polygon(headx, heady,
-                                headx - vecx - vecy, heady - vecy + vecx,
-                                headx - vecx + vecy, heady - vecy - vecx),
+                        arrow_head(offset[0], offset[1], tailx, taily, 
+                                   head_size),
                         minx=1, miny=1, maxx=1, maxy=1, 
                         origin=(headx, heady),
                         axis=(tailx, taily)))
     else:
         raise Exception("unknown arrow style '%s'" % style)    
+
+
+def arrow_head(headx, heady, tailx, taily, size=10):
+
+    # compute arrow head vector (unit vector)
+    vecx = headx - tailx
+    vecy = heady - taily
+    length = math.sqrt(vecx*vecx + vecy*vecy)
+    vecx *= size / length
+    vecy *= size / length
+    
+    return polygon(headx, heady,
+                   headx - vecx - vecy, heady - vecy + vecx,
+                   headx - vecx + vecy, heady - vecy - vecx)
 
 
 def boxStroke(x1, y1, x2, y2):

@@ -1,0 +1,27 @@
+graph G {
+	node [label="\N"];
+	graph [bb="0,0,356,240"];
+	run [pos="103,111", width="0.75", height="0.50"];
+	intr [pos="46,60", width="0.75", height="0.50"];
+	runbl [pos="29,127", width="0.78", height="0.50"];
+	kernel [pos="178,138", width="0.86", height="0.50"];
+	zombie [pos="166,221", width="0.94", height="0.50"];
+	sleep [pos="251,156", width="0.75", height="0.50"];
+	runmem [pos="238,84", width="1.03", height="0.50"];
+	swap [pos="328,149", width="0.75", height="0.50"];
+	runswap [pos="317,74", width="1.03", height="0.50"];
+	new [pos="276,19", width="0.75", height="0.50"];
+	run -- intr [pos="87,97 79,90 70,81 62,75"];
+	intr -- runbl [pos="41,78 39,88 36,99 33,109"];
+	runbl -- run [pos="56,121 63,120 70,118 77,117"];
+	run -- kernel [pos="127,120 135,123 143,126 151,129"];
+	kernel -- zombie [pos="175,156 173,170 171,189 169,203"];
+	kernel -- sleep [pos="207,145 213,147 220,148 226,150"];
+	kernel -- runmem [pos="195,123 203,116 212,107 220,100"];
+	sleep -- swap [pos="278,154 285,153 294,153 301,152"];
+	swap -- runswap [pos="325,131 323,119 321,104 320,92"];
+	runswap -- new [pos="304,57 299,50 293,42 288,35"];
+	runswap -- runmem [pos="281,79 279,79 276,79 274,80"];
+	new -- runmem [pos="266,36 261,45 254,57 248,67"];
+	sleep -- runmem [pos="248,138 246,127 243,113 241,102"];
+}
