@@ -39,10 +39,11 @@ SummonView::SummonView(SummonModel *model, int width, int height,
     //glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE);
     //glEnable(GL_MULTISAMPLE);
     //glEnable(GL_MULTISAMPLE_ARB);
-    glEnable(GL_POLYGON_SMOOTH);
+    glEnable(GL_POINT_SMOOTH);  
     glEnable(GL_LINE_SMOOTH);
-    glEnable(GL_POINT_SMOOTH);    
-    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+    glDisable(GL_POLYGON_SMOOTH);
+    //glEnable(GL_POLYGON_SMOOTH);
+    //glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
     glEnable(GL_BLEND);
     
      
@@ -180,7 +181,7 @@ void SummonView::ExecCommand(Command &command)
         case SET_ANTIALIAS_COMMAND:
             MakeCurrentWindow();
             if (((SetAntialiasCommand*)&command)->enabled) {
-                glEnable(GL_POLYGON_SMOOTH);
+                glDisable(GL_POLYGON_SMOOTH);
                 glEnable(GL_LINE_SMOOTH);
                 glEnable(GL_POINT_SMOOTH);
             } else {
@@ -201,7 +202,22 @@ void SummonView::ExecCommand(Command &command)
             break;
         
         
-        // basic commands
+        case REDISPLAY_COMMAND:
+            //NoteModelChange(); // TODO: need to FIX Model changes
+            MakeCurrentWindow();
+            glutPostRedisplay();
+            //Glut2DView::ExecCommand(command);
+            break;
+        
+        case MODEL_CHANGED_COMMAND:
+            MakeCurrentWindow();
+            NoteModelChange();
+            glutPostRedisplay();
+            //Glut2DView::ExecCommand(command);
+            break;
+        
+        //=============================================================
+        // camera commands
         case TRANSLATE_SCRIPT_COMMAND: {
             MakeCurrentWindow();
             TranslateBy(((TranslateScriptCommand*)(&command))->trans.x, 
@@ -233,20 +249,6 @@ void SummonView::ExecCommand(Command &command)
             Vertex2f focus = WindowToWorld(cmd->focus.x, cmd->focus.y);
             SetFocus(focus.x, focus.y);
             } break;
-        
-        case REDISPLAY_COMMAND:
-            //NoteModelChange(); // TODO: need to FIX Model changes
-            MakeCurrentWindow();
-            glutPostRedisplay();
-            //Glut2DView::ExecCommand(command);
-            break;
-        
-        case MODEL_CHANGED_COMMAND:
-            MakeCurrentWindow();
-            NoteModelChange();
-            glutPostRedisplay();
-            //Glut2DView::ExecCommand(command);
-            break;
         
         
         //=========================================================
