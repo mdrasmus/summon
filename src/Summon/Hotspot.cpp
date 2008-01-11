@@ -105,7 +105,7 @@ bool Hotspot::IsCollide(const Vertex2f &pt, const Camera &camera)
     matrix->VecMult(pos1.x, pos2.y, &c.x, &c.y);
     matrix->VecMult(pos2.x, pos1.y, &d.x, &d.y);
     
-    return InTriangle(a, b, c, pt) || InTriangle(a, b, d, pt);
+    return InQuad(a, c, b, d, pt);
 }
 
 

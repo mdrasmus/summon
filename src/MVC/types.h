@@ -135,6 +135,26 @@ bool InTriangle(const Vertex2<T> &a, const Vertex2<T> &b, const Vertex2<T> &c,
     }
 }
 
+template <class T>
+bool InQuad(const Vertex2<T> &a, const Vertex2<T> &b, 
+            const Vertex2<T> &c, const Vertex2<T> &d,
+            const Vertex2<T> &pos)
+{
+    bool clockwise = InLeftHalfspace(b, a, c);
+    if (clockwise)
+    {
+        return InLeftHalfspace(b, a, pos) && 
+               InLeftHalfspace(c, b, pos) && 
+               InLeftHalfspace(d, c, pos) &&
+               InLeftHalfspace(a, d, pos);
+    } else {
+        return InLeftHalfspace(a, b, pos) && 
+               InLeftHalfspace(b, c, pos) && 
+               InLeftHalfspace(c, d, pos) &&
+               InLeftHalfspace(d, a, pos);
+    }
+}
+
 }
 
 #endif
