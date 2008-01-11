@@ -12,9 +12,11 @@
 import threading
 import time
 import atexit
+import math
 
 # SUMMON extension module
 import summon_core
+import vector
 
 
 def start_summon_thread():
@@ -213,26 +215,81 @@ class group (Element):
     
 
 
-# TODO: it would be nice to get local x, y back
-# in order to implement hotspot_custom
 class hotspot (Element):
     """Designates a region of the screen to react to mouse clicks.
     
-       When a mouse click (default: middle click) occurs within the specified
+       When a mouse click (default: left click) occurs within the specified
        rectangular region the given function will be called."""
     
     def __init__(self, kind="click", x1=None, y1=None, x2=None, y2=None, 
-                 func=None, **options):
-        """kind - must be the string "click" (more options in future versions)
-           x1   - 1st x-coordinate of rectangular region
-           y1   - 1st y-coordinate of rectangular region
-           x2   - 2nd x-coordinate of rectangular region
-           y2   - 2nd y-coordinate of rectangular region
-           func - callback function of no arguments
+                 func=None, give_pos=False, **options):
+        """kind     - must be the string "click" (more options in future versions)
+           x1       - 1st x-coordinate of rectangular region
+           y1       - 1st y-coordinate of rectangular region
+           x2       - 2nd x-coordinate of rectangular region
+           y2       - 2nd y-coordinate of rectangular region
+           func     - callback function of no arguments
+           give_pos - a bool determining whether the mouse position should be
+                      given to the function 'func'
         """
+        
         Element.__init__(self, _HOTSPOT_CONSTRUCT, 
-                         _tuple(kind, x1, y1, x2, y2, func), options)
+                         _tuple(kind, x1, y1, x2, y2, func, give_pos), options)
 
+
+def hotspot_custom(kind, x1, y1, x2, y2, detect, func, give_pos=False):
+    """
+    Designates a region (of arbitrary shape) of the screen to react to 
+    mouse clicks.
+    
+    When a mouse click (default: left click) occurs within the specified
+    rectangular region (x1,y1)-(x2,y2), the function 
+    detect(mouse_x, mouse_y) will be called.  If it returns True the given
+    function 'func' will be called.
+    """
+    def detect2(px, py):
+        if detect(px, py):
+            if give_pos:
+                func(px, py)
+            else:
+                func()
+        
+    return hotspot(kind, x1, y1, x2, y2, detect2, give_pos=True)
+
+
+def hotspot_circle(kind, x, y, radius, func, give_pos=False):
+    """
+    Designates a circular region of the screen to react to 
+    mouse clicks.
+    """
+    def detect(px, py):
+        return math.sqrt((x-px)**2 + (y-py)**2) < radius
+        
+    return hotspot_custom(kind, x-radius, y-radius, x+radius, y+radius, 
+                          detect, func, give_pos=give_pos)
+
+
+def hotspot_polygon(kind, pts, func, give_pos=False):
+    """
+    Designates a convex polygonal region of the screen to react to 
+    mouse clicks.
+    
+    pts - a list of points that define the polygon
+          ex: [x1, y1, x2, y2, x3, y3, x4, y4]
+    """
+    x = []
+    y = []
+    pts2 = []
+    for i in xrange(0, len(pts), 2):
+        x.append(pts[i])
+        y.append(pts[i+1])
+        pts2.append((pts[i], pts[i+1]))
+    
+    def detect(px, py):
+        return vector.in_polygon2(pts2, (px, py))
+    
+    return hotspot_custom(kind, min(x), min(y), max(x), max(y), 
+                          detect, func, give_pos=give_pos)
 
 #=============================================================================
 # graphics

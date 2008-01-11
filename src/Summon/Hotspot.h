@@ -43,7 +43,8 @@ public:
     { return m_proc; }
     
     bool IsCollide(const Vertex2f &pt, const Camera &camera);
-    
+    Vertex2f GetLocalPos(const Vertex2f &pos, const Camera &camera);
+    bool GivePos() { return m_givePos; }
     
     enum {
         CLICK,
@@ -58,6 +59,7 @@ public:
     
 protected:
     CallProcCommand *m_proc;
+    bool m_givePos;
 };
 
 

@@ -1727,7 +1727,9 @@ public:
 class CallProcCommand : public ScriptCommand
 {
 public:
-    CallProcCommand(Scm code = Scm_NONE) : defined(false)
+    CallProcCommand(Scm code=Scm_NONE, Scm args=Scm_EOL) : 
+        args(Scm_EOL),    
+        defined(false)
     {
         if (code != Scm_NONE) {
             Setup(ScmCons(code, Scm_EOL));
@@ -1738,8 +1740,7 @@ public:
         if (!defined) {
             return new CallProcCommand();
         } else {
-            Scm proc = GetScmProc();
-            return new CallProcCommand(proc);
+            return new CallProcCommand(proc, args);
         }
     }
     virtual int GetId() { return CALL_PROC_COMMAND; }
@@ -1761,15 +1762,9 @@ public:
         }
     }
     
-    inline Scm GetScmProc()
-    {
-        return proc;
-    }
-    
     Scm proc;
+    Scm args;
     bool defined;
-    string name;
-    static int procid;
 };
 
 

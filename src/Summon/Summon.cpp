@@ -217,8 +217,7 @@ public:
                 CallProcCommand *cmd = (CallProcCommand*) &command;
                 
                 if (cmd->defined) {
-                    Scm proc = cmd->GetScmProc();
-                    Scm ret = ScmApply(proc, Scm_EOL);
+                    Scm ret = ScmApply(cmd->proc, cmd->args);
                     
                     if (Scm2Py(ret) == NULL)
                         //display exceptions, return None

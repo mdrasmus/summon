@@ -100,3 +100,39 @@ def vidivs(u, s):
 
 
 
+def in_left_halfspace2(a, b, p):
+    """Returns True is point p is to the left of line a<->b.
+       where left is defined as standing at a and facing towards b"""
+    return (b[0]-a[0]) * (p[1]-a[1]) - (b[1]-a[1]) * (p[0]-a[0]) <= 0
+
+def in_triangle2(a, b, c, pos):
+    """Returns True is pos in triangle a,b,c"""
+    
+    clockwise = in_left_halfspace2(b, a, c)
+    if clockwise:
+        return in_left_halfspace2(b, a, pos) and \
+               in_left_halfspace2(c, b, pos) and \
+               in_left_halfspace2(a, c, pos)
+    else:
+        return in_left_halfspace2(a, b, pos) and \
+               in_left_halfspace2(b, c, pos) and \
+               in_left_halfspace2(c, a, pos)
+
+
+def in_polygon2(pts, pos):
+    """Returns True if point 'pos' in convex polygon with points 'pts'"""
+    
+    assert len(pts) >= 3, Exception("polygon must have at least 3 points")
+    clockwise = in_left_halfspace2(pts[1], pts[0], pts[2])
+    
+    if clockwise:
+        for i in xrange(1, len(pts)):
+            if not in_left_halfspace2(pts[i], pts[i-1], pos):
+                return False
+        return in_left_halfspace2(pts[0], pts[-1], pos)
+    else:
+        for i in xrange(0, len(pts)-1):
+            if not in_left_halfspace2(pts[i], pts[i+1], pos):
+                return False
+        return in_left_halfspace2(pts[-1], pts[0], pos)
+    

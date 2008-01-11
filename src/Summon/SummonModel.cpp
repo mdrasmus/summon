@@ -114,10 +114,22 @@ list<Command*> SummonModel::HotspotClick(Vertex2f pos, const Camera camera)
     for (list<Hotspot*>::iterator i=m_hotspotClicks.begin(); 
          i!=m_hotspotClicks.end(); i++)
     {
-        //if (pos.x >= (*i)->envpos1.x && pos.x <= (*i)->envpos2.x &&
-        //    pos.y >= (*i)->envpos1.y && pos.y <= (*i)->envpos2.y)
-        if ((*i)->IsCollide(pos, camera))
-            cmds.push_back((*i)->GetProc()->Create());
+        Hotspot *hotspot = (*i);
+    
+        if (hotspot->IsCollide(pos, camera)) {
+            // TODO: add function for passing click pos as argument to 
+            // proc command
+            CallProcCommand *cmd = (CallProcCommand*) hotspot->GetProc()->Create();
+            
+            if (hotspot->GivePos()) {
+                Vertex2f pos2 = hotspot->GetLocalPos(pos, camera);
+                Scm mousePos = BuildScm("ff", pos2.x, pos2.y);
+                cmd->args = mousePos;
+            } else {
+                cmd->args = Scm_EOL;
+            }
+            cmds.push_back(cmd);
+        }
     }
     
     return cmds;

@@ -103,6 +103,37 @@ inline float vertex2angle(const Vertex2<T> &v)
 typedef Vertex2<float> Vertex2f;
 typedef Vertex2<int> Vertex2i;
 
+template <class T>
+T DotProduct(const Vertex2<T> &a, const Vertex2<T> &b)
+{
+    return a.x*b.x + a.y*b.y;
+}
+
+
+bool InLeftHalfspace(const Vertex2f &a, const Vertex2f &b, 
+                     const Vertex2f &p)  
+{
+    // define left if at a and facing towards b
+     return (b.x-a.x) * (p.y-a.y) - (b.y-a.y) * (p.x-a.x) <= 0;
+}
+
+
+template <class T>
+bool InTriangle(const Vertex2<T> &a, const Vertex2<T> &b, const Vertex2<T> &c, 
+                const Vertex2<T> &pos)
+{
+    bool clockwise = InLeftHalfspace(b, a, c);
+    if (clockwise)
+    {
+        return InLeftHalfspace(b, a, pos) && 
+               InLeftHalfspace(c, b, pos) && 
+               InLeftHalfspace(a, c, pos);
+    } else {
+        return InLeftHalfspace(a, b, pos) && 
+               InLeftHalfspace(b, c, pos) && 
+               InLeftHalfspace(c, a, pos);
+    }
+}
 
 }
 

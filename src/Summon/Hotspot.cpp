@@ -7,6 +7,7 @@
 
 #include "first.h"
 #include <assert.h>
+#include <math.h>
 #include "Hotspot.h"
 
 namespace Summon {
@@ -22,8 +23,8 @@ bool Hotspot::Build(int header, const Scm &code)
     
     // parse the scm code for a hotspot
     if (!ParseScm(code,
-                  "sffffp", &kindstr, 
-                   &pos1.x, &pos1.y, &pos2.x, &pos2.y, &procCode))
+                  "sffffpb", &kindstr, 
+                   &pos1.x, &pos1.y, &pos2.x, &pos2.y, &procCode, &m_givePos))
     {
         Error("Bad format for hotspot\n");
         return false;
@@ -68,12 +69,12 @@ Scm Hotspot::GetContents()
         assert(0);
     }
     
-    Scm proc = GetProc()->GetScmProc();
-    return BuildScm("sffffp", skind, pos1.x, pos1.y, pos2.x, pos2.y, &proc);
-    
+    return BuildScm("sffffpb", skind, pos1.x, pos1.y, pos2.x, pos2.y, 
+                    &GetProc()->proc, m_givePos);
 }
 
 
+/*
 bool Hotspot::IsCollide(const Vertex2f &pt, const Camera &camera)
 {
     TransformMatrix tmp;
@@ -90,8 +91,32 @@ bool Hotspot::IsCollide(const Vertex2f &pt, const Camera &camera)
 
     return (pt.x >= a.x && pt.x <= b.x &&
             pt.y >= a.y && pt.y <= b.y);
+}*/
+
+
+bool Hotspot::IsCollide(const Vertex2f &pt, const Camera &camera)
+{
+    TransformMatrix tmp;
+    const TransformMatrix *matrix = GetTransform(&tmp, camera);
+    
+    Vertex2f a, b, c, d;
+    matrix->VecMult(pos1.x, pos1.y, &a.x, &a.y);
+    matrix->VecMult(pos2.x, pos2.y, &b.x, &b.y);
+    matrix->VecMult(pos1.x, pos2.y, &c.x, &c.y);
+    matrix->VecMult(pos2.x, pos1.y, &d.x, &d.y);
+    
+    return InTriangle(a, b, c, pt) || InTriangle(a, b, d, pt);
 }
 
+
+Vertex2f Hotspot::GetLocalPos(const Vertex2f &pos, const Camera &camera)
+{
+    TransformMatrix tmp;
+    const TransformMatrix *matrix = GetTransform(&tmp, camera);  
+    Vertex2f lpos;
+    matrix->VecInvMult(pos.x, pos.y, &lpos.x, &lpos.y);
+    return lpos;
+}
 
 
 } // namespace Summon

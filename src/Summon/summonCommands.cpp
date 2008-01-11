@@ -32,8 +32,6 @@ CommandAttr g_controllerAttr;
 CommandAttr g_glAttr;
 
 
-int CallProcCommand::procid = 0;
-
 ElementFactory g_elementFactory;
 
 

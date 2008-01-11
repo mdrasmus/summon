@@ -119,7 +119,9 @@ void SummonController::ExecCommand(Command &command)
 void SummonController::HotspotClick(Vertex2i pos)
 {
     bool clicked = false;
+
     const Camera screenCamera(Vertex2f(0, 0), Vertex2f(1, 1), Vertex2f(0, 0));
+    const Camera worldCamera = m_view->GetCamera();
 
     // process hotspots in screen
     if (m_screen) {
@@ -141,7 +143,7 @@ void SummonController::HotspotClick(Vertex2i pos)
     if (m_world && !clicked) {
         // get all commands triggered by this click    
         Vertex2f pt = m_view->WindowToWorld(pos.x, pos.y);
-        list<Command*> cmdList = m_world->HotspotClick(pt, m_view->GetCamera());
+        list<Command*> cmdList = m_world->HotspotClick(pt, worldCamera);
         
         // execute and free all commands triggered
         for (list<Command*>::iterator i=cmdList.begin(); i!=cmdList.end(); i++)
