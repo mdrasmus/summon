@@ -43,21 +43,25 @@ Tue Dec 18 15:34:14 EST 2007
   - add support for bounding box and dynamic transform
     - less important.  As of now assume identity transform
 
-
-- other ideas:
-  - can I add mouse wheele binding?
-  - add button blink to SideBar
   - when hotspots are brought into GetTransform framework, I can support 
     return_pt optional argument
+    - DONE
     
     hotspot("click", x1, y1, x2, y2, func, return_pt=True)
     
     func(x, y) will be called where x, y are local coordinates of click
     
     - I can then also implement hotspots of arbitrary shape!
+      - DONE
     
+
+
+- other ideas:
+  - can I add mouse wheele binding?
+  - add button blink to SideBar
   - add data structures for key bindings.  Can be done in python.
   - rename/refactor the Scm interface to 'Pyref'.  Remove Car and Cdr.
+
 
 =============================================================================
 Tue Oct 16 16:19:05 EDT 2007

@@ -214,6 +214,8 @@ class group (Element):
         Element.__init__(self, _GROUP_CONSTRUCT, elements, options)
     
 
+#=============================================================================
+# hotspots - mouse interaction
 
 class hotspot (Element):
     """Designates a region of the screen to react to mouse clicks.

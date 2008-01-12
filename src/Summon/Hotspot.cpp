@@ -74,6 +74,42 @@ Scm Hotspot::GetContents()
 }
 
 
+bool Hotspot::IsCollide(const Vertex2f &pt, const Camera &camera)
+{
+    TransformMatrix tmp;
+    const TransformMatrix *matrix = GetTransform(&tmp, camera);
+    const float *mat = matrix->mat;
+    
+    const Vertex2f a(pos1.x*mat[0] + pos1.y*mat[1] + mat[3],
+                     pos1.x*mat[4] + pos1.y*mat[5] + mat[7]);
+    const Vertex2f b(pos2.x*mat[0] + pos2.y*mat[1] + mat[3],
+                     pos2.x*mat[4] + pos2.y*mat[5] + mat[7]);
+    const Vertex2f c(pos1.x*mat[0] + pos2.y*mat[1] + mat[3],
+                     pos1.x*mat[4] + pos2.y*mat[5] + mat[7]);
+    const Vertex2f d(pos2.x*mat[0] + pos1.y*mat[1] + mat[3],
+                     pos2.x*mat[4] + pos1.y*mat[5] + mat[7]);
+
+
+    //Vertex2f a, b, c, d;
+    //matrix->VecMult(pos1.x, pos1.y, &a.x, &a.y);
+    //matrix->VecMult(pos2.x, pos2.y, &b.x, &b.y);
+    //matrix->VecMult(pos1.x, pos2.y, &c.x, &c.y);
+    //matrix->VecMult(pos2.x, pos1.y, &d.x, &d.y);
+    
+    return InQuad(a, c, b, d, pt);
+}
+
+
+Vertex2f Hotspot::GetLocalPos(const Vertex2f &pos, const Camera &camera)
+{
+    TransformMatrix tmp;
+    const TransformMatrix *matrix = GetTransform(&tmp, camera);  
+    Vertex2f lpos;
+    matrix->VecInvMult(pos.x, pos.y, &lpos.x, &lpos.y);
+    return lpos;
+}
+
+
 /*
 bool Hotspot::IsCollide(const Vertex2f &pt, const Camera &camera)
 {
@@ -92,31 +128,5 @@ bool Hotspot::IsCollide(const Vertex2f &pt, const Camera &camera)
     return (pt.x >= a.x && pt.x <= b.x &&
             pt.y >= a.y && pt.y <= b.y);
 }*/
-
-
-bool Hotspot::IsCollide(const Vertex2f &pt, const Camera &camera)
-{
-    TransformMatrix tmp;
-    const TransformMatrix *matrix = GetTransform(&tmp, camera);
-    
-    Vertex2f a, b, c, d;
-    matrix->VecMult(pos1.x, pos1.y, &a.x, &a.y);
-    matrix->VecMult(pos2.x, pos2.y, &b.x, &b.y);
-    matrix->VecMult(pos1.x, pos2.y, &c.x, &c.y);
-    matrix->VecMult(pos2.x, pos1.y, &d.x, &d.y);
-    
-    return InQuad(a, c, b, d, pt);
-}
-
-
-Vertex2f Hotspot::GetLocalPos(const Vertex2f &pos, const Camera &camera)
-{
-    TransformMatrix tmp;
-    const TransformMatrix *matrix = GetTransform(&tmp, camera);  
-    Vertex2f lpos;
-    matrix->VecInvMult(pos.x, pos.y, &lpos.x, &lpos.y);
-    return lpos;
-}
-
 
 } // namespace Summon
