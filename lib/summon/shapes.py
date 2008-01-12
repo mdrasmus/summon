@@ -24,10 +24,11 @@ def box(x1, y1, x2, y2, fill=True):
         return line_strip(x1, y1, x2, y1, x2, y2, x1, y2, x1, y1)
 
 
-def regularPolygon(x, y, nsides, radius, fill=True, rotate=0.0):
+def regular_polygon(x, y, nsides, radius, fill=True, rotate=0.0):
     """
     Draws a regular 'nsides'-sided polygon with size 'radius'
     
+    x, y   -- a point that defines the center of the polygon
     fill   -- a bool indicating whether polygon is filled or stroked
     rotate -- the number of degrees to rotate the polygon counter-clockwise
     """
@@ -50,9 +51,9 @@ def regularPolygon(x, y, nsides, radius, fill=True, rotate=0.0):
 
 def regularPoly(nsides, radius, fill=True, rotate=0.0):
     """
-    DEPRECATED: use regularPolygon()
+    DEPRECATED: use regular_polygon()
     """
-    return regularPolygon(0, 0, nsides, radius, fill, rotate)
+    return regular_polygon(0, 0, nsides, radius, fill, rotate)
 
 
 def arrow(headx, heady, tailx, taily, *tail, **options):

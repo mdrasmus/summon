@@ -11,6 +11,10 @@ NEXT RELEASE
 - added hierarchy layout to sumtree; useful for clustering visualization
 - added zoom_clamp() drawing element
 - added Window.set_boundary().  Limits viewable area.
+- added hotspot_custom(), hotspot_circle(), hotspot_polygon()
+- added more features to Window.set_visible()
+- added OverviewWindow
+
 
 2007/10/26 - summon-1.8.3
 - added colormap for sumtree

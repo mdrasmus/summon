@@ -602,7 +602,7 @@ class Window (object):
         return lambda: self.trans(x, y)
     
     def get_boundary(self):
-        """sets the maximum region viewable"""
+        """gets the maximum region viewable"""
         return summon_core.get_window_boundary(self.winid)
     
     def set_boundary(self, x1, y1, x2, y2):
