@@ -28,7 +28,7 @@ win.add_group(
         text_clip("origin", -10, -10, 10, 10, 4, 20, "middle", "center"),
         
         translate(100, 100,
-            rotate(5, 
+            rotate(30, 
                 scale(2, .5,
                     colors.green,
                     shapes.box(-50, -50, 50, 50),

@@ -110,8 +110,9 @@ T DotProduct(const Vertex2<T> &a, const Vertex2<T> &b)
 }
 
 
-bool InLeftHalfspace(const Vertex2f &a, const Vertex2f &b, 
-                     const Vertex2f &p)  
+template <class T>
+bool InLeftHalfspace(const Vertex2<T> &a, const Vertex2<T> &b, 
+                     const Vertex2<T> &p)  
 {
     // define left if at a and facing towards b
      return (b.x-a.x) * (p.y-a.y) - (b.y-a.y) * (p.x-a.x) <= 0;

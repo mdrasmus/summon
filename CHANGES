@@ -9,6 +9,8 @@ NEXT RELEASE
 - fixed freeze in KDE and other window managers with restrictions on min window
   size.  Bug introduced in 1.8.2
 - added hierarchy layout to sumtree; useful for clustering visualization
+- added zoom_clamp() drawing element
+- added Window.set_boundary().  Limits viewable area.
 
 2007/10/26 - summon-1.8.3
 - added colormap for sumtree

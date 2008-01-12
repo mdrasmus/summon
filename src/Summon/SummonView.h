@@ -100,6 +100,7 @@ public:
         ClearTasks();
     }
     
+    void SetBoundary(const Vertex2f &pos1, const Vertex2f &pos2);
     bool WithinView(const Vertex2f &pos1, const Vertex2f &pos2);
 
     void SetMousePos(int x, int y);
@@ -143,6 +144,7 @@ protected:
     inline DrawTask* GetLastTask() { return m_tasks.back(); }
     void ExecuteTasks();
     
+    void CheckBoundary(bool useZoomx=true, bool useZoomy=true);
     
     
     SummonModel *m_worldModel;
@@ -157,6 +159,10 @@ protected:
     bool m_showCrosshair;
     Color m_crosshairColor;
     Vertex2i m_mousePos;
+    
+    // boundary
+    Vertex2f m_boundary1;
+    Vertex2f m_boundary2;
 };
 
 }

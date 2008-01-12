@@ -39,4 +39,3 @@ win.add_group(text("Hello, world!",     # text to appear
 
 # center the "camera" so that all shapes are in view
 win.home()
-

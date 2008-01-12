@@ -78,6 +78,8 @@ enum {
     GET_WINDOW_POSITION_COMMAND,
     SET_WINDOW_SIZE_COMMAND,
     GET_WINDOW_SIZE_COMMAND,
+    SET_WINDOW_BOUNDARY_COMMAND,
+    GET_WINDOW_BOUNDARY_COMMAND,
     RAISE_WINDOW_COMMAND,
     SET_TRANS_COMMAND,
     GET_TRANS_COMMAND,
@@ -1061,6 +1063,46 @@ public:
         return ParseScm(lst, "d", &windowid);
     }    
 };
+
+class SetWindowBoundaryCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new SetWindowBoundaryCommand(); }
+    virtual int GetId() { return SET_WINDOW_BOUNDARY_COMMAND; }
+
+    virtual const char *GetName() { return "set_window_boundary"; }
+    virtual const char *GetUsage() { return "id, x1, y1, x2, y2"; }
+    virtual const char *GetDescription() 
+    { return "sets current window's boundary"; }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(lst, "dffff", &windowid, &pos1.x, &pos1.y, 
+                        &pos2.x, &pos2.y);
+    }
+    
+    Vertex2f pos1;
+    Vertex2f pos2;
+};
+
+
+class GetWindowBoundaryCommand : public WindowCommand
+{
+public:
+    virtual Command* Create() { return new GetWindowBoundaryCommand(); }
+    virtual int GetId() { return GET_WINDOW_BOUNDARY_COMMAND; }
+
+    virtual const char *GetName() { return "get_window_boundary"; }
+    virtual const char *GetUsage() { return "id"; }
+    virtual const char *GetDescription() 
+    { return "gets current window's boundary"; }
+
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(lst, "d", &windowid);
+    }
+};
+
 
 
 class RaiseWindowCommand : public WindowCommand

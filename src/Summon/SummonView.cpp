@@ -27,7 +27,10 @@ SummonView::SummonView(SummonModel *model, int width, int height,
     m_active(false),
     m_showCrosshair(false),
     m_crosshairColor(1,1,1,1),
-    m_mousePos(0,0)
+    m_mousePos(0,0),
+    m_boundary1(FLOAT_MIN, FLOAT_MIN),
+    m_boundary2(FLOAT_MAX, FLOAT_MAX)
+    
 {
     SetVisible(0, 0, width, height);
 
@@ -102,6 +105,19 @@ void SummonView::ExecCommand(Command &command)
             Vertex2i size = GetWindowSize();
             ((ScriptCommand*) &command)->SetReturn(BuildScm("dd", size.x, size.y));
             } break;
+        
+        case SET_WINDOW_BOUNDARY_COMMAND: {
+            MakeCurrentWindow();
+            SetWindowBoundaryCommand *cmd = (SetWindowBoundaryCommand*) &command;
+            SetBoundary(cmd->pos1, cmd->pos2);
+            Redisplay();
+            } break;
+        
+        case GET_WINDOW_BOUNDARY_COMMAND: {
+            ((ScriptCommand*) &command)->SetReturn(
+                BuildScm("ffff", m_boundary1.x, m_boundary1.y, 
+                         m_boundary2.x, m_boundary2.y));
+            } break;
             
         
         case RAISE_WINDOW_COMMAND: {
@@ -119,6 +135,7 @@ void SummonView::ExecCommand(Command &command)
             MakeCurrentWindow();
             SetTransCommand *trans = (SetTransCommand*) &command;
             TranslateTo(trans->x, trans->y);
+            CheckBoundary();
             Redisplay();
             } break;
         
@@ -131,6 +148,7 @@ void SummonView::ExecCommand(Command &command)
             MakeCurrentWindow();
             SetZoomCommand *zoom = (SetZoomCommand*) &command;
             ZoomTo(zoom->x, zoom->y);
+            CheckBoundary();
             Redisplay();
             } break;
             
@@ -165,6 +183,7 @@ void SummonView::ExecCommand(Command &command)
             SetVisibleCommand *vis = (SetVisibleCommand*) &command;
             SetVisible(vis->data[0], vis->data[1],
                        vis->data[2], vis->data[3]);
+            CheckBoundary();
             Redisplay();
             } break;
         
@@ -221,7 +240,8 @@ void SummonView::ExecCommand(Command &command)
         case TRANSLATE_SCRIPT_COMMAND: {
             MakeCurrentWindow();
             TranslateBy(((TranslateScriptCommand*)(&command))->trans.x, 
-                        ((TranslateScriptCommand*)(&command))->trans.y);    
+                        ((TranslateScriptCommand*)(&command))->trans.y);
+            CheckBoundary();
             Redisplay();
             } break;
     
@@ -229,18 +249,21 @@ void SummonView::ExecCommand(Command &command)
             MakeCurrentWindow();
             ZoomBy(((ZoomScriptCommand*) &command)->zoom.x,
                    ((ZoomScriptCommand*) &command)->zoom.y);
+            CheckBoundary();
             Redisplay();
             } break;
         
         case ZOOM_X_SCRIPT_COMMAND: {
             MakeCurrentWindow();        
             ZoomBy(((ZoomScriptCommand*) &command)->zoom.x, 1.0);
+            CheckBoundary(true, false);
             Redisplay();
             } break;
         
         case ZOOM_Y_SCRIPT_COMMAND: {
             MakeCurrentWindow();
             ZoomBy(1.0, ((ZoomScriptCommand*) &command)->zoom.y);
+            CheckBoundary(false, true);
             Redisplay();
             } break;
             
@@ -250,6 +273,25 @@ void SummonView::ExecCommand(Command &command)
             SetFocus(focus.x, focus.y);
             } break;
         
+        case TRANSLATE_COMMAND:
+        case ZOOM_COMMAND:        
+            MakeCurrentWindow();
+            Glut2DView::ExecCommand(command);
+            CheckBoundary();
+            break;
+        
+        case ZOOM_X_COMMAND:
+            MakeCurrentWindow();
+            Glut2DView::ExecCommand(command);
+            CheckBoundary(true, false);
+            break;
+
+        case ZOOM_Y_COMMAND:
+            MakeCurrentWindow();
+            Glut2DView::ExecCommand(command);
+            CheckBoundary(false, true);
+            break;
+
         
         //=========================================================
         // menus
@@ -843,6 +885,85 @@ void SummonView::SetBgColor(Color &color)
 }
 
 
+void SummonView::SetBoundary(const Vertex2f &pos1, const Vertex2f &pos2)
+{
+    m_boundary1 = pos1;
+    m_boundary2 = pos2;
+    
+    if (m_boundary1.x > m_boundary2.x)
+        swap(m_boundary1.x, m_boundary2.x);
+    if (m_boundary1.y > m_boundary2.y)
+        swap(m_boundary1.y, m_boundary2.y);
+    
+    CheckBoundary();
+}
 
+
+// adjust translate and zoom as necessary to maintain boundary
+void SummonView::CheckBoundary(bool useZoomx, bool useZoomy)
+{
+    // find visible
+    Vertex2i winsize = GetWindowSize();
+    Vertex2f vis1 = ScreenToWorld(0.0, 0.0);
+    Vertex2f vis2 = ScreenToWorld(winsize.x, winsize.y);
+    
+    // adjust zoom
+    const Vertex2f boundarySize = m_boundary2 - m_boundary1;    
+    Vertex2f visSize = vis2 - vis1;
+    Vertex2f oldvisSize = visSize;
+    float zoomx = 1.0, zoomy = 1.0;
+    
+    // check width
+    if (visSize.x > boundarySize.x) {
+        const float ratio = visSize.x / boundarySize.x;
+        if (useZoomx) {
+            visSize.x = boundarySize.x;
+            zoomx *= ratio;
+        }
+                
+        if (useZoomy) {
+            visSize.y /= ratio;
+            zoomy *= ratio;
+        }
+    }
+    
+    // check height
+    if (visSize.y > boundarySize.y) {
+        const float ratio = visSize.y / boundarySize.y;
+        
+        if (useZoomx) {
+            visSize.x /= ratio;
+            zoomx *= ratio;
+        }
+         
+        if (useZoomy) {   
+            visSize.y = boundarySize.y;
+            zoomy *= ratio;
+        }
+    }
+    
+    ZoomBy(zoomx, zoomy);
+    
+    // recalc visible region
+    vis1 = ScreenToWorld(0.0, 0.0);
+    vis2 = ScreenToWorld(winsize.x, winsize.y);
+    
+    // adjust translate
+    Vertex2f trans;
+    
+    if (vis1.x < m_boundary1.x) {
+        trans.x = m_boundary1.x - vis1.x;
+    } else if (vis2.x > m_boundary2.x) {
+        trans.x = m_boundary2.x - vis2.x;
+    }
+    
+    if (vis1.y < m_boundary1.y) {
+        trans.y = m_boundary1.y - vis1.y;
+    } else if (vis2.y > m_boundary2.y) {
+        trans.y = m_boundary2.y - vis2.y;
+    }
+
+    TranslateBy(trans.x*m_zoom.x, trans.y*m_zoom.y);
+}
 
 } // namespace Summon

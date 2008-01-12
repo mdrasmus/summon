@@ -70,9 +70,9 @@ def draw_node(node):
                     text_scale(name, -label_radius*size[0], -label_radius*size[-1], 
                                label_radius*size[0], label_radius*size[1], 
                                "center", "middle"),
-                    minx=.5, miny=.5, maxx=4, maxy=4, 
+                    minx=.5, miny=.5, maxx=1, maxy=1, 
                     link=True, clip=True, link_type="smaller"),
-                minx=.1, maxx=4, miny=.1, maxy=4, 
+                minx=.1, maxx=1, miny=.1, maxy=1, 
                 link=True, clip=True, link_type="smaller"))
 
 
@@ -124,7 +124,7 @@ def draw_edge(graph, edge):
                                            size=7),
                          origin=target_pos,
                          axis=arrow_head[1],
-                         maxx=4, maxy=4, minx=.1, miny=.1, 
+                         maxx=1, maxy=1, minx=.1, miny=.1, 
                          clip=True, link=True, link_type="smaller"))
     else:
         return group(colors.black, 

@@ -5,6 +5,9 @@
 
 #define MAX_LINE 40000
 
+const float FLOAT_MIN = -1e307;
+const float FLOAT_MAX = 1e307;
+
 namespace Summon {
 
 enum {
