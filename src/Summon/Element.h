@@ -5,8 +5,8 @@
 *
 ***************************************************************************/
 
-#ifndef ELEMENT_H
-#define ELEMENT_H
+#ifndef SUMMON_ELEMENT_H
+#define SUMMON_ELEMENT_H
 
 #include "Script.h"
 #include <list>

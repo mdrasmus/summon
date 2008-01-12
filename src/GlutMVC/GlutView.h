@@ -5,14 +5,14 @@
 *
 ***************************************************************************/
 
-#ifndef GLUT_VIEW_H
-#define GLUT_VIEW_H
+#ifndef SUMMON_GLUT_VIEW_H
+#define SUMMON_GLUT_VIEW_H
 
 #include <vector>
 #include <string>
 #include <list>
 #include <GL/glut.h>
-#include "types.h"
+#include "Vertex.h"
 #include "View.h"
 #include "Command.h"
 

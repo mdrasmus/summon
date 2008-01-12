@@ -1,13 +1,13 @@
 /***************************************************************************
 * Summon
 * Matt Rasmussen
-* types.h
+* Vertex.h
 *
 ***************************************************************************/
 
 
-#ifndef VIS_TYPES_H
-#define VIS_TYPES_H
+#ifndef SUMMON_VERTEX_H
+#define SUMMON_VERTEX_H
 
 #include <math.h>
 
@@ -156,6 +156,6 @@ bool InQuad(const Vertex2<T> &a, const Vertex2<T> &b,
     }
 }
 
-}
+} // namespace Summon
 
 #endif

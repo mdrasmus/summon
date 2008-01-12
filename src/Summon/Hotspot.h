@@ -5,11 +5,10 @@
 *
 ***************************************************************************/
 
-#ifndef HOTSPOT_H
-#define HOTSPOT_H
+#ifndef SUMMON_HOTSPOT_H
+#define SUMMON_HOTSPOT_H
 
 #include "Script.h"
-#include "types.h"
 #include "Element.h"
 
 namespace Summon {

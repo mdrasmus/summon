@@ -5,8 +5,8 @@
 *
 ***************************************************************************/
 
-#ifndef DRAW_COMMANDS_H
-#define DRAW_COMMANDS_H
+#ifndef SUMMON_COMMANDS_H
+#define SUMMON_COMMANDS_H
 
 #include "Script.h"
 #include <list>
@@ -16,7 +16,7 @@
 #include "glutInputs.h"
 #include "glut2DCommands.h"
 #include "ScriptCommand.h"
-#include "types.h"
+#include "Vertex.h"
 
 
 

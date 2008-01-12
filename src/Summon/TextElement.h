@@ -5,13 +5,12 @@
 *
 ***************************************************************************/
 
-#ifndef TEXT_ELEMENT_H
-#define TEXT_ELEMENT_H
+#ifndef SUMMON_TEXT_ELEMENT_H
+#define SUMMON_TEXT_ELEMENT_H
 
 #include "Script.h"
 #include <algorithm>
 #include <string>
-#include "types.h"
 #include "Element.h"
 
 
@@ -82,6 +81,6 @@ public:
 };
 
 
-}
+} // namespace Summon
 
 #endif

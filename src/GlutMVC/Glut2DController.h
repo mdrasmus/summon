@@ -5,13 +5,13 @@
 *
 ***************************************************************************/
 
-#ifndef GLUT_2D_CONTROLLER_H
-#define GLUT_2D_CONTROLLER_H
+#ifndef SUMMON_GLUT_2D_CONTROLLER_H
+#define SUMMON_GLUT_2D_CONTROLLER_H
 
 #include "Glut2DView.h"
 #include "GlutController.h"
 #include "glut2DCommands.h"
-#include "types.h"
+#include "Vertex.h"
 
 
 namespace Summon

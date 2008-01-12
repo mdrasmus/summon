@@ -5,11 +5,11 @@
 *
 ***************************************************************************/
 
-#ifndef GLUT_2D_VIEW_H
-#define GLUT_2D_VIEW_H
+#ifndef SUMMON_GLUT_2D_VIEW_H
+#define SUMMON_GLUT_2D_VIEW_H
 
 #include "GlutView.h"
-#include "types.h"
+#include "Vertex.h"
 
 namespace Summon
 {

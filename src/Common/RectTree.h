@@ -5,14 +5,14 @@
 *
 *******************************************************************************/
 
-#ifndef RECT_TREE_H
-#define RECT_TREE_H
+#ifndef SUMMON_RECT_TREE_H
+#define SUMMON_RECT_TREE_H
 
 #include <iostream>
 #include <algorithm>
 #include <list>
 #include <vector>
-#include "types.h"
+#include "Vertex.h"
 
 
 namespace Summon {

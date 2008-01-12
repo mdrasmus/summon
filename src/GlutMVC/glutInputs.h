@@ -5,13 +5,13 @@
 *
 ***************************************************************************/
 
-#ifndef GLUT_INPUTS_H
-#define GLUT_INPUTS_H
+#ifndef SUMMON_GLUT_INPUTS_H
+#define SUMMON_GLUT_INPUTS_H
 
 #include <string>
 #include <GL/glut.h>
 #include "Input.h"
-#include "types.h"
+#include "Vertex.h"
 
 namespace Summon
 {
