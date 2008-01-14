@@ -2,8 +2,8 @@
 # SUMMON examples
 # 04_hotspots.py - example of hotspots
 
-# The default binding for hotspot clicking is 'middle click'
-# Middle click inside each box to activate the hotspots
+# The default binding for hotspot clicking is 'left click'
+# Left click inside each box to activate the hotspots
 # Notice that when two hotspots overlap that both are activated when clicked
 
 # make summon commands available
@@ -14,7 +14,7 @@ import summon
 win = summon.Window("04_hotspots")
 
 
-def makeBox(string, x, y, width, boxColor):
+def makeButton(string, x, y, width, boxColor):
     def callback():
         print "HOTSPOT '%s' was clicked!" % string
 
@@ -53,11 +53,11 @@ blue = color(0, 0, 1, .4)
 green = color(0, 1, 0, .4)
 
 # add some boxes with hotspots
-win.add_group(makeBox("A", 0, 0, 10, red))
-win.add_group(makeBox("B", 15, 0, 10, blue))
-win.add_group(makeBox("C", 15, 15, 10, green))
-win.add_group(makeBox("D", 30, 15, 10, green))
-win.add_group(makeBox("E", 35, 20, 30, red))
+win.add_group(makeButton("A", 0, 0, 10, red))
+win.add_group(makeButton("B", 15, 0, 10, blue))
+win.add_group(makeButton("C", 15, 15, 10, green))
+win.add_group(makeButton("D", 30, 15, 10, green))
+win.add_group(makeButton("E", 35, 20, 30, red))
 
 
 # center the "camera" so that all shapes are in view

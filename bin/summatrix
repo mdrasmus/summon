@@ -269,10 +269,10 @@ if "cptree" in conf:
     ctree.readParentTree(conf["cptree"], labels=mat.collabels)
 if "rtree" in conf:
     rtree = treelib.Tree()
-    rtree.readTree(conf["rtree"], labels=mat.rowlabels)
+    rtree.readNewick(conf["rtree"])
 if "ctree" in conf:
     ctree = treelib.Tree()
-    ctree.readTree(conf["ctree"], labels=mat.collabels)
+    ctree.readNewick(conf["ctree"])
 
 if rtree:
     leaves = rtree.leafNames()

@@ -627,6 +627,7 @@ class MatrixViewer (object):
             maxLabelWidth = max(map(len, self.mat.rowlabels))
             left.set_size(maxLabelWidth*12, h)                
             left.set_visible(leftcoord, 0, leftcoord-maxLabelWidth, 1)
+            left.set_boundary(leftcoord, -util.INF, leftcoord-maxLabelWidth, util.INF)
             
             self.ensemble1 = multiwindow.WindowEnsemble([left, self.win], 
                                       stacky=True, sameh=True,
@@ -640,7 +641,8 @@ class MatrixViewer (object):
             top.set_bgcolor(*self.win.get_bgcolor())
             maxLabelHeight = max(map(len, self.mat.collabels))
             top.set_size(w, maxLabelHeight*12)            
-            top.set_visible(0, topcoord, 1, topcoord+maxLabelHeight)        
+            top.set_visible(0, topcoord, 1, topcoord+maxLabelHeight) 
+            top.set_boundary(-util.INF, topcoord, util.INF, topcoord+maxLabelHeight)
         
             self.ensemble2 = multiwindow.WindowEnsemble([top, self.win], 
                                       stackx=True, samew=True,

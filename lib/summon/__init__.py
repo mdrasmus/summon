@@ -90,6 +90,18 @@ class SummonState (object):
         else:
             return None
 
+def get_windows():
+    """returns the currently open windows"""
+    return _state.windows.itervalues()
+
+def get_window_by_name(name):
+    """returns a window by its name"""
+    for window in get_windows():
+        if name == window.get_name():
+            return window
+    return None
+        
+
 def get_summon_state():
     """returns the summon state singleton"""
     return _state
@@ -1219,19 +1231,31 @@ class SummonMenu (Menu):
     def __init__(self, win):
         Menu.__init__(self)
         
-        self.add_entry("home   (h)", win.home)
-        self.add_entry("zoom 1:1   (ctrl+h)", win.restore_zoom)
-        self.add_entry("toggle crosshair   (ctrl+x)", win.toggle_crosshair)
-        self.add_entry("toggle smoothing   (ctrl+l)", win.toggle_aliasing)
-        self.add_entry("duplicate   (ctrl+d)", win.duplicate)
-        self.add_entry("overview   (ctrl+o)", lambda: OverviewWindow(win))
+        # window options
+        self.window_menu = Menu()
+        self.window_menu.add_entry("duplicate   (ctrl+d)", win.duplicate)        
+        self.window_menu.add_entry("overview   (ctrl+o)", lambda: OverviewWindow(win))
+        self.add_submenu("Window", self.window_menu)
+
+        # zoom
+        self.zoom_menu = Menu()
+        self.zoom_menu.add_entry("home   (h)", win.home)
+        self.zoom_menu.add_entry("zoom 1:1   (ctrl+h)", win.restore_zoom)
+        self.add_submenu("Zoom", self.zoom_menu)
         
+        # print screen options
         self.print_screen_menu = Menu()
         self.print_screen_menu.add_entry("svg   (ctrl+p)", 
             lambda: summon.svg.printScreen(win))
         self.print_screen_menu.add_entry("png   (ctrl+P)", 
             lambda: summon.svg.printScreenPng(win))
-        self.add_submenu("print screen", self.print_screen_menu)
+        self.add_submenu("Print screen", self.print_screen_menu)        
+        
+        # misc
+        self.misc = Menu()
+        self.misc.add_entry("toggle crosshair  (ctrl+x)", win.toggle_crosshair)
+        self.misc.add_entry("toggle aliasing   (ctrl+l)", win.toggle_aliasing)
+        self.add_submenu("Misc", self.misc)
         
         self.add_entry("close   (q)", win.close)
 

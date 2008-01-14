@@ -11,7 +11,7 @@ import summon
 
 
 # parameters (feel free to change these here and WHILE the animation is running!)
-rate = .02
+rate = 1/70.0
 winsize = 300
 maxballsize = 20
 balls = []

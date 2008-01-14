@@ -14,6 +14,9 @@ def vdot(u, v):
         
     return tot
 
+def vproj(u, v):
+    return vmuls(v, vdot(u, v) / vmag(v)**2)
+
 def vadd(u, v):
     assert len(u) == len(v)
     if hasattr(u, "keys"):
