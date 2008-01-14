@@ -95,10 +95,7 @@ public:
         ExecCommand(cmd);
     }
     
-    inline void NoteModelChange()
-    {
-        ClearTasks();
-    }
+
     
     void SetBoundary(const Vertex2f &pos1, const Vertex2f &pos2);
     bool WithinView(const Vertex2f &pos1, const Vertex2f &pos2);
@@ -117,6 +114,15 @@ public:
     {
         return Camera(m_trans, m_zoom, m_focus);
     }
+    
+    void ProcessRedisplay()
+    {
+        if (m_needRedisplay) {
+            MakeCurrentWindow();
+            glutPostRedisplay();
+            m_needRedisplay = false;
+        }
+    }    
 
 protected:
 
@@ -125,6 +131,11 @@ protected:
     virtual void DrawWorld();
     virtual void DrawScreen();
     virtual void DrawCrosshair();
+
+    inline void NoteModelChange()
+    {
+        ClearTasks();
+    }
         
     void DrawElement(Element *elm, bool createTasks=true); 
     void DrawGraphic(Graphic *graphic);
@@ -146,6 +157,10 @@ protected:
     
     void CheckBoundary(bool useZoomx=true, bool useZoomy=true);
     
+    void PostRedisplay()
+    {
+        m_needRedisplay = true;
+    }   
     
     SummonModel *m_worldModel;
     SummonModel *m_screenModel;
@@ -163,6 +178,8 @@ protected:
     // boundary
     Vertex2f m_boundary1;
     Vertex2f m_boundary2;
+    
+    bool m_needRedisplay;
 };
 
 }

@@ -29,7 +29,8 @@ SummonView::SummonView(SummonModel *model, int width, int height,
     m_crosshairColor(1,1,1,1),
     m_mousePos(0,0),
     m_boundary1(FLOAT_MIN, FLOAT_MIN),
-    m_boundary2(FLOAT_MAX, FLOAT_MAX)
+    m_boundary2(FLOAT_MAX, FLOAT_MAX),
+    m_needRedisplay(false)
     
 {
     SetVisible(0, 0, width, height);
@@ -229,9 +230,10 @@ void SummonView::ExecCommand(Command &command)
             break;
         
         case MODEL_CHANGED_COMMAND:
-            MakeCurrentWindow();
-            NoteModelChange();
-            glutPostRedisplay();
+            PostRedisplay();
+            //MakeCurrentWindow();
+            //NoteModelChange();
+            //glutPostRedisplay();
             //Glut2DView::ExecCommand(command);
             break;
         

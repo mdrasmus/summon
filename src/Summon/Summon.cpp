@@ -645,17 +645,22 @@ private:
     }
     
     
-    // Take note of the new window positions
-    inline void UpdateWindowPositions()
+    
+    void ProcessWindowEvents()
     {
+        DeleteClosedWindows();
+        
         PyGILState_STATE gstate = PyGILState_Ensure();    
         for (WindowIter i=m_windows.begin(); i!=m_windows.end(); i++) {
-            SummonView *view = (*i).second->GetView();            
+            SummonView *view = (*i).second->GetView();
+            
+            // Take note of the new window positions
             view->UpdatePosition();
+            
+            view->ProcessRedisplay();
         }
         PyGILState_Release(gstate);
-    }    
-        
+    }
     
     // Create a new model (kind = WORLD, SCREEN)
     int NewModel(ModelKind kind)
@@ -842,16 +847,14 @@ public:
     void Timer(int value)
     {
         static int delay = 0;
-        
+        static int delayTime = 0;
+    
         // do nothing if python is not initialized        
         if (!Py_IsInitialized())
             return;
         
-        // delete closed windows
-        DeleteClosedWindows();
-        
-        // update window positions
-        UpdateWindowPositions();
+        // process window events
+        ProcessWindowEvents();
         
         // process waiting commands commands
         if (ExecWaitingCommands())
@@ -862,12 +865,24 @@ public:
         
         // set the next timer
         if (IsRunning())
-            glutTimerFunc(delay, Summon::Timer, 0);
+            glutTimerFunc(delayTime, Summon::Timer, 0);
         else
             ConfirmStop();
         
-        if (delay < 10)
+        if (delay < 10) {
             delay++;
+            delayTime = 0;
+        } else {
+            delayTime = 10;
+        }
+        
+        if (m_timerCommand) {
+            // sleep up until timer goes off
+            int remaining = m_timerDelay - GetTime();
+            
+            if (remaining < 10)
+                delayTime = 0;
+        }
     }
     
 private:    
@@ -906,8 +921,6 @@ private:
                 m_graphicsExec = false;
                 
                 PyGILState_Release(gstate);
-                
-                nodelay = true;
             } else {
                 // non-graphic command will be execute in other thread
                 // release lock on SUMMON
@@ -917,6 +930,7 @@ private:
                 // commands to execute, as long as they are non-graphical
                 while (IsCommandWaiting() && !m_graphicsExec)
                 {
+                    /*
                     // if there is a timer command, we cannot sleep past the
                     // time at which it will go off.                
                     if (m_timerCommand) {
@@ -928,13 +942,14 @@ private:
                         break;
                     } else {
                         SDL_Delay(10);
-                    }
-                    
-                    //nodelay = true;
+                    }*/
+                    SDL_Delay(10);
                 }
             
                 Lock();
             }
+            
+            nodelay = true;
         }
         
         // wake up python thread if it is waiting for a graphic command to
