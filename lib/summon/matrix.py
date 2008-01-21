@@ -437,8 +437,8 @@ class MatrixMenu (summon.Menu):
         self.viewer = viewer
         
         self.summatrix_menu = summon.Menu()
-        self.summatrix_menu.add_entry("toggle labels", viewer.toggleLabelWindows)
-        self.summatrix_menu.add_entry("toggle trees", viewer.toggleTreeWindows)
+        self.summatrix_menu.add_entry("toggle labels (l)", viewer.toggleLabelWindows)
+        self.summatrix_menu.add_entry("toggle trees (t)", viewer.toggleTreeWindows)
         self.add_submenu("Summatrix", self.summatrix_menu)
         
         # add summon menu options
@@ -453,9 +453,10 @@ class MatrixViewer (object):
     def __init__(self, mat=None, onClick=None, 
                  bgcolor=(0,0,0), drawzeros=False, style="points",
                  showLabels=False, showLabelWindows=False,
-                 showTreeWindows=None,
                  winsize=(400,400), title="summatrix",
-                 rtree=None, ctree=None):
+                 rtree=None, ctree=None,
+                 useTreeLens=(False, False),
+                 showTreeWindows=None):
         self.win = None
         self.mat = mat
         self.bgcolor = bgcolor
@@ -480,7 +481,7 @@ class MatrixViewer (object):
         self.treeWindows = [None, None]
         self.rtree = rtree
         self.ctree = ctree
-
+        self.useTreeLens = useTreeLens
         
         
     
@@ -741,7 +742,10 @@ class MatrixViewer (object):
                self.treeWindows[0].win.is_open():
                 left = self.treeWindows[0]
             else:
-                layout = treelib.layoutTreeHierarchical(self.rtree, 1, -1)
+                if self.useTreeLens[0]:
+                    layout = treelib.layoutTree(self.rtree, 1, -1)
+                else:
+                    layout = treelib.layoutTreeHierarchical(self.rtree, 1, -1)
                 offset = max(c[1] for c in layout.itervalues())
                 boundary1 = min(c[0] for c in layout.itervalues()) - 1.0
                 boundary2 = max(c[0] for c in layout.itervalues())
@@ -753,7 +757,9 @@ class MatrixViewer (object):
                 left.show()
                 left.win.set_bgcolor(*self.win.get_bgcolor())
                 left.win.set_visible(boundary1, 0, boundary2, 1)
-                left.win.set_boundary(boundary1, -util.INF, boundary2, util.INF)
+                
+                if not self.useTreeLens[0]:
+                    left.win.set_boundary(boundary1, -util.INF, boundary2, util.INF)
                 
                 self.rowEnsemble.add_window(left.win, 0, coordy=offset)
         else:
@@ -765,7 +771,10 @@ class MatrixViewer (object):
                self.treeWindows[1].win.is_open():
                 top = self.treeWindows[1]
             else:
-                layout = treelib.layoutTreeHierarchical(self.ctree, 1, 1)
+                if self.useTreeLens[1]:
+                    layout = treelib.layoutTree(self.ctree, 1, 1)
+                else:
+                    layout = treelib.layoutTreeHierarchical(self.ctree, 1, 1)
                 offset = min(c[1] for c in layout.itervalues())
                 boundary1 = min(c[0] for c in layout.itervalues()) - 1.0
                 boundary2 = max(c[0] for c in layout.itervalues()) 
@@ -778,7 +787,9 @@ class MatrixViewer (object):
                 top.show()
                 top.win.set_bgcolor(*self.win.get_bgcolor())
                 top.win.set_visible(0, -boundary1, 1, -boundary2)
-                top.win.set_boundary(-util.INF, -boundary1, util.INF, -boundary2)
+                
+                if not self.useTreeLens[1]:
+                    top.win.set_boundary(-util.INF, -boundary1, util.INF, -boundary2)
                 
                 self.colEnsemble.add_window(top.win, 0, coordx=offset)
         else:

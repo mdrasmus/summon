@@ -2,6 +2,7 @@
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{pslatex}  % nice fonts
+\usepackage{url} % for URLs
 
 % page dimensions
 \textwidth=6.5in
@@ -27,9 +28,9 @@
 \newcommand{\secref}[1]{Section~\ref{#1}}
 \newcommand{\algref}[1]{Algorithm~\ref{#1}}
 
+\newcommand{\comment}[1]{}
 
-
-\newcommand{\version}{1.8.3}
+\newcommand{\version}{1.8.4}
 
 
 %
@@ -215,10 +216,16 @@ text editor.  Also execute the example with following command.
 \codeblock{python 01\_basics.py}
 
 The visualization (\figref{fig:01_basics}) should immediately appear in your
-OpenGL window.  The following controls are available:
+OpenGL window.  See \figref{fig:bindings} for a full list of available 
+mouse and key-bindings.
 
-\vspace{.1in}
+
+\begin{figure}
+\begin{center}
+\footnotesize
 \begin{tabular}{ll}
+
+    {\bf Scroll \& zoom}     & \\ \hline 
     left mouse button          & activate/click \\
     left mouse button drag     & scroll \\
     right mouse button         & zoom (down: zoom-out, up: zoom-in)\\
@@ -233,7 +240,11 @@ OpenGL window.  The following controls are available:
     Shift + right key          & zoom in (x-axis only) \\
     Shift + left key           & zoom out (x-axis only) \\
     middle click               & display pop-up menu \\
-    h                          & home (make all graphics visible) \\
+    \\
+    
+    {\bf Miscellaneous} & \\ \hline
+    h                          & home (zoom to make all graphics visible) \\
+    Ctrl + h                   & zoom 1:1 (restore zoom to 1:1 for x- and y-axis) \\
     Ctrl + l                   & toggle anti-aliasing \\
     Ctrl + d                   & duplicate window \\
     Ctrl + p                   & output SVG of the current view \\
@@ -241,7 +252,10 @@ OpenGL window.  The following controls are available:
     Ctrl + x                   & show/hide crosshair \\
     q                          & close window \\
 \end{tabular}
-\vspace{.2in}
+\end{center}
+\caption{Default mouse and key-bindings for any SUMMON window}
+\label{fig:bindings}
+\end{figure}
 
 %============================
 \begin{figure}
@@ -252,10 +266,9 @@ OpenGL window.  The following controls are available:
 \label{fig:01_basics}
 \end{figure}
 
-\clearpage
-In your text editor, the example \code{01\_basics.py} should contain the 
-following python code:
 
+\begin{figure}
+\begin{center}
 \begin{minipage}{6in}
 { \footnotesize
 \begin{verbatim}
@@ -304,9 +317,13 @@ win.home()
 \end{verbatim}
 }
 \end{minipage}
-\vspace{.25in}
+\end{center}
+\caption{Source code for example/01\_basics.py}
+\label{fig:01_basics_code}
+\end{figure}
 
-
+In your text editor, the example \code{01\_basics.py} should contain 
+python code similar to \figref{fig:01_basics_code}.
 The first two lines of the script import the SUMMON module \code{summon} and
 all of  the basic SUMMON functions (\code{group}, \code{lines}, \code{color},
 etc) from the \code{summon.core} module into the current environment.   A new
@@ -386,6 +403,7 @@ View/execute the \code{view\_*.sh} scripts for examples of how to call
 \code{summatrix} and  \code{sumtree}.
 
 
+%\comment{
 %=============================================================================
 \section{SUMMON Features}
 
@@ -414,7 +432,7 @@ lower left corner of the window and with units in terms of pixels. The
 screen model is always drawn on top of the world model.  The screen model
 is often used to draw menus, toolbars, or other things that should always
 be in view, and should not be affected by scrolling and zooming.
-
+%}
 
 %=============================================================================
 \section{SUMMATRIX: large-scale sparse matrix visualizer}
@@ -567,12 +585,12 @@ specify them with only one option using \code{--rclab=$filename$}.  The label
 file format is simple a text file with one label per line in the order that the
 rows (or columns) appear in the matrix.
 
-Labels will be used when the user clicks (middle-click or Ctrl+left click)
-on an entry in the matrix.  Labels can also be displayed on the sides of the
-matrix with the \code{--showlabels} option or by pressing the ``l'' key during
-visualization.  The \code{inline} option will draw the labels in the same window
-as the matrix.  The \code{panels} option will draw the labels in neighboring
-windows, such that the labels are never out of view while zooming and scrolling.
+Labels will be used when the user clicks on an entry in the matrix.  Labels can
+also be displayed on the sides of the matrix with the \code{--showlabels} option
+or by pressing the ``l'' key during visualization.  The \code{inline} option
+will draw the labels in the same window as the matrix.  The \code{panels} option
+will draw the labels in neighboring windows, such that the labels are never out
+of view while zooming and scrolling.
 
 
 
@@ -619,7 +637,84 @@ will be drawn when ever two neighboring rows (or columns) are associated with
 different clusters.  If no permutation file is given, the rows (or columns) will
 be sorted automatically by their cluster label.
 
+\subsubsection{Row and column hierarchical trees}
 
+%============================
+\begin{figure}
+\begin{center}
+\includegraphics[width=2in]{figures/summatrix-trees.pdf}
+\end{center}
+\caption{Example of row and column hierarchical trees in SUMMATRIX can 
+be used to visualize a clustering.  Cluster partions (black horizontal and
+vertical lines) are shown with \code{--rpart,cpart} and trees are specified with
+\code{--rptree,--cptree}. 
+See  \code{examples/summatrix/clustering/view\_data\_tree\_clustered.sh}}
+\label{fig:summatrix_trees}
+\end{figure}
+
+
+SUMMATRIX supports displaying hierarchical trees next to a matrix 
+(\figref{fig:summatrix_trees}), which is often useful for visualizaling
+a clustering.  
+Trees are specified with the following options.
+
+\code{
+  --rptree <row parent tree file>
+
+  --cptree <column parent tree file>
+
+  --rtree <row tree newick file>
+
+  --ctree <column tree newick file>
+}
+
+When a tree is specified it will be displayed in a separate window aligned next
+to the matrix.  The rows (or columns) of the matrix will be permuted to match
+the order of the leaves in the tree.  If a permutation file is given
+(\code{--rperm,--cperm}) it is ignored.
+
+Two tree file formats are currently supported:
+
+\begin{itemize}
+
+    \item {\bf ptree format.}
+    The {\em ptree} (parent tree) format is a simple format that is also produced by the
+    CLUTO clustering package.  It specifies a binary tree of $n$ leaves by assigning
+    each node in the tree an integer.  The leaves are numbered $0$ to $n-1$, the
+    internal nodes are numbered $n-2$ to $2n-3$, and the root is
+    numbered $2n-2$.  The leaves should be numbered with the same index as its
+    corresponding row (or column) in the matrix.  The ptree file contains a list of
+    $2n-1$ integers, one integer per line.  The line $i$ (0-based) should contain
+    the id-number of the {\em parent} of node $i$.  The last line (line $2n-2$) 
+    should contain the integer -1, to indicate that the root of the tree has no
+    parent.  See 
+    \code{examples/summatrix/clustering/data.row.ptree} for an example.
+
+    
+    \item {\bf newick format.}
+    The {\em newick} format is a standard format commonly used for storing
+    phylogenetic trees \url{http://en.wikipedia.org/wiki/Newick_format}.  The
+    structure of the tree is specified with a parenthesis notation.  For example a
+    five leaf tree with leaves named A, B, C, D, and E can be written in Newick as:
+
+    \code{(((A,B),(C,D)),E);}
+
+    This states that A and B are sisters, C and D are sisters, A and C are cousins,
+    and E is a great uncle of A.  The leaf names should either be integers
+    indicating the leaf's corresponding row (or column) in the matrix, or a string
+    given in the row (column) labels file.
+
+    Branch lengths can also be specified by adding a
+    colon followed by a floating point number the end of any node in the tree.
+
+    \code{(((A:1,B:2):1.5,(C:0.5,D:0.2):1.2):3,E:6);}
+
+    For example, the above states that the branch directly above A is length 1 and
+    the branch directly above C is 0.5.  Also note that the internal node branch 
+    lengths are also given (e.g. the length of the branch directly above the
+    parent of A is 1.5).
+
+\end{itemize}
 
 \section{SUMMON function reference}
 

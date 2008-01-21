@@ -89,7 +89,9 @@ options = [
         {"single": True}],
     ["", "ctree=", "ctree", "<column tree newick file>",
         {"single": True}],
-
+    ["", "treelens", "treelens", "",
+        {"single": True,
+         "help": "use branch lengths in tree files"}],         
     
     "Display",
     ["L:", "showlabels=", "showlabels", "(inline,panels,none)",
@@ -320,7 +322,8 @@ viewer = matrix.MatrixViewer(mat, bgcolor=conf["bgcolor"],
                             winsize=conf["winsize"],
                             title=matfile,
                             rtree=rtree,
-                            ctree=ctree)
+                            ctree=ctree,
+                            useTreeLens=(conf["treelens"], conf["treelens"]))
 util.tic("drawing matrix")
 viewer.show()
 util.toc()

@@ -1099,7 +1099,7 @@ def layoutTree(tree, xscale, yscale, minlen=-util.INF, maxlen=util.INF,
             top = nodept[node.children[0]]
             bot = (sizes[node] - sizes[node.children[-1]])*yscale + \
                   nodept[node.children[-1]]
-            nodept[node] = (top + bot) / 2
+            nodept[node] = (top + bot) / 2.0
         
         return sizes[node]
     walk(tree.root)

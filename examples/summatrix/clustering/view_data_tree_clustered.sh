@@ -18,6 +18,6 @@ summatrix \
     --rpart data.rpart \
     --rptree data.row.ptree \
     --cpart data.cpart \
-    --cptree data.cptree \
+    --cptree data.col.ptree \
     --winsize 400x600 \
     --showlabels panels $*

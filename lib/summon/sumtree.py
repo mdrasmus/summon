@@ -19,6 +19,22 @@ import summon
 # Drawing Code
 #
 
+class SumTreeMenu (summon.Menu):
+    """summatrix popup menu"""
+    
+    def __init__(self, viewer):
+        summon.Menu.__init__(self)
+        
+        self.viewer = viewer
+        
+        self.sumtree_menu = summon.Menu()
+        self.sumtree_menu.add_entry("toggle labels (l)", viewer.toggleLabels)
+        self.add_submenu("Sumtree", self.sumtree_menu)
+        
+        # add summon menu options
+        summon.add_summon_menu_items(self, viewer.win)
+        
+
 class SumTree (object):
     """SUMMON Tree Visualizer"""
 
@@ -45,7 +61,6 @@ class SumTree (object):
         self.winsize = winsize
         self.colormap = colormap
         self.layout = layout
-
 
         self.setupTree(self.tree)
         
@@ -80,6 +95,10 @@ class SumTree (object):
             self.win = summon.Window(self.name, size=self.winsize,
                                      position=self.winpos)
             newwin = True
+            
+            self.win.set_binding(input_key("l"), self.toggleLabels)
+            self.menu = SumTreeMenu(self)
+            self.win.set_menu(self.menu)
         else:
             self.win.clear_groups()
             newwin = False
@@ -123,7 +142,11 @@ class SumTree (object):
             self.win.focus(w/2, h/2)
             self.win.zoom(.9, .9)
     
-
+    
+    def toggleLabels(self):
+        """toggle the visibility of leaf names"""
+        
+        self.enableLabels(not self.showLabels)
     
     
     #======================================================================
@@ -181,7 +204,7 @@ class SumTree (object):
         vis.append(hotspot("click", nx, bot, px, top, func))
 
         # text label
-        if self.showLabels and node.isLeaf() and type(node.name) == str:
+        if node.isLeaf() and type(node.name) == str:
             if self.vertical:
                 label = group(color(0,0,0),
                               text_clip(node.name, nx, top, 
@@ -193,6 +216,8 @@ class SumTree (object):
                                         nx*10000, bot, 5, 12,
                                         "left", "middle"))
         
+            if not self.showLabels:
+                label.set_visible(False)
             self.labels.append(label)
             vis.append(label)
 
@@ -208,7 +233,8 @@ class SumTree (object):
                                 "left", "middle"))
    
     
-    def enableLabels(self, visible):
+    def enableLabels(self, visible=True):
+        self.showLabels = visible
         for label in self.labels:
             self.win.show_group(label, visible)
     
