@@ -742,10 +742,10 @@ class MatrixViewer (object):
                self.treeWindows[1].win.is_open():
                 top = self.treeWindows[1]
             else:
-                layout = treelib.layoutTreeHierarchical(self.ctree, 1, -1)
-                offset = max(c[1] for c in layout.itervalues())
-                boundary1 = min(c[0] for c in layout.itervalues())
-                boundary2 = max(c[0] for c in layout.itervalues()) - 1.0
+                layout = treelib.layoutTreeHierarchical(self.ctree, 1, 1)
+                offset = min(c[1] for c in layout.itervalues())
+                boundary1 = min(c[0] for c in layout.itervalues()) - 1.0
+                boundary2 = max(c[0] for c in layout.itervalues()) 
                 top = sumtree.SumTree(self.ctree, "col tree", 
                                       showLabels=False,
                                       xscale=0, layout=layout,
@@ -754,8 +754,8 @@ class MatrixViewer (object):
                                       winpos=(x, y-treesize-deco[1]))
                 top.show()
                 top.win.set_bgcolor(*self.win.get_bgcolor())
-                top.win.set_visible(0, boundary1, 1, boundary2)
-                top.win.set_boundary(-util.INF, boundray1, util.INF, boundary2)
+                top.win.set_visible(0, -boundary1, 1, -boundary2)
+                top.win.set_boundary(-util.INF, -boundary1, util.INF, -boundary2)
                 
                 self.colEnsemble.add_window(top.win, 0, coordx=offset)
         else:

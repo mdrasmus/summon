@@ -15,9 +15,9 @@ summatrix \
     -c posneg \
     --bgcolor 1,1,1 \
     --style quads \
-    --cperm data.cperm \
-    --rpart data.mat.clustering.6 \
-    --cpart data.cpart \
+    --rpart data.rpart \
     --rptree data.row.ptree \
+    --cpart data.cpart \
+    --cptree data.cptree \
     --winsize 400x600 \
     --showlabels panels $*
