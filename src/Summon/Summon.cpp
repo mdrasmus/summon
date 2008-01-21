@@ -571,6 +571,9 @@ public:
         // remove window from window list        
         m_closeWaiting.erase(view);
         
+        // also make sure to remove window from set of open windows
+        m_windows.erase(window->GetId());
+        
         // add this window to the deletion waiting list
         m_deleteWaiting.push_back(window);
         

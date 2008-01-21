@@ -50,6 +50,12 @@ class WindowEnsemble:
         self.recentPos = util.Dict(default=[])
         self.recentSize = util.Dict(default=[])
         
+        self.tiex = tiex
+        self.tiey = tiey
+        self.pinx = pinx
+        self.piny = piny
+        self.coordsx = coordsx
+        self.coordsy = coordsy
         
         # setup master window
         if master != None:
@@ -75,30 +81,69 @@ class WindowEnsemble:
             self.pos[win] = win.get_position()
             self.sizes[win] = win.get_size()
                     
-        def make_listener(win):
-            return util.Bundle(close=lambda: self._on_window_close(win),
-                               resize=lambda w, h: self._on_window_resize(win, w, h),
-                               move=lambda x, y: self._on_window_move(win, x, y))
-                               
-        
+                                              
         # setup window listeners
         for win in windows:
-            self.listeners[win] = make_listener(win)
-            win.add_close_listener(self.listeners[win].close)
-            win.add_resize_listener(self.listeners[win].resize)
-            win.add_move_listener(self.listeners[win].move)
+            self.init_listeners(win)
             
 
         # setup window stacking
         if stackx or stacky:
             self.stack(self.master)
         
-        
         # setup scrolling ties
         if tiex or tiey:
             self.tie(windows, tiex=tiex, tiey=tiey, pinx=pinx, piny=piny,
                      coordsx=coordsx, coordsy=coordsy, master=master)
-            
+    
+    
+
+    def add_window(self, win, index=-1, coordx=0, coordy=0):
+        """add a window to the existing ensembl"""
+        
+        if self.tiex or self.tiey:
+            self.untie()
+        
+        if index == -1:
+            index = len(self.windows)
+        self.windows.insert(index, win)
+        
+        self.pos[win] = win.get_position()
+        self.sizes[win] = win.get_size()
+        
+        self.init_listeners(win)
+        
+        self.recentPos.clear()
+        self.recentSize.clear()
+        
+        # setup window stacking
+        if self.stackx or self.stacky:
+            self.stack(self.master)
+        
+        if self.coordsx != None:
+            self.coordsx.insert(index, coordx)
+        if self.coordsy != None:
+            self.coordsy.insert(index, coordy)
+        
+        # setup scrolling ties
+        if self.tiex or self.tiey:
+            self.tie(self.windows, tiex=self.tiex, tiey=self.tiey, 
+                     pinx=self.pinx, piny=self.piny,
+                     coordsx=self.coordsx, coordsy=self.coordsy, 
+                     master=self.master)
+
+    
+    
+    def init_listeners(self, win):
+        """initialize listeners for a window managed by the ensemble"""
+        
+        self.listeners[win] = util.Bundle(
+            close=lambda: self._on_window_close(win),
+            resize=lambda w, h: self._on_window_resize(win, w, h),
+            move=lambda x, y: self._on_window_move(win, x, y))
+        win.add_close_listener(self.listeners[win].close)
+        win.add_resize_listener(self.listeners[win].resize)
+        win.add_move_listener(self.listeners[win].move)
     
     
     def stop(self):
@@ -112,26 +157,33 @@ class WindowEnsemble:
     def _on_window_close(self, win):
         """callback for when a window in the ensemble closes"""
         
+        self.remove_window(win)        
+    
+        # close all windows if master closes
+        if self.close_with_master and win == self.master:
+            for win2 in self.windows:
+                win2.close()
+        
+    
+    def remove_window(self, win):
+        # do nothing if window is not in ensemble
+        if win not in self.windows:
+            return    
+    
         self.windows.remove(win)
         
         # remove all callbacks
         win.remove_close_listener(self.listeners[win].close)
         win.remove_resize_listener(self.listeners[win].resize)
         win.remove_move_listener(self.listeners[win].move)
-        win.remove_view_change_listener(self.ties[win].update_scroll)
-        win.remove_focus_change_listener(self.ties[win].update_focus)
-        del self.listeners[win]
-        del self.ties[win]
-        
-        # make sure window ties remove their callbacks
-        for tie in self.ties.itervalues():
-            tie.remove_window(win)
-        
-        # close all windows if master closes
-        if self.close_with_master and win == self.master:
-            for win2 in self.windows:
-                win2.close()
 
+        del self.listeners[win]
+        
+        self.untie(win)
+        
+
+    
+    
     
     def _on_window_resize(self, win, width, height):
         """callback for when a window resizes"""
@@ -261,7 +313,7 @@ class WindowEnsemble:
     def tie(self, windows, tiex=False, tiey=False, pinx=False, piny=False,
                   coordsx=None, coordsy=None, master=None):
         """ties the scrolling and zooming of multiple windows together"""
-
+        
         if len(windows) < 2:
             return
         
@@ -301,6 +353,27 @@ class WindowEnsemble:
                 master_focus = tie.update_focus
         master_focus()
         master_trans()
+    
+
+    def untie(self, win=None):
+        """remove a window from any ties"""
+        
+        if win == None:
+            # untie all windows
+            for win2 in self.windows:
+                self.untie(win2)
+        else:
+            if win not in self.ties:
+                return
+        
+            win.remove_view_change_listener(self.ties[win].update_scroll)
+            win.remove_focus_change_listener(self.ties[win].update_focus)        
+
+            del self.ties[win]
+
+            # make sure window ties remove their callbacks
+            for tie in self.ties.itervalues():
+                tie.remove_window(win)
 
 
     def raise_windows(self, top=None):
@@ -311,26 +384,6 @@ class WindowEnsemble:
         if top != None:
             top.raise_window(True)
             
-    '''
-    def update(self):
-        # check for moved windows
-        for win in self.windows:
-            pos1 = win.get_position()
-            pos2 = self.pos[win]
-            size1 = win.get_size()
-            size2 = self.sizes[win]
-            
-            if self.stackx or self.stacky:
-                if pos1 != pos2 or size1 != size2:
-                    self.stack(win)
-                    self.raise_windows(win)
-                    break
-            else:
-                if pos1 != pos2:
-                    self.align(win)
-                    self.raise_windows(win)
-                    break
-    '''
 
 
 
