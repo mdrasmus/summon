@@ -283,6 +283,7 @@ if rtree:
         mat.rperm = util.mget(lookup, leaves)
     mat.rinv = util.invPerm(mat.rperm)
 if ctree:
+    leaves = ctree.leafNames()
     if mat.collabels == None:
         mat.cperm = map(int, leaves)
     else:
