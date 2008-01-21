@@ -913,7 +913,9 @@ class Window (object):
         if button not in lookup:
             raise Exception("unknown mouse button '%s'" % button)
         
+        self.deactivate_menu()
         self.menuButton = lookup[button]
+        self.activate_menu()
     
         
     def set_menu(self, menu):
@@ -921,6 +923,8 @@ class Window (object):
             summon_core.detach_menu(self.winid, self.menu.menuid, self.menuButton)
         
         self.menu = menu
+        
+        self.activate_menu()
     
     def activate_menu(self):
         if self.menu != None:
@@ -1230,40 +1234,44 @@ class Menu:
             if not isinstance(item[1], Menu):
                 summon_core.remove_menu_item(self.menuid, i+1)    
 
+def add_summon_menu_items(menu, win):
+    """adds default SUMMON menu items to a menu"""
+    
+    # window options
+    menu.window_menu = Menu()
+    menu.window_menu.add_entry("duplicate   (ctrl+d)", win.duplicate)        
+    menu.window_menu.add_entry("overview   (ctrl+o)", lambda: OverviewWindow(win))
+    menu.add_submenu("Window", menu.window_menu)
+
+    # zoom
+    menu.zoom_menu = Menu()
+    menu.zoom_menu.add_entry("home   (h)", win.home)
+    menu.zoom_menu.add_entry("zoom 1:1   (ctrl+h)", win.restore_zoom)
+    menu.add_submenu("Zoom", menu.zoom_menu)
+
+    # print screen options
+    menu.print_screen_menu = Menu()
+    menu.print_screen_menu.add_entry("svg   (ctrl+p)", 
+        lambda: summon.svg.printScreen(win))
+    menu.print_screen_menu.add_entry("png   (ctrl+P)", 
+        lambda: summon.svg.printScreenPng(win))
+    menu.add_submenu("Print screen", menu.print_screen_menu)        
+
+    # misc
+    menu.misc = Menu()
+    menu.misc.add_entry("toggle crosshair  (ctrl+x)", win.toggle_crosshair)
+    menu.misc.add_entry("toggle aliasing   (ctrl+l)", win.toggle_aliasing)
+    menu.add_submenu("Misc", menu.misc)
+
+    menu.add_entry("close   (q)", win.close)
+
 
 class SummonMenu (Menu):
     """Default SUMMON menu"""
     
     def __init__(self, win):
         Menu.__init__(self)
-        
-        # window options
-        self.window_menu = Menu()
-        self.window_menu.add_entry("duplicate   (ctrl+d)", win.duplicate)        
-        self.window_menu.add_entry("overview   (ctrl+o)", lambda: OverviewWindow(win))
-        self.add_submenu("Window", self.window_menu)
-
-        # zoom
-        self.zoom_menu = Menu()
-        self.zoom_menu.add_entry("home   (h)", win.home)
-        self.zoom_menu.add_entry("zoom 1:1   (ctrl+h)", win.restore_zoom)
-        self.add_submenu("Zoom", self.zoom_menu)
-        
-        # print screen options
-        self.print_screen_menu = Menu()
-        self.print_screen_menu.add_entry("svg   (ctrl+p)", 
-            lambda: summon.svg.printScreen(win))
-        self.print_screen_menu.add_entry("png   (ctrl+P)", 
-            lambda: summon.svg.printScreenPng(win))
-        self.add_submenu("Print screen", self.print_screen_menu)        
-        
-        # misc
-        self.misc = Menu()
-        self.misc.add_entry("toggle crosshair  (ctrl+x)", win.toggle_crosshair)
-        self.misc.add_entry("toggle aliasing   (ctrl+l)", win.toggle_aliasing)
-        self.add_submenu("Misc", self.misc)
-        
-        self.add_entry("close   (q)", win.close)
+        add_summon_menu_items(self, win)
 
 
 class VisObject (object):

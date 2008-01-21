@@ -428,6 +428,25 @@ def getDrawColor(bgcolor=(0,0,0)):
         return (0,0,0)
 
 
+class MatrixMenu (summon.Menu):
+    """summatrix popup menu"""
+    
+    def __init__(self, viewer):
+        summon.Menu.__init__(self)
+        
+        self.viewer = viewer
+        
+        self.summatrix_menu = summon.Menu()
+        self.summatrix_menu.add_entry("toggle labels", viewer.toggleLabelWindows)
+        self.summatrix_menu.add_entry("toggle trees", viewer.toggleTreeWindows)
+        self.add_submenu("Summatrix", self.summatrix_menu)
+        
+        # add summon menu options
+        summon.add_summon_menu_items(self, viewer.win)
+        
+        
+        
+
 class MatrixViewer (object):
     """Base class for Matrix Visualizations"""
     
@@ -463,6 +482,7 @@ class MatrixViewer (object):
         self.ctree = ctree
 
         
+        
     
     
     def setMatrix(self, mat):
@@ -494,6 +514,9 @@ class MatrixViewer (object):
         self.win.set_binding(input_key("t"), self.toggleTreeWindows)
         self.drawMatrix(self.mat, mouseClick=self._clickCallback)
         self.win.home()
+        
+        self.menu = MatrixMenu(self)
+        self.win.set_menu(self.menu)
         
     
     def redraw(self):

@@ -66,7 +66,7 @@ def config_window(win):
     # menus
     win.set_menu(summon.SummonMenu(win))
     win.set_menu_button("middle")
-    win.activate_menu()
+    #win.activate_menu()
 
 
     # misc
