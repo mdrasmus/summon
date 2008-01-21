@@ -18,6 +18,8 @@ from summon import shapes
 from summon import util
 from summon import multiwindow
 from summon import colors
+from summon import sumtree
+from summon import treelib
 
 
 #=============================================================================
@@ -432,6 +434,7 @@ class MatrixViewer (object):
     def __init__(self, mat=None, onClick=None, 
                  bgcolor=(0,0,0), drawzeros=False, style="points",
                  showLabels=False, showLabelWindows=False,
+                 showTreeWindows=None,
                  winsize=(400,400), title="summatrix",
                  rtree=None, ctree=None):
         self.win = None
@@ -439,20 +442,27 @@ class MatrixViewer (object):
         self.bgcolor = bgcolor
         self.drawzeros = drawzeros
         self.style = style
-        self.showLabels = showLabels
-        self.showLabelWindows = showLabelWindows
         self.winsize = winsize[:]
         self.title = title
-        self.rtree = rtree
-        self.ctree = ctree
-        
-        self.labelWindows = None        
-        self.ensemble1 = None
-        self.ensemble2 = None
         self.firstOpen = True
-        
         if onClick != None:
             self.onClick = onClick
+
+        # labels
+        self.showLabels = showLabels
+        self.showLabelWindows = showLabelWindows        
+        self.labelWindows = [None, None]
+
+        # trees
+        if showTreeWindows != False and (rtree != None or ctree != None):
+            self.showTreeWindows = True
+        else:
+            self.showTreeWindows = False
+        self.treeWindows = [None, None]
+        self.rtree = rtree
+        self.ctree = ctree
+
+        
     
     
     def setMatrix(self, mat):
@@ -464,18 +474,27 @@ class MatrixViewer (object):
         
         if self.win == None:
             self.win = summon.Window(self.title, size=self.winsize)
+            self.rowEnsemble = multiwindow.WindowEnsemble([self.win], 
+                                   stacky=True, sameh=True,
+                                   tiey=True, piny=True,
+                                   master=self.win,
+                                   coordsy=[0.0])
+
+            self.colEnsemble = multiwindow.WindowEnsemble([self.win], 
+                                   stackx=True, samew=True,
+                                   tiex=True, pinx=True,
+                                   master=self.win,
+                                   coordsx=[0.0])
         else:
             self.win.clear_groups()
         self.win.set_antialias(False)
         self.win.set_bgcolor(* self.bgcolor)
         
-        self.win.set_binding(input_key("1"), self.one2one)
         self.win.set_binding(input_key("l"), self.toggleLabelWindows)
-        self.drawMatrix(self.mat, mouseClick=self._clickCallback)        
+        self.win.set_binding(input_key("t"), self.toggleTreeWindows)
+        self.drawMatrix(self.mat, mouseClick=self._clickCallback)
         self.win.home()
         
-        if self.showLabelWindows:
-            summon.begin_updating()
     
     def redraw(self):
         self.firstOpen = False
@@ -557,6 +576,9 @@ class MatrixViewer (object):
             if self.showLabelWindows:
                 self.openLabelWindows()
             self.drawLabels()
+        
+        if self.showTreeWindows:
+            self.openTreeWindows()
     
     
     def toggleLabelWindows(self):
@@ -590,72 +612,157 @@ class MatrixViewer (object):
     def closeLabelWindows(self):
         """close down label windows"""
         
-        if self.ensemble1 != None:
-            self.ensemble1.stop()
-        if self.ensemble2 != None:
-            self.ensemble2.stop()
-        self.ensemble1 = None
-        self.ensemble2 = None
-        
-        if self.labelWindows != None:
-            if self.labelWindows[0] and self.labelWindows[0].is_open():
-                self.labelWindows[0].close()
-            if self.labelWindows[1] and self.labelWindows[1].is_open():
-                self.labelWindows[1].close()
-        
-            self.labelWindows = None
+        if self.labelWindows[0] and self.labelWindows[0].is_open():
+            self.labelWindows[0].close()
+        if self.labelWindows[1] and self.labelWindows[1].is_open():
+            self.labelWindows[1].close()
+
+        self.labelWindows = [None, None]
     
     
     def openLabelWindows(self):
         """startup label windows"""
-        
-        # close windows if they are already open
-        if self.labelWindows != None:
-            self.closeLabelWindows()
-        
-        summon.stop_updating()
 
+        x, y = self.win.get_position()
         w, h = self.win.get_size()
+        deco = self.win.get_decoration()
         topcoord = .5
         leftcoord = -.5
 
 
-        # set visible
+        # open row labels
         if self.mat.rowlabels:
-            left = summon.Window(" ")
-            left.set_bgcolor(*self.win.get_bgcolor())
-            maxLabelWidth = max(map(len, self.mat.rowlabels))
-            left.set_size(maxLabelWidth*12, h)                
-            left.set_visible(leftcoord, 0, leftcoord-maxLabelWidth, 1)
-            left.set_boundary(leftcoord, -util.INF, leftcoord-maxLabelWidth, util.INF)
-            
-            self.ensemble1 = multiwindow.WindowEnsemble([left, self.win], 
-                                      stacky=True, sameh=True,
-                                      tiey=True, piny=True,
-                                      master=self.win)
+            if self.labelWindows[0] != None and \
+               self.labelWindows[0].is_open():
+                left = self.labelWindows[0]
+            else:
+                maxLabelWidth = max(map(len, self.mat.rowlabels))        
+                left = summon.Window(" ", 
+                                     size=(maxLabelWidth*12, h),
+                                     position=(x-maxLabelWidth*12-deco[0], y))
+                left.set_bgcolor(*self.win.get_bgcolor())
+                left.set_visible(leftcoord, 0, leftcoord-maxLabelWidth, 1)
+                left.set_boundary(leftcoord, -util.INF, leftcoord-maxLabelWidth, util.INF)
+
+                if self.treeWindows[0] == None:
+                    index = 0
+                else:
+                    index = 1
+                self.rowEnsemble.add_window(left, index)
         else:
             left = None
         
+        # open col labels
         if self.mat.collabels:
-            top = summon.Window(" ")        
-            top.set_bgcolor(*self.win.get_bgcolor())
-            maxLabelHeight = max(map(len, self.mat.collabels))
-            top.set_size(w, maxLabelHeight*12)            
-            top.set_visible(0, topcoord, 1, topcoord+maxLabelHeight) 
-            top.set_boundary(-util.INF, topcoord, util.INF, topcoord+maxLabelHeight)
-        
-            self.ensemble2 = multiwindow.WindowEnsemble([top, self.win], 
-                                      stackx=True, samew=True,
-                                      tiex=True, pinx=True,
-                                      master=self.win)
+            if self.labelWindows[1] != None and \
+               self.labelWindows[1].is_open():
+                top = self.labelWindows[1]
+            else:
+                maxLabelHeight = max(map(len, self.mat.collabels))
+                top = summon.Window(" ", 
+                                    size=(w, maxLabelHeight*12),
+                                    position=(x, y-maxLabelHeight*12-deco[1]))
+                top.set_bgcolor(*self.win.get_bgcolor())
+                top.set_visible(0, topcoord, 1, topcoord+maxLabelHeight) 
+                top.set_boundary(-util.INF, topcoord, util.INF, topcoord+maxLabelHeight)
+
+                if self.treeWindows[1] == None:
+                    index = 0
+                else:
+                    index = 1
+                self.colEnsemble.add_window(top, index)
         else:
             top = None
         
         self.labelWindows = [left, top]
-        
-        if not self.firstOpen:
-            summon.begin_updating()
     
+    
+    def toggleTreeWindows(self):
+        """toggle tree windows"""
+        
+        self.setTreeWindows(not self.showTreeWindows)
+    
+    def setTreeWindows(self, show=True):
+        """sets whether tree windows are visible"""
+        
+        self.showTreeWindows = show
+        
+        if not show:
+            self.closeTreeWindows()
+        
+        self.redraw()
+    
+    def closeTreeWindows(self):
+        """close down tree windows"""
+        
+        if self.treeWindows[0] and self.treeWindows[0].win.is_open():
+            self.treeWindows[0].win.close()
+        if self.treeWindows[1] and self.treeWindows[1].win.is_open():
+            self.treeWindows[1].win.close()
+
+        self.treeWindows = [None, None]
+    
+    
+    def openTreeWindows(self):
+        """startup tree windows"""
+
+        x, y = self.win.get_position()
+        w, h = self.win.get_size()
+        deco = self.win.get_decoration()
+
+        treesize = 100
+
+        # open row tree
+        if self.rtree:
+            if self.treeWindows[0] != None and \
+               self.treeWindows[0].win.is_open():
+                left = self.treeWindows[0]
+            else:
+                layout = treelib.layoutTreeHierarchical(self.rtree, 1, -1)
+                offset = max(c[1] for c in layout.itervalues())
+                boundary1 = min(c[0] for c in layout.itervalues()) - 1.0
+                boundary2 = max(c[0] for c in layout.itervalues())
+                left = sumtree.SumTree(self.rtree, name="row tree", 
+                                       showLabels=False,
+                                       xscale=0, layout=layout,
+                                       winsize=(treesize, h),
+                                       winpos=(x-treesize-deco[0], y))
+                left.show()
+                left.win.set_bgcolor(*self.win.get_bgcolor())
+                left.win.set_visible(boundary1, 0, boundary2, 1)
+                left.win.set_boundary(boundary1, -util.INF, boundary2, util.INF)
+                
+                self.rowEnsemble.add_window(left.win, 0, coordy=offset)
+        else:
+            left = None
+        
+        # open col tree
+        if self.ctree:
+            if self.treeWindows[1] != None and \
+               self.treeWindows[1].win.is_open():
+                top = self.treeWindows[1]
+            else:
+                layout = treelib.layoutTreeHierarchical(self.ctree, 1, -1)
+                offset = max(c[1] for c in layout.itervalues())
+                boundary1 = min(c[0] for c in layout.itervalues())
+                boundary2 = max(c[0] for c in layout.itervalues()) - 1.0
+                top = sumtree.SumTree(self.ctree, "col tree", 
+                                      showLabels=False,
+                                      xscale=0, layout=layout,
+                                      vertical=True,
+                                      winsize=(w, treesize),
+                                      winpos=(x, y-treesize-deco[1]))
+                top.show()
+                top.win.set_bgcolor(*self.win.get_bgcolor())
+                top.win.set_visible(0, boundary1, 1, boundary2)
+                top.win.set_boundary(-util.INF, boundray1, util.INF, boundary2)
+                
+                self.colEnsemble.add_window(top.win, 0, coordx=offset)
+        else:
+            top = None
+        
+        self.treeWindows = [left, top]
+        
 
     def drawBorder(self, nrows, ncols):
         """draws the matrix boarder"""
@@ -708,14 +815,11 @@ class MatrixViewer (object):
         minTextSize = 4
         
         # determine which window to draw labels in
-        if self.labelWindows != None:
-            rowwin, colwin = self.labelWindows
-            if rowwin == None:
-                rowwin = self.win
-            if colwin == None:
-                colwin = self.win
-        else:
-            rowwin = colwin = self.win
+        rowwin, colwin = self.labelWindows
+        if rowwin == None:
+            rowwin = self.win
+        if colwin == None:
+            colwin = self.win
         
         
         # draw labels
@@ -746,8 +850,8 @@ class MatrixViewer (object):
                                      translate(xstart, ystart, 
                                                rotate(90.0, * vis2))))
         
-        
-    
+
+
     
     def _clickCallback(self):
         """internal callback for mouse clicks"""
@@ -777,22 +881,6 @@ class MatrixViewer (object):
         print row, col, "mat[%d][%d] = %f" % (i, j, self.mat[i][j])
     
     
-    def one2one(self):
-        """makes zoom one2one"""
-
-        x, y, x2, y2 = self.win.get_visible()
-        vwidth = x2 - x
-        vheight = y2 - y
-        width, height = self.win.get_size()
-
-        zx = width / vwidth
-        zy = height / vheight
-
-        if zx > zy:
-            self.win.zoomy(zx / zy)
-        else:
-            self.win.zoomx(zy / zx)
-
 
 class DenseMatrixViewer (MatrixViewer):
     """Matrix visualization specifically for dense matrices stored as a 

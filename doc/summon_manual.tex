@@ -387,6 +387,36 @@ View/execute the \code{view\_*.sh} scripts for examples of how to call
 
 
 %=============================================================================
+\section{SUMMON Features}
+
+\subsection{The SUMMON Window}
+    
+Each window opened by SUMMON is an instantiation of the \code{summon.Window}
+class. This class provides the interface to manipulate the window (title, size,
+position, etc.) as well as to manipulate the graphical elements it  displays
+(\code{add\_group}, \code{remove\_group}, etc.).  
+
+\subsection{Models}
+
+Each window is associated with two models (see \code{Model} class), called the
+\code{world} and \code{screen} which are accessible as \code{Window.world} and
+\code{Window.screen}.  A model contains drawing elements such as lines, and
+polygons.  The units of the world model's coordinate system  can
+be whatever the user wants, provided that the x- and y- axis increase to 
+the right and top, respectively.   The size and orientation of the world 
+model is dependent on scrolling and zooming. The world model is the
+default model that is  used when drawing (e.g. functions such as
+\code{Window.add\_group} forward their arguments to 
+\code{Window.world.add\_group}).
+
+In contrast, the screen model is always drawn with its origin at the 
+lower left corner of the window and with units in terms of pixels. The
+screen model is always drawn on top of the world model.  The screen model
+is often used to draw menus, toolbars, or other things that should always
+be in view, and should not be affected by scrolling and zooming.
+
+
+%=============================================================================
 \section{SUMMATRIX: large-scale sparse matrix visualizer}
 
 SUMMATRIX is a visualization for matrices (\figref{fig:summatrix}) built with

@@ -360,7 +360,8 @@ class Window (object):
         self.name = name
         self.antialias = True
         self.crosshair = False
-        self.crosshair_color = None        
+        self.crosshair_color = None
+        self.opened = True
         
         # menu
         self.menu = None
@@ -426,7 +427,7 @@ class Window (object):
     def is_open(self):
         """returns whether underling SUMMON window is open"""
         
-        return self.winid in _state.windows
+        return self.opened and self.winid in _state.windows
     
     def get_decoration(self):
         """returns the window decoration size (width, height)
@@ -439,7 +440,11 @@ class Window (object):
 
     def close(self):
         """close the window"""
+        
+        # immediately record locally that window is closed
+        self.opened = False
         ret = summon_core.close_window(self.winid)
+        
         # self._on_close() will get called back through the C++ module
         # letting us know the window is truely closed
         return ret
