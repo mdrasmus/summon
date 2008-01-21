@@ -860,8 +860,20 @@ public:
         if (ExecWaitingCommands())
             delay = 0;
         
-        // look user-defined timer function
+        // process user-defined timer function
         SummonTimer();
+        
+        if (m_timerCommand) {
+            // sleep up until timer goes off
+            int remaining = m_timerDelay - GetTime();
+            
+            if (remaining < 10)
+                delayTime = 0;
+            else if (remaining/2 < 100)
+                delayTime = remaining/2;
+            else
+                delayTime = 100;
+        }
         
         // set the next timer
         if (IsRunning())
@@ -874,14 +886,6 @@ public:
             delayTime = 0;
         } else {
             delayTime = 10;
-        }
-        
-        if (m_timerCommand) {
-            // sleep up until timer goes off
-            int remaining = m_timerDelay - GetTime();
-            
-            if (remaining < 10)
-                delayTime = 0;
         }
     }
     

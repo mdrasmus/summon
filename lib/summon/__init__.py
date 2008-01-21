@@ -209,6 +209,7 @@ class SummonTimer:
                         # reset timer
                         timer.delay = timer.interval
                     else:
+                        timer.delay = util.INF
                         # delete timer
                         dels.add(timer)
                 

@@ -906,7 +906,7 @@ void SummonView::CheckBoundary(bool useZoomx, bool useZoomy)
 {
     // find visible
     Vertex2i winsize = GetWindowSize();
-    Vertex2f vis1 = ScreenToWorld(0.0, 0.0);
+    Vertex2f vis1 = ScreenToWorld(0, 0);
     Vertex2f vis2 = ScreenToWorld(winsize.x, winsize.y);
     
     // adjust zoom
@@ -947,7 +947,7 @@ void SummonView::CheckBoundary(bool useZoomx, bool useZoomy)
     ZoomBy(zoomx, zoomy);
     
     // recalc visible region
-    vis1 = ScreenToWorld(0.0, 0.0);
+    vis1 = ScreenToWorld(0, 0);
     vis2 = ScreenToWorld(winsize.x, winsize.y);
     
     // adjust translate
