@@ -1145,9 +1145,15 @@ class Model (object):
         return group(ref=summon_core.get_root_id(self.id))
 
 
+class MenuItem (object):
+    def __init__(self, kind, text, action, **data):
+        self.kind = kind
+        self.text = text
+        self.action = action
+        self.data = data
+    
 
-
-class Menu:
+class Menu (object):
     """SUMMON Menu
        
        This class creates pop-up menus that can be displayed by SUMMON Windows.
@@ -1172,10 +1178,10 @@ class Menu:
 
     def add_entry(self, text, func):
         summon_core.add_menu_entry(self.menuid, text, func)
-        self.items.append([text, func])
+        self.items.append(MenuItem("entry", text, func))
     
     def add_toggle(self, text, func, state=False):
-        item = [text, func, state]
+        item = MenuItem("entry", text, func, state=state)
         self.items.append(item)
     
         if state:
@@ -1187,83 +1193,98 @@ class Menu:
 
     def _on_toggle(self, item):
         index = self.items.index(item)
-        text, func, state = item
         
         # toggle state
-        state = not state
-        item[2] = state
+        item.data["state"] = not state
         
         # update menu
-        if state:
-            self.set_entry(index, text + " [x]", lambda: self._on_toggle(item))
+        if item.data["state"]:
+            self.set_entry(index, item.text + " [x]", 
+                           lambda: self._on_toggle(item))
         else:
-            self.set_entry(index, text + " [  ]", lambda: self._on_toggle(item))
+            self.set_entry(index, item.text + " [  ]", 
+                           lambda: self._on_toggle(item))
         
         # call function
-        func()
+        item.action()
     
     def add_submenu(self, text, submenu):
         summon_core.add_submenu(self.menuid, text, submenu.menuid)
-        self.items.append([text, submenu])
+        self.items.append(MenuItem("submenu", text, submenu))
     
     def get_item(self, index):
         return self.items[index]
     
+    def set_item(self, index, item):
+        if item.kind == "entry":
+            summon_core.set_menu_entry(self.menuid, index+1, item.text, item.action)
+        elif item.kind == "submenu":
+            summon_core.set_submenu(self.menuid, index+1, item.text, item.action.menuid)
+        else:
+            raise Exception("unknown menu item '%s'" % item.kind)
+        
+        self.items[index] = item
+    
+    def add_item(self, item):
+        if item.kind == "entry":
+            summon_core.add_menu_entry(self.menuid, item.text, item.action)
+        elif item.kind == "submenu":
+            summon_core.add_submenu(self.menuid, item.text, item.action.menuid)
+        else:
+            raise Exception("unknown menu item '%s'" % item.kind)
+        
+        self.items.append(item)
+    
     def set_entry(self, index, text, func):
         summon_core.set_menu_entry(self.menuid, index+1, text, func)
+        self.items[index] = MenuItem("entry", text, func)
     
     def set_submenu(self, index, text, submenu):
         summon_core.set_submenu(self.menuid, index+1, text, submenu.menuid)
+        self.items[index] = MenuItem("submenu", text, submenu)
+    
+    def insert_entry(self, index, text, func):
+        self._move_items_down(index)
+        self.set_entry(index, text, func)
+    
+    def insert_submenu(self, index, text, submenu):
+        self._move_items_down(index)
+        self.set_submenu(index, text, submenu)
+    
+    def insert_item(self, index, item):
+        self._move_items_down(index)
+        self.set_item(index, item)
+    
+    def _move_items_down(self, index):
+        index2 = len(self.items)
+        if index2 == 0:
+            return
+        
+        # copy last item down
+        item = self.get_item(index2-1)
+        self.add_item(item)
+        
+        # move down the rest
+        for i in xrange(index2-2, index-1, -1):
+            self.set_item(i+1, self.get_item(i))
+        
+        
     
     def remove(self, index):
         """removes a menu item at position 'index'"""
     
         summon_core.remove_menu_item(self.menuid, index+1)
-        
-        # remove item from internal list
-        olditems = self.items
-        self.items = []
-        for i in xrange(len(olditems)):
-            if i != index:
-                self.items.append(olditems[i])
+        del self.items[index]
     
     def clear(self):
         """clears all menu items"""
         
         for i, item in enumerate(self.items):
             if not isinstance(item[1], Menu):
-                summon_core.remove_menu_item(self.menuid, i+1)    
-
-def add_summon_menu_items(menu, win):
-    """adds default SUMMON menu items to a menu"""
+                summon_core.remove_menu_item(self.menuid, i+1)
     
-    # window options
-    menu.window_menu = Menu()
-    menu.window_menu.add_entry("duplicate   (ctrl+d)", win.duplicate)        
-    menu.window_menu.add_entry("overview   (ctrl+o)", lambda: OverviewWindow(win))
-    menu.add_submenu("Window", menu.window_menu)
 
-    # zoom
-    menu.zoom_menu = Menu()
-    menu.zoom_menu.add_entry("home   (h)", win.home)
-    menu.zoom_menu.add_entry("zoom 1:1   (ctrl+h)", win.restore_zoom)
-    menu.add_submenu("Zoom", menu.zoom_menu)
 
-    # print screen options
-    menu.print_screen_menu = Menu()
-    menu.print_screen_menu.add_entry("svg   (ctrl+p)", 
-        lambda: summon.svg.printScreen(win))
-    menu.print_screen_menu.add_entry("png   (ctrl+P)", 
-        lambda: summon.svg.printScreenPng(win))
-    menu.add_submenu("Print screen", menu.print_screen_menu)        
-
-    # misc
-    menu.misc = Menu()
-    menu.misc.add_entry("toggle crosshair  (ctrl+x)", win.toggle_crosshair)
-    menu.misc.add_entry("toggle aliasing   (ctrl+l)", win.toggle_aliasing)
-    menu.add_submenu("Misc", menu.misc)
-
-    menu.add_entry("close   (q)", win.close)
 
 
 class SummonMenu (Menu):
@@ -1271,7 +1292,34 @@ class SummonMenu (Menu):
     
     def __init__(self, win):
         Menu.__init__(self)
-        add_summon_menu_items(self, win)
+        
+        # window options
+        self.window_menu = Menu()
+        self.window_menu.add_entry("duplicate   (ctrl+d)", win.duplicate)        
+        self.window_menu.add_entry("overview   (ctrl+o)", lambda: OverviewWindow(win))
+        self.add_submenu("Window", self.window_menu)
+
+        # zoom
+        self.zoom_menu = Menu()
+        self.zoom_menu.add_entry("home   (h)", win.home)
+        self.zoom_menu.add_entry("zoom 1:1   (ctrl+h)", win.restore_zoom)
+        self.add_submenu("Zoom", self.zoom_menu)
+
+        # print screen options
+        self.print_screen_menu = Menu()
+        self.print_screen_menu.add_entry("svg   (ctrl+p)", 
+            lambda: summon.svg.printScreen(win))
+        self.print_screen_menu.add_entry("png   (ctrl+P)", 
+            lambda: summon.svg.printScreenPng(win))
+        self.add_submenu("Print screen", self.print_screen_menu)        
+
+        # misc
+        self.misc = Menu()
+        self.misc.add_entry("toggle crosshair  (ctrl+x)", win.toggle_crosshair)
+        self.misc.add_entry("toggle aliasing   (ctrl+l)", win.toggle_aliasing)
+        self.add_submenu("Misc", self.misc)
+
+        self.add_entry("close   (q)", win.close)
 
 
 class VisObject (object):

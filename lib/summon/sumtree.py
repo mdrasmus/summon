@@ -19,20 +19,17 @@ import summon
 # Drawing Code
 #
 
-class SumTreeMenu (summon.Menu):
+class SumTreeMenu (summon.SummonMenu):
     """summatrix popup menu"""
     
     def __init__(self, viewer):
-        summon.Menu.__init__(self)
+        summon.SummonMenu.__init__(self, viewer.win)
         
         self.viewer = viewer
         
         self.sumtree_menu = summon.Menu()
         self.sumtree_menu.add_entry("toggle labels (l)", viewer.toggleLabels)
-        self.add_submenu("Sumtree", self.sumtree_menu)
-        
-        # add summon menu options
-        summon.add_summon_menu_items(self, viewer.win)
+        self.insert_submenu(0, "Sumtree", self.sumtree_menu)
         
 
 class SumTree (object):

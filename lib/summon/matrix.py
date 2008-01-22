@@ -428,21 +428,19 @@ def getDrawColor(bgcolor=(0,0,0)):
         return (0,0,0)
 
 
-class MatrixMenu (summon.Menu):
+class MatrixMenu (summon.SummonMenu):
     """summatrix popup menu"""
     
     def __init__(self, viewer):
-        summon.Menu.__init__(self)
+        summon.SummonMenu.__init__(self, viewer.win)
         
         self.viewer = viewer
         
         self.summatrix_menu = summon.Menu()
         self.summatrix_menu.add_entry("toggle labels (l)", viewer.toggleLabelWindows)
         self.summatrix_menu.add_entry("toggle trees (t)", viewer.toggleTreeWindows)
-        self.add_submenu("Summatrix", self.summatrix_menu)
+        self.insert_submenu(0, "Summatrix", self.summatrix_menu)
         
-        # add summon menu options
-        summon.add_summon_menu_items(self, viewer.win)
         
         
         
