@@ -358,7 +358,7 @@ class Window (object):
         
         # configure window
         self.name = name
-        self.antialias = True
+        self.antialias = False
         self.crosshair = False
         self.crosshair_color = None
         self.opened = True

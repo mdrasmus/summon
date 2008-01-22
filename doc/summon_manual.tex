@@ -434,6 +434,8 @@ is often used to draw menus, toolbars, or other things that should always
 be in view, and should not be affected by scrolling and zooming.
 %}
 
+
+
 %=============================================================================
 \section{SUMMATRIX: large-scale sparse matrix visualizer}
 
@@ -443,7 +445,8 @@ SUMMON.  It can be executed either from the command-line with the supplied demo
 (\code{summon.matrix.MatrixViewer}) from within your own python program. 
 SUMMATRIX also includes support for visualizing data clustering and other
 matrix permutations.  To see all of SUMMATRIX's options run \code{summatrix} on
-the command-line with no options.
+the command-line with no options.  Examples of using SUMMATRIX can be found in
+the \code{summon/examples/summatrix/} directory.
 
 
 %============================
@@ -457,7 +460,7 @@ the command-line with no options.
 \end{figure}
 
 
-\subsection{Matrix formats}
+\subsection{Matrix file formats}
 
 \code{summatrix} visualizes dense and sparse matrices stored in a variety of 
 formats.
@@ -673,7 +676,45 @@ to the matrix.  The rows (or columns) of the matrix will be permuted to match
 the order of the leaves in the tree.  If a permutation file is given
 (\code{--rperm,--cperm}) it is ignored.
 
-Two tree file formats are currently supported:
+Two tree file formats are currently supported: ptree and newick.  See
+\secref{sec:sumtree} for a description of the formats.
+If you use the ptree format (\code{--rptree,--cptree}) the leaves should be 
+numbered with the same index as its corresponding row (or column) in the 
+matrix.  If you use the newick format (\code{--rtree,--ctree}) the leaves should
+either be integers corresponding to the rows (or columns) of the matrix, or 
+be strings that match the row (column) labels of the matrix
+(\code{--rlab,--clab}).
+    
+See \code{examples/summatrix/clustering/data.row.ptree} for an example of a
+ptree for a clustered matrix.
+   
+
+
+%=============================================================================
+\section{SUMTREE: large-scale tree visualizer}
+\label{sec:sumtree}
+
+SUMTREE is a visualization for trees built on top of the SUMMON library.  It can
+be executed either from the command-line with the supplied demo (\code{sumtree})
+or  instantiated as an object (\code{summon.sumtree.SubTree}) from within your
+own python program.  SUMTREE is useful for visualizing trees from hierarchical
+clusterings or phylogenetic reconstructions.  To see all of SUMTREE's options
+run \code{sumtree} on the command-line with no options.  Examples of using
+SUMTREE can be found in the \code{summon/examples/sumtree/} directory.
+
+%============================
+\begin{figure}
+\begin{center}
+\includegraphics[width=3in]{figures/sumtree-mammals.pdf}
+\end{center}
+\caption{Example of a phylogenetic tree visualized with SUMTREE.
+See  \code{examples/sumtree/view\_mammals.sh}}
+\label{fig:sumtree}
+\end{figure}
+
+\subsection{Tree file formats}
+
+SUMTREE currently supports two file formats:
 
 \begin{itemize}
 
@@ -682,13 +723,13 @@ Two tree file formats are currently supported:
     CLUTO clustering package.  It specifies a binary tree of $n$ leaves by assigning
     each node in the tree an integer.  The leaves are numbered $0$ to $n-1$, the
     internal nodes are numbered $n-2$ to $2n-3$, and the root is
-    numbered $2n-2$.  The leaves should be numbered with the same index as its
-    corresponding row (or column) in the matrix.  The ptree file contains a list of
+    numbered $2n-2$.  The ptree file contains a list of
     $2n-1$ integers, one integer per line.  The line $i$ (0-based) should contain
     the id-number of the {\em parent} of node $i$.  The last line (line $2n-2$) 
-    should contain the integer -1, to indicate that the root of the tree has no
+    should contain the integer -1 to indicate that the root of the tree has no
     parent.  See 
-    \code{examples/summatrix/clustering/data.row.ptree} for an example.
+    \code{examples/summatrix/clustering/data.row.ptree} and
+    \code{examples/sumtree/dog-human-genes.ptree} for examples.
 
     
     \item {\bf newick format.}
@@ -700,9 +741,7 @@ Two tree file formats are currently supported:
     \code{(((A,B),(C,D)),E);}
 
     This states that A and B are sisters, C and D are sisters, A and C are cousins,
-    and E is a great uncle of A.  The leaf names should either be integers
-    indicating the leaf's corresponding row (or column) in the matrix, or a string
-    given in the row (column) labels file.
+    and E is a great uncle of A.
 
     Branch lengths can also be specified by adding a
     colon followed by a floating point number the end of any node in the tree.
@@ -716,6 +755,7 @@ Two tree file formats are currently supported:
 
 \end{itemize}
 
+%=============================================================================
 \section{SUMMON function reference}
 
 See \code{summon.html} for complete function reference.

@@ -43,7 +43,8 @@ SummonView::SummonView(SummonModel *model, int width, int height,
     //glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE);
     //glEnable(GL_MULTISAMPLE);
     //glEnable(GL_MULTISAMPLE_ARB);
-    glEnable(GL_POINT_SMOOTH);  
+    //glEnable(GL_POINT_SMOOTH);  
+    glDisable(GL_POINT_SMOOTH);  
     glEnable(GL_LINE_SMOOTH);
     glDisable(GL_POLYGON_SMOOTH);
     //glEnable(GL_POLYGON_SMOOTH);
@@ -201,12 +202,12 @@ void SummonView::ExecCommand(Command &command)
         case SET_ANTIALIAS_COMMAND:
             MakeCurrentWindow();
             if (((SetAntialiasCommand*)&command)->enabled) {
-                glDisable(GL_POLYGON_SMOOTH);
+                glEnable(GL_POLYGON_SMOOTH);
                 glEnable(GL_LINE_SMOOTH);
-                glEnable(GL_POINT_SMOOTH);
+                glDisable(GL_POINT_SMOOTH);
             } else {
                 glDisable(GL_POLYGON_SMOOTH);
-                glDisable(GL_LINE_SMOOTH);
+                glEnable(GL_LINE_SMOOTH);
                 glDisable(GL_POINT_SMOOTH);
             }
             Redisplay();

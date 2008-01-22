@@ -15,7 +15,8 @@ NEXT RELEASE
 - added more features to Window.set_visible()
 - added OverviewWindow
 - added row and column trees to summatrix
-- added popup menu to summatrix
+- added popup menus to summatrix and sumtree
+- changed antialiasing behavior
 
 
 2007/10/26 - summon-1.8.3
