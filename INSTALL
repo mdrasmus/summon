@@ -29,24 +29,43 @@ packages:
 
     apt-get install libsdl-dev freeglut-dev
 
+Other Linux distributions should have the same packages under similar names
 
 === MAC OS X
 Using fink to install third party packages:
 
     /sw/bin/fink install sdl glut
     
-=== WINDOWS (XP, Vista)
+=== WINDOWS (XP, Vista) NATIVE
 Download the windows version of GLUT from http://openglut.sourceforge.net/
-Make sure to copy OpenGLUT.dll to your C:\windows\system32 directory
+Make sure to copy OpenGLUT.dll to your C:\windows\system32 directory (or wherever
+your DLLs are located)
 
 Download the windows version of SDL from http://www.libsdl.org/
-Make sure to copy SDL.dll to your C:\windows\system32 directory
+Make sure to copy SDL.dll to your C:\windows\system32 directory (or wherever your
+DLLs are located)
 
+
+=== WINDOWS (XP, Vista) CYGWIN
+
+SUMMON can also be installed in a Cygwin environment.  The following packages
+can be installed through Cygwin's setup.exe 
+
+    Python/python
+    Libs/freeglut
+    Devel/gcc-g++
+    Devel/automake
+    Devel/make
+
+SDL must be compiled and installed manually from http://www.libsdl.org/
 
 
 =============================================================================
-CROSSPLATFORM INSTALLATION WITH DISTUTILS (Ideally)
+CROSSPLATFORM INSTALLATION OF SUMMON WITH DISTUTILS (Ideally)
 
+Download and unzip the archive summon-XXX.tar.gz from
+http://people.csail.mit.edu/rasmus/summon
+Within the uncompressed directory do one of the following:
 
 === UNIX (ex: Linux)
 To install summon with python distutils use the following command:
@@ -73,13 +92,13 @@ version of the distutils file (setup-windows.py) is available.  You may need to
 edit it to properly configure the headers and linking of third part libraries
 (OpenGLUT, SDL, OpenGL).
 
-I have found that using mingw32 and the option
+I have found that using mingw32 and the command
     python setup-windows.py build --compiler=mingw32
 works best.  Although, Visual Studio 7.1 should also work.
 
 
 =============================================================================
-BINARY INSTALL
+SUMMON BINARY INSTALL
 
 === LINUX RPM
 Download the rpm from the summon website
@@ -96,7 +115,7 @@ summon-XXX.tar.gz
 
 
 =============================================================================
-INSTALL WITH MAKE
+SUMMON INSTALL WITH MAKE
 
 
 === LINUX MAKE
