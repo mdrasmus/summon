@@ -204,7 +204,7 @@ void SummonView::ExecCommand(Command &command)
             if (((SetAntialiasCommand*)&command)->enabled) {
                 glEnable(GL_POLYGON_SMOOTH);
                 glEnable(GL_LINE_SMOOTH);
-                glDisable(GL_POINT_SMOOTH);
+                glEnable(GL_POINT_SMOOTH);
             } else {
                 glDisable(GL_POLYGON_SMOOTH);
                 glEnable(GL_LINE_SMOOTH);

@@ -99,7 +99,7 @@ class WindowEnsemble:
     
 
     def add_window(self, win, index=-1, coordx=0, coordy=0):
-        """add a window to the existing ensembl"""
+        """add a window to the existing ensemble"""
         
         if self.tiex or self.tiey:
             self.untie()
@@ -157,7 +157,7 @@ class WindowEnsemble:
     def _on_window_close(self, win):
         """callback for when a window in the ensemble closes"""
         
-        self.remove_window(win)        
+        self.remove_window(win)
     
         # close all windows if master closes
         if self.close_with_master and win == self.master:
@@ -166,10 +166,12 @@ class WindowEnsemble:
         
     
     def remove_window(self, win):
+        """removes a window from the ensemble"""
+        
         # do nothing if window is not in ensemble
         if win not in self.windows:
             return    
-    
+        
         self.windows.remove(win)
         
         # remove all callbacks

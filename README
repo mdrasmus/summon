@@ -5,4 +5,32 @@ Matt Rasmussen
 - For install instructions see INSTALL
 - For documentation see doc/summon_manual.pdf
 
+Summary
+
+    SUMMON is a python extension module that provides rapid prototyping of 2D
+    visualizations. By heavily relying on the python scripting language, SUMMON
+    allows the user to rapidly prototype a custom visualization for their data,
+    without the overhead of a designing a graphical user interface or
+    recompiling native code. By simplifying the task of designing a
+    visualization, users can spend more time on understanding their data.
+
+    SUMMON was designed with several philosophies. First, recompilation should
+    be avoided in order to speed up the development process. Second, design of
+    graphical user interfaces should also be minimized. Designing a good
+    interface takes planning and time to layout buttons, scrollbars, and dialog
+    boxes. Yet a poor interface is very painful to work with. Even when one has
+    a good interface, rarely can it be automated for batch mode. Instead, SUMMON
+    relies on the python terminal for most interaction. This allows the users
+    direct access to the underlining code, which is more expressive, and can be
+    automated through scripting.
+
+    Lastly, SUMMON is designed to be fast. Libraries already exist for accessing
+    OpenGL in python. However, python is relatively slow for real-time
+    interaction with large visualizations (trees with 100,000 leaves, matrices
+    with a million non-zeros, etc.). Therefore, all real-time interaction is
+    handled with compiled native C++ code. Python is only executed in the
+    construction and occasional interaction with the visualization. This
+    arrangement provides the best of both worlds. 
+
+
 

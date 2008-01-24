@@ -635,8 +635,10 @@ class MatrixViewer (object):
         """close down label windows"""
         
         if self.labelWindows[0] and self.labelWindows[0].is_open():
+            self.rowEnsemble.remove_window(self.labelWindows[0])
             self.labelWindows[0].close()
         if self.labelWindows[1] and self.labelWindows[1].is_open():
+            self.colEnsemble.remove_window(self.labelWindows[1])
             self.labelWindows[1].close()
 
         self.labelWindows = [None, None]
@@ -714,14 +716,19 @@ class MatrixViewer (object):
         
         self.redraw()
     
+    
     def closeTreeWindows(self):
         """close down tree windows"""
         
-        if self.treeWindows[0] and self.treeWindows[0].win.is_open():
-            self.treeWindows[0].win.close()
-        if self.treeWindows[1] and self.treeWindows[1].win.is_open():
-            self.treeWindows[1].win.close()
-
+        if self.treeWindows[0]:
+            self.rowEnsemble.remove_window(self.treeWindows[0].win)
+            if self.treeWindows[0].win.is_open():
+                self.treeWindows[0].win.close()
+        if self.treeWindows[1]:
+            self.colEnsemble.remove_window(self.treeWindows[1].win)
+            if self.treeWindows[1].win.is_open():
+                self.treeWindows[1].win.close()
+        
         self.treeWindows = [None, None]
     
     
