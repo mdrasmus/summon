@@ -443,7 +443,10 @@ class Window (object):
         
         # immediately record locally that window is closed
         self.opened = False
-        ret = summon_core.close_window(self.winid)
+        try:
+            ret = summon_core.close_window(self.winid)
+        except:
+            pass
         
         # self._on_close() will get called back through the C++ module
         # letting us know the window is truely closed
@@ -451,6 +454,8 @@ class Window (object):
     
     def _on_close(self):
         """a callback for window close events"""
+        
+        self.opened = False
         
         # let the global summon state know, that this window is closed
         _state.remove_window(self)

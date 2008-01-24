@@ -634,11 +634,11 @@ class MatrixViewer (object):
     def closeLabelWindows(self):
         """close down label windows"""
         
-        if self.labelWindows[0] and self.labelWindows[0].is_open():
-            self.rowEnsemble.remove_window(self.labelWindows[0])
+        if self.labelWindows[0]:
+            self.rowEnsemble.remove_window(self.labelWindows[0].win)
             self.labelWindows[0].close()
         if self.labelWindows[1] and self.labelWindows[1].is_open():
-            self.colEnsemble.remove_window(self.labelWindows[1])
+            self.colEnsemble.remove_window(self.labelWindows[1].win)
             self.labelWindows[1].close()
 
         self.labelWindows = [None, None]
