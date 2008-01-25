@@ -1344,7 +1344,7 @@ class VisObject (object):
     def show(self):
         pass
     
-    def enableUpdating(self, visible=True, interval=None):
+    def enable_updating(self, visible=True, interval=None):
         """add/remove this object's update function to/from the SUMMON timer"""
         if visible:    
             if not is_update_func(self.update):
@@ -1355,7 +1355,8 @@ class VisObject (object):
                 remove_update_func(self.update)
     
     # temporary backwards compatibility
-    setVisible = enableUpdating
+    setVisible = enable_updating
+    enableUpdating = enable_updating
     
     
     def get_window(self):
