@@ -16,31 +16,33 @@ setup(
     description='A general 2D visualization prototyping module',
     long_description = """
         SUMMON is a python extension module that provides rapid prototyping of
-        2D visualizations. By heavily relying on the python scripting language,
+        2D visualizations.  By heavily relying on the python scripting language,
         SUMMON allows the user to rapidly prototype a custom visualization for
-        their data, without the overhead of a designing a graphical user
-        interface or recompiling native code. By simplifying the task of
-        designing a visualization, users can spend more time on understanding
-        their data.
+        their data,  without the overhead of designing a graphical user
+        interface or recompiling  native code.  By simplifying the task of
+        designing a visualization, users can  spend more time on understanding
+        their data. 
 
-        SUMMON was designed with several philosophies. First,
-        recompilation should be avoided in order to speed up the development
-        process. Second, design of graphical user interfaces should also be
-        minimized. Designing a good interface takes planning and time to layout
-        buttons, scrollbars, and dialog boxes. Yet a poor interface is very
-        painful to work with. Even when one has a good interface, rarely can it
-        be automated for batch mode. Instead, SUMMON relies on the python
-        terminal for most interaction. This allows the users direct access to
-        the underlining code, which is more expressive, and can be automated
-        through scripting.
-
-        Lastly, SUMMON is designed to be fast. Libraries already exist
-        for accessing OpenGL in python. However, python is relatively slow for
+        SUMMON is designed to be a fast interface for developing interactive
+        visualizations (via scene graphs) for OpenGL. Although python libraries
+        already exist for accessing OpenGL, python is relatively slow for
         real-time interaction with large visualizations (trees with 100,000
-        leaves, matrices with a million non-zeros, etc.). Therefore, all
-        real-time interaction is handled with compiled native C++ code. Python
-        is only executed in the construction and occasional interaction with the
-        visualization. This arrangement provides the best of both worlds. 
+        leaves, sparse matrices with a million non-zeros, etc.). Therefore, with
+        SUMMON all real-time interaction is handled with compiled native C++
+        code (via extension module). Python is only executed in the construction
+        and occasional interaction with the visualization. This arrangement
+        provides the best of both worlds. 
+
+        SUMMON was designed with several philosophies.  First, a scripting
+        language  (Python) is used to speed up the development process and avoid
+        overhead such as code  compilation.  Second, design of graphical user
+        interfaces should be minimized.  Designing a good interface takes
+        planning and time to layout buttons, scrollbars, and dialog boxes.  Yet
+        a  poor interface is very painful to work with. Even when one has a good
+        interface, rarely can it be automated for batch mode.  Instead, SUMMON
+        relies on the Python  prompt for most interaction.  This allows the
+        users direct access to  the underlying code, which is more expressive,
+        and can be automated through scripting.          
     """,
     author='Matt Rasmussen',
     author_email='rasmus@mit.edu',

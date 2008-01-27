@@ -147,6 +147,7 @@ class Element:
             yield _make_ref(children[i], children[i+1])
 
     def __getitem__(self, i):
+        """Gets the i'th child of an element"""
         if isinstance(i, int):
             children = summon_core.get_element_children(self.ptr)
             if i < 0 or 2*i+1 >= len(children):
@@ -187,24 +188,30 @@ class Element:
             return _make_ref(elementid, parent)
         
     
-    def append(self, aGroup):
-        summon_core.append_group(self.ptr, aGroup)
+    def append(self, element):
+        """Append a drawing element to the children of this element"""
+        summon_core.append_group(self.ptr, element)
         return aGroup
     
-    def remove(self, *groups):
+    def remove(self, *elements):
+        """Remove drawing elements from the children of this element"""
         summon_core.remove_group2(self.ptr, *[x.ptr for x in groups])
 
     def replace(self, oldchild, newchild):
+        """Replace a child element 'oldchild' with a new child 'newchild'"""
         summon_core.replace_group2(self.ptr, oldchild.ptr, newchild)
         return newchild
         
     def set_visible(self, vis):
+        """Set the visibility of an element"""
         summon_core.show_group2(self.ptr, vis)
     
     def get_visible(self):
+        """NOT implemented yet"""
         pass
     
     def get_bounding(self):
+        """Gets the bounding box of an element and all of its children"""
         return summon_core.get_bounding2(self.ptr)
 
 
@@ -545,7 +552,10 @@ class flip (Transform):
 
 
 class zoom_clamp (Transform):
-    """Restricts the zoom-level of its contents"""
+    """Restricts the zoom-level of its contents
+    
+       See shapes.message_bubble() for an example
+    """
     
     def __init__(self, 
                  *elements, **options):

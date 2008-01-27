@@ -1,4 +1,43 @@
 =============================================================================
+Sun Jan 27 12:49:36 EST 2008
+
+- released summon-1.8.4 several days ago
+- what are my new desired features?
+
+  - check behavor of text_clip inside of zoom_clamp
+  
+  - make sure SVG is fully up to date
+    - get_bounding for SVG
+      - draw only what is displayed
+    - fix SVG text_clip    
+  
+  - create concept of styles
+    - style
+      - color
+      - line width
+      - stipple
+      - point size
+    - style can be changed just like how color() works now
+      except style only lasts until end of element.
+    - need a stack of styles (could be managed in call stack of SummonView)
+  
+  - add data structures for key bindings.  Can be done in python.
+    - make sure select binding uses this new data structure
+
+  - add drag and select
+  
+  - add button blink to SideBar
+  - add Element.set_contents()  
+  - can I add mouse wheele binding?
+  - rename/refactor the Scm interface to 'Pyref'.  Remove Car and Cdr.
+    - should I remain scripting language neutral?
+    - keep Scm, and use lists instead of tuples?
+      - I don't think I use ScmCons much, so this isn't needed.  I think
+  - add direct bitmap screenshot?
+
+
+
+=============================================================================
 Tue Dec 18 15:34:14 EST 2007
 
 - Is the main issue with ZoomClamp is hotspots in them? and text.

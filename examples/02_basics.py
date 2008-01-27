@@ -1,4 +1,3 @@
-#!/usr/bin/python -i
 #!/usr/bin/env python-i
 # SUMMON examples
 # 02_basics.py - transforms and use of python functions

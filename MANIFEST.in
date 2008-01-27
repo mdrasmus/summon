@@ -19,5 +19,4 @@ include bin/summon
 include bin/summatrix
 include bin/sumtree
 include bin/python-i
-prune src/Common/old
 prune src/notes

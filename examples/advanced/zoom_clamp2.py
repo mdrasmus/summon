@@ -16,7 +16,7 @@ for i in xrange(101):
         s = .01 * i
     
         vis.append(translate(i*step, j*step, 
-                             zoom_clamp(colors.red, shapes.regularPoly(10, 5),
+                             zoom_clamp(colors.red, shapes.regular_polygon(0, 0, 10, 5),
                                         minx=s, miny=s, maxx=1, maxy=1)))
 
 win.add_group(group(*vis))

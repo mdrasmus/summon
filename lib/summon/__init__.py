@@ -17,7 +17,7 @@
 import os, sys
 
 from summon.core import *
-from summon import util, select
+from summon import util, select, core
 import summon.svg
 
 import summon_config
@@ -846,7 +846,12 @@ class Window (object):
         return summon_core.clear_binding(self.winid, input_obj)
 
     def set_binding(self, input_obj, func):
-        """bind a function 'func' to an input 'input_obj'"""
+        """
+        bind a function 'func' to an input 'input_obj'
+        
+        'input_obj' must be a summon input such as input_key(), 
+        input_motion(), input_click(), etc.
+        """
         self.clear_binding(input_obj)
         return self.add_binding(input_obj, func)
     
@@ -911,6 +916,11 @@ class Window (object):
     # menu
     
     def set_menu_button(self, button):
+        """sets the mouse button associated with the window's popup menu
+        
+        button can be only of the following: 'left', 'middle', 'right'
+        """
+        
         lookup = {"left": 0,
                   "middle": 1,
                   "right": 2}
@@ -924,6 +934,11 @@ class Window (object):
     
         
     def set_menu(self, menu):
+        """sets the popup menu for the window
+        
+        see Window.set_menu_button() for setting the popup menu mouse button
+        """
+        
         if menu != self.menu and self.menu != None:
             summon_core.detach_menu(self.winid, self.menu.menuid, self.menuButton)
         

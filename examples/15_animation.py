@@ -67,7 +67,7 @@ def drawBall(ball):
     val = (ball.vy + 3) / 6
     vis = translate(ball.x, ball.y,
                     color(val, ball.activate, 1),
-                    shapes.regularPoly(20, ball.size),
+                    shapes.regular_polygon(0, 0, 20, ball.size),
                     hotspot("click", - 2 * ball.size, - 2*ball.size,
                             2*ball.size, 2*ball.size,
                             func))

@@ -64,7 +64,7 @@ def draw_node(node):
             zoom_clamp(
                 colors.blue,
                 scale(size[0], size[1], 
-                      shapes.regularPolygon(0, 0, 20, node_radius)),
+                      shapes.regular_polygon(0, 0, 20, node_radius)),
                 zoom_clamp(
                     colors.white,                         
                     text_scale(name, -label_radius*size[0], -label_radius*size[-1], 

@@ -121,7 +121,7 @@ class Ship (Player):
         # update graphics
         vis = group(translate(self.pos[0], self.pos[1], 
                               color(*self.color), 
-                              shapes.regularPoly(8, self.size)),
+                              shapes.regular_polygon(8, self.size)),
                     ptr)
         
         
