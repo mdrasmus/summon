@@ -1,3 +1,9 @@
+"""
+
+    Summon - SVG output
+
+"""
+
 from summon.core import *
 import summon
 from summon import util, transform

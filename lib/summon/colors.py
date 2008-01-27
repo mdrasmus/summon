@@ -1,3 +1,9 @@
+"""
+
+    Summon - colors modules
+
+"""
+
 import copy
 
 from summon.core import *

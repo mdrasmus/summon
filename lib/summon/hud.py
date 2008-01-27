@@ -1,7 +1,6 @@
 """
 
-    SUMMON
-    Heads Up Display (HUD)
+    SUMMON - Heads Up Display (HUD)
 
     This module contains the interface for a simple implementation of a HUD.
     

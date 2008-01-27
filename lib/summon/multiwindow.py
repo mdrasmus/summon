@@ -1,6 +1,8 @@
-#
-# SUMMON - Multiple Window Management
-#
+"""
+
+ SUMMON - Multiple Window Management
+
+"""
 
 import time
 

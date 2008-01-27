@@ -1,7 +1,8 @@
-#
-# phylogenetic tree visualization
-#
-#
+"""
+
+ Summon - tree visualization
+
+"""
 
 import sys
 import math

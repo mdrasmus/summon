@@ -1,4 +1,7 @@
 include *.txt
+include COPYING
+include COPYING.LESSER
+include README
 include CHANGES
 include INSTALL
 include Makefile

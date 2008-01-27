@@ -1,5 +1,5 @@
 """
-    SUMMON Matrix module
+    SUMMON - Matrix module
     
     Include base class for matrices, functions for reading several matrix 
     formats, and base classes for matrix visualizations.
