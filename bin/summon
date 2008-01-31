@@ -12,6 +12,11 @@
 # python libs
 import sys
 
+if len(sys.argv) > 1 and sys.argv[1] in ("-h", "--help"):
+    print >>sys.stderr, "usage: summon [python script]"
+    sys.exit(1)
+
+
 # summon libs
 import summon
 from summon.core import *
@@ -27,6 +32,7 @@ win = summon.Window()
 
 # execute python file if supplied
 if len(sys.argv) > 1:
+
     script = sys.argv[1]
     
     # adjust command-line arguments

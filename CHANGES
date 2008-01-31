@@ -1,6 +1,10 @@
 SUMMON Change Log
 -----------------
 
+NEXT RELEASE
+- added summon.shapes.message_bubble
+
+
 2008/01/24 - summon-1.8.4
 - changed default keybinding to be more sensible 
   - left click is hotspot activate

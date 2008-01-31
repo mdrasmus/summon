@@ -191,7 +191,7 @@ class Element:
     def append(self, element):
         """Append a drawing element to the children of this element"""
         summon_core.append_group(self.ptr, element)
-        return aGroup
+        return element
     
     def remove(self, *elements):
         """Remove drawing elements from the children of this element"""
