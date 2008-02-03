@@ -205,7 +205,7 @@ class Element:
     
     def remove(self, *elements):
         """Remove drawing elements from the children of this element"""
-        summon_core.remove_group2(self.ptr, *[x.ptr for x in groups])
+        summon_core.remove_group2(self.ptr, *[x.ptr for x in elements])
 
     def replace(self, oldchild, newchild):
         """Replace a child element 'oldchild' with a new child 'newchild'"""

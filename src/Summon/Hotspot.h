@@ -36,7 +36,9 @@ class Hotspot : public Element
 public:
     Hotspot() : 
         Element(HOTSPOT_CONSTRUCT), 
-        m_proc(NULL) 
+        m_proc(NULL),
+        m_givePos(false),
+        m_isDragging(false)
     {}
     
     virtual ~Hotspot()
@@ -79,6 +81,7 @@ public:
 protected:
     CallProcCommand *m_proc;
     bool m_givePos;
+    bool m_isDragging;
 };
 
 

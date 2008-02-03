@@ -97,12 +97,25 @@ Scm Hotspot::GetContents()
 
 bool Hotspot::IsCollide(const Vertex2f &pt, const Camera &camera, int _kind)
 {
+    // cannot collide if click is wrong kind
     if (kind == CLICK && _kind != CLICK)
         return false;
-    if (kind == DRAG && _kind != DRAG && 
-                        _kind != DRAG_START && 
-                        _kind != DRAG_STOP)
-        return false;
+    if (kind == DRAG) {
+        // if hotspot is being dragged then accept these events
+        if (_kind == DRAG)
+            return m_isDragging;
+        
+        // if this is a drag_stop event, stop dragging
+        if (_kind == DRAG_STOP) {
+            bool collide = m_isDragging;
+            m_isDragging = false;
+            return collide;
+        }
+        
+        // don't process anything else otherthan drag_start
+        if (_kind != DRAG_START)
+            return false;
+    }
 
     TransformMatrix tmp;
     const TransformMatrix *matrix = GetTransform(&tmp, camera);
@@ -125,7 +138,12 @@ bool Hotspot::IsCollide(const Vertex2f &pt, const Camera &camera, int _kind)
                      pos2.x*mat[4] + pos1.y*mat[5] + mat[7]);
 
     
-    return InQuad(a, c, b, d, pt);
+    if (InQuad(a, c, b, d, pt)) {
+        // begin a drag
+        if (kind == DRAG && _kind == DRAG_START)
+            m_isDragging = true;
+        return true;
+    }
 }
 
 

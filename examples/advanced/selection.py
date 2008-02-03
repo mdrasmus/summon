@@ -36,10 +36,14 @@ drag = Drag()
 def box(win, pos1, pos2):
     pos1 = list(pos1)
     pos2 = list(pos2)
+    width = abs(pos1[0] - pos2[0])
+    height = abs(pos1[1] - pos2[1])
+    trans = [float(min(pos1[0], pos2[0])),
+             float(min(pos1[1], pos2[1]))]
 
     def func(event, x, y):
         if event == "drag_start":
-            pos[:] = [x, y]
+            pos[:] = [trans[0] + x, trans[1] + y]
         
         elif event == "drag_stop":
             pos[:] = []
@@ -48,20 +52,19 @@ def box(win, pos1, pos2):
         elif event == "drag":
             if len(pos) == 0:
                 return
-            click = [x, y]
+            click = [trans[0] + x, trans[1] + y]
 
             vx = click[0] - pos[0]
             vy = click[1] - pos[1]
             pos[:] = click
-
-            pos1[0] += vx
-            pos1[1] += vy
-            pos2[0] += vx
-            pos2[1] += vy
             
-            g[0] = win.replace_group(g[0], group(
-                   makebox(pos1[0], pos1[1], pos2[0], pos2[1]),
-                   hotspot("drag", pos1[0], pos1[1], pos2[0], pos2[1], func)))
+            trans[0] += vx
+            trans[1] += vy
+            
+            old = g[0].get_parent()
+            old.remove(g[0])
+            win.remove_group(old)
+            win.add_group(translate(trans[0], trans[1], g[0]))
 
     def makebox(x1, y1, x2, y2):
         return group(color(0, 0, 0, .5),
@@ -74,9 +77,9 @@ def box(win, pos1, pos2):
     pos = []        
     g = [None]
     g[0] = group(color(0, 1, 0),
-              makebox(pos1[0], pos1[1], pos2[0], pos2[1]),
-              hotspot("drag", pos1[0], pos1[1], pos2[0], pos2[1], func))
-    return g[0]
+                 makebox(0, 0, width, height),
+                 hotspot("drag", 0, 0, width, height, func))
+    return translate(trans[0], trans[1], g[0])
 
 
 
