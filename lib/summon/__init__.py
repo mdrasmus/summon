@@ -1315,11 +1315,11 @@ class VisObject (object):
     
     def __init__(self):
         self.win = None
-        self.timer = None
+        self.__timer = None
     
     def __del__(self):
-        if _state != None:
-            self.enable_updating(False)
+        if _state != None and self.__timer != None:
+            self.__timer.stop()
     
     def update(self):
         """this function is called from the SUMMER timer"""
@@ -1332,9 +1332,9 @@ class VisObject (object):
         """start/stop this object's update function"""
         
         if enable:
-            self.timer = add_timer(self.update, interval, True, self.win)
+            self.__timer = add_timer(self.update, interval, True, self.win)
         elif self.timer != None:
-            self.timer.stop()   
+            self.__timer.stop()   
     
     
     def get_window(self):
