@@ -17,7 +17,8 @@ import summon
 from summon.core import *
 
 
-_w = summon.get_summon_window
+def _w(): # = summon.get_summon_window
+    return summon.get_windows().next()
 
 #=============================================================================
 # these are wrappers to support the simple global function interface
