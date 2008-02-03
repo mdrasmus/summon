@@ -18,7 +18,7 @@ import os, sys
 from time import time as get_time
 
 from summon.core import *
-from summon import util, select, core
+from summon import util, select, core, multiwindow
 import summon.svg
 
 import summon_config
@@ -341,6 +341,8 @@ class Window (object):
         else:
             self.screen = Model()
         summon_core.assign_model(self.winid, "screen", self.screen.id)
+        
+        self.__splits = set()
         
         # listeners
         self.viewChangeListeners = set()
@@ -957,6 +959,55 @@ class Window (object):
         """returns a new window with same model and properties as this window"""
         
         return DuplicateWindow(self)
+    
+    def split(self, direction="left", width=200):
+        """Split a window into two 'tied' windows"""
+        
+        pos = self.get_position()
+        size = self.get_size()
+        deco = self.get_decoration()
+        x1, y1, x2, y2 = self.get_visible()
+
+        if direction == "left":
+            width2 = width * (x2 - x1) / size[0]
+            dup = DuplicateWindow(self,
+                                 position=[pos[0]-width-deco[0], pos[1]],
+                                 size=[width, size[1]])
+            dup.set_visible(x1-width2, y1, x1, y2, "exact")
+            self.__splits.add(multiwindow.WindowEnsemble([dup, self],
+                stacky=True, sameh=True, tiey=True, piny=True,
+                master=self, close_with_master=False))
+                
+        elif direction == "right":
+            width2 = width * (x2 - x1) / size[0]
+            dup = DuplicateWindow(self,
+                                 position=[pos[0]+size[0]+deco[0], pos[1]],
+                                 size=[width, size[1]])
+            dup.set_visible(x2, y1, x2+width2, y2, "exact")
+            self.__splits.add(multiwindow.WindowEnsemble([self, dup],
+                stacky=True, sameh=True, tiey=True, piny=True,
+                master=self, close_with_master=False))
+                
+        elif direction == "top":
+            width2 = width * (y2 - y1) / size[1]
+            
+            dup = DuplicateWindow(self,
+                                 position=[pos[0], pos[1]-width-deco[1]],
+                                 size=[size[0], width])
+            dup.set_visible(x1, y2, x2, y2+width2, "exact")
+            self.__splits.add(multiwindow.WindowEnsemble([dup, self],
+                stackx=True, samew=True, tiex=True, pinx=True,
+                master=self, close_with_master=False))
+
+        elif direction == "bottom":
+            width2 = width * (y2 - y1) / size[1]
+            dup = DuplicateWindow(self,
+                                 position=[pos[0], pos[1]+size[1]+deco[1]],
+                                 size=[size[0], width])
+            dup.set_visible(x1, y1-width2, x2, y1, "exact")
+            self.__splits.add(multiwindow.WindowEnsemble([self, dup],
+                stackx=True, samew=True, tiex=True, pinx=True,
+                master=self, close_with_master=False))       
         
 
 def copy_window_state(winSrc, winDst):
@@ -983,11 +1034,18 @@ def copy_window_state(winSrc, winDst):
 class DuplicateWindow (Window):
     """Creates a duplicate of another window"""
 
-    def __init__(self, win):
+    def __init__(self, win, name=None, position=None, size=None):
+        if name == None:
+            name = win.get_name()
+        if position == None:
+            position = win.get_position()
+        if size == None:
+            size = win.get_size()    
+        
         Window.__init__(self, 
-                        win.get_name(), 
-                        position=win.get_position(),
-                        size=win.get_size(), 
+                        name, 
+                        position=position,
+                        size=size, 
                         world=win.world, 
                         winconfig=win.winconfig)
         copy_window_state(win, self)
@@ -1286,6 +1344,12 @@ class SummonMenu (Menu):
         self.window_menu = Menu()
         self.window_menu.add_entry("duplicate   (ctrl+d)", win.duplicate)        
         self.window_menu.add_entry("overview   (ctrl+o)", lambda: OverviewWindow(win))
+        self.window_menu.split_menu = Menu()
+        self.window_menu.split_menu.add_entry("left", lambda: win.split("left"))
+        self.window_menu.split_menu.add_entry("right", lambda: win.split("right"))
+        self.window_menu.split_menu.add_entry("top", lambda: win.split("top"))
+        self.window_menu.split_menu.add_entry("bottom", lambda: win.split("bottom"))
+        self.window_menu.add_submenu("Split", self.window_menu.split_menu)
         self.add_submenu("Window", self.window_menu)
 
         # zoom
