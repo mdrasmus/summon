@@ -26,6 +26,7 @@
 
 #include <vector>
 
+
 #define MAX_LINE 40000
 
 const float FLOAT_MIN = -1e307;
@@ -38,6 +39,7 @@ enum {
     LOG2,
     LOG3
 };
+
 
 
 void Log(int level, const char *fmt, ...);
