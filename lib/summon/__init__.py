@@ -867,6 +867,10 @@ class Window (object):
         return summon_core.get_mouse_pos(self.winid, coord)
     
     
+    def hotspot_click(self, x, y):
+        """performs a hotspot click at window position (x, y)"""
+        summon_core.hotspot_click(self.winid, x, y)
+    
     #====================================================================
     # model manipulation (forward to world)
     

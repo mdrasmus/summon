@@ -183,7 +183,7 @@ void GlutController::MouseClick(int button, int state, int x, int y)
     m_state  = state;
     m_mod    = glutGetModifiers();
     
-
+    // determine whether click was the end of a drag
     if (state == GLUT_DOWN) {
         m_drag = false;  // reset drag state
         m_clickStart = MsecTime();
