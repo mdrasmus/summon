@@ -48,7 +48,10 @@ bool Hotspot::Build(int header, const Scm &code)
 
     // parse hotspot kind
     if (kindstr == "click") {
-        kindid = Hotspot::CLICK;
+        kindid = CLICK;
+    } else if (kindstr == "drag") {
+        kindid = DRAG;
+        m_givePos = true; // drag always gives back mouse position
     } else {
         Error("Unknown hotspot type '%s'", kindstr.c_str());
         return false;
@@ -81,6 +84,8 @@ Scm Hotspot::GetContents()
 
     if (kind == CLICK) {
         skind = (char*) "click";
+    } else if (kind == DRAG) {
+        skind = (char*) "drag";
     } else {
         assert(0);
     }
@@ -90,11 +95,25 @@ Scm Hotspot::GetContents()
 }
 
 
-bool Hotspot::IsCollide(const Vertex2f &pt, const Camera &camera)
+bool Hotspot::IsCollide(const Vertex2f &pt, const Camera &camera, int _kind)
 {
+    if (kind == CLICK && _kind != CLICK)
+        return false;
+    if (kind == DRAG && _kind != DRAG && 
+                        _kind != DRAG_START && 
+                        _kind != DRAG_STOP)
+        return false;
+
     TransformMatrix tmp;
     const TransformMatrix *matrix = GetTransform(&tmp, camera);
     const float *mat = matrix->mat;
+
+    // NOTE: the following is equivalent to:
+    //      Vertex2f a, b, c, d;
+    //      matrix->VecMult(pos1.x, pos1.y, &a.x, &a.y);
+    //      matrix->VecMult(pos2.x, pos2.y, &b.x, &b.y);
+    //      matrix->VecMult(pos1.x, pos2.y, &c.x, &c.y);
+    //      matrix->VecMult(pos2.x, pos1.y, &d.x, &d.y);
     
     const Vertex2f a(pos1.x*mat[0] + pos1.y*mat[1] + mat[3],
                      pos1.x*mat[4] + pos1.y*mat[5] + mat[7]);
@@ -105,12 +124,6 @@ bool Hotspot::IsCollide(const Vertex2f &pt, const Camera &camera)
     const Vertex2f d(pos2.x*mat[0] + pos1.y*mat[1] + mat[3],
                      pos2.x*mat[4] + pos1.y*mat[5] + mat[7]);
 
-
-    //Vertex2f a, b, c, d;
-    //matrix->VecMult(pos1.x, pos1.y, &a.x, &a.y);
-    //matrix->VecMult(pos2.x, pos2.y, &b.x, &b.y);
-    //matrix->VecMult(pos1.x, pos2.y, &c.x, &c.y);
-    //matrix->VecMult(pos2.x, pos1.y, &d.x, &d.y);
     
     return InQuad(a, c, b, d, pt);
 }

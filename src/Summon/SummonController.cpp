@@ -26,6 +26,7 @@
 #include "SummonController.h"
 #include "SummonWindow.h"
 #include "Element.h"
+#include "Hotspot.h"
 
 
 namespace Summon
@@ -91,7 +92,23 @@ void SummonController::ExecCommand(Command &command)
             } break;
         
         case HOTSPOT_CLICK_COMMAND:
-            HotspotClick(((HotspotClickCommand*) &command)->pos);
+            HotspotClick(((HotspotClickCommand*) &command)->pos, 
+                         Hotspot::CLICK);
+            break;
+            
+        case HOTSPOT_DRAG_COMMAND:
+            HotspotClick(((HotspotClickCommand*) &command)->pos, 
+                         Hotspot::DRAG);
+            break;
+            
+        case HOTSPOT_DRAG_START_COMMAND:
+            HotspotClick(((HotspotClickCommand*) &command)->pos,
+                         Hotspot::DRAG_START);
+            break;
+            
+        case HOTSPOT_DRAG_STOP_COMMAND:
+            HotspotClick(((HotspotClickCommand*) &command)->pos,
+                         Hotspot::DRAG_STOP);
             break;
         
                 
@@ -132,7 +149,7 @@ void SummonController::ExecCommand(Command &command)
 }
 
 
-void SummonController::HotspotClick(Vertex2i pos)
+void SummonController::HotspotClick(const Vertex2i &pos, int kind)
 {
     bool clicked = false;
 
@@ -144,7 +161,7 @@ void SummonController::HotspotClick(Vertex2i pos)
         // get all commands triggered by this click
         Vertex2i pt = m_view->WindowToScreen(pos.x, pos.y);
         Vertex2f pt2 = Vertex2f(pt.x, pt.y);
-        list<Command*> cmdList = m_screen->HotspotClick(pt2, screenCamera);
+        list<Command*> cmdList = m_screen->HotspotClick(pt2, screenCamera, kind);
 
         // execute and free all commands triggered
         for (list<Command*>::iterator i=cmdList.begin(); i!=cmdList.end(); i++)
@@ -159,7 +176,7 @@ void SummonController::HotspotClick(Vertex2i pos)
     if (m_world && !clicked) {
         // get all commands triggered by this click    
         Vertex2f pt = m_view->WindowToWorld(pos.x, pos.y);
-        list<Command*> cmdList = m_world->HotspotClick(pt, worldCamera);
+        list<Command*> cmdList = m_world->HotspotClick(pt, worldCamera, kind);
         
         // execute and free all commands triggered
         for (list<Command*>::iterator i=cmdList.begin(); i!=cmdList.end(); i++)

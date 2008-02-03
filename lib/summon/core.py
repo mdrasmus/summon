@@ -76,6 +76,16 @@ _INPUT_CLICK_CONSTRUCT = _i.next()
 _INPUT_MOTION_CONSTRUCT = _i.next()
 
 
+# hotspot events
+_int2hotspot_event = [
+    "click",
+    "over", # TODO: future use
+    "out",  # TODO: future use
+    "drag", 
+    "drag_start",
+    "drag_stop"
+]
+
 _INF = float("inf")
 
 #=============================================================================
@@ -232,7 +242,7 @@ class hotspot (Element):
     
     def __init__(self, kind="click", x1=None, y1=None, x2=None, y2=None, 
                  func=None, give_pos=False, **options):
-        """kind     - must be the string "click" (more options in future versions)
+        """kind     - must be one of these strings: "click", "drag"
            x1       - 1st x-coordinate of rectangular region
            y1       - 1st y-coordinate of rectangular region
            x2       - 2nd x-coordinate of rectangular region
@@ -240,10 +250,30 @@ class hotspot (Element):
            func     - callback function of no arguments
            give_pos - a bool determining whether the mouse position should be
                       given to the function 'func'
+          
+          Requirements of callback func:
+          - for hotspot("click", x1, y1, x2, y2, func)
+            func must except no arguments
+            
+          - for hotspot("click", x1, y1, x2, y2, func, give_pos=True)
+            func must except two arguments (x, y) which are the location of
+            the mouse click in local world coordinates
+        
+          - for hotspot("drag", x1, y1, x2, y2, func)
+            func must except three arguments (state, x, y) which are the 
+            location of the mouse click in local world coordinates and the
+            drag event ("drag", "drag_start", "drag_stop")
         """
         
-        Element.__init__(self, _HOTSPOT_CONSTRUCT, 
-                         _tuple(kind, x1, y1, x2, y2, func, give_pos), options)
+        if kind == "drag":
+            def func2(event, x, y):
+                func(_int2hotspot_event[event], x, y)
+            Element.__init__(self, _HOTSPOT_CONSTRUCT, 
+                             _tuple(kind, x1, y1, x2, y2, func2, give_pos), options)
+        else:
+            Element.__init__(self, _HOTSPOT_CONSTRUCT, 
+                             _tuple(kind, x1, y1, x2, y2, func, give_pos), options)
+            
 
 
 def hotspot_custom(kind, x1, y1, x2, y2, detect, func, give_pos=False):

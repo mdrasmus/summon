@@ -57,14 +57,18 @@ public:
     inline CallProcCommand *GetProc()
     { return m_proc; }
     
-    bool IsCollide(const Vertex2f &pt, const Camera &camera);
+    bool IsCollide(const Vertex2f &pt, const Camera &camera, int kind);
     Vertex2f GetLocalPos(const Vertex2f &pos, const Camera &camera);
     bool GivePos() { return m_givePos; }
+    bool GiveKind() { return kind == DRAG; }
     
     enum {
         CLICK,
         OVER,
-        OUT
+        OUT,
+        DRAG,
+        DRAG_START,
+        DRAG_STOP
     };
     
     int kind;
