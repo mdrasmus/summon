@@ -1341,7 +1341,7 @@ class VisObject (object):
         
         if enable:
             self.__timer = add_timer(self.update, interval, True, self.win)
-        elif self.timer != None:
+        elif self.__timer != None:
             self.__timer.stop()   
     
     
