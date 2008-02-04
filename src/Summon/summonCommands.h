@@ -1700,7 +1700,7 @@ public:
     virtual int GetId() { return HOTSPOT_CLICK_COMMAND; }
 
     virtual const char *GetName() { return "hotspot_click"; }
-    virtual const char *GetUsage() { return "cannot be invoked on commandline"; }
+    virtual const char *GetUsage() { return "x, y"; }
     virtual const char *GetDescription() 
     { return "activates a hotspot with a 'click' action"; }
 
@@ -1715,6 +1715,11 @@ public:
         } else if (input.GetId() == SPECIAL_KEY_INPUT) {
             pos = ((SpecialKeyInput*) &input)->pos;
         }
+    }
+    
+    virtual bool Setup(Scm lst)
+    {
+        return ParseScm(lst, "ddd", &windowid, &pos.x, &pos.y);
     }
     
     Vertex2i pos;

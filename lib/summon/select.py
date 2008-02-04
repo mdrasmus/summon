@@ -23,6 +23,7 @@ class Select:
         self.func = func
         self.mindrag = mindrag
         self.coords = coords
+        self.enabled = True
         
         if stroke_color == None:
             if win.get_bgcolor() == (0, 0, 0):
@@ -75,6 +76,10 @@ class Select:
     def drag(self):
         """process drag event"""
         
+        # do nothing if selection is not enabled
+        if not self.enabled:
+            return
+        
         self.pos2 = list(self.win.get_mouse_pos("screen"))
         self.worldpos2 = list(self.win.get_mouse_pos("world"))
         
@@ -125,3 +130,20 @@ class Select:
                 self.func(self.pos1, self.pos2)
             else:
                 raise Exception("Unknown coordinate system '%s'" % self.coords)
+
+
+    def abort(self):
+        """abort a selection in progress"""
+        
+        if self.selbox != None:
+            self.win.screen.remove_group(self.selbox)
+            self.selbox = None
+
+
+    def enable(self, enable=True):
+        """enable/disable selection"""
+        self.enabled = enable
+    
+    def is_enabled(self):
+        """returns True if selection is enabled"""
+        return enabled

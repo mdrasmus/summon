@@ -70,6 +70,7 @@ protected:
     void UpdateRecurse(Element *element);
     void UpdateHotspot(Hotspot *hotspot);
     void RemoveHotspots(Element *elm);
+    void CleanupElement(Element *elm);
 
     inline void ModelChanged()
     {
@@ -77,6 +78,7 @@ protected:
         UpdateViews(cmd);
     }
 
+    void SetRoot(Element *newroot);
 
     int m_id;
     ModelKind m_kind;
