@@ -138,7 +138,7 @@ typedef enum {
 
 
 // glut callbacks
-static void FirstDisplay() {}
+static void FirstDisplay();
 static void FirstReshape(int width, int height);
 static void MenuCallback(int item);
 static void Timer(int value);
@@ -740,7 +740,7 @@ public:
         glutCreateWindow("SUMMON");
         glutDisplayFunc(Summon::FirstDisplay);
         glutReshapeFunc(Summon::FirstReshape);
-        
+        glutReshapeWindow(3*INIT_WINDOW_SIZE, 3*INIT_WINDOW_SIZE);
         
         // aquire the SUMMON lock for this thread
         Lock();
@@ -865,6 +865,12 @@ public:
                 glutTimerFunc(0, Summon::Timer, 0);
             }
         }
+    }
+    
+    
+    void FirstDisplay()
+    {
+        glutReshapeWindow(INIT_WINDOW_SIZE, INIT_WINDOW_SIZE);
     }
     
     //===========================================================
@@ -1117,6 +1123,11 @@ private:
     map<int, Scm> m_menuItems;
 };
 
+
+static void FirstDisplay()
+{
+    g_summon->FirstDisplay();
+}
 
 static void FirstReshape(int width, int height)
 {    
