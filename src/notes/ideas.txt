@@ -1,10 +1,23 @@
 =============================================================================
+Mon Feb  4 14:42:29 EST 2008
+
+- released summon-1.8.5
+  - includes mostly bux fixes
+  - proper replace_group
+  - cleaned up timer code
+
+- dev branch contains new code
+  - added hotspot drag 
+  - added window split
+
+=============================================================================
 Sun Jan 27 12:49:36 EST 2008
 
 - released summon-1.8.4 several days ago
 - what are my new desired features?
 
   - check behavor of text_clip inside of zoom_clamp
+  - can I make a smarter text_clip from zoom_clamp
   
   - make sure SVG is fully up to date
     - get_bounding for SVG
