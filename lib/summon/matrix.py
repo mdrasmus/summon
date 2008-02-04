@@ -925,14 +925,8 @@ class DenseMatrixViewer (MatrixViewer):
     
     def __init__(self, data, colormap=None, 
                  rlabels=None, clabels=None, cutoff=-util.INF,
-                 rperm=[], cperm=[], rpart=None, cpart=None, 
+                 rperm=None, cperm=None, rpart=None, cpart=None, 
                  style="quads", **options):
-                 
-                 #xdir=1, ydir=1, 
-                 #labelPadding=2,
-                 #labelSpacing=4,
-                 #showVals=False,
-                 #valColor=black):
         
         mat = Matrix()
         mat.from2DList(data, cutoff=cutoff)
@@ -951,7 +945,7 @@ class DenseMatrixViewer (MatrixViewer):
     
     def setDenseMatrix(self, data, colormap=None,
                        rlabels=None, clabels=None, cutoff=-util.INF,
-                       rperm=[], cperm=[], rpart=None, cpart=None):
+                       rperm=None, cperm=None, rpart=None, cpart=None):
         """sets a new dense matrix to visualize"""
         
         self.mat = Matrix()
