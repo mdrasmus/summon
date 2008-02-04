@@ -138,7 +138,7 @@ typedef enum {
 
 
 // glut callbacks
-static void FirstDisplay() {}
+static void FirstDisplay();
 static void FirstReshape(int width, int height);
 static void MenuCallback(int item);
 static void Timer(int value);
@@ -867,6 +867,12 @@ public:
         }
     }
     
+    
+    void FirstDisplay()
+    {
+        glutReshapeWindow(INIT_WINDOW_SIZE, INIT_WINDOW_SIZE);
+    }
+    
     //===========================================================
     // GLUT timer callback
     // This function executes periodically to process queued commands
@@ -1117,6 +1123,11 @@ private:
     map<int, Scm> m_menuItems;
 };
 
+
+static void FirstDisplay()
+{
+    g_summon->FirstDisplay();
+}
 
 static void FirstReshape(int width, int height)
 {    
