@@ -5,42 +5,81 @@ import summon
 from summon import shapes, select
 
 
+class Drag (object):
+    def __init__(self):
+        self.state = "none"
+
+    def start(self):
+        self.state = "start"
+        x, y = win.get_mouse_pos("window")
+        win.hotspot_click(int(x), int(y))
+    
+    def done(self):
+        self.state = "done"
+        win.select.enable()
+        x, y = win.get_mouse_pos("window")
+        win.hotspot_click(int(x), int(y))
+    
+    def drag(self):
+        self.state = "drag"
+        x, y = win.get_mouse_pos("window")
+        win.hotspot_click(int(x), int(y))
+        
+
+drag = Drag()
 
 # experimenting with drag
 # I may need to make drag a primitive...
 
+
+
 def box(win, pos1, pos2):
     pos1 = list(pos1)
     pos2 = list(pos2)
+    width = abs(pos1[0] - pos2[0])
+    height = abs(pos1[1] - pos2[1])
+    trans = [float(min(pos1[0], pos2[0])),
+             float(min(pos1[1], pos2[1]))]
 
-    def func():
-        win.drag = True
+    def func(event, x, y):
+        if event == "drag_start":
+            pos[:] = [trans[0] + x, trans[1] + y]
         
-        if pos == []:
-            pos[:] = list(win.get_mouse_pos("world"))
-        else:
-            click = list(win.get_mouse_pos("world"))
+        elif event == "drag_stop":
+            pos[:] = []
+
             
+        elif event == "drag":
+            if len(pos) == 0:
+                return
+            click = [trans[0] + x, trans[1] + y]
+
             vx = click[0] - pos[0]
             vy = click[1] - pos[1]
             pos[:] = click
             
-            pos1[0] += vx
-            pos1[1] += vy
-            pos2[0] += vx
-            pos2[1] += vy
+            trans[0] += vx
+            trans[1] += vy
             
-            g[0] = win.replace_group(g[0], group(color(0, 1, 0),
-                   shapes.box(pos1[0], pos1[1], pos2[0], pos2[1]),
-                   hotspot("click", pos1[0], pos1[1], pos2[0], pos2[1], func)))
-            
+            old = g[0].get_parent()
+            old.remove(g[0])
+            win.remove_group(old)
+            win.add_group(translate(trans[0], trans[1], g[0]))
+
+    def makebox(x1, y1, x2, y2):
+        return group(color(0, 0, 0, .5),
+                     shapes.box(x1+4, y1-4, x2+4, y2-4),
+                     color(0, 1, 0),
+                     shapes.box(x1, y1, x2, y2),
+                     color(1, 1, 1),
+                     shapes.box(x1, y1, x2, y2, fill=False))
 
     pos = []        
     g = [None]
     g[0] = group(color(0, 1, 0),
-              shapes.box(pos1[0], pos1[1], pos2[0], pos2[1]),
-              hotspot("click", pos1[0], pos1[1], pos2[0], pos2[1], func))
-    return g[0]
+                 makebox(0, 0, width, height),
+                 hotspot("drag", 0, 0, width, height, func))
+    return translate(trans[0], trans[1], g[0])
 
 
 
@@ -50,8 +89,9 @@ def selected(pos1, pos2):
 
 win = summon.Window("selection")
 win.drag = False
-win.clear_binding(input_click("middle", "up"))
-win.set_binding(input_motion("middle", "down", "ctrl"), "hotspot_click")
+win.add_binding(input_click("left", "up", "shift"), "hotspot_drag_stop")
+win.add_binding(input_click("left", "down", "shift"), "hotspot_drag_start")
+win.add_binding(input_motion("left", "down", "shift"), "hotspot_drag")
 win.select.set_callback(selected)
 #sel = select.Select(win, selected, strokeColor=(1, .5, 1, .8), 
 #                         fillColor=(0, .5, 1, .5))

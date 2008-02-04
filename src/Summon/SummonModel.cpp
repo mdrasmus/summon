@@ -37,13 +37,12 @@ namespace Summon
 SummonModel::SummonModel(int id, ModelKind kind) :
     m_id(id),
     m_kind(kind),
+    m_root(NULL),    
     m_hotspotClickSet(1000)
 {
-    m_root = new Group();
-    m_root->SetModel(this);
-    m_root->IncRef();
+    SetRoot(new Group());
     Update();
-}    
+}
 
 
 void SummonModel::ExecCommand(Command &command)
@@ -123,7 +122,8 @@ void SummonModel::ExecCommand(Command &command)
 
 // This function is called when a HotspotClick command is executed
 // Checks to see if any hotspots have been activated
-list<Command*> SummonModel::HotspotClick(Vertex2f pos, const Camera camera)
+list<Command*> SummonModel::HotspotClick(Vertex2f pos, const Camera camera, 
+                                         int kind)
 {
     list<Command*> cmds;
     
@@ -132,15 +132,18 @@ list<Command*> SummonModel::HotspotClick(Vertex2f pos, const Camera camera)
     {
         Hotspot *hotspot = (*i);
     
-        if (hotspot->IsCollide(pos, camera)) {
-            // TODO: add function for passing click pos as argument to 
-            // proc command
+        if (hotspot->IsCollide(pos, camera, kind)) {
             CallProcCommand *cmd = (CallProcCommand*) hotspot->GetProc()->Create();
             
             if (hotspot->GivePos()) {
                 Vertex2f pos2 = hotspot->GetLocalPos(pos, camera);
-                Scm mousePos = BuildScm("ff", pos2.x, pos2.y);
-                cmd->args = mousePos;
+                Scm args;
+                
+                if (hotspot->GiveKind()) {
+                    cmd->args = BuildScm("dff", kind, pos2.x, pos2.y);
+                } else {
+                    cmd->args = BuildScm("ff", pos2.x, pos2.y);
+                }
             } else {
                 cmd->args = Scm_EOL;
             }
@@ -151,6 +154,24 @@ list<Command*> SummonModel::HotspotClick(Vertex2f pos, const Camera camera)
     return cmds;
 }
 
+
+void SummonModel::SetRoot(Element *newroot)
+{
+    // if newroot is already root, do nothing
+    if (newroot == m_root)
+        return;
+    
+    // remove old root
+    if (m_root) {
+        m_root->DecRef();
+        CleanupElement(m_root);
+    }
+    
+    // set new root
+    m_root = newroot;
+    m_root->SetModel(this);
+    m_root->IncRef();
+}
 
 
 Element *SummonModel::AddElement(Element *parent, Scm code)
@@ -178,44 +199,91 @@ Element *SummonModel::AddElement(Element *parent, Scm code)
 }
 
 
+Element *SummonModel::ReplaceElement(Element *oldelm, Scm code)
+{
+    Element *elm = GetElementFromObject(code);
+    
+    // verify that this is a group
+    if (!elm) {
+        Error("cannot add graphical element, it is invalid.");
+        return NULL;
+    }
+    
+    if (ReplaceElement(oldelm, elm))
+        return elm;
+    else
+        return NULL;
+}
+
+
 bool SummonModel::ReplaceElement(Element *oldelm, Element *newelm)
 {
     // TODO: fix
+
+    if (newelm->GetParent() != NULL) {
+        Error("element already has parent.");
+        return NULL;
+    }
+
+    // handle case where root is replaced
+    if (oldelm == m_root) {
+        SetRoot(newelm);
+        Update(newelm);
+        return true;
+    }
+
     Element *parent = oldelm->GetParent();
     
     if (parent == NULL) {
-        Error("cannot replace root element");
+        Error("cannot replace element without parent");
         return false;
     }
     
-    // remove old element
-    if (!RemoveElement(oldelm))
-        return false;
-    parent->AddChild(newelm);
+    parent->ReplaceChild(oldelm, newelm);
+    CleanupElement(oldelm);
     Update(newelm);
     
     return true;
 }
 
 
-Element *SummonModel::ReplaceElement(Element *oldelm, Scm code)
+bool SummonModel::RemoveElement(Element *elm)
 {
-    // TODO: fix
-    Element *parent = oldelm->GetParent();
+    if (elm->GetModel() != this) {
+        Error("element is not in model");
+        return false;
+    }
+
+    Element *parent = elm->GetParent();
     
-    if (parent == NULL) {
-        Error("cannot replace root element");
-        return NULL;
+    // notify parent
+    if (parent) {
+        parent->RemoveChild(elm);
+        Update(parent);
+        CleanupElement(elm);
+    } else {
+        // if no parent then we must be the root
+        assert(elm == m_root);
+    
+        // make sure model always has a root
+        SetRoot(new Group());
+        Update();
     }
     
-    // remove old element
-    if (!RemoveElement(oldelm))
-        return NULL;
-    Element *elm = AddElement(parent, code);
-    
-    return elm;
+    return true;
 }
 
+
+void SummonModel::CleanupElement(Element *elm)
+{
+    // remove any hotspots underneath this group
+    RemoveHotspots(elm);
+    elm->SetModel(NULL);    
+    
+    // delete only if it is not referenced by python
+    if (!elm->IsReferenced())
+        delete elm;
+}
 
 
 void SummonModel::Update(Element *element)
@@ -261,43 +329,6 @@ void SummonModel::UpdateHotspot(Hotspot *hotspot)
     }
 }
 
-
-
-bool SummonModel::RemoveElement(Element *elm)
-{
-    if (elm->GetModel() != this) {
-        Error("element is not in model");
-        return false;
-    }
-
-    Element *parent = elm->GetParent();
-    
-    // notify parent
-    if (parent)
-        parent->RemoveChild(elm);
-
-    // remove any hotspots underneath this group
-    RemoveHotspots(elm);
-    elm->SetModel(NULL);
-
-    // make sure model always has a root
-    if (elm == m_root) {
-        elm->DecRef();
-        m_root = new Group();
-        m_root->SetModel(this);
-        m_root->IncRef();
-        Update();
-    } else {
-        assert(parent);
-        Update(parent);
-    }
-    
-    // delete only if it is not referenced by python
-    if (!elm->IsReferenced())
-        delete elm;
-    
-    return true;
-}
 
 
         

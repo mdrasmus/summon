@@ -31,6 +31,14 @@
 namespace Summon
 {
 
+long MsecTime()
+{
+	struct timeval time;
+	gettimeofday(&time, NULL);
+	return time.tv_sec * 1000 + time.tv_usec / 1000;
+}
+
+
 std::vector<GlutController*> g_controllers;
 
 
@@ -38,13 +46,14 @@ GlutController::GlutController(int window):
     m_button(0),
     m_state(GLUT_UP),
     m_mod(0),
+    m_clickTime(150),
     m_drag(false)
 {
     if ((unsigned int) window >= g_controllers.size()) {
         g_controllers.resize(window+1);
     }
     g_controllers[window] = this;
-
+    
     // register callbacks
     glutKeyboardFunc(GlutController::GlutKey);
     glutSpecialFunc(GlutController::GlutSpecialKey);
@@ -145,8 +154,6 @@ void GlutController::Motion(int x, int y)
     input.button = m_button;
     input.state  = m_state;
     input.mod    = m_mod;
-    
-    m_drag = true;
 
     ProcessInput(input);
 
@@ -175,13 +182,20 @@ void GlutController::MouseClick(int button, int state, int x, int y)
     m_button = button;
     m_state  = state;
     m_mod    = glutGetModifiers();
-
+    
+    // determine whether click was the end of a drag
     if (state == GLUT_DOWN) {
         m_drag = false;  // reset drag state
+        m_clickStart = MsecTime();
+    } else {
+        if (m_clickStart + m_clickTime < MsecTime()) {
+            m_drag = true;
+        }
     }
+    
 
     MouseClickInput input;
-    input.pos    = Vertex2i(x, y);
+    input.pos.Set(x, y);
     input.button = m_button;
     input.state  = m_state;
     input.mod    = m_mod; 

@@ -43,7 +43,12 @@ public:
     template <class T2>
     Vertex2(const Vertex2<T> &v) :
         x(T(v.x)), y(T(v.y)) {}
-   
+    
+    void Set(T _x, T _y) {
+        x = _x;
+        y = _y;
+    }
+    
     float Norm() const {
         return sqrt(x*x + y*y);
     }

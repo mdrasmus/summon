@@ -15,9 +15,10 @@
 """
 
 import os, sys
+from time import time as get_time
 
 from summon.core import *
-from summon import util, select, core
+from summon import util, select, core, multiwindow
 import summon.svg
 
 import summon_config
@@ -39,9 +40,7 @@ VERSION_INFO = """\
 def version():
     print VERSION_INFO
 
-def timer_call(delay, func):
-    """calls a function 'func' after 'delay' seconds have past"""
-    summon_core.timer_call(delay, func)
+
 
 
 #=============================================================================S
@@ -60,7 +59,7 @@ class SummonState (object):
         self.current_window = None
         self.windows = {}
         self.models = {}
-        self.timer = SummonTimer()
+        self.timer = TimerDispatch()
         
     
     def add_window(self, win):
@@ -83,12 +82,163 @@ class SummonState (object):
         summon_core.del_model(model.id)
         if model.id in self.models:
             del self.models[model.id]
-
+    
     def get_model(self, modelid):
         if modelid in self.models:
             return self.models[modelid]
         else:
             return None
+    
+    def _on_window_close(self, winid):
+        self.windows[winid]._on_close()
+
+
+#=============================================================================
+# timer interface
+#
+
+class Timer:
+    def __init__(self, dispatch, func, interval=None, repeat=True, window=None):
+        self._dispatch = dispatch
+        self._func = func
+        self._win = window
+        self._interval = interval
+        self._repeat = repeat
+        self._deadline = get_time() + interval
+        self._enabled = True
+
+    def start(self):
+        if not self.enabled:
+            self._enabled = True
+            self._dispatch.add_timer(self)
+
+    def stop(self):
+        if self._enabled:
+            self._enabled = False
+            self._dispatch.remove_timer(self)
+        
+    def set_interval(self, interval):
+        self._interval = interval
+    
+    def get_interval(self):
+        return self._interval
+    
+    def reset(self, now):
+        if self._repeat:
+            self._deadline = now + self._interval
+            return True
+        else:
+            self._deadline = util.INF
+            return False
+    
+    def get_delay(self, now):
+        return self._deadline - now
+    
+    def is_expired(self, now):
+        return self._deadline < now
+    
+    def set_repeating(self, repeat):
+        self._repeat = repeat
+    
+    def is_repeating(self):
+        return self._repeat
+    
+    def call(self):
+        self._func()
+    
+    def is_win_open(self):
+        return self._win == None or self._win.is_open()
+
+
+class TimerDispatch:
+    """
+    SUMMON provides a timer that calls a python function of your choice at
+    regular intervals.  The following functions provide an interface to the
+    SUMMON timer.
+
+    """
+
+    def __init__(self):
+        self.timers = []
+        self.default_interval = .5
+        self.timestep = 0
+        
+    
+    def add_timer(self, func, interval=None, repeat=True, window=None):
+        """
+        adds a function of no arguments to the list of functions called by SUMMON
+        at regular intervals
+        """
+        if interval == None:
+            interval = self.default_interval
+        timer = Timer(self, func, interval, repeat, window)
+        self.timers.append(timer)
+        self.start()
+        return timer
+        
+
+    def remove_timer(self, timer):
+        """
+        removes a timer from the list of SUMMON timer functions
+        """
+        self.timers.remove(timer)
+    
+    
+    def set_default_interval(self, secs):
+        """sets the default timer interval"""
+        self.default_interval = secs
+
+    
+    def start(self):
+        """starts the SUMMON timer"""
+        
+        dels = set()
+        
+        now = get_time()
+        
+        # call each timer that has past
+        mindelay = util.INF
+        for timer in self.timers:
+            if timer.is_win_open():
+                # process timer if window is ok (open)
+                
+                if timer.is_expired(now):
+                    # call user function
+                    try:
+                        timer.call()
+                    except Exception, e:
+                        print "exception in SUMMON timer:", e
+                    
+                    # reset timer
+                    if not timer.reset(now):
+                        # delete timer
+                        dels.add(timer)
+                
+                mindelay = min(mindelay, timer.get_delay(now))
+            else:
+                # remove functions of closed windows
+                dels.add(timer)
+
+        # remove closed windows
+        for d in dels:
+            self.timers.remove(d)
+        
+        # setup next call
+        if mindelay < util.INF:
+            summon_core.timer_call(max(0, mindelay), self.start)
+    
+    
+    def stop(self):
+        """stops the SUMMON timer"""
+        summon_core.timer_call(0, lambda :None)
+
+
+#=============================================================================
+# module interface 
+
+# global singleton
+_state = SummonState()
+        
 
 def get_windows():
     """returns the currently open windows"""
@@ -106,15 +256,8 @@ def get_summon_state():
     """returns the summon state singleton"""
     return _state
 
-
-def get_summon_window():
-    """DEPRECATED: returns the currently active summon window"""
-    return _state.current_window
-
 # install summon window close callback for communication between C++ and python
-def _window_close_callback(winid):
-    _state.windows[winid]._on_close()
-summon_core.set_window_close_callback(_window_close_callback)
+summon_core.set_window_close_callback(_state._on_window_close)
 
 
 # window decoration
@@ -127,155 +270,9 @@ def set_window_decoration(xoffset, yoffset):
     _window_decoration = (xoffset, yoffset)
 
 
-
-#=============================================================================
-# Dynamic updating interface
-#
-
-class FunctionTimer:
-    def __init__(self, func, win, interval=None, repeat=True):
-        self.func = func
-        self.win = win
-        self.interval = interval
-        self.repeat = True
-        self.delay = interval
-
-
-class SummonTimer:
-    """
-    SUMMON provides a timer that calls a python function of your choice at
-    regular intervals.  The following functions provide an interface to the
-    SUMMON timer.
-
-    """
-
-    def __init__(self):
-        self.updateFuncs = []
-        self.updateInterval = .5
-        self.timestep = 0
-        
-    
-    def add_update_func(self, func, win, interval=None):
-        """
-        adds a function of no arguments to the list of functions called by SUMMON
-        at regular intervals
-        """
-        if interval == None:
-            interval = self.updateInterval
-        self.updateFuncs.append(FunctionTimer(func, win, interval))
-
-    def remove_update_func(self, func):
-        """
-        removes a function from the list of SUMMON timer functions
-        """
-        self.updateFuncs = filter(lambda x: x.func != func, self.updateFuncs)
-    
-    
-    def is_update_func(self, func):
-        """returns True if 'func' is currently registered as a SUMMON timer function"""
-        return func in (x.func for x in self.updateFuncs)
-
-
-    def get_update_funcs(self):
-        """returns all functions registered as SUMMON timer functions"""
-        return self.updateFuncs
-
-    
-    def set_update_interval(self, secs):
-        """sets the timer interval between calls the to the timer function"""
-        self.updateInterval = secs
-
-    
-    def begin_updating(self):
-        """starts the SUMMON timer"""
-        
-        dels = set()
-        
-        # call each timer that has past
-        mindelay = util.INF
-        for timer in self.updateFuncs:
-            if timer.win.is_open():
-                # process timer if window is open
-                timer.delay -= self.timestep
-                
-                if timer.delay <= 0:
-                    # call user function
-                    try:
-                        timer.func()
-                    except Exception, e:
-                        print "exception in SUMMON timer:", e
-                    
-                    if timer.repeat:
-                        # reset timer
-                        timer.delay = timer.interval
-                    else:
-                        timer.delay = util.INF
-                        # delete timer
-                        dels.add(timer)
-                
-                mindelay = min(mindelay, timer.delay)
-            else:
-                # remove functions of closed windows
-                dels.add(timer)
-
-        # remove closed windows
-        if len(dels) > 0:
-            self.updateFuncs = filter(lambda x: x not in dels, self.updateFuncs)
-        
-        
-        # setup next call
-        if mindelay < util.INF:
-            self.timestep = mindelay
-            summon_core.timer_call(self.timestep, self.begin_updating)
-    
-    
-    def stop_updating(self):
-        """stops the SUMMON timer"""
-        summon_core.timer_call(0, lambda :None)
-
-
-
-##
-# module function interface
-#    
-
-def add_update_func(func, win, interval=None):
-    """
-    adds a function of no arguments to the list of functions called by SUMMON
-    at regular intervals
-    """
-    _state.timer.add_update_func(func, win, interval)
-
-
-def remove_update_func(func):
-    """
-    removes a function from the list of SUMMON timer functions
-    """
-    _state.timer.remove_update_func(func)
-
-
-def is_update_func(func):
-    """returns True if 'func' is currently registered as a SUMMON timer function"""
-    return _state.timer.is_update_func(func)
-
-
-def get_update_funcs():
-    """returns all functions registered as SUMMON timer functions"""
-    return _state.timer.updateFuncs
-
-def set_update_interval(secs):
-    """sets the timer interval between calls the to the timer function"""
-    _state.timer.set_update_interval(secs)
-
-
-def begin_updating():
-    """starts the SUMMON timer"""
-    _state.timer.begin_updating()
-    
-def stop_updating():
-    """stops the SUMMON timer"""
-    _state.timer.stop_updating()
-
+def add_timer(func, interval=None, repeat=True, window=None):
+    """Returns a new SUMMON timer that will call"""
+    return _state.timer.add_timer(func, interval, repeat, window=window)
 
 
 
@@ -345,6 +342,8 @@ class Window (object):
             self.screen = Model()
         summon_core.assign_model(self.winid, "screen", self.screen.id)
         
+        self.__splits = set()
+        
         # listeners
         self.viewChangeListeners = set()
         self.focusChangeListeners = set()
@@ -399,7 +398,7 @@ class Window (object):
         
         if "HOME" in os.environ:
             # look for config in HOME directory
-        
+            
             config_file = os.path.join(os.environ["HOME"], ".summon_config")
             if os.path.exists(config_file):
                 # execute config file
@@ -441,16 +440,19 @@ class Window (object):
     def close(self):
         """close the window"""
         
+        if not self.opened:
+            return
+        
         # immediately record locally that window is closed
         self.opened = False
         try:
-            ret = summon_core.close_window(self.winid)
+            summon_core.close_window(self.winid)
         except:
             pass
         
         # self._on_close() will get called back through the C++ module
         # letting us know the window is truely closed
-        return ret
+        return
     
     def _on_close(self):
         """a callback for window close events"""
@@ -870,6 +872,10 @@ class Window (object):
         return summon_core.get_mouse_pos(self.winid, coord)
     
     
+    def hotspot_click(self, x, y):
+        """performs a hotspot click at window position (x, y)"""
+        summon_core.hotspot_click(self.winid, x, y)
+    
     #====================================================================
     # model manipulation (forward to world)
     
@@ -905,12 +911,8 @@ class Window (object):
     def get_root(self):
         """get the root group of the window's 'world' model"""
         return self.world.get_root()
-    
-    # DEPRECATED
-    def get_root_id(self):
-        """get the root group of the window's 'world' model"""
-        return self.world.get_root_id()
-    
+
+
     
     #====================================================================
     # menu
@@ -960,9 +962,58 @@ class Window (object):
         """returns a new window with same model and properties as this window"""
         
         return DuplicateWindow(self)
+    
+    def split(self, direction="left", width=200):
+        """Split a window into two 'tied' windows"""
+        
+        pos = self.get_position()
+        size = self.get_size()
+        deco = self.get_decoration()
+        x1, y1, x2, y2 = self.get_visible()
+
+        if direction == "left":
+            width2 = width * (x2 - x1) / size[0]
+            dup = DuplicateWindow(self,
+                                 position=[pos[0]-width-deco[0], pos[1]],
+                                 size=[width, size[1]])
+            dup.set_visible(x1-width2, y1, x1, y2, "exact")
+            self.__splits.add(multiwindow.WindowEnsemble([dup, self],
+                stacky=True, sameh=True, tiey=True, piny=True,
+                master=self, close_with_master=False))
+                
+        elif direction == "right":
+            width2 = width * (x2 - x1) / size[0]
+            dup = DuplicateWindow(self,
+                                 position=[pos[0]+size[0]+deco[0], pos[1]],
+                                 size=[width, size[1]])
+            dup.set_visible(x2, y1, x2+width2, y2, "exact")
+            self.__splits.add(multiwindow.WindowEnsemble([self, dup],
+                stacky=True, sameh=True, tiey=True, piny=True,
+                master=self, close_with_master=False))
+                
+        elif direction == "top":
+            width2 = width * (y2 - y1) / size[1]
+            
+            dup = DuplicateWindow(self,
+                                 position=[pos[0], pos[1]-width-deco[1]],
+                                 size=[size[0], width])
+            dup.set_visible(x1, y2, x2, y2+width2, "exact")
+            self.__splits.add(multiwindow.WindowEnsemble([dup, self],
+                stackx=True, samew=True, tiex=True, pinx=True,
+                master=self, close_with_master=False))
+
+        elif direction == "bottom":
+            width2 = width * (y2 - y1) / size[1]
+            dup = DuplicateWindow(self,
+                                 position=[pos[0], pos[1]+size[1]+deco[1]],
+                                 size=[size[0], width])
+            dup.set_visible(x1, y1-width2, x2, y1, "exact")
+            self.__splits.add(multiwindow.WindowEnsemble([self, dup],
+                stackx=True, samew=True, tiex=True, pinx=True,
+                master=self, close_with_master=False))       
         
 
-def copyWindowState(winSrc, winDst):
+def copy_window_state(winSrc, winDst):
     """Copies the state of one window to another"""
     
     # get source window, model, and visible
@@ -986,14 +1037,21 @@ def copyWindowState(winSrc, winDst):
 class DuplicateWindow (Window):
     """Creates a duplicate of another window"""
 
-    def __init__(self, win):
+    def __init__(self, win, name=None, position=None, size=None):
+        if name == None:
+            name = win.get_name()
+        if position == None:
+            position = win.get_position()
+        if size == None:
+            size = win.get_size()    
+        
         Window.__init__(self, 
-                        win.get_name(), 
-                        position=win.get_position(),
-                        size=win.get_size(), 
+                        name, 
+                        position=position,
+                        size=size, 
                         world=win.world, 
                         winconfig=win.winconfig)
-        copyWindowState(win, self)
+        copy_window_state(win, self)
 
 
 class OverviewWindow (DuplicateWindow):
@@ -1071,31 +1129,6 @@ class OverviewWindow (DuplicateWindow):
         self.frameVis = self.screen.replace_group(self.frameVis, vis)
         
 
-#=============================================================================
-# coordinate system conversions
-
-
-def world2screen(pt, trans, zoom, focus):
-    """converts a world point to a screen point"""
-    return [trans[0] + focus[0] + zoom[0] * (pt[0] - focus[0]),
-            trans[1] + focus[1] + zoom[1] * (pt[1] - focus[1])]
-
-
-def window2screen(pt, win_height):
-    """converts a window point to a screen point"""
-    return Vertex2i(pt[0], win_height - pt[1])
-
-def screen2world(pt, trans, zoom, focus):
-    """converts a screen point to a world point"""
-    return [(pt[0] - trans[0] - focus[0]) / zoom[0] + focus[0],
-            (pt[1] - trans[1] - focus[1]) / zoom[1] + focus[1]]
-
-
-def window2world(pt, trans, zoom, focus, win_height):
-    """converts a window to a world point"""
-    return [(pt[0] - trans[0] - focus[0]) / zoom[0] + focus[0],
-            (win_height - p[1] - trans[1] - focus[1]) / zoom[1] + focus[1]]
-        
 
 class Model (object):
     """A Model contains graphics for display.
@@ -1159,10 +1192,9 @@ class Model (object):
             aGroup = self.get_root()
         return summon_core.get_bounding(self.id, aGroup.ptr)
     
-    
-    # DEPRECATED
-    def get_root_id(self):
-        return group(ref=summon_core.get_root_id(self.id))
+
+#=============================================================================
+# Menus
 
 
 class MenuItem (object):
@@ -1305,8 +1337,6 @@ class Menu (object):
     
 
 
-
-
 class SummonMenu (Menu):
     """Default SUMMON menu"""
     
@@ -1317,6 +1347,12 @@ class SummonMenu (Menu):
         self.window_menu = Menu()
         self.window_menu.add_entry("duplicate   (ctrl+d)", win.duplicate)        
         self.window_menu.add_entry("overview   (ctrl+o)", lambda: OverviewWindow(win))
+        self.window_menu.split_menu = Menu()
+        self.window_menu.split_menu.add_entry("left", lambda: win.split("left"))
+        self.window_menu.split_menu.add_entry("right", lambda: win.split("right"))
+        self.window_menu.split_menu.add_entry("top", lambda: win.split("top"))
+        self.window_menu.split_menu.add_entry("bottom", lambda: win.split("bottom"))
+        self.window_menu.add_submenu("Split", self.window_menu.split_menu)
         self.add_submenu("Window", self.window_menu)
 
         # zoom
@@ -1342,15 +1378,19 @@ class SummonMenu (Menu):
         self.add_entry("close   (q)", win.close)
 
 
+#=============================================================================
+# Dynamic updating 
+
 class VisObject (object):
     """Base class of dynamic visualization objects"""
     
     def __init__(self):
         self.win = None
+        self.__timer = None
     
     def __del__(self):
-        if _state != None:
-            self.enableUpdating(False)
+        if _state != None and self.__timer != None:
+            self.__timer.stop()
     
     def update(self):
         """this function is called from the SUMMER timer"""
@@ -1359,19 +1399,13 @@ class VisObject (object):
     def show(self):
         pass
     
-    def enable_updating(self, visible=True, interval=None):
-        """add/remove this object's update function to/from the SUMMON timer"""
-        if visible:    
-            if not is_update_func(self.update):
-                assert self.win != None, "must set window"
-                add_update_func(self.update, self.win, interval)
-        else:
-            if is_update_func(self.update):
-                remove_update_func(self.update)
-    
-    # temporary backwards compatibility
-    setVisible = enable_updating
-    enableUpdating = enable_updating
+    def enable_updating(self, enable=True, interval=None):
+        """start/stop this object's update function"""
+        
+        if enable:
+            self.__timer = add_timer(self.update, interval, True, self.win)
+        elif self.__timer != None:
+            self.__timer.stop()   
     
     
     def get_window(self):
@@ -1382,10 +1416,36 @@ class VisObject (object):
 
 
 
+
+#=============================================================================
+# coordinate system conversions
+
+
+def world2screen(pt, trans, zoom, focus):
+    """converts a world point to a screen point"""
+    return [trans[0] + focus[0] + zoom[0] * (pt[0] - focus[0]),
+            trans[1] + focus[1] + zoom[1] * (pt[1] - focus[1])]
+
+
+def window2screen(pt, win_height):
+    """converts a window point to a screen point"""
+    return Vertex2i(pt[0], win_height - pt[1])
+
+def screen2world(pt, trans, zoom, focus):
+    """converts a screen point to a world point"""
+    return [(pt[0] - trans[0] - focus[0]) / zoom[0] + focus[0],
+            (pt[1] - trans[1] - focus[1]) / zoom[1] + focus[1]]
+
+
+def window2world(pt, trans, zoom, focus, win_height):
+    """converts a window to a world point"""
+    return [(pt[0] - trans[0] - focus[0]) / zoom[0] + focus[0],
+            (win_height - p[1] - trans[1] - focus[1]) / zoom[1] + focus[1]]
+
+
 #=============================================================================
 # functions for iterating and inspecting graphical elements
 #
-
 
 def iter_vertices(elm, curcolor=None):
     """iterates through the vertices of a graphic"""
@@ -1442,9 +1502,6 @@ def iter_vertices(elm, curcolor=None):
     
 
 
-#=============================================================================
-# global singleton
-_state = SummonState()
 
 
 #=============================================================================

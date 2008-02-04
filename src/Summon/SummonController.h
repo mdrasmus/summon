@@ -31,6 +31,7 @@
 #include "SummonView.h"
 
 
+
 namespace Summon
 {
 
@@ -43,7 +44,6 @@ public:
     virtual ~SummonController();
    
     void ExecCommand(Command &command);
-    void HotspotClick(Vertex2i pos);
    
     inline void SetWorldModel(SummonModel *model) { m_world = model; }
     inline void SetScreenModel(SummonModel *model) { m_screen = model; }    
@@ -57,6 +57,7 @@ public:
 
    
 protected:
+    void HotspotClick(const Vertex2i &pos, int kind);
 
     CommandExecutor *m_global;
     SummonView *m_view;

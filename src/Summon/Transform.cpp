@@ -92,8 +92,10 @@ bool Transform::Build(int header, const Scm &code)
             Scm first  = code.GetScm(0);
             Scm second = code.GetScm(1);
 
-            if (!ScmFloatp(first) || !ScmFloatp(second))
+            if (!ScmFloatp(first) || !ScmFloatp(second)) {
+                Error("Expected first and second arguments to be floats");
                 return false;
+            }
 
             Set(m_kind, Scm2Float(first), Scm2Float(second));
 
@@ -104,8 +106,10 @@ bool Transform::Build(int header, const Scm &code)
         case ROTATE_CONSTRUCT: {
             Scm first  = code.GetScm(0);
 
-            if (!ScmFloatp(first))
+            if (!ScmFloatp(first)) {
+                Error("Expected first argument to be a float");
                 return false;
+            }
             
             Set(m_kind, Scm2Float(first));
 

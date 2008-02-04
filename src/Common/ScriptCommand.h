@@ -38,7 +38,7 @@ public:
     ScriptCommand() : m_return(Scm_NONE) {}
     virtual ~ScriptCommand() {}
 
-    virtual bool Setup(Scm lst) { return true; }
+    virtual bool Setup(const Scm &lst) { return true; }
     
     inline void SetReturn(Scm scm) { m_return = scm; }
     inline Scm GetReturn() { return m_return; }

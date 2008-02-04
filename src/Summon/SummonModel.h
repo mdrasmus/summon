@@ -60,7 +60,7 @@ public:
     void Update(Element *element=NULL);
 
     // model queries
-    list<Command*> HotspotClick(Vertex2f pos, const Camera camera);    
+    list<Command*> HotspotClick(Vertex2f pos, const Camera camera, int kind);
     void FindBounding(Element *elm, Vertex2f *pos1, Vertex2f *pos2);
     inline Element *GetRoot()
     { return m_root; }
@@ -70,6 +70,7 @@ protected:
     void UpdateRecurse(Element *element);
     void UpdateHotspot(Hotspot *hotspot);
     void RemoveHotspots(Element *elm);
+    void CleanupElement(Element *elm);
 
     inline void ModelChanged()
     {
@@ -77,6 +78,7 @@ protected:
         UpdateViews(cmd);
     }
 
+    void SetRoot(Element *newroot);
 
     int m_id;
     ModelKind m_kind;

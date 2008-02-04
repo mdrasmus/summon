@@ -121,7 +121,7 @@ class Ship (Player):
         # update graphics
         vis = group(translate(self.pos[0], self.pos[1], 
                               color(*self.color), 
-                              shapes.regular_polygon(8, self.size)),
+                              shapes.regular_polygon(0, 0, 8, self.size)),
                     ptr)
         
         
@@ -233,7 +233,7 @@ class Game (summon.VisObject):
         
         self.update()
         self.win.home()
-        self.enableUpdating(interval=.000)
+        self.enable_updating(interval=.000)
         
         
     def add_actor(self, actor):
@@ -260,4 +260,4 @@ for i in xrange(500):
 
 
 game.show()
-summon.begin_updating()
+
