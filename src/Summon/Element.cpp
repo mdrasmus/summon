@@ -129,6 +129,40 @@ Element *Element::AddChild(Scm code)
     return elm;
 }
 
+void Element::ReplaceChild(Element *oldchild, Element *newchild) {
+    for (Element::Iterator i=Begin(); i!=End(); i++) {
+        if (*i == oldchild) {
+            m_children.insert(i, newchild);
+            newchild->SetParent(this);
+            newchild->IncRef();
+            m_children.erase(i);
+            oldchild->SetParent(NULL);
+            oldchild->DecRef();
+            return;
+        }
+    }
+    
+    // should not get here, oldchild must be present
+    assert (0);
+}
+
+Element *Element::ReplaceChild(Element *oldchild, Scm code) {
+    Element *elm = GetElementFromObject(code);
+
+    // if error with child, report error
+    if (!elm)
+        return NULL;
+
+    // ensure elements are not added twice
+    if (elm->GetParent() != NULL) {
+        Error("element already has parent.");
+        return NULL;
+    }    
+    
+    ReplaceChild(oldchild, elm);
+    return elm;
+}
+
 Scm Element::GetContents()
 {
     return Scm_EOL;

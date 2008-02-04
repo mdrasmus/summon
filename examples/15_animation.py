@@ -11,7 +11,7 @@ import summon
 
 
 # parameters (feel free to change these here and WHILE the animation is running!)
-rate = 1/70.0
+rate = 1/60.0
 winsize = 300
 maxballsize = 20
 balls = []
@@ -76,8 +76,20 @@ def drawBall(ball):
     else:
         ball.group = win.replace_group(ball.group, vis)
 
+last = summon.get_time()
+frames = 0
 
 def drawFrame():
+    global last, frames
+    
+    frames += 1
+    
+    if frames > 100:
+        frames = 0
+        now = summon.get_time()
+        print "FPS: %f.1" % (100.0/ (now - last))
+        last = now
+
     for ball in balls:
         # update position and velocity
         ball.x += ball.vx
@@ -112,5 +124,4 @@ def drawFrame():
 win.home()
 
 # setup timer to call this function again
-summon.add_update_func(drawFrame, win, interval=rate)
-summon.begin_updating()
+summon.add_timer(drawFrame, interval=rate, window=win)

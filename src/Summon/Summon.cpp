@@ -838,12 +838,20 @@ public:
 
     // used to help initialize window decoration    
     void FirstReshape(int width, int height)
-    {    
+    {
+        static int tries = 0;
+        static const int maxtries = 10;
+        
+        // only try to get consistent window size about 10 times 
+        // and then give up
+        tries += 1;
+        
         // if SUMMON is already initialized, then do not do any more 
         // window decoration processing
         if (!IsRunning()) {
-            if (glutGet(GLUT_WINDOW_WIDTH) != INIT_WINDOW_SIZE ||
-                glutGet(GLUT_WINDOW_HEIGHT) != INIT_WINDOW_SIZE)
+            if (tries < maxtries && 
+                (glutGet(GLUT_WINDOW_WIDTH) != INIT_WINDOW_SIZE ||
+                 glutGet(GLUT_WINDOW_HEIGHT) != INIT_WINDOW_SIZE))
             {
                 glutReshapeWindow(INIT_WINDOW_SIZE, INIT_WINDOW_SIZE);
             } else {

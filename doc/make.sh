@@ -1,8 +1,10 @@
 #!/bin/sh
 
+#mkdir -p html
+#epydoc -v --html ../lib/summon
+
 PYDOC=pydoc2.4
-
-
+ 
 $PYDOC -w summon
 $PYDOC -w summon.matrix
 $PYDOC -w summon.sumtree
