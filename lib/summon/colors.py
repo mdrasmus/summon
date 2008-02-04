@@ -48,6 +48,7 @@ class ColorMap:
     
     def get(self, value):
         """Returns values in [0, 1]"""
+        value = float(value)
     
         # determine where color falls in table
         for i in xrange(len(self.table)):
@@ -92,7 +93,7 @@ class RainbowColorMap:
         self.range = maxv - minv
     
     def get(self, val):
-        x = (val - self.min) / self.range
+        x = (float(val) - self.min) / self.range
         return [-2 + 4*x, 2 - 4*abs(.5-x), 2 - 4*x]
     
 
@@ -103,9 +104,9 @@ class PosNegColorMap:
     
     def get(self, val):
         if val >= 0:
-            return [1, 0, 0, val/self.max]
+            return [1, 0, 0, float(val)/self.max]
         else:
-            return [0, 1, 0, val/self.min]
+            return [0, 1, 0, float(val)/self.min]
 
 class SolidColorMap:
     def __init__(self, maxv=1.0, minv=0.0):

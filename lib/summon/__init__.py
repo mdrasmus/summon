@@ -728,12 +728,16 @@ class Window (object):
            y2 -- top most y-coordinate
         """
         return summon_core.get_visible(self.winid)
-
+    
     def restore_zoom(self):
         """restores zoom to a 1:1 ratio"""
         
         zoomx, zoomy = self.get_zoom()
-
+        
+        # center on mouse
+        x, y = self.get_mouse_pos("world")
+        self.set_focus(x, y)
+        
         if zoomx > zoomy:
             self.zoomy(zoomx / zoomy)
         else:
