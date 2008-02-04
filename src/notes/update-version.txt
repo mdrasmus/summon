@@ -4,4 +4,6 @@ Files that need to be updated when version changes
 - Makefile
 - setup.py
 - setup-macosx.py
+- setup-windows.py
 - doc/summon_manual.tex
+- lib/summon/__init__.py

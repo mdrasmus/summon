@@ -1,7 +1,11 @@
 SUMMON Change Log
 -----------------
 
-NEXT RELEASE
+2008/02/04 - summon-1.8.5
+- bug fixes
+- summatrix toggle label bug fix
+- proper implementation of replace_group()
+- cleaned up timer interface
 - added summon.shapes.message_bubble
 
 
