@@ -1,6 +1,13 @@
 SUMMON Change Log
 -----------------
 
+2008/02/04 - summon-1.8.5
+- bug fixes
+- summatrix toggle label bug fix
+- proper implementation of replace_group()
+- cleaned up timer interface
+
+
 2008/01/24 - summon-1.8.4
 - changed default keybinding to be more sensible 
   - left click is hotspot activate
