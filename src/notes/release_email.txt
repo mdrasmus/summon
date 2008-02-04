@@ -1,0 +1,48 @@
+=============================================================================
+Tue Jan 29 09:13:45 EST 2008
+
+subject: ANN: SUMMON 1.8.4 Released: 2D Visualizaition prototyping and scripting
+
+
+SUMMON 1.8.4
+
+SUMMON is a python extension module that provides rapid prototyping of
+2D visualizations.  By heavily relying on the python scripting
+language, SUMMON allows the user to rapidly prototype a custom
+visualization for their data, without the overhead of a designing a
+graphical user interface or recompiling native code. By simplifying
+the task of designing a visualization, users can spend more time on
+understanding their data.
+
+SUMMON is designed to be a fast interface for developing interactive
+scene graphs for OpenGL. Although python libraries already exist for
+accessing OpenGL, python is relatively slow for real-time interaction
+with large visualizations (trees with 100,000 leaves, sparse matrices
+with a million non-zeros, etc.). Therefore, with SUMMON all real-time
+interaction is handled with compiled native C++ code (via extension
+module). Python is only executed in the construction and occasional
+interaction with the visualization. This arrangement provides the best
+of both worlds.
+
+SUMMON 1.8.4 comes with the following features:
+    * a demo large sparse matrix visualizer (ideal for visualizing
+clusterings)
+    * a demo tree visualizer
+    * Python C++ extension module
+    * Fast OpenGL graphics
+    * Drawing arbitrary points, lines, polygons, text with python
+scripting
+    * Binding inputs (keyboard, mouse, hotspots) to any python
+function
+    * Separate threads for python and graphics (allows use of python
+prompt and responsive graphics at the same time)
+    * Transparently handles graphics event loop, scrolling, zooming,
+text layout (auto-clipping, scaling, alignment), and click detection;
+allowing you to focus on viewing your data
+    * SVG output (also GIF/PNG/JPG/etc via ImageMagick)
+    * Cross-platform (Linux, Windows, OS/X)
+    * And lots of examples for how to prototype your own custom 2D
+visualizations
+
+Web site and download:
+http://people.csail.mit.edu/rasmus/summon/ 

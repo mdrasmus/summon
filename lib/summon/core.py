@@ -681,17 +681,6 @@ def input_motion_contents(input_construct):
 
 
 #=============================================================================
-# global functions
-
-
-def get_group_id(aGroup):
-    """DEPRECATED: group IDs are no longer needed"""
-    return aGroup
-
-
-
-
-#=============================================================================
 # private
 
 _element_table = {
