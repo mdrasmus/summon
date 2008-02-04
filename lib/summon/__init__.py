@@ -438,16 +438,19 @@ class Window (object):
     def close(self):
         """close the window"""
         
+        if not self.opened:
+            return
+        
         # immediately record locally that window is closed
         self.opened = False
         try:
-            ret = summon_core.close_window(self.winid)
+            summon_core.close_window(self.winid)
         except:
             pass
         
         # self._on_close() will get called back through the C++ module
         # letting us know the window is truely closed
-        return ret
+        return
     
     def _on_close(self):
         """a callback for window close events"""
