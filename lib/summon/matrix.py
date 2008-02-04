@@ -637,7 +637,7 @@ class MatrixViewer (object):
         if self.labelWindows[0]:
             self.rowEnsemble.remove_window(self.labelWindows[0])
             self.labelWindows[0].close()
-        if self.labelWindows[1] and self.labelWindows[1].is_open():
+        if self.labelWindows[1]:
             self.colEnsemble.remove_window(self.labelWindows[1])
             self.labelWindows[1].close()
 
@@ -722,12 +722,10 @@ class MatrixViewer (object):
         
         if self.treeWindows[0]:
             self.rowEnsemble.remove_window(self.treeWindows[0].win)
-            if self.treeWindows[0].win.is_open():
-                self.treeWindows[0].win.close()
+            self.treeWindows[0].win.close()
         if self.treeWindows[1]:
             self.colEnsemble.remove_window(self.treeWindows[1].win)
-            if self.treeWindows[1].win.is_open():
-                self.treeWindows[1].win.close()
+            self.treeWindows[1].win.close()
         
         self.treeWindows = [None, None]
     
