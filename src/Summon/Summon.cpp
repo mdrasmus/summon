@@ -740,7 +740,7 @@ public:
         glutCreateWindow("SUMMON");
         glutDisplayFunc(Summon::FirstDisplay);
         glutReshapeFunc(Summon::FirstReshape);
-        
+        glutReshapeWindow(3*INIT_WINDOW_SIZE, 3*INIT_WINDOW_SIZE);
         
         // aquire the SUMMON lock for this thread
         Lock();
