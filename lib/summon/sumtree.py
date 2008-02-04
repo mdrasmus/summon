@@ -6,6 +6,7 @@
 
 import sys
 import math
+import copy
 
 from summon.core import *
 from summon import shapes
@@ -37,7 +38,12 @@ class SumTree (object):
     """SUMMON Tree Visualizer"""
 
     def __init__(self, tree, name="SUMTREE",
-                       showLabels=True, xscale=1.0,
+                       showLabels=True, 
+                       xscale=1.0,
+                       showBranchLabels=True,
+                       showBoot=True,
+                       branchLabels={},
+                       autozoom=True,
                        vertical=False,
                        winsize=(400, 400),
                        winpos=None,
@@ -52,27 +58,37 @@ class SumTree (object):
         self.selnode = None
         self.markGroup = None
         self.labels = []
+        self.showBoot = showBoot
         self.showLabels = showLabels
+        self.showBranchLabels = showBranchLabels
+        self.branchLabels = copy.copy(branchLabels)
         self.xscale = float(xscale)
         self.win = None
         self.vertical = vertical
         self.winsize = winsize
         self.colormap = colormap
         self.layout = layout
-
-        self.setupTree(self.tree)
+        self.autozoom = autozoom
+        
+        self._setupTree()
         
     
-    def setTree(self, tree, layout=None):
+    def setTree(self, tree, layout=None, branchLabels=None):
         """Changes the tree in the visualization"""
         self.tree = tree
         self.layout = layout
-        self.setupTree(self.tree)
+        
+        if branchLabels != None:
+            self.branchLabels = copy.copy(branchLabels)
+        else:
+            self.branchLabels = {}
+        
+        self._setupTree()
         
         
-    def setupTree(self, tree):
+    def _setupTree(self):
         """Private function for configuring a new tree"""
-                
+        
         # setup layout
         if self.layout == None:
             if self.xscale > 0:
@@ -80,8 +96,15 @@ class SumTree (object):
             else:
                 self.layout = treelib.layoutTree(self.tree, 1.0, -1.0, minlen=1.0)
         
+        if self.showBoot:
+            for node in self.tree:
+                if node.data.get("boot", 0) > 0:
+                    self.branchLabels[node.name] = "%.2f" % node.data["boot"] + \
+                        self.branchLabels.get(node.name, "")
+                
+        
         # setup colors
-        self.setColors(tree)
+        self.setColors(self.tree)
     
     
     
@@ -135,10 +158,17 @@ class SumTree (object):
 
         # put tree into view
         if newwin:
-            w, h = self.win.get_size()        
-            self.win.home()
-            self.win.focus(w/2, h/2)
-            self.win.zoom(.9, .9)
+            w, h = self.win.get_size()
+            x1, y1, x2, y2 = self.win.get_root().get_bounding()
+            vw = x2 - x1
+            vh = y2 - y1            
+            
+            if self.autozoom:
+                self.win.set_visible(x1-.1*vw, y1-.1*vh, x2+.1*vw, y2+.4*vh,
+                                     "exact")
+            else:
+                self.win.set_visible(x1-.1*vw, y1-.1*vh, x2+.1*vw, y2+.4*vh,
+                                     "one2one")
     
     
     def toggleLabels(self):
@@ -151,7 +181,7 @@ class SumTree (object):
     # graphics functions
     #
     
-    def drawTree(self, node, sx=0, sy=0):
+    def drawTree(self, node):
         vis = []
 
         # draw node
@@ -201,7 +231,26 @@ class SumTree (object):
             self.nodeClick(node)
         vis.append(hotspot("click", nx, bot, px, top, func))
 
-        # text label
+        # branch label
+        if node.name in self.branchLabels:
+            if self.vertical:
+                d = ["vertical"]
+            else:
+                d = []
+            h = top - ny
+            
+            label = group(color(0,0,1),
+                          text_clip(self.branchLabels[node.name], 
+                                    nx, ny+h*.1, px, top, 
+                                    5, 8,
+                                    "center", "bottom", *d))
+            
+            if not self.showBranchLabels:
+                label.set_visible(False)
+            self.labels.append(label)
+            vis.append(label)
+
+        # leaf label
         if node.isLeaf() and type(node.name) == str:
             if self.vertical:
                 label = group(color(0,0,0),
