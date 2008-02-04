@@ -23,7 +23,7 @@ import summon.svg
 import summon_config
 
 
-VERSION = "1.8.3"
+VERSION = "1.8.4"
 VERSION_INFO = """\
 -----------------------------------------------------------------------------
                                   SUMMON %s
@@ -905,12 +905,7 @@ class Window (object):
     def get_root(self):
         """get the root group of the window's 'world' model"""
         return self.world.get_root()
-    
-    # DEPRECATED
-    def get_root_id(self):
-        """get the root group of the window's 'world' model"""
-        return self.world.get_root_id()
-    
+
     
     #====================================================================
     # menu
