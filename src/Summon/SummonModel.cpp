@@ -164,9 +164,7 @@ void SummonModel::SetRoot(Element *newroot)
     // remove old root
     if (m_root) {
         m_root->DecRef();
-        m_root->SetModel(NULL);
-        if (!m_root->IsReferenced())
-            delete m_root;
+        CleanupElement(m_root);
     }
     
     // set new root
@@ -259,19 +257,18 @@ bool SummonModel::RemoveElement(Element *elm)
     Element *parent = elm->GetParent();
     
     // notify parent
-    if (parent)
+    if (parent) {
         parent->RemoveChild(elm);
+        Update(parent);
+        CleanupElement(elm);
+    } else {
+        // if no parent then we must be the root
+        assert(elm == m_root);
     
-    // make sure model always has a root
-    if (elm == m_root) {
+        // make sure model always has a root
         SetRoot(new Group());
         Update();
-    } else {
-        assert(parent);
-        Update(parent);
     }
-    
-    CleanupElement(elm);
     
     return true;
 }
