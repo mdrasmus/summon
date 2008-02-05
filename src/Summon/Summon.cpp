@@ -884,7 +884,12 @@ public:
     
     void FirstDisplay()
     {
-        glutReshapeWindow(INIT_WINDOW_SIZE, INIT_WINDOW_SIZE);
+        static bool first = true;
+        
+        if (first) {
+            first = false;
+            glutReshapeWindow(INIT_WINDOW_SIZE, INIT_WINDOW_SIZE);
+        }
     }
     
     //===========================================================
