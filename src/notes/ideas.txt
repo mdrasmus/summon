@@ -10,6 +10,12 @@ Mon Feb  4 14:42:29 EST 2008
   - added hotspot drag 
   - added window split
 
+- I could try to remove SDL from summon
+  - place PYTHON GIL locks on all callbacks from GLUT.  Would make summon
+    thread safe.
+  - right now I pass stuff between threads.  Could I use an event stack
+    to prevent that?
+
 =============================================================================
 Sun Jan 27 12:49:36 EST 2008
 

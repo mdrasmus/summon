@@ -99,6 +99,7 @@ void summonCommandsInit()
     RegisterScriptCommand(ReplaceGroupCommand2) e() g()
     RegisterScriptCommand(ShowGroupCommand2)    e() g()
     RegisterScriptCommand(GetBoundingCommand2)  e() g()
+    RegisterScriptCommand(SetContentsCommand)   e() g()
     
     // model commands
     RegisterScriptCommand(AddGroupCommand)      m()

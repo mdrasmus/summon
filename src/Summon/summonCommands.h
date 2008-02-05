@@ -75,7 +75,8 @@ enum {
     REMOVE_GROUP_COMMAND2,
     REPLACE_GROUP_COMMAND2,
     SHOW_GROUP_COMMAND2,
-    GET_BOUNDING_COMMAND2,    
+    GET_BOUNDING_COMMAND2,
+    SET_CONTENTS_COMMAND,
     
     // model commands
     ADD_GROUP_COMMAND,
@@ -758,12 +759,35 @@ public:
     virtual const char *GetName() { return "get_bounding2"; }
     virtual const char *GetUsage() { return "groupid"; }
     virtual const char *GetDescription() 
-    { return "returns a bounding box for a group and its contents"; }
+    { return "returns a bounding box for an element and its contents"; }
     
     virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "d", &groupid);
     }
+};
+
+
+class SetContentsCommand : public ElementCommand
+{
+public:
+    virtual Command* Create() { return new SetContentsCommand(); }
+    virtual int GetId() { return SET_CONTENTS_COMMAND; }
+
+    virtual const char *GetName() { return "set_contents"; }
+    virtual const char *GetUsage() { return "groupid"; }
+    virtual const char *GetDescription() 
+    { return "returns the contents of an element"; }
+    
+    virtual bool Setup(const Scm &lst)
+    {
+        if (!ParseScm(lst, "d", &groupid))
+            return false;
+        code = ScmCdr(lst);
+        return true;
+    }
+    
+    Scm code;
 };
 
 

@@ -80,6 +80,7 @@ public:
     }
     
     
+    virtual bool SetContents(const Scm &code);
     virtual bool Build(int header, const Scm &code);
     virtual Scm GetContents();
     

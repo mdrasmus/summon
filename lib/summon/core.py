@@ -184,6 +184,11 @@ class Element:
            of this element"""
         return summon_core.get_element_contents(self.ptr)
 
+    def set_contents(self, *args):
+        """Sets the contents of the element
+           The arguments are specific to each element"""
+        return summon_core.set_contents(self.ptr, *args)
+
     def get_children(self):
         """Returns the children of this element as a list"""
         return list(self)

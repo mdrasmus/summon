@@ -143,7 +143,8 @@ bool Hotspot::IsCollide(const Vertex2f &pt, const Camera &camera, int _kind)
         if (kind == DRAG && _kind == DRAG_START)
             m_isDragging = true;
         return true;
-    }
+    } else
+        return false;
 }
 
 

@@ -83,13 +83,18 @@ public:
     virtual bool Build(int header, const Scm &code);
     
     // Return the contents this element in form of python code
-    virtual Scm GetContents();        
+    virtual Scm GetContents();
+    
+    virtual bool SetContents(const Scm &code) { return false; }
     
     //===================================
     // Children functions
 
     // Iterator for children of element
     typedef list<Element*>::iterator Iterator;
+
+    inline int NumChildren()
+    { return m_children.size(); }
     
     inline void AddChild(Element* elm)
     {
@@ -109,19 +114,7 @@ public:
     
     void ReplaceChild(Element *oldchild, Element *newchild);
     Element *ReplaceChild(Element *oldchild, Scm code);
-    
-    inline Iterator GetChild(Element *elm)
-    {
-        for (Iterator i=Begin(); i!=End(); i++) {
-            if ((*i) == elm) {
-                return i;
-            }
-        }
-        return End();
-    }
-    
-    inline int NumChildren()
-    { return m_children.size(); }
+
 
     inline Iterator Begin() { return m_children.begin(); }
     inline Iterator End() { return m_children.end(); }

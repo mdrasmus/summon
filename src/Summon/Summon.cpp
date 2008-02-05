@@ -514,6 +514,20 @@ public:
                 }
                 
                 } break;
+            
+            
+            case SET_CONTENTS_COMMAND: {
+                SetContentsCommand *cmd = (SetContentsCommand*) &command;
+                Element *elm = Id2Element(cmd->groupid);
+                SummonModel *model = GetModelOfElement(elm);                
+
+                if (!elm->SetContents(cmd->code))
+                    Error("Error setting contents");
+                
+                if (model)
+                    model->Update(elm);
+                    
+                } break;
                 
             //==============================================
             // do command routing
