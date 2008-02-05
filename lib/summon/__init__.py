@@ -1460,7 +1460,7 @@ def iter_vertices(elm, curcolor=None):
     verts = []
     
     # iterate over primitives
-    for prim in elm.get_contents():
+    for prim in elm.get():
         if is_color(prim):
             # color primitive
             rgb = list(prim[1:])

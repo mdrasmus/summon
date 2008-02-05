@@ -179,14 +179,14 @@ class Element:
     def __hash__(self):
         return self.ptr
     
-    def get_contents(self):
-        """Returns the a tuple in a format specific to the content 
-           of this element"""
+    def get(self):
+        """Returns the content of an element as a tuple in a format specific 
+           to the particular element type"""
         return summon_core.get_element_contents(self.ptr)
 
-    def set_contents(self, *args):
+    def set(self, *args):
         """Sets the contents of the element
-           The arguments are specific to each element"""
+           The argument format is specific to the particular element type"""
         return summon_core.set_contents(self.ptr, *args)
 
     def get_children(self):
