@@ -132,7 +132,7 @@ Scm TextElement::GetContents()
             assert(0);
     }
     
-    return ScmAppend(BuildScm("isffff", id, text.c_str(), 
+    return ScmAppend(BuildScm("dsffff", id, text.c_str(), 
                                         pos1.x, pos1.y, pos2.x, pos2.y),
                     just);
 
