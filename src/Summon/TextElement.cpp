@@ -33,8 +33,7 @@ bool TextElement::Build(int header, const Scm &code2)
 {
     //int header;
     float x1, y1, x2, y2;
-    if (!ParseScm(code2, "sffff", &text, &x1, &y1, &x2, &y2))
-    {
+    if (!ParseScm(code2, "sffff", &text, &x1, &y1, &x2, &y2)) {
         Error("Bad format for text construct");
         return false;
     }

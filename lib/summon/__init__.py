@@ -1479,7 +1479,7 @@ def iter_vertices(elm, curcolor=None):
             
                 # push a new vertex                    
                 verts.append(coords[i:i+2])
-
+                
                 if isinstance(elm, points):            nverts, nkeep = 1, 0
                 elif isinstance(elm, lines):           nverts, nkeep = 2, 0
                 elif isinstance(elm, line_strip):      nverts, nkeep = 2, 1

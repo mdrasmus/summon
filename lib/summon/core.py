@@ -212,6 +212,15 @@ class Element:
         """Remove drawing elements from the children of this element"""
         summon_core.remove_group2(self.ptr, *[x.ptr for x in elements])
 
+    def remove_self(self):
+        """Remove the element from its own parent"""
+        elementid, parent = summon_core.get_element_parent(self.ptr)
+        
+        if parent == 0:
+            raise Exception("element has no parent, cannot remove")
+        else:
+            summon_core.remove_group2(parent, self.ptr)
+    
     def replace(self, oldchild, newchild):
         """Replace a child element 'oldchild' with a new child 'newchild'"""
         summon_core.replace_group2(self.ptr, oldchild.ptr, newchild)
@@ -274,10 +283,10 @@ class hotspot (Element):
             def func2(event, x, y):
                 func(_int2hotspot_event[event], x, y)
             Element.__init__(self, _HOTSPOT_CONSTRUCT, 
-                             _tuple(kind, x1, y1, x2, y2, func2, give_pos), options)
+                             (kind, x1, y1, x2, y2, func2, give_pos), options)
         else:
             Element.__init__(self, _HOTSPOT_CONSTRUCT, 
-                             _tuple(kind, x1, y1, x2, y2, func, give_pos), options)
+                             (kind, x1, y1, x2, y2, func, give_pos), options)
             
 
 
