@@ -18,7 +18,7 @@ import os, sys
 from time import time as get_time
 
 from summon.core import *
-from summon import util, select, core, multiwindow
+from summon import util, vector, select, core, multiwindow
 import summon.svg
 
 import summon_config
@@ -1420,7 +1420,57 @@ class VisObject (object):
         self.win = win
 
 
+class Region (object):
+    """This class defines a region in a general way that can be used 
+       with hotspots"""
+    def __init__(self, x1, y1, x2, y2):
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
+    
+    def detect(self, x, y):
+        return True
 
+class RegionFunction (Region):
+    """This class defines a region in a general way that can be used 
+       with hotspots"""
+    def __init__(self, x1, y1, x2, y2, func):
+        Region.__init__(self, x1, y1, x2, y2)
+        self.func = func
+    
+    def detect(self, x, y):
+        return self.func(x, y)
+
+
+class RegionPolygon (Region):
+    """This class defines a region in a general way that can be used 
+       with hotspots"""
+    def __init__(self, pts):
+        self.x = []
+        self.y = []
+        self.pts = []
+        for i in xrange(0, len(pts), 2):
+            self.x.append(pts[i])
+            self.y.append(pts[i+1])
+            self.pts.append((pts[i], pts[i+1]))
+
+        Region.__init__(self, min(x), min(y), max(x), max(y))
+    
+    def detect(self, px, py):
+        return vector.in_polygon2(self.pts, (px, py))
+
+class RegionCircle (Region):
+    """This class defines a region in a general way that can be used 
+       with hotspots"""
+    def __init__(self, x, y, radius):        
+        Region.__init__(self, x-radius, y-radius, x+radius, y+radius)
+        self.x = x
+        self.y = y
+        self.radius = radius
+    
+    def detect(self, x, y):
+        return math.sqrt((x-self.x)**2 + (y-self.y)**2) < self.radius
 
 #=============================================================================
 # coordinate system conversions

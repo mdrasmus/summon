@@ -225,7 +225,16 @@ class Element:
         """Replace a child element 'oldchild' with a new child 'newchild'"""
         summon_core.replace_group2(self.ptr, oldchild.ptr, newchild)
         return newchild
+    
+    def replace_self(self, newelm):
+        """Replace the element with a new element"""
+        elementid, parent = summon_core.get_element_parent(self.ptr)
         
+        if parent == 0:
+            raise Exception("element has no parent, cannot replace")
+        else:
+            summon_core.replace_group2(parent, self.ptr, newelm)
+    
     def set_visible(self, vis):
         """Set the visibility of an element"""
         summon_core.show_group2(self.ptr, vis)
@@ -300,12 +309,18 @@ def hotspot_custom(kind, x1, y1, x2, y2, detect, func, give_pos=False):
     detect(mouse_x, mouse_y) will be called.  If it returns True the given
     function 'func' will be called.
     """
-    def detect2(px, py):
-        if detect(px, py):
-            if give_pos:
-                func(px, py)
-            else:
-                func()
+    
+    if kind == "drag":
+        def detect2(event, px, py):
+            if detect(px, py):
+                func(event, px, py)
+    else:
+        def detect2(px, py):
+            if detect(px, py):
+                if give_pos:
+                    func(px, py)
+                else:
+                    func()
         
     return hotspot(kind, x1, y1, x2, y2, detect2, give_pos=True)
 
@@ -343,6 +358,15 @@ def hotspot_polygon(kind, pts, func, give_pos=False):
     
     return hotspot_custom(kind, min(x), min(y), max(x), max(y), 
                           detect, func, give_pos=give_pos)
+
+
+def hotspot_region(kind, region, func, give_pos=False):
+    """
+    Designates a region (summon.Region) of the screen to react to mouse clicks
+    """
+    
+    return hotspot_custom(kind, region.x1, region.y1, 
+                          region.x2, region.y2, region.detect, give_pos=give_pos)
 
 #=============================================================================
 # graphics
