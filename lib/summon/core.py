@@ -42,6 +42,7 @@ start_summon_thread()
 _i = iter(xrange(2000, 2000+200))
 
 _GROUP_CONSTRUCT = _i.next()
+_CUSTOM_GROUP_CONSTRUCT = _i.next()
 _i.next()
 _HOTSPOT_CONSTRUCT = _i.next()
 
@@ -253,7 +254,13 @@ class group (Element):
     """Groups together several graphical elements into one"""
     def __init__(self, *elements, **options):
         Element.__init__(self, _GROUP_CONSTRUCT, elements, options)
-    
+
+
+class custom_group (Element):
+    """Acts like a group but allows safe subclassing"""
+    def __init__(self, *elements, **options):
+        Element.__init__(self, _CUSTOM_GROUP_CONSTRUCT, (self, elements), options)
+
 
 #=============================================================================
 # hotspots - mouse interaction
@@ -786,7 +793,10 @@ _element_table = {
 
 
 def _make_ref(elementid, ptr):
-    return _element_table[elementid](ref=ptr)
+    if elementid == _CUSTOM_GROUP_CONSTRUCT:
+        return summon_core.get_element_contents(ptr)
+    else:
+        return _element_table[elementid](ref=ptr)
 
 
 def _tuple(*args):

@@ -167,6 +167,7 @@ void summonCommandsInit()
 
     // structure
     g_elementFactory.Register(new Group(), GROUP_CONSTRUCT);
+    g_elementFactory.Register(new CustomGroup(), CUSTOM_GROUP_CONSTRUCT);
     g_elementFactory.Register(new Hotspot(), HOTSPOT_CONSTRUCT);
     
     // graphics

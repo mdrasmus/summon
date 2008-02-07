@@ -20,7 +20,7 @@ using namespace std;
 class Group : public Element
 {
 public:
-    Group(int groupid=-1) : 
+    Group() : 
         Element(GROUP_CONSTRUCT)
     {
     }
@@ -47,6 +47,39 @@ public:
     
 protected:
     Scm m_proc;
+};
+
+
+class CustomGroup : public Element
+{
+public:
+    CustomGroup() : 
+        Element(CUSTOM_GROUP_CONSTRUCT)
+    {
+    }
+    virtual ~CustomGroup() {}
+    
+    virtual Element *Create() {
+        return new CustomGroup();
+    };
+    
+    virtual bool Build(int header, const Scm &code)
+    {
+        if (!ScmConsp(code) || code.Size() != 2)
+            return false;
+        
+        m_element = code.GetScm(0);
+        return Element::Build(header, code.GetScm(1));
+    }
+    
+    virtual Scm GetContents()
+    {    
+        return m_element;
+    }
+
+    
+protected:
+    Scm m_element;
 };
 
 }

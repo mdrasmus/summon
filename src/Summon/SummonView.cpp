@@ -593,6 +593,7 @@ void SummonView::DrawElement(Element *element, bool createTasks)
         // do nothing
         case HOTSPOT_CONSTRUCT:
         case GROUP_CONSTRUCT:
+        case CUSTOM_GROUP_CONSTRUCT:
             break;
 
         default:

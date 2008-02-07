@@ -98,11 +98,13 @@ Element::~Element()
 // recursively build child elements and if sucessful, add them as children
 bool Element::Build(int header, const Scm &code)
 {
+    if (!ScmConsp(code))
+        return true;
+
+    Scm children = code;
+    
     // process children
-    for (Scm children = code; 
-         ScmConsp(children); 
-         children = children.Slice(1))
-    {
+    for (; children.Size() > 0; children.Pop()) {
         Scm child = children.GetScm(0);
         if (!AddChild(child))
             return false;

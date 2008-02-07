@@ -136,6 +136,7 @@ enum {
     
     // structure
     GROUP_CONSTRUCT = 2000,
+    CUSTOM_GROUP_CONSTRUCT,
     DYNAMIC_GROUP_CONSTRUCT,
     HOTSPOT_CONSTRUCT,
     
