@@ -84,7 +84,8 @@ protected:
     ModelKind m_kind;
     Element *m_root;
     list<Hotspot*> m_hotspotClicks;
-    HashTable<Hotspot*, bool, HashPointer> m_hotspotClickSet;
+    typedef list<Hotspot*>::iterator HotspotListIter;
+    HashTable<Hotspot*, HotspotListIter, HashPointer> m_hotspotClickSet;
 };
 
 inline SummonModel *GetModelOfElement(Element *elm)

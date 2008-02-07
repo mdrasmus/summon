@@ -324,8 +324,10 @@ void SummonModel::UpdateHotspot(Hotspot *hotspot)
 {    
     // register hotspot
     if (!m_hotspotClickSet.HasKey(hotspot)) {
-        m_hotspotClickSet.Insert(hotspot, true);
         m_hotspotClicks.push_back(hotspot);
+        HotspotListIter i = --m_hotspotClicks.end();
+        m_hotspotClickSet.Insert(hotspot, i);
+        
     }
 }
 
@@ -335,7 +337,9 @@ void SummonModel::UpdateHotspot(Hotspot *hotspot)
 void SummonModel::RemoveHotspots(Element *elm)
 {
     if (elm->GetId() == HOTSPOT_CONSTRUCT) {
-        m_hotspotClicks.remove((Hotspot*) elm);
+        HotspotListIter i = m_hotspotClickSet.Get((Hotspot*) elm);
+        //m_hotspotClicks.remove((Hotspot*) elm);
+        m_hotspotClicks.erase(i);
         m_hotspotClickSet.Remove((Hotspot*) elm);
     } else {
         // recurse to child elements
