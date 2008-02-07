@@ -51,7 +51,7 @@ INCLUDE=\
     $(MSSDK_INCLUDE)
     
     
-LIBS=\
+LDFLAGS=\
     $(PYTHON_LIB) \
     $(SDL_LIB) \
     $(GLUT_LIB) \
@@ -119,7 +119,7 @@ OBJS2=$(BUILD_DIR)/src/Common/Script.obj \
 CFLAGS = -DNOGLUTEXT /EHsc -c
 
 $(SUMMON):
-	$(LINK) -out:$(SUMMON) $(OBJS2) $(LIBS) /DLL
+	$(LINK) -out:$(SUMMON) $(OBJS2) $(LDFLAGS) /DLL
 
 compile: $(OBJS)
 

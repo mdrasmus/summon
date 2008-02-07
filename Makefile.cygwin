@@ -11,16 +11,19 @@ CFLAGS=-DNOGLUTEXT
 
 all: lib/$(MODULE)
 
+prefix=/usr/
+PYTHON_PREFIX=$(prefix)/lib/python2.4/site-packages/
+
 include src/Makefile.in
 
 
 
 # linking
-LIBS = -L/lib/w32api -L/usr/local/lib -lglut32 -lopengl32 \
+LDFLAGS = -L/lib/w32api -L/usr/local/lib -lglut32 -lopengl32 \
 	-lSDL -L/lib/python2.5/config -lpython2.5
 
 
-export MODULE CFLAGS LIBS
+export MODULE CFLAGS LDFLAGS
 
 
 # make rule for summon module
@@ -29,3 +32,6 @@ lib/$(MODULE): src/Summon/$(MODULE)
 
 clean: cleanall
 	rm -rf lib/$(MODULE)
+
+install: lib/$(MODULE)
+	cp -r lib/* $(PYTHON_PREFIX)

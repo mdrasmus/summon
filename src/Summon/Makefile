@@ -18,5 +18,5 @@ include ../Makefile.in
 
 
 $(MODULE): $(OBJS) $(MY_LIBS)
-	$(CC) -shared $(OBJS) $(MY_LIBS) $(LIBS) -o $(MODULE)
+	$(CC) -shared $(OBJS) $(MY_LIBS) $(LDFLAGS) -o $(MODULE)
 
