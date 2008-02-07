@@ -1273,7 +1273,9 @@ MakeElement(PyObject *self, PyObject *args)
 {
     long elmid;
     PyObject *lst;
-    int ok = PyArg_ParseTuple(args, (char*) "lO", &elmid, &lst); // avoid compiler warning (python's fault)
+    // (char*) needed to avoid compiler warning (python's fault)    
+    int ok = PyArg_ParseTuple(args, (char*) "lO", &elmid, &lst); 
+
         
     if (!ok)
         return NULL;

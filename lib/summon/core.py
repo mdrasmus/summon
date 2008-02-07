@@ -313,9 +313,11 @@ def hotspot_custom(kind, x1, y1, x2, y2, detect, func, give_pos=False):
     mouse clicks.
     
     When a mouse click (default: left click) occurs within the specified
-    rectangular region (x1,y1)-(x2,y2), the function 
-    detect(mouse_x, mouse_y) will be called.  If it returns True the given
-    function 'func' will be called.
+    rectangular region (x1,y1)-(x2,y2), the function  detect(mouse_x, mouse_y)
+    will be called.  If it returns True the given function 'func' will be called.
+    The coordinates (x1, y1, x2, y2) are given to efficiently filter mouse 
+    clicks such that detect() is only called for the those clicks that are most
+    likely to collide with the hotspot.
     """
     
     if kind == "drag":
@@ -555,6 +557,70 @@ class text_scale (text):
         Element.__init__(self, _TEXT_SCALE_CONSTRUCT, 
                                  _tuple(txt, x1, y1, x2, y2, *justified), 
                                  options)
+
+'''
+class text_clip (custom_group, text):
+    """A vector graphics text element that has a minimum and maximum height"""
+    def __init__(self, txt="", x1=None, y1=None, x2=None, y2=None,
+                       minheight=4, maxheight=20, *justified,
+                       **options):
+        """txt        - text to display
+           x1         - 1st x-coordinate of bounding box
+           y1         - 1st y-coordinate of bounding box
+           x2         - 2nd x-coordinate of bounding box
+           y2         - 2nd y-coordinate of bounding box
+           minheight  - minimum on-screen height (pixels)
+           maxheight  - maximum on-screen height (pixels)
+           *justified - one or more of the following strings, indicating how
+                        to justify the text within the bounding box
+                'left' 'center' 'right' 
+                'bottom' 'middle' 'top'
+        """    
+        
+        self.txt = txt
+        self.coords = (x1, y1, x2, y2)
+        self.height_clamp = (minheight, maxheight)
+        self.justified = justified
+        
+        h = float(abs(y1-y2))
+        minzoom = minheight / h
+        maxzoom = maxheight / h
+        
+        if x1 > x2:
+            x1, x2 = x2, x1
+        if y1 > y2:
+            y1, y2 = y2, y1
+        
+        ox = x1
+        oy = y1
+        if "left" in justified:
+            ox = x1
+        if "right" in justified:
+            ox = x2
+        if "center" in justified:
+            ox = (x1 + x2) / 2.0
+        if "top" in justified:
+            oy = y2
+        if "bottom" in justified:
+            oy = y1
+        if "middle" in justified:
+            oy = (y1 + y2) / 2.0        
+        
+        return custom_group.__init__(self, 
+            zoom_clamp(text_scale(txt, x1, y1, x2, y2, *justified),
+                       minx=minzoom, miny=minzoom,
+                       maxx=maxzoom, maxy=maxzoom,
+                       link=True, link_type="smaller", clip=True,
+                       origin=(ox, oy), axis=(ox+1.0, oy)))
+    
+    
+    def get(self):
+        coords = self.coords
+        return _tuple(_TEXT_CLIP_CONSTRUCT, self.txt, coords[0], coords[1], coords[2],
+                      coords[3], self.height_clamp[0], self.height_clamp[1],
+                      *self.justified)
+'''
+
 
 class text_clip (text):
     """A vector graphics text element that has a minimum and maximum height"""
