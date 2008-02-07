@@ -1374,10 +1374,13 @@ class SummonMenu (Menu):
             lambda: summon.svg.printScreenPng(win))
         self.add_submenu("Print screen", self.print_screen_menu)        
 
+        from summon import inspect
+
         # misc
         self.misc = Menu()
         self.misc.add_entry("toggle crosshair  (ctrl+x)", win.toggle_crosshair)
         self.misc.add_entry("toggle aliasing   (ctrl+l)", win.toggle_aliasing)
+        #self.misc.add_entry("inspect", lambda: inspect.inspect_window(win))
         self.add_submenu("Misc", self.misc)
 
         self.add_entry("close   (q)", win.close)

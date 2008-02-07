@@ -234,6 +234,7 @@ class Element:
             raise Exception("element has no parent, cannot replace")
         else:
             summon_core.replace_group2(parent, self.ptr, newelm)
+            return newelm
     
     def set_visible(self, vis):
         """Set the visibility of an element"""
@@ -366,7 +367,8 @@ def hotspot_region(kind, region, func, give_pos=False):
     """
     
     return hotspot_custom(kind, region.x1, region.y1, 
-                          region.x2, region.y2, region.detect, give_pos=give_pos)
+                          region.x2, region.y2, region.detect, func, 
+                          give_pos=give_pos)
 
 #=============================================================================
 # graphics
