@@ -91,7 +91,7 @@ public:
                                                 const Camera &camera);
     
     virtual void Update();
-    virtual Element *GetTransformParent()
+    virtual Transform *GetTransformParent()
     {
         return this;
     }

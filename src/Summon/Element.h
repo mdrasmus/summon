@@ -61,6 +61,9 @@ public:
 };
 
 
+// forward declaration
+class Transform;
+
 typedef short ElementId;
 
 class Element
@@ -138,7 +141,7 @@ public:
                       TransformMatrix *matrix);
 
     virtual void Update();
-    virtual Element *GetTransformParent();    
+    virtual Transform *GetTransformParent();    
     virtual const TransformMatrix *GetTransform(TransformMatrix *matrix,
                                                 const Camera &camera);
     
@@ -160,7 +163,7 @@ protected:
     list<Element*> m_children;
     
     // NOTE: actual type must be Transform*
-    Element *m_transformParent;
+    Transform *m_transformParent;
 };
 
 

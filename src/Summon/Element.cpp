@@ -23,7 +23,7 @@
 
 #include "first.h"
 #include "Element.h"
-
+#include "Transform.h"
 
 namespace Summon {
 
@@ -198,7 +198,7 @@ void Element::Update()
 }
 
 
-Element *Element::GetTransformParent()
+Transform *Element::GetTransformParent()
 {
     return m_transformParent;
 }
