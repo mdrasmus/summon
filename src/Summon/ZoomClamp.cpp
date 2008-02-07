@@ -56,9 +56,23 @@ Scm ZoomClamp::GetContents()
 const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
                                                const Camera &camera)
 {
-    const TransformMatrix *parent = NULL;
-    float zoom[3] = { camera.zoom.x, camera.zoom.y, 1.0 };
-
+    const TransformMatrix *parent = NULL;    
+    Vertex2f scale(1.0, 1.0);
+    
+    // determine translation to zoom clamp origin
+    float trans[3];
+    if (m_transformParent != NULL) {
+        parent = m_transformParent->GetTransform(matrix, camera);
+        parent->VecMult(m_origin.x, m_origin.y, &trans[0], &trans[1]);
+        parent->GetScaling(&scale.x, &scale.y);
+    } else {
+        trans[0] = m_origin.x;
+        trans[1] = m_origin.y;
+    }
+    trans[2] = 0.0;    
+    
+   
+    float zoom[3] = { scale.x * camera.zoom.x, scale.y * camera.zoom.y, 1.0 };
 
     // determine desired clamped zoom
     if (zoom[0] < m_minx) zoom[0] = m_minx;
@@ -81,16 +95,6 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
     zoom[0] /= camera.zoom.x;
     zoom[1] /= camera.zoom.y;
 
-    // determine translation to zoom clamp origin
-    float trans[3];
-    if (m_transformParent != NULL) {
-        parent = m_transformParent->GetTransform(matrix, camera);
-        parent->VecMult(m_origin.x, m_origin.y, &trans[0], &trans[1]);
-    } else {
-        trans[0] = m_origin.x;
-        trans[1] = m_origin.y;
-    }
-    trans[2] = 0.0;
 
 
     // apply compensating rotation, if axis is specified
