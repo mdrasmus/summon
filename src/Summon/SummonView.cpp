@@ -734,9 +734,6 @@ void SummonView::DrawTextElement(TextElement *elm)
     Vertex2f pos1 = elm->pos1;
     Vertex2f pos2 = elm->pos2;
     
-    // TODO: remove envpos and scale from TextElement
-    
-    
     // find scaling
     Vertex2f scale;
     TransformMatrix tmp;
