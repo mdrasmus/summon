@@ -92,8 +92,8 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
     
     
     // calculate zoom adjustment needed
-    zoom[0] /= camera.zoom.x;
-    zoom[1] /= camera.zoom.y;
+    zoom[0] /= scale.x * camera.zoom.x;
+    zoom[1] /= scale.y * camera.zoom.y;
 
 
 

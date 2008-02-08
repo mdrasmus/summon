@@ -66,6 +66,8 @@ static PyObject *DeleteElement(PyObject *self, PyObject *args);
 static PyObject *GetElementChildren(PyObject *self, PyObject *args);
 static PyObject *GetElementContents(PyObject *self, PyObject *args);
 static PyObject *GetElementParent(PyObject *self, PyObject *args);
+static PyObject *GetTextWidth(PyObject *self, PyObject *args);
+static PyObject *GetTextHeight(PyObject *self, PyObject *args);
 
 // python module method table
 // NOTE: the (char*) casts are needed to avoid compiler warnings.
@@ -97,6 +99,12 @@ static PyMethodDef g_summonMethods[] = {
 
     // get the parent of an element
     {(char*) "get_element_parent", GetElementParent, METH_VARARGS, (char*) ""},
+
+    // get the width of a text string
+    {(char*) "get_text_width", GetTextWidth, METH_VARARGS, (char*) ""},
+
+    // get the height of a text string
+    {(char*) "get_text_height", GetTextHeight, METH_VARARGS, (char*) ""},
 
     // cap the methods table with NULL method
     {NULL, NULL, 0, NULL}
@@ -1385,6 +1393,22 @@ GetElementParent(PyObject *self, PyObject *args)
 }
 
 
+static PyObject *GetTextWidth(PyObject *self, PyObject *args)
+{
+    void *font = GLUT_STROKE_MONO_ROMAN;
+    
+    long font2 = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
+    const unsigned char *text = (const unsigned char *) 
+        PyString_AS_STRING(PyTuple_GET_ITEM(args, 1));
+    
+    return PyFloat_FromDouble(getTextWidth(font, text));
+}
+
+static PyObject *GetTextHeight(PyObject *self, PyObject *args)
+{
+    void *font = GLUT_STROKE_MONO_ROMAN;
+    return PyFloat_FromDouble(getTextHeight(font));
+}
 
 
 // Module initialization for python

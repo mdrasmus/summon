@@ -30,6 +30,28 @@
 namespace Summon
 {
 
+inline float getTextHeight(const void *font)
+{ 
+    return 119.05;
+}
+
+inline float getTextWidth(const void *font, const unsigned char *text)
+{
+    float error = 1.0;
+    
+    // NOTE: some glut implementations have a bug in calculating text width
+    // This works around that bug
+    if (font == GLUT_STROKE_MONO_ROMAN) {
+        float asize = glutStrokeLength((void*) font, (const unsigned char*) "AAAAAAAAAA");
+        error = 1048.0 / asize;
+    } else {
+        error = 1.0;
+    }
+    
+    return glutStrokeLength((void*) font, text) * error;
+}
+
+
 class Glut2DView : public GlutView {
 public:
     Glut2DView(int width = 800, int height = 600, const char *name="",

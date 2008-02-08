@@ -789,15 +789,11 @@ void SummonView::DrawTextElement(TextElement *elm)
     } else if (elm->kind == TextElement::KIND_SCALE) {
         // Scale text
     
-        void *font = GLUT_STROKE_MONO_ROMAN;
-        float const fontSize = 119.05;
-        
-        float asize = glutStrokeLength(font, (const unsigned char*) "AAAAAAAAAA");
-        float error = 1048.0 / asize;
-        
-        float textWidth  = glutStrokeLength(font, text) * error;
-
+        const void *font = GLUT_STROKE_MONO_ROMAN;
+        const float fontSize = getTextHeight(font);
+        float textWidth  = getTextWidth(font, text);
         float textHeight = fontSize;
+        
         float boxWidth   = pos2.x - pos1.x;
         float boxHeight  = pos2.y - pos1.y;
 
@@ -816,19 +812,17 @@ void SummonView::DrawTextElement(TextElement *elm)
         glTranslatef(pos.x, pos.y, 0);
         glScalef(textHeight/fontSize, textHeight/fontSize, textHeight/fontSize);
         for (; *chr; chr++)
-            glutStrokeCharacter(font, *chr);
+            glutStrokeCharacter((void*) font, *chr);
         glPopMatrix();
         
     } else if (elm->kind == TextElement::KIND_CLIP) {
         // Clip text
         // TODO: must properly use elm->scale
     
-        void *font = GLUT_STROKE_MONO_ROMAN;
-        float fontSize = 119.05;
-        
-        float asize = glutStrokeLength(font, (const unsigned char*) "AAAAAAAAAA");
-        float error = 1048.0 / asize;
-        
+        const void *font = GLUT_STROKE_MONO_ROMAN;
+        const float fontSize = getTextHeight(font);
+        float textWidth  = getTextWidth(font, text);    
+                
         Vertex2f zoom = GetZoom();
         if (elm->modelKind == MODEL_SCREEN) {
             zoom.x = 1.0;
@@ -845,7 +839,6 @@ void SummonView::DrawTextElement(TextElement *elm)
         pos2.x *= zoom.x;
         pos2.y *= zoom.y;
         
-        float textWidth  = glutStrokeLength(font, text) * error;
         float textHeight = fontSize;
         float boxWidth   = pos2.x - pos1.x;
         float boxHeight  = pos2.y - pos1.y;
@@ -881,7 +874,7 @@ void SummonView::DrawTextElement(TextElement *elm)
         glScalef(textHeight/fontSize, textHeight/fontSize, 
                  textHeight/fontSize);
         for (; *chr; chr++)
-            glutStrokeCharacter(font, *chr);
+            glutStrokeCharacter((void*) font, *chr);
         glPopMatrix();
     }
 }

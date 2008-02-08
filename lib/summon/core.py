@@ -609,9 +609,9 @@ class text_clip (custom_group, text):
         
         return custom_group.__init__(self, 
             zoom_clamp(text_scale(txt, x1, y1, x2, y2, *justified),
-                       minx=0.0, miny=minheight / h,
-                       maxy=maxheight / h,
-                       link=True, link_type="larger", #clip=True,
+                       minx=minheight / h, miny=minheight / h,
+                       maxx=maxheight / h, maxy=maxheight / h,
+                       link=True, link_type="smaller", clip=True,
                        origin=(ox, oy), axis=(ox+1.0, oy)))
     
     
