@@ -561,7 +561,7 @@ class text_scale (text):
                                  options)
 
 
-class text_clip2 (custom_group, text):
+class text_clip (custom_group, text):
     """A vector graphics text element that has a minimum and maximum height"""
     def __init__(self, txt="", x1=None, y1=None, x2=None, y2=None,
                        minheight=4, maxheight=20, *justified,
@@ -579,21 +579,29 @@ class text_clip2 (custom_group, text):
                 'bottom' 'middle' 'top'
         """    
         
+        # ensure points are ordered correctly
+        if x1 > x2:
+            x1, x2 = x2, x1
+        if y1 > y2:
+            y1, y2 = y2, y1
+        
+        # save parameters for get() method
         self.txt = txt
         self.coords = (x1, y1, x2, y2)
         self.height_clamp = (minheight, maxheight)
         self.justified = justified
         
-        textw = summon_core.get_text_width(0, txt)
-        texth = summon_core.get_text_height(0)
+        # calculate text dimensions
+        textw = float(summon_core.get_text_width(0, txt))
+        texth = float(summon_core.get_text_height(0))
         textr = textw / texth
-        minwidth = textr * minheight
-        maxwidth = textr * maxheight
         
+        # calculate box dimensions
         boxw = float(abs(x1-x2))
         boxh = float(abs(y1-y2))        
         boxr = boxw / boxh
         
+        # determine which dimension is tight (adjust textw/h accordingly)
         if textr > boxr:
             textw = boxw 
             texth = boxw / textr
@@ -601,13 +609,8 @@ class text_clip2 (custom_group, text):
             textw = textr * boxh 
             texth = boxh
         
-        print textw, texth
-        
-        if x1 > x2:
-            x1, x2 = x2, x1
-        if y1 > y2:
-            y1, y2 = y2, y1
-        
+        # justify text within box (determine zoom_clamp origin)
+        # default origin
         ox = x1
         oy = (y1 + y2) / 2.0
         if "left" in justified:
@@ -623,15 +626,18 @@ class text_clip2 (custom_group, text):
         if "middle" in justified:
             oy = (y1 + y2) / 2.0        
         
-        return custom_group.__init__(self, 
-                    scale(boxw/textw, boxh/texth,
-                    zoom_clamp(
-                           text_scale(txt, x1, y1, x2, y2, *justified),
-                           minx=minheight / texth, miny=minheight / texth,
-                           maxx=maxheight / texth, maxy=maxheight / texth,
-                           link=True, link_type="smaller", 
-                           origin=(ox, oy), axis=(ox+1.0, oy),
-                           clip=False)))
+        # init drawing elements
+        custom_group.__init__(self, 
+            translate(ox, oy,
+                scale(boxw/textw, boxh/texth,
+                    translate(-ox, -oy,
+                        zoom_clamp(
+                            text_scale(txt, x1, y1, x2, y2, *justified),
+                            
+                            miny=minheight / texth, maxy=maxheight / texth,
+                            link=True, link_type="smaller", 
+                            origin=(ox, oy), axis=(ox+1.0, oy),
+                            clip=True)))))
     
     
     def get(self):
@@ -641,7 +647,7 @@ class text_clip2 (custom_group, text):
                       *self.justified)
 
 
-
+'''
 class text_clip (text):
     """A vector graphics text element that has a minimum and maximum height"""
     def __init__(self, txt="", x1=None, y1=None, x2=None, y2=None,
@@ -662,6 +668,7 @@ class text_clip (text):
         Element.__init__(self, _TEXT_CLIP_CONSTRUCT, 
                   _tuple(txt, x1, y1, x2, y2, minheight, maxheight, *justified), 
                   options)
+'''
 
 
 #=============================================================================

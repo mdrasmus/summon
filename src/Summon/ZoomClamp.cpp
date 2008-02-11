@@ -53,6 +53,27 @@ Scm ZoomClamp::GetContents()
 }
 
 
+bool ZoomClamp::IsClipped(const Camera &camera) const
+{
+    if (!m_clip) {
+        return false;
+    } else if (m_transformParent != NULL) {
+        TransformMatrix matrix;
+        const TransformMatrix *parent;
+        Vertex2f prezoom(camera.zoom);
+        float x, y;
+        
+        parent = m_transformParent->GetTransform(&matrix, camera);
+        parent->GetScaling(&x, &y);
+        prezoom.x *= x;
+        prezoom.y *= y;
+        
+        return prezoom.x < m_minx || prezoom.y < m_miny;
+    } else {
+        return camera.zoom.x < m_minx || camera.zoom.y < m_miny;
+    }
+}
+
 const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
                                                const Camera &camera)
 {
