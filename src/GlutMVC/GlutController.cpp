@@ -47,7 +47,8 @@ GlutController::GlutController(int window):
     m_state(GLUT_UP),
     m_mod(0),
     m_clickTime(150),
-    m_drag(false)
+    m_drag(false),
+    m_mindrag(3)
 {
     if ((unsigned int) window >= g_controllers.size()) {
         g_controllers.resize(window+1);
@@ -187,8 +188,14 @@ void GlutController::MouseClick(int button, int state, int x, int y)
     if (state == GLUT_DOWN) {
         m_drag = false;  // reset drag state
         m_clickStart = MsecTime();
+        m_clickPos.Set(x, y);
     } else {
-        if (m_clickStart + m_clickTime < MsecTime()) {
+        float movex = abs(m_clickPos.x - x);
+        float movey = abs(m_clickPos.y - y);
+        if (m_clickStart + m_clickTime < MsecTime() ||
+            movex > m_mindrag ||
+            movey > m_mindrag)
+        {
             m_drag = true;
         }
     }
