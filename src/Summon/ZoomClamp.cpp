@@ -57,14 +57,17 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
                                                const Camera &camera)
 {
     const TransformMatrix *parent = NULL;    
-    Vertex2f scale(1.0, 1.0);
+    Vertex2f prezoom = camera.zoom;
     
     // determine translation to zoom clamp origin
     float trans[3];
     if (m_transformParent != NULL) {
         parent = m_transformParent->GetTransform(matrix, camera);
         parent->VecMult(m_origin.x, m_origin.y, &trans[0], &trans[1]);
-        parent->GetScaling(&scale.x, &scale.y);
+        float x, y;
+        parent->GetScaling(&x, &y);
+        prezoom.x *= x;
+        prezoom.y *= y;
     } else {
         trans[0] = m_origin.x;
         trans[1] = m_origin.y;
@@ -72,7 +75,7 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
     trans[2] = 0.0;    
     
    
-    float zoom[3] = { scale.x * camera.zoom.x, scale.y * camera.zoom.y, 1.0 };
+    float zoom[3] = { prezoom.x, prezoom.y, 1.0 };
 
     // determine desired clamped zoom
     if (zoom[0] < m_minx) zoom[0] = m_minx;
@@ -92,8 +95,8 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
     
     
     // calculate zoom adjustment needed
-    zoom[0] /= scale.x * camera.zoom.x;
-    zoom[1] /= scale.y * camera.zoom.y;
+    zoom[0] /= prezoom.x;
+    zoom[1] /= prezoom.y;
 
 
 
@@ -109,13 +112,13 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
             wax = m_axis.x;
             way = m_axis.y;
         }
-        Vertex2f worldVector((wax - wox) * camera.zoom.x, 
-                             (way - woy) * camera.zoom.y);
+        Vertex2f worldVector((wax - wox) * prezoom.x, 
+                             (way - woy) * prezoom.y);
         worldVector.Normalize();
         float worldAngle = vertex2angle(worldVector);
         
-        Vertex2f clampVector((m_axis.x - m_origin.x) * zoom[0] * camera.zoom.x,
-                             (m_axis.y - m_origin.y) * zoom[1] * camera.zoom.y);
+        Vertex2f clampVector((m_axis.x - m_origin.x) * zoom[0] * prezoom.x,
+                             (m_axis.y - m_origin.y) * zoom[1] * prezoom.y);
         clampVector.Normalize();
         float clampAngle = vertex2angle(clampVector);                     
         float diffAngle = worldAngle - clampAngle;

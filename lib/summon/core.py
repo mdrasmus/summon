@@ -584,8 +584,24 @@ class text_clip (custom_group, text):
         self.height_clamp = (minheight, maxheight)
         self.justified = justified
         
-        h = float(abs(y1-y2))
-        w = float(abs(x1-x2))
+        textw = summon_core.get_text_width(0, txt)
+        texth = summon_core.get_text_height(0)
+        textr = textw / texth
+        minwidth = textr * minheight
+        maxwidth = textr * maxheight
+        
+        boxw = float(abs(x1-x2))
+        boxh = float(abs(y1-y2))        
+        boxr = boxw / boxh
+        
+        if textr > boxr:
+            textw = boxw 
+            texth = boxw / textr
+        else:
+            textw = textr * boxh 
+            texth = boxh
+        
+        print textw, texth
         
         if x1 > x2:
             x1, x2 = x2, x1
@@ -608,11 +624,13 @@ class text_clip (custom_group, text):
             oy = (y1 + y2) / 2.0        
         
         return custom_group.__init__(self, 
-            zoom_clamp(text_scale(txt, x1, y1, x2, y2, *justified),
-                       minx=minheight / h, miny=minheight / h,
-                       maxx=maxheight / h, maxy=maxheight / h,
-                       link=True, link_type="smaller", clip=True,
-                       origin=(ox, oy), axis=(ox+1.0, oy)))
+                scale(10, 10, #zoom_clamp(
+                zoom_clamp(text_scale(txt, x1, y1, x2, y2, *justified),
+                           minx=maxheight / texth, miny=maxheight / texth,
+                           maxx=maxheight / texth, maxy=maxheight / texth,
+                           link=True, link_type="smaller", 
+                           origin=(ox, oy), axis=(ox+1.0, oy))),
+                )#xmax=2, xmin=2)
     
     
     def get(self):

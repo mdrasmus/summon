@@ -1559,7 +1559,11 @@ def iter_vertices(elm, curcolor=None):
         yield [], curcolor
     
 
+def get_text_width(text):
+    return summon_core.get_text_width(0, text)
 
+def get_text_height(text):
+    return summon_core.get_text_height(0)
 
 
 #=============================================================================
