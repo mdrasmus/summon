@@ -178,90 +178,127 @@ def arrow_head(headx, heady, tailx, taily, size=10):
                    headx - vecx + vecy, heady - vecy - vecx)
 
 
-def message_bubble(x, y, width, height, contents=None,
+class message_bubble (custom_group):
+    """A message bubble that is invariant to zooming"""
+
+    def __init__(self, x, y, width, height, contents=None,
                    tail=(10,30), tail_width=20, 
                    tail_attach=.3, radius=10,
                    bubble_color=color(1, 1, 1),
-                   border_color=color(0, 0, 0)):
-    """
-    Draws a message bubble
-    
-    x            -- x-coordinate of target
-    y            -- y-coordinate of target
-    width        -- width of bubble
-    height       -- height of bubble
-    contents     -- content of bubble (drawing elements)
-    tail         -- tail direction (x, y)
-    tail_width   -- width of tail when it attaches to bubble
-    tail_attach  -- percentage of bubble to the left of the tail
-    radius       -- radius of bubble's rounded corners
-    bubble_color -- color of message bubble
-    """
-    
-    # compute bubble position
-    bx = x+tail[0]-tail_attach*width
-    by = y+tail[1]
-    
-    # create default content if none given
-    if contents == None:
-        contents = group()
-    
-    
-    return zoom_clamp(
-        # tail
-        bubble_color,
-        triangles(x, y, 
-                  x+tail[0], y+tail[1],
-                  x+tail[0]+tail_width, y+tail[1]),
+                   border_color=color(0, 0, 0),
+                   close_button=False,
+                   close_color=color(0, 0, 0)):
+        """
+        x            -- x-coordinate of target
+        y            -- y-coordinate of target
+        width        -- width of bubble
+        height       -- height of bubble
+        contents     -- content of bubble (drawing elements)
+        tail         -- tail direction (x, y)
+        tail_width   -- width of tail when it attaches to bubble
+        tail_attach  -- percentage of bubble to the left of the tail
+        radius       -- radius of bubble's rounded corners
+        bubble_color -- color of message bubble
+        """
+
+        # compute bubble position
+        bx = x+tail[0]-tail_attach*width
+        by = y+tail[1]
+
+        # create default content if none given
+        if contents == None:
+            contents = group()
         
-        # bubble
-        round_box(bx, by, bx+width, by+height, radius=radius),
+        # create close button
+        if close_button:
+            button_size = 7
+            buttonm = .7 * radius
+            
+            c1x = width - button_size - buttonm 
+            c1y = height - button_size - buttonm
+            c2x = width - button_size
+            c2y = height - button_size
+            
+            contents = group(contents,
+                             close_color,
+                             lines(c1x, c1y, c2x, c2y,
+                                   c1x, c2y, c2x, c1y),
+                             hotspot("click", c1x, c1y, c2x, c2y, self.close))
         
-        
-        # border
-        border_color,
-        line_strip(*
-            arc_path(bx+radius, by+radius, 1.5*math.pi, math.pi, radius) + \
-            arc_path(bx+radius, by+height-radius, math.pi, .5*math.pi, radius) + \
-            arc_path(bx+width-radius, by+height-radius, .5*math.pi, 0.0, radius) + \
-            arc_path(bx+width-radius, by+radius, 0.0, -.5*math.pi, radius) + \
-            [x+tail[0]+tail_width, y+tail[1],
-             x, y,
-             x+tail[0], y+tail[1],
-             bx+radius, by]),
-        
-        # bubble contents
-        translate(bx, by, contents),
-        minx=1, miny=1, maxx=1, maxy=1, link=True, origin=(x, y))
+        # initialize drawing elements
+        custom_group.__init__(self, zoom_clamp(
+            # tail
+            bubble_color,
+            triangles(x, y, 
+                      x+tail[0], y+tail[1],
+                      x+tail[0]+tail_width, y+tail[1]),
+
+            # bubble
+            round_box(bx, by, bx+width, by+height, radius=radius),
 
 
+            # border
+            border_color,
+            line_strip(*
+                arc_path(bx+radius, by+radius, 1.5*math.pi, math.pi, radius) + \
+                arc_path(bx+radius, by+height-radius, math.pi, .5*math.pi, radius) + \
+                arc_path(bx+width-radius, by+height-radius, .5*math.pi, 0.0, radius) + \
+                arc_path(bx+width-radius, by+radius, 0.0, -.5*math.pi, radius) + \
+                [x+tail[0]+tail_width, y+tail[1],
+                 x, y,
+                 x+tail[0], y+tail[1],
+                 bx+radius, by]),
 
-def draggable(region, aGroup):
-    def onDrag(event, x, y):
+            # bubble contents
+            translate(bx, by, contents),
+            minx=1, miny=1, maxx=1, maxy=1, link=True, origin=(x, y)))
+    
+    
+    def close(self):
+        """Closes the message bubble"""
+        
+        self.remove_self()
+
+
+class draggable(custom_group):
+    """A draggable drawing element"""
+    
+    def __init__(self, region, element, callback=None):   
+        """region   -- a summon.Region object that specifies the region that 
+                       should respond to drag events
+           element  -- a group of drawing elements that should move during 
+                       drag events
+           callback -- a function that will be called for each drag event.
+                       The function will be called with the arguments
+                       (event, x, y).  These are the same arguments for the 
+                       callback for hotspot("drag", ...)
+        """
+        self.mouse = None
+        self.trans = [0, 0]
+        self.callback = callback
+        self.vis = translate(0, 0, group(element,
+                    hotspot_region("drag", region, self._on_drag)))
+        custom_group.__init__(self, self.vis)
+        
+    
+    def _on_drag(self, event, x, y):
+        """Callback for drag events"""
+        
         if event == "drag_start":
-            mouse[:] = [trans[0] + x, trans[1] + y]
+            self.mouse = [self.trans[0] + x, self.trans[1] + y]
         
         elif event == "drag_stop":
-            mouse[:] = []
+            self.mouse = None
 
             
-        elif event == "drag":
-            if len(mouse) == 0:
-                return
-            click = [trans[0] + x, trans[1] + y]
+        elif event == "drag" and self.mouse != None:
+            click = [self.trans[0] + x, self.trans[1] + y]
 
-            vx = click[0] - mouse[0]
-            vy = click[1] - mouse[1]
-            mouse[:] = click
+            self.trans[0] += click[0] - self.mouse[0]
+            self.trans[1] += click[1] - self.mouse[1]
+            self.mouse = click
             
-            trans[0] += vx
-            trans[1] += vy
-                
-            vis.set(trans[0], trans[1])
-    
-    mouse = []
-    trans = [0, 0]
-    vis = translate(0, 0, group(aGroup,
-                    hotspot_region("drag", region, onDrag)))
-    return vis
-
+            self.vis.set(self.trans[0], self.trans[1])
+            
+            if self.callback != None:
+                self.callback(event, x, y)

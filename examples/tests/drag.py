@@ -16,9 +16,15 @@ win.add_group(shapes.draggable(summon.Region(0, 0, 100, 100),
                                    shapes.round_box(0, 0, 100, 100, 10))))
 
 win.add_group(translate(200, 200, rotate(30, 
-            shapes.draggable(summon.Region(0, 0, 100, 100),
-                               group(color(0, 0, 1),
-                                   shapes.round_box(0, 0, 100, 100, 10))))))
+    shapes.draggable(
+        summon.Region(0, 0, 100, 100),
+        group(
+            color(0, 0, 1),
+            shapes.round_box(0, 0, 100, 100, 10),
+            shapes.message_bubble(50, 50, 150, 40, 
+                text("hello", 0, 0, 150, 40,
+                     "middle", "center"),
+                close_button=True))))))
 
                               
 win.add_binding(input_click("left", "up", "shift"), "hotspot_drag_stop")

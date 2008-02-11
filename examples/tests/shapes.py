@@ -21,13 +21,15 @@ win.add_group(translate(400, 0,
     colors.white,
     shapes.message_bubble(0, 0, 150, 100,
         group(colors.blue,
-            text("hello world", 0, 0, 150, 100, "center", "middle")))))
+            text("hello world", 0, 0, 150, 100, "center", "middle")),
+        close_button=True)))
 
 win.add_group(translate(400, -400,
     colors.white,
-    shapes.message_bubble(0, 0, 150, 20,
+    shapes.message_bubble(0, 0, 150, 40,
         group(colors.blue,
-            text("hello world", 0, 0, 150, 20, "center", "middle")))))
+            text("hello world", 0, 0, 150, 40, "center", "middle")),
+        close_button=True)))
      
     
 win.home()
