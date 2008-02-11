@@ -74,7 +74,7 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
     }
     trans[2] = 0.0;    
     
-   
+    
     float zoom[3] = { prezoom.x, prezoom.y, 1.0 };
 
     // determine desired clamped zoom
@@ -95,8 +95,8 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
     
     
     // calculate zoom adjustment needed
-    zoom[0] /= prezoom.x;
-    zoom[1] /= prezoom.y;
+    zoom[0] /= camera.zoom.x;
+    zoom[1] /= camera.zoom.y;
 
 
 
@@ -112,13 +112,13 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
             wax = m_axis.x;
             way = m_axis.y;
         }
-        Vertex2f worldVector((wax - wox) * prezoom.x, 
-                             (way - woy) * prezoom.y);
+        Vertex2f worldVector((wax - wox) * camera.zoom.x, 
+                             (way - woy) * camera.zoom.y);
         worldVector.Normalize();
         float worldAngle = vertex2angle(worldVector);
         
-        Vertex2f clampVector((m_axis.x - m_origin.x) * zoom[0] * prezoom.x,
-                             (m_axis.y - m_origin.y) * zoom[1] * prezoom.y);
+        Vertex2f clampVector((m_axis.x - m_origin.x) * zoom[0] * camera.zoom.x,
+                             (m_axis.y - m_origin.y) * zoom[1] * camera.zoom.y);
         clampVector.Normalize();
         float clampAngle = vertex2angle(clampVector);                     
         float diffAngle = worldAngle - clampAngle;

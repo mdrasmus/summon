@@ -25,6 +25,7 @@
 #define SUMMON_TRANSFORM_MATRIX_H
 
 #include <stdio.h>
+#include <math.h>
 #include <assert.h>
 
 namespace Summon {
@@ -113,12 +114,29 @@ public:
             }
         }
     }
-
-    // Returns the vector transform(<1,1>)-transform(<0,0>)
+    
+    
+    // Returns |M*<1,0> - M*<0,0>|, |M*<0,1> - M*<0,0>|     
     inline void GetScaling(float *zoomx, float *zoomy) const
     {
+        /*        
+        float ax = mat[0];
+        float ay = mat[4];
+        
+        float bx = mat[1];
+        float by = mat[5];
+
+        *zoomx = sqrt(ax*ax + ay*ay);
+        *zoomy = sqrt(bx*bx + by*by);
+
+        // old
         *zoomx = mat[0] + mat[1];
         *zoomy = mat[4] + mat[5];
+        
+        */
+        
+        *zoomx = sqrt(mat[0]*mat[0] + mat[4]*mat[4]);
+        *zoomy = sqrt(mat[1]*mat[1] + mat[5]*mat[5]);
     }
     
     inline void SetIdentity()

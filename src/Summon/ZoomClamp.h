@@ -56,6 +56,7 @@ public:
     virtual const TransformMatrix *GetTransform(TransformMatrix *matrix,
                                                 const Camera &camera);
 
+    // TODO: needs to include prescale
     inline bool IsClipped(const Camera &camera) const
     {
         return m_clip && (camera.zoom.x < m_minx || camera.zoom.y < m_miny);

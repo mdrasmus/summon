@@ -561,7 +561,7 @@ class text_scale (text):
                                  options)
 
 
-class text_clip (custom_group, text):
+class text_clip2 (custom_group, text):
     """A vector graphics text element that has a minimum and maximum height"""
     def __init__(self, txt="", x1=None, y1=None, x2=None, y2=None,
                        minheight=4, maxheight=20, *justified,
@@ -624,13 +624,14 @@ class text_clip (custom_group, text):
             oy = (y1 + y2) / 2.0        
         
         return custom_group.__init__(self, 
-                scale(10, 10, #zoom_clamp(
-                zoom_clamp(text_scale(txt, x1, y1, x2, y2, *justified),
-                           minx=maxheight / texth, miny=maxheight / texth,
+                    scale(boxw/textw, boxh/texth,
+                    zoom_clamp(
+                           text_scale(txt, x1, y1, x2, y2, *justified),
+                           minx=minheight / texth, miny=minheight / texth,
                            maxx=maxheight / texth, maxy=maxheight / texth,
                            link=True, link_type="smaller", 
-                           origin=(ox, oy), axis=(ox+1.0, oy))),
-                )#xmax=2, xmin=2)
+                           origin=(ox, oy), axis=(ox+1.0, oy),
+                           clip=False)))
     
     
     def get(self):
@@ -640,7 +641,7 @@ class text_clip (custom_group, text):
                       *self.justified)
 
 
-'''
+
 class text_clip (text):
     """A vector graphics text element that has a minimum and maximum height"""
     def __init__(self, txt="", x1=None, y1=None, x2=None, y2=None,
@@ -661,7 +662,7 @@ class text_clip (text):
         Element.__init__(self, _TEXT_CLIP_CONSTRUCT, 
                   _tuple(txt, x1, y1, x2, y2, minheight, maxheight, *justified), 
                   options)
-'''
+
 
 #=============================================================================
 # transforms
