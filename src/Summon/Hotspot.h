@@ -85,6 +85,6 @@ protected:
 };
 
 
-}
+} // namespace Summon
 
 #endif

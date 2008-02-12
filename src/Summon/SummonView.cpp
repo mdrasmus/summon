@@ -46,7 +46,9 @@ SummonView::SummonView(SummonModel *model, int width, int height,
     m_mousePos(0,0),
     m_boundary1(FLOAT_MIN, FLOAT_MIN),
     m_boundary2(FLOAT_MAX, FLOAT_MAX),
-    m_needRedisplay(false)
+    m_needRedisplay(false),
+    m_styleChange(false),
+    m_defaultStyle(Color(1, 1, 1))
     
 {
     SetVisible(0, 0, width, height);
@@ -376,7 +378,7 @@ void SummonView::ExecuteTasks()
                 break;
             case TASK_ELEMENT:
                 // assumes only world elements are on task list
-                DrawElement(m_tasks[i]->m_element, false);
+                DrawElement(m_tasks[i]->m_element, m_defaultStyle, false);
                 break;
             default:
                 assert(0);
@@ -431,8 +433,13 @@ void SummonView::DrawWorld()
     //if (pointsize < 1.5) 
     //    pointsize = 1.5;
     glPointSize(pointsize);
-    glColor4f(1.0, 1.0, 1.0, 1.0);
-        
+    glColor4f(m_defaultStyle.color.r, 
+              m_defaultStyle.color.g,
+              m_defaultStyle.color.b,
+              m_defaultStyle.color.a);
+    
+    m_styleChange = false;
+    m_curStyle = m_defaultStyle;
     
     // NOTE: I am not using draw lists effectively.
     // It's fast to construct with out them.
@@ -440,7 +447,7 @@ void SummonView::DrawWorld()
         // if no tasks, create new drawlist task
         //AddTask(new DrawTask(glGenLists(1)));
         
-        DrawElement(m_worldModel->GetRoot(), false); // true
+        DrawElement(m_worldModel->GetRoot(), m_defaultStyle, false); // true
         
         //GetLastTask()->Close();
         
@@ -462,7 +469,7 @@ void SummonView::DrawScreen()
     }
 
     glPointSize(1.0);
-    DrawElement(m_screenModel->GetRoot(), false);
+    DrawElement(m_screenModel->GetRoot(), m_defaultStyle, false);
 
 }
 
@@ -499,9 +506,14 @@ void SummonView::DrawCrosshair()
 }
 
 
-void SummonView::DrawElement(Element *element, bool createTasks)
+void SummonView::DrawElement(Element *element, const Style &lastStyle, bool createTasks)
 {
+    //bool stylePushed = false;
+    //Style newStyle;
     bool drawChildren = true;
+    
+    // handle styles
+    m_styleChange = false;
 
     // ignore non-visible elements
     if (!element->IsVisible())
@@ -600,12 +612,12 @@ void SummonView::DrawElement(Element *element, bool createTasks)
             Error("Unknown element %d", element->GetId());
             assert(0);
     }
-    
+
     
     // exec element's children
     if (drawChildren) {
         for (Element::Iterator i=element->Begin(); i!=element->End(); i++) {
-            DrawElement(*i, createTasks);
+            DrawElement(*i, lastStyle, createTasks);
         }
     }
     
@@ -631,6 +643,7 @@ void SummonView::DrawElement(Element *element, bool createTasks)
             GetLastTask()->Close();
         }
     }
+
 }
 
 
@@ -681,6 +694,8 @@ void SummonView::DrawGraphic(Graphic *graphic)
                 
             case Graphic::PRIM_COLOR:
                 glColor4ubv((GLubyte*) graphic->GetColor(ptr));
+                //m_styleChange = true;
+                //m_curStyle.color.Set4(graphic->GetColor(ptr));
                 break;
         }
     }

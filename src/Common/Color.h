@@ -51,6 +51,23 @@ public:
         a = alpha;
     }
     
+    inline void Set4(char *color)
+    {
+        r = color[0] / 255.0;
+        g = color[1] / 255.0;
+        b = color[2] / 255.0;
+        a = color[3] / 255.0;
+    }
+
+    inline void Set3(char *color)
+    {
+        r = color[0] / 255.0;
+        g = color[1] / 255.0;
+        b = color[2] / 255.0;
+        a = 1.0;
+    }
+    
+    
     bool Read(string str) {
         if (str == "red")
             Set(1,0,0);

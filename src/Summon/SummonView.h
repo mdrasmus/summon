@@ -34,6 +34,7 @@
 #include "summonCommands.h"
 #include "Group.h"
 #include "Graphic.h"
+#include "Style.h"
 #include "TextElement.h"
 #include "Transform.h"
 #include "ZoomClamp.h"
@@ -153,7 +154,7 @@ protected:
         ClearTasks();
     }
         
-    void DrawElement(Element *elm, bool createTasks=true); 
+    void DrawElement(Element *elm, const Style &style, bool createTasks=true); 
     void DrawGraphic(Graphic *graphic);
     void DrawTextElement(TextElement *elm);
     bool DrawZoomClamp(ZoomClamp *zoomClamp);
@@ -196,6 +197,9 @@ protected:
     Vertex2f m_boundary2;
     
     bool m_needRedisplay;
+    bool m_styleChange;
+    Style m_defaultStyle;
+    Style m_curStyle;
 };
 
 }
