@@ -35,7 +35,6 @@
 #include "Vertex.h"
 #include "elements.h"
 
-
 namespace Summon
 {
 
@@ -131,6 +130,11 @@ enum {
     GET_MOUSE_POS_COMMAND,
     SET_WINDOW_ON_RESIZE_COMMAND,
     SET_WINDOW_ON_MOVE_COMMAND,
+
+    // misc
+    CALL_PROC_COMMAND,    
+        
+    SUMMON_COMMANDS_END    
 };
 
 

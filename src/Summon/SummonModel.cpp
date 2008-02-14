@@ -222,7 +222,7 @@ bool SummonModel::ReplaceElement(Element *oldelm, Element *newelm)
 
     if (newelm->GetParent() != NULL) {
         Error("element already has parent.");
-        return NULL;
+        return false;
     }
 
     // handle case where root is replaced
