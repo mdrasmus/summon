@@ -22,9 +22,13 @@
 ***************************************************************************/
 
 #include "first.h"
+
+// c/c++ includes
 #include <algorithm>
 #include <sstream>
 #include <time.h>
+
+// summon includes
 #include "common.h"
 #include "summonCommands.h"
 #include "SummonView.h"
@@ -59,8 +63,14 @@ SummonView::SummonView(SummonModel *model, int width, int height,
     
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE);
-    //glEnable(GL_MULTISAMPLE);
-    //glEnable(GL_MULTISAMPLE_ARB);
+    
+#   ifdef GL_MULTISAMPLE
+        // try to use multisample, freeglut usually doesn't support it
+        glEnable(GL_MULTISAMPLE);
+#   endif
+#   ifdef GL_MULTISAMPLE_ARB
+        glEnable(GL_MULTISAMPLE_ARB);
+#   endif
     //glEnable(GL_POINT_SMOOTH);  
     glDisable(GL_POINT_SMOOTH);  
     glEnable(GL_LINE_SMOOTH);
@@ -108,8 +118,6 @@ void SummonView::ExecCommand(Command &command)
             } break;
             
         case GET_WINDOW_POSITION_COMMAND: {
-            //MakeCurrentWindow();
-            //UpdatePosition();
             Vertex2i pos = GetPosition();
             ((ScriptCommand*) &command)->SetReturn(BuildScm("dd", pos.x, pos.y));
             } break;

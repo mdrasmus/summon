@@ -41,7 +41,14 @@ GlutView::GlutView(int width, int height, const char *name,
    m_opened(true)
 {
     // set initial glut settings for window
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE); // | GLUT_ALPHA | GLUT_MULTISAMPLE);
+
+#   ifdef GLUT_MULTISAMPLE
+        // try to use multisample, freeglut usually doesn't support it
+        glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_MULTISAMPLE |
+        GLUT_DEPTH);
+#   else
+        glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE); // | GLUT_ALPHA | GLUT_MULTISAMPLE);
+#   endif
     //glutInitDisplayString( "rgba double samples>=4 ");         
     // NOTE: GLUT_ALPHA had problems on OSX
 
@@ -61,13 +68,13 @@ GlutView::GlutView(int width, int height, const char *name,
     glutDisplayFunc(GlutView::GlutDisplay);
     glutReshapeFunc(GlutView::GlutReshape);
     
-#ifdef GLUT_ACTION_ON_WINDOW_CLOSE
-    glutCloseFunc(GlutView::GlutClose);
-#endif
+#   ifdef GLUT_ACTION_ON_WINDOW_CLOSE
+        glutCloseFunc(GlutView::GlutClose);
+#   endif
 
     // setup opengl
     glEnable(GL_BLEND);
-    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE);
 }
