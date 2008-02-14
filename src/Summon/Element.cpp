@@ -40,7 +40,7 @@ Element *GetElementFromObject(PyObject *obj)
         // NOTE: I think the only element that uses this code is a color
         // construct outside any graphic
         
-        // do nothing if not a list
+        // do nothing if not a tuple
         // and check that header is int
         if (!PyTuple_Check(obj) ||
             PyTuple_GET_SIZE(obj) < 1 ||

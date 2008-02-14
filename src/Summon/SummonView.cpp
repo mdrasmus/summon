@@ -143,12 +143,7 @@ void SummonView::ExecCommand(Command &command)
         case RAISE_WINDOW_COMMAND: {
             // raise or lower the window
             RaiseWindowCommand *cmd = (RaiseWindowCommand*) &command;
-            
-            MakeCurrentWindow();
-            if (cmd->raise)
-                glutPopWindow();
-            else
-                glutPushWindow(); 
+            Raise(cmd->raise);
             } break;
         
         case SET_TRANS_COMMAND: {
@@ -240,20 +235,8 @@ void SummonView::ExecCommand(Command &command)
             m_crosshairColor = ((SetCrosshairColorCommand*)&command)->color;
             break;
         
-        
-        case REDISPLAY_COMMAND:
-            //NoteModelChange(); // TODO: need to FIX Model changes
-            MakeCurrentWindow();
-            glutPostRedisplay();
-            //Glut2DView::ExecCommand(command);
-            break;
-        
         case MODEL_CHANGED_COMMAND:
             PostRedisplay();
-            //MakeCurrentWindow();
-            //NoteModelChange();
-            //glutPostRedisplay();
-            //Glut2DView::ExecCommand(command);
             break;
         
         //=============================================================
@@ -320,8 +303,7 @@ void SummonView::ExecCommand(Command &command)
             AttachMenuCommand *cmd = (AttachMenuCommand*) &command;
             int button = -1;
             
-            MakeCurrentWindow();
-            glutSetMenu(cmd->menuid);
+            
             
             switch (cmd->button) {
                 case 0: button = GLUT_LEFT_BUTTON; break;
@@ -332,7 +314,7 @@ void SummonView::ExecCommand(Command &command)
             }
             
             if (button != -1)
-                glutAttachMenu(button);
+                AttachMenu(cmd->menuid, button);
             
             } break;
         
@@ -341,9 +323,6 @@ void SummonView::ExecCommand(Command &command)
             DetachMenuCommand *cmd = (DetachMenuCommand*) &command;
             int button = -1;
             
-            MakeCurrentWindow();
-            glutSetMenu(cmd->menuid);
-            
             switch (cmd->button) {
                 case 0: button = GLUT_LEFT_BUTTON; break;
                 case 1: button = GLUT_MIDDLE_BUTTON; break;
@@ -353,7 +332,7 @@ void SummonView::ExecCommand(Command &command)
             }
             
             if (button != -1)
-                glutDetachMenu(button);
+                DetachMenu(cmd->menuid, button);
             
             } break;
         
@@ -412,7 +391,7 @@ void SummonView::Display()
         DrawCrosshair();
     
     // display new frame
-    glutSwapBuffers();
+    SwapBuffers();
 }
 
 
