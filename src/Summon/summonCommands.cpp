@@ -24,13 +24,7 @@
 #include "first.h"
 #include "summonCommands.h"
 #include "glut2DCommands.h"
-#include "Element.h"
-#include "Graphic.h"
-#include "Group.h"
-#include "Hotspot.h"
-#include "Transform.h"
-#include "TextElement.h"
-#include "ZoomClamp.h"
+
 
 
 namespace Summon
@@ -48,7 +42,6 @@ CommandAttr g_controllerAttr;
 CommandAttr g_glAttr;
 
 
-ElementFactory g_elementFactory;
 
 
 void summonCommandsInit()
@@ -165,35 +158,8 @@ void summonCommandsInit()
 #   undef gl
 
 
-    // structure
-    g_elementFactory.Register(new Group(), GROUP_CONSTRUCT);
-    g_elementFactory.Register(new CustomGroup(), CUSTOM_GROUP_CONSTRUCT);
-    g_elementFactory.Register(new Hotspot(), HOTSPOT_CONSTRUCT);
-    
-    // graphics
-    g_elementFactory.Register(new Graphic(), POINTS_CONSTRUCT);
-    g_elementFactory.Register(new Graphic(), LINES_CONSTRUCT);
-    g_elementFactory.Register(new Graphic(), LINE_STRIP_CONSTRUCT);
-    g_elementFactory.Register(new Graphic(), TRIANGLES_CONSTRUCT);
-    g_elementFactory.Register(new Graphic(), TRIANGLE_STRIP_CONSTRUCT);
-    g_elementFactory.Register(new Graphic(), TRIANGLE_FAN_CONSTRUCT);
-    g_elementFactory.Register(new Graphic(), QUADS_CONSTRUCT);
-    g_elementFactory.Register(new Graphic(), QUAD_STRIP_CONSTRUCT);
-    g_elementFactory.Register(new Graphic(), POLYGON_CONSTRUCT);
-    g_elementFactory.Register(new TextElement(), TEXT_CONSTRUCT);
-    g_elementFactory.Register(new TextElement(), TEXT_SCALE_CONSTRUCT);
-    g_elementFactory.Register(new TextElement(), TEXT_CLIP_CONSTRUCT);
-    
-    // primitives
-    //g_elementFactory.Register(new (VerticesConstruct)
-    g_elementFactory.Register(new Graphic(), COLOR_CONSTRUCT);
-    
-    // transforms
-    g_elementFactory.Register(new Transform(), TRANSLATE_CONSTRUCT);
-    g_elementFactory.Register(new Transform(), ROTATE_CONSTRUCT);
-    g_elementFactory.Register(new Transform(), SCALE_CONSTRUCT);
-    g_elementFactory.Register(new Transform(), FLIP_CONSTRUCT);
-    g_elementFactory.Register(new ZoomClamp(), ZOOM_CLAMP_CONSTRUCT);
+    elementsInit();
+
 }
 
 

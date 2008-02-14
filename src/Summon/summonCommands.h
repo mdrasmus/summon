@@ -33,7 +33,7 @@
 #include "glut2DCommands.h"
 #include "ScriptCommand.h"
 #include "Vertex.h"
-
+#include "elements.h"
 
 
 namespace Summon
@@ -131,53 +131,9 @@ enum {
     GET_MOUSE_POS_COMMAND,
     SET_WINDOW_ON_RESIZE_COMMAND,
     SET_WINDOW_ON_MOVE_COMMAND,
-    
-    // constructs
-    
-    // structure
-    GROUP_CONSTRUCT = 2000,
-    CUSTOM_GROUP_CONSTRUCT,
-    DYNAMIC_GROUP_CONSTRUCT,
-    HOTSPOT_CONSTRUCT,
-    
-    // graphics
-    POINTS_CONSTRUCT,
-    LINES_CONSTRUCT,
-    LINE_STRIP_CONSTRUCT,
-    TRIANGLES_CONSTRUCT,
-    TRIANGLE_STRIP_CONSTRUCT,
-    TRIANGLE_FAN_CONSTRUCT,
-    QUADS_CONSTRUCT,
-    QUAD_STRIP_CONSTRUCT,
-    POLYGON_CONSTRUCT,
-    TEXT_CONSTRUCT,
-    TEXT_SCALE_CONSTRUCT,
-    TEXT_CLIP_CONSTRUCT,
-    
-    // primitives
-    VERTICES_CONSTRUCT,
-    COLOR_CONSTRUCT,
-    
-    // transforms
-    TRANSFORM_CONSTRUCT, // internal use only
-    TRANSLATE_CONSTRUCT,
-    ROTATE_CONSTRUCT,
-    SCALE_CONSTRUCT,
-    FLIP_CONSTRUCT,
-    ZOOM_CLAMP_CONSTRUCT,
-    NOZOOM_CONSTRUCT,
-    SIDE_ALIGN_CONSTRUCT,
-    
-    // inputs
-    INPUT_KEY_CONSTRUCT,
-    INPUT_CLICK_CONSTRUCT,
-    INPUT_MOTION_CONSTRUCT,
-    
-    // misc
-    CALL_PROC_COMMAND,    
-        
-    SUMMON_COMMANDS_END
 };
+
+
 
 
 void summonCommandsInit();

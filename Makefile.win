@@ -44,6 +44,7 @@ INCLUDE=\
     -Isrc/GlutMVC \
     -Isrc/Common \
     -Isrc/Summon \
+    -Isrc/SummonSceneGraph \
     $(PYTHON_INCLUDE) \
     $(SDL_INCLUDE) \
     $(GLUT_INCLUDE) \
@@ -73,18 +74,20 @@ OBJS=src/Common/Script.obj \
      src/MVC/Input.obj \
      src/MVC/Model.obj \
      src/MVC/StringCommand.obj \
+     src/SummonSceneGraph/elements.obj \
+     src/SummonSceneGraph/Element.obj \
+     src/SummonSceneGraph/Graphic.obj \
+     src/SummonSceneGraph/Hotspot.obj \
+     src/SummonSceneGraph/TextElement.obj \
+     src/SummonSceneGraph/Transform.obj \
+     src/SummonSceneGraph/TransformMatrix.obj \
+     src/SummonSceneGraph/ZoomClamp.obj \
      src/Summon/summonCommands.obj \
      src/Summon/SummonController.obj \
      src/Summon/SummonModel.obj \
      src/Summon/SummonView.obj \
-     src/Summon/Element.obj \
-     src/Summon/Graphic.obj \
-     src/Summon/Hotspot.obj \
-     src/Summon/Summon.obj \
-     src/Summon/TextElement.obj \
-     src/Summon/Transform.obj \
-     src/Summon/TransformMatrix.obj \
-     src/Summon/ZoomClamp.obj
+     src/Summon/Summon.obj
+
 
 
 OBJS2=$(BUILD_DIR)/src/Common/Script.obj \
@@ -101,19 +104,19 @@ OBJS2=$(BUILD_DIR)/src/Common/Script.obj \
       $(BUILD_DIR)/src/MVC/Input.obj \
       $(BUILD_DIR)/src/MVC/Model.obj \
       $(BUILD_DIR)/src/MVC/StringCommand.obj \
+      $(BUILD_DIR)/src/SummonSceneGraph/elements.obj \
+      $(BUILD_DIR)/src/SummonSceneGraph/Element.obj \
+      $(BUILD_DIR)/src/SummonSceneGraph/Graphic.obj \
+      $(BUILD_DIR)/src/SummonSceneGraph/Hotspot.obj \
+      $(BUILD_DIR)/src/SummonSceneGraph/TextElement.obj \
+      $(BUILD_DIR)/src/SummonSceneGraph/Transform.obj \
+      $(BUILD_DIR)/src/SummonSceneGraph/TransformMatrix.obj \
+      $(BUILD_DIR)/src/SummonSceneGraph/ZoomClamp.obj \
       $(BUILD_DIR)/src/Summon/summonCommands.obj \
       $(BUILD_DIR)/src/Summon/SummonController.obj \
       $(BUILD_DIR)/src/Summon/SummonModel.obj \
       $(BUILD_DIR)/src/Summon/SummonView.obj \
-      $(BUILD_DIR)/src/Summon/Element.obj \
-      $(BUILD_DIR)/src/Summon/Graphic.obj \
-      $(BUILD_DIR)/src/Summon/Hotspot.obj \
-      $(BUILD_DIR)/src/Summon/Summon.obj \
-      $(BUILD_DIR)/src/Summon/TextElement.obj \
-      $(BUILD_DIR)/src/Summon/Transform.obj \
-      $(BUILD_DIR)/src/Summon/TransformMatrix.obj \
-      $(BUILD_DIR)/src/Summon/ZoomClamp.obj
-
+      $(BUILD_DIR)/src/Summon/Summon.obj
       
 
 CFLAGS = -DNOGLUTEXT /EHsc -c
@@ -136,6 +139,7 @@ build_dir:
     mkdir $(BUILD_DIR)\lib
     mkdir $(BUILD_DIR)\src
     mkdir $(BUILD_DIR)\src\Summon
+    mkdir $(BUILD_DIR)\src\SummonSceneGraph
     mkdir $(BUILD_DIR)\src\Common
     mkdir $(BUILD_DIR)\src\GlutMVC
     mkdir $(BUILD_DIR)\src\MVC

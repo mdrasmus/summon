@@ -27,6 +27,8 @@
 
 namespace Summon {
 
+
+
 Element *GetElementFromObject(PyObject *obj)
 {
     if (PyObject_HasAttrString(obj, (char*) "ptr")) {
