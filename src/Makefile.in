@@ -4,12 +4,14 @@ AR = ar
 INCLUDE = \
     -I$(SRCPREFIX)/Common \
     -I$(SRCPREFIX)/GlutMVC \
-    -I$(SRCPREFIX)/MVC 
+    -I$(SRCPREFIX)/MVC \
+    -I$(SRCPREFIX)/SummonSceneGraph
 
 MY_LIBS = \
         $(SRCPREFIX)/Common/libCommon.a \
         $(SRCPREFIX)/GlutMVC/libGlutMVC.a \
-        $(SRCPREFIX)/MVC/libMVC.a 
+        $(SRCPREFIX)/MVC/libMVC.a \
+        $(SRCPREFIX)/SummonSceneGraph/libSummonSceneGraph.a 
 
 COMPILE = -c \
     -Wall -fno-strict-aliasing  \
@@ -43,6 +45,9 @@ $(SRCPREFIX)/GlutMVC/libGlutMVC.a::
 $(SRCPREFIX)/MVC/libMVC.a::
 	make -C $(SRCPREFIX)/MVC
 
+$(SRCPREFIX)/SummonSceneGraph/libSummonSceneGraph.a::
+	make -C $(SRCPREFIX)/SummonSceneGraph
+
 $(SRCPREFIX)/Summon/$(MODULE)::
 	make -C $(SRCPREFIX)/Summon
 
@@ -67,4 +72,5 @@ cleanall:
 	make clean -C $(SRCPREFIX)/Common
 	make clean -C $(SRCPREFIX)/GlutMVC
 	make clean -C $(SRCPREFIX)/MVC
+	make clean -C $(SRCPREFIX)/SummonSceneGraph
 	make clean -C $(SRCPREFIX)/Summon

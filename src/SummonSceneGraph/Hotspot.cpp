@@ -58,14 +58,12 @@ bool Hotspot::Build(int header, const Scm &code)
     }
     
     // parse procedure
-    CallProcCommand *proc = new CallProcCommand(procCode);
-    if (!proc->defined) {
-        delete proc;
-        return false;
-    }    
-    
+    if (!ScmProcedurep(procCode)) {
+        Error("Must be function");
+    }
+        
     // construct Hotspot
-    SetProc(proc);
+    SetProc(procCode);
     kind = kindid;
     
     // NOTE: swapping may not be necessary (save it for model book-keeping).
@@ -91,7 +89,7 @@ Scm Hotspot::GetContents()
     }
     
     return BuildScm("sffffpb", skind, pos1.x, pos1.y, pos2.x, pos2.y, 
-                    &GetProc()->proc, m_givePos);
+                    &m_proc, m_givePos);
 }
 
 

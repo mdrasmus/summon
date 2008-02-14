@@ -84,6 +84,8 @@ public:
         pos2 = p2;
         if (pos1.x > pos2.x) swap(pos1.x, pos2.x);
         if (pos1.y > pos2.y) swap(pos1.y, pos2.y);
+        
+        boxSize = pos2 - pos1;
     }
     
     string text;
@@ -94,6 +96,8 @@ public:
     float minHeight;
     float maxHeight;
     int modelKind;
+    Vertex2f textSize;
+    Vertex2f boxSize;
 };
 
 

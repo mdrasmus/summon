@@ -133,7 +133,7 @@ list<Command*> SummonModel::HotspotClick(Vertex2f pos, const Camera camera,
         Hotspot *hotspot = (*i);
     
         if (hotspot->IsCollide(pos, camera, kind)) {
-            CallProcCommand *cmd = (CallProcCommand*) hotspot->GetProc()->Create();
+            CallProcCommand *cmd = new CallProcCommand(hotspot->GetProc());
             
             if (hotspot->GivePos()) {
                 Vertex2f pos2 = hotspot->GetLocalPos(pos, camera);
@@ -222,7 +222,7 @@ bool SummonModel::ReplaceElement(Element *oldelm, Element *newelm)
 
     if (newelm->GetParent() != NULL) {
         Error("element already has parent.");
-        return NULL;
+        return false;
     }
 
     // handle case where root is replaced

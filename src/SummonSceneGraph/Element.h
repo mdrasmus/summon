@@ -26,8 +26,10 @@
 
 #include "Script.h"
 #include <list>
-#include "summonCommands.h"
+#include "elements.h"
+#include "Vertex.h"
 #include "TransformMatrix.h"
+
 
 namespace Summon {
 
@@ -186,11 +188,6 @@ Element *GetElementFromObject(PyObject *obj);
 Element *GetElementFromObject(const Scm code);
 
 
-// element factory and registration
-class Element;
-typedef Factory<int, Element> ElementFactory;
-
-extern ElementFactory g_elementFactory;
 
 
 

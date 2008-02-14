@@ -40,23 +40,17 @@ public:
         m_givePos(false),
         m_isDragging(false)
     {}
-    
-    virtual ~Hotspot()
-    {
-        if (m_proc)
-            delete m_proc;
-    }
-    
+        
     virtual Element* Create()
     { return new Hotspot(); }
     
     virtual bool Build(int header, const Scm &code);
     virtual Scm GetContents();
     
-    inline void SetProc(CallProcCommand *proc)
+    inline void SetProc(const Scm &proc)
     { m_proc = proc; }
     
-    inline CallProcCommand *GetProc()
+    inline Scm GetProc()
     { return m_proc; }
     
     bool IsCollide(const Vertex2f &pt, const Camera &camera, int kind);
@@ -79,7 +73,7 @@ public:
     
     
 protected:
-    CallProcCommand *m_proc;
+    Scm m_proc;
     bool m_givePos;
     bool m_isDragging;
 };

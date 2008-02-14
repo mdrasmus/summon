@@ -104,7 +104,33 @@ public:
     
     inline Vertex2i GetPosition()
     { return m_windowPos; }
+    
+    inline void Raise(bool raise)
+    {
+        MakeCurrentWindow();
+        if (raise)
+            glutPopWindow();
+        else
+            glutPushWindow(); 
+    }
+    
+    inline void AttachMenu(int menuid, int button)
+    {
+        MakeCurrentWindow();
+        glutSetMenu(menuid);
+        glutAttachMenu(button);
 
+    }
+        
+    inline void DetachMenu(int menuid, int button)
+    {
+        MakeCurrentWindow();
+        glutSetMenu(menuid);
+        glutDetachMenu(button);
+    }
+    
+    inline void SwapBuffers()
+    { glutSwapBuffers(); }
     
     void UpdatePosition();
     

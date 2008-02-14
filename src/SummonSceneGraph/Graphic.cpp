@@ -45,8 +45,6 @@ Graphic::~Graphic()
 
 bool Graphic::Build(int header, const Scm &code2)
 {
-    //PyObject_Print(code2.GetPy(), stdout, 0);
-
     SetId(header);
     Scm code = code2;
     
