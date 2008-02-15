@@ -1,5 +1,6 @@
 SRCPREFIX = ..
-OBJS = Summon.o \
+OBJS = ScriptCommand.o \
+       Summon.o \
        summonCommands.o \
        SummonController.o \
        SummonModel.o \

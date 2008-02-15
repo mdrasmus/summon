@@ -31,11 +31,11 @@ namespace Summon {
 
 using namespace std;
 
-Scm Scm_NULL;
-Scm Scm_NONE;
+Scm Scm_NULL(NULL);
+Scm Scm_NONE(Py_None);
 Scm Scm_EOL;
-Scm Scm_TRUE;
-Scm Scm_FALSE;
+Scm Scm_TRUE(Py_True);
+Scm Scm_FALSE(Py_False);
 
 PyObject *python_globals;
 
@@ -45,10 +45,11 @@ static int g_nerrors = 0;
 
 void InitPython()
 {
-    Scm_NULL  = Scm(NULL);
-    Scm_NONE  = Py2Scm(Py_None);
-    Scm_TRUE  = Py2Scm(Py_True);
-    Scm_FALSE = Py2Scm(Py_False);
+    // ensure initialized only once
+    static bool once = false;    
+    if (once) return;
+    once = true;
+
     Scm_EOL   = Py2ScmTake(PyTuple_New(0));
     
     python_globals = PyModule_GetDict(PyImport_AddModule((char*) "__main__"));
@@ -57,6 +58,11 @@ void InitPython()
 
 void DestroyPython()
 {
+    // ensure initialized only once
+    static bool once = false;    
+    if (once) return;
+    once = true;
+
     Py_DECREF(python_globals);
 }
 

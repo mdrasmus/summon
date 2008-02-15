@@ -5,8 +5,7 @@ OBJS = \
         Command.o \
         Input.o \
         Model.o \
-        StringCommand.o \
-        common.o
+        StringCommand.o 
 
 all: $(LIB)
 

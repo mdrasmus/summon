@@ -1,4 +1,46 @@
 =============================================================================
+Open Ideas
+
+  - add data structures for key bindings.  Can be done in python.
+    - make sure select binding uses this new data structure
+
+  - add drag and select
+    - mostly there, just need to think about nice keybinding.  Maybe disable
+      selects during drags or something.  How could I do that?
+
+  - add Element.set_contents()
+    - this is started and implemented for transforms.  Could think about
+      what other elements could use this feature.
+
+  - can I make a smarter text_clip from zoom_clamp
+    - almost done check multwindow for weird behavior
+  
+  - make sure SVG is fully up to date
+    - get_bounding for SVG
+      - draw only what is displayed
+    - fix SVG text_clip
+    - add zoom_clamps?
+  
+  - create concept of styles
+    - style
+      - color
+      - line width
+      - stipple
+      - point size
+    - style can be changed just like how color() works now
+      except style only lasts until end of group.
+    - need a stack of styles (could be managed in call stack of SummonView)
+  
+  - add button blink to SideBar
+  - can I add mouse wheele binding?
+  - rename/refactor the Scm interface to 'Pyref'.  Remove Car and Cdr.
+    - should I remain scripting language neutral?
+    - keep Scm, and use lists instead of tuples?
+      - I don't think I use ScmCons much, so this isn't needed.  I think
+  - add direct bitmap screenshot?
+
+
+=============================================================================
 Mon Feb  4 14:42:29 EST 2008
 
 - released summon-1.8.5

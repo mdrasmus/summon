@@ -27,15 +27,12 @@
 #include "first.h"
 
 // summon headers
-#include "common.h"
 #include "elements.h"
 #include "Element.h"
 
 using namespace Summon;
 
-// constants
 #define MODULE_NAME "summon_scene_graph"
-
 
 //=============================================================================
 // python visible prototypes
@@ -52,7 +49,7 @@ static PyObject *GetElementParent(PyObject *self, PyObject *args);
 
 // python module method table
 // NOTE: the (char*) casts are needed to avoid compiler warnings.
-static PyMethodDef g_summonMethods[] = {
+static PyMethodDef g_summonSceneGraphMethods[] = {
     // make element
     {(char*) "make_element", MakeElement, METH_VARARGS, (char*) ""},
 
@@ -89,7 +86,7 @@ MakeElement(PyObject *self, PyObject *args)
         
     if (!ok)
         return NULL;
-    Scm code = Py2Scm(lst);
+    Scm code(lst);
     
     // add factory call
     Element *elm = g_elementFactory.Create(elmid);
@@ -202,7 +199,9 @@ PyMODINIT_FUNC
 initsummon_core()
 {
     // prepare the python environment for summon
-    InitPython();    
+    InitPython();
+    // register all direction functions with python
+    Py_InitModule((char*) MODULE_NAME, g_summonSceneGraphMethods);
 }
 */
 
