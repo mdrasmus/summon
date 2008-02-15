@@ -46,6 +46,7 @@
 // summon headers
 #include "common.h"
 #include "SummonWindow.h"
+#include "summon_scene_graph.h"
 
 
 // constants
@@ -60,12 +61,6 @@ extern "C" {
 static PyObject *Exec(PyObject *self, PyObject *tup);
 static PyObject *SummonMainLoop(PyObject *self, PyObject *tup);
 static PyObject *SummonShutdown(PyObject *self, PyObject *tup);
-static PyObject *MakeElement(PyObject *self, PyObject *args);
-static PyObject *IncRefElement(PyObject *self, PyObject *args);
-static PyObject *DeleteElement(PyObject *self, PyObject *args);
-static PyObject *GetElementChildren(PyObject *self, PyObject *args);
-static PyObject *GetElementContents(PyObject *self, PyObject *args);
-static PyObject *GetElementParent(PyObject *self, PyObject *args);
 static PyObject *GetTextWidth(PyObject *self, PyObject *args);
 static PyObject *GetTextHeight(PyObject *self, PyObject *args);
 
@@ -1272,124 +1267,6 @@ Exec(PyObject *self, PyObject *tup)
     }    
     
     Py_RETURN_NONE;
-}
-
-
-// Create a new Element
-static PyObject *
-MakeElement(PyObject *self, PyObject *args)
-{
-    long elmid;
-    PyObject *lst;
-    // (char*) needed to avoid compiler warning (python's fault)    
-    int ok = PyArg_ParseTuple(args, (char*) "lO", &elmid, &lst); 
-
-        
-    if (!ok)
-        return NULL;
-    Scm code = Py2Scm(lst);
-    
-    // add factory call
-    Element *elm = g_elementFactory.Create(elmid);
-    
-    if (elm == NULL || !elm->Build(elmid, code)) {
-        Error("error constructing element");
-        SetException();
-        return NULL;
-    }
-    elm->IncRef();
-    
-    //printf("new: %p\n", elm);
-    
-    // return element address
-    PyObject *addr = PyInt_FromLong(Element2Id(elm));
-    return addr;
-}
-
-
-// Delete an Element (or just decrement its reference count)
-static PyObject *
-DeleteElement(PyObject *self, PyObject *args)
-{
-    long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
-    Element *elm = Id2Element(addr);
-    
-    elm->DecRef();
-    
-    // if there are no more references then delete element
-    if (!elm->IsReferenced()) { // && elm->GetParent() == NULL) {
-        //printf("delete: %p\n", elm);
-        delete elm;
-    }
-    
-    Py_RETURN_NONE;
-}
-
-
-// Increase the reference count for an Element
-static PyObject *
-IncRefElement(PyObject *self, PyObject *args)
-{
-    long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
-    Element *elm = Id2Element(addr);
-    
-    //printf("incref %p\n", elm);
-    elm->IncRef();
-    
-    Py_RETURN_NONE;
-}
-
-
-// Returns the children of an Element
-static PyObject *
-GetElementChildren(PyObject *self, PyObject *args)
-{
-    long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
-    Element *elm = Id2Element(addr);
-    
-    int len = elm->NumChildren() * 2;
-    
-    PyObject *children = PyTuple_New(len);
-    int i = 0;
-    for (Element::Iterator child=elm->Begin(); child!=elm->End(); child++) {
-        PyTuple_SET_ITEM(children, i, PyInt_FromLong((*child)->GetSpecificId()));
-        PyTuple_SET_ITEM(children, i+1, PyInt_FromLong(Element2Id(*child)));
-        i+=2;
-    }
-    
-    return children;
-}
-
-
-// Returns the contents (Element-specific information) of an Element
-static PyObject *
-GetElementContents(PyObject *self, PyObject *args)
-{
-    long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
-    Element *elm = Id2Element(addr);
-    
-    Scm contents = elm->GetContents();
-    PyObject *pycontents = Scm2Py(contents);
-    
-    if (pycontents != NULL)
-        Py_INCREF(pycontents);
-    
-    return pycontents;
-}
-
-
-// Returns the parent of an Element
-static PyObject *
-GetElementParent(PyObject *self, PyObject *args)
-{
-    long addr = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
-    Element *elm = Id2Element(addr);
-    
-    PyObject *parent = PyTuple_New(2);
-    PyTuple_SET_ITEM(parent, 0, PyInt_FromLong(elm->GetSpecificId()));
-    PyTuple_SET_ITEM(parent, 1, PyInt_FromLong(Element2Id(elm->GetParent())));
-    
-    return parent;
 }
 
 

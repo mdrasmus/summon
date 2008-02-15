@@ -19,23 +19,6 @@ import summon_core
 import vector
 
 
-def start_summon_thread():
-    "Starts the main SUMMON thread"
-
-    # start summon thread
-    _summon_thread = threading.Thread(target=summon_core.summon_main_loop)
-    _summon_thread.setDaemon(True)
-    _summon_thread.start()
-
-    # register a function for clean shutdown
-    atexit.register(lambda: summon_core.summon_shutdown)
-
-    # wait for summon to startup
-    while summon_core.get_windows() == None: time.sleep(.05)
-
-start_summon_thread()
-
-
 #=============================================================================
 # constuct IDs
 

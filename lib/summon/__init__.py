@@ -17,6 +17,7 @@
 import os, sys
 from time import time as get_time
 
+import summon_core
 from summon.core import *
 from summon import util, vector, select, core, multiwindow
 import summon.svg
@@ -36,17 +37,35 @@ VERSION_INFO = """\
 -----------------------------------------------------------------------------
 """ % VERSION
 
-
-
 def version():
     print VERSION_INFO
 
 
 
+#=============================================================================
+# summon thread
+
+def start_summon_thread():
+    "Starts the main SUMMON thread"
+
+    # start summon thread
+    _summon_thread = threading.Thread(target=summon_core.summon_main_loop)
+    _summon_thread.setDaemon(True)
+    _summon_thread.start()
+
+    # register a function for clean shutdown
+    atexit.register(lambda: summon_core.summon_shutdown)
+
+    # wait for summon to startup
+    while summon_core.get_windows() == None: time.sleep(.05)
+
+start_summon_thread()
+
+
 
 #=============================================================================S
 # python state of SUMMON
-#
+
 class SummonState (object):
     """SUMMON State
     
@@ -96,7 +115,6 @@ class SummonState (object):
 
 #=============================================================================
 # timer interface
-#
 
 class Timer:
     def __init__(self, dispatch, func, interval=None, repeat=True, window=None):
@@ -279,7 +297,6 @@ def add_timer(func, interval=None, repeat=True, window=None):
 
 #=============================================================================
 # Window and Model
-#
 
 class Window (object):
     """The SUMMON Window

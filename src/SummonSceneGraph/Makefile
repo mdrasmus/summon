@@ -1,6 +1,7 @@
 SRCPREFIX = ..
 LIB = libSummonSceneGraph.a
-OBJS = elements.o \
+OBJS = summon_scene_graph.o \
+       elements.o \
        Element.o \
        Graphic.o \
        Hotspot.o \
