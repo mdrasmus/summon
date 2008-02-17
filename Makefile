@@ -7,6 +7,9 @@ MODULE=summon_core.so
 
 all: lib/$(MODULE)
 
+prefix=/usr/
+PYTHON_PREFIX=$(prefix)/lib/python2.4/site-packages/
+
 # include basic rules
 SRCPREFIX=src
 include src/Makefile.in
@@ -14,13 +17,13 @@ include src/Makefile.in
 
 # profiling
 ifdef PROFILE
-    LIBS := $(LIBS) -pg
+    LDFLAGS := $(LDFLAGS) -pg
 endif
 
 # linking for summon module on Linux
-LIBS := $(LIBS) -lglut -lGL -lSDL -lutil -lpython2.4 -pthread 
+LDFLAGS := $(LDFLAGS) -lglut -lGL -lSDL -lutil -lpython2.4 -pthread 
 
-export MODULE CFLAGS LIBS
+export MODULE CFLAGS LDFLAGS
 
 # make rule for summon module on Linux
 lib/$(MODULE): src/Summon/$(MODULE)	
@@ -30,3 +33,5 @@ clean: cleanall
 	rm -rf lib/$(MODULE)
 
 
+install: lib/$(MODULE)
+	cp -r lib/* $(PYTHON_PREFIX)

@@ -18,7 +18,7 @@ import os, sys
 from time import time as get_time
 
 from summon.core import *
-from summon import util, select, core
+from summon import util, vector, select, core, multiwindow
 import summon.svg
 
 import summon_config
@@ -342,6 +342,8 @@ class Window (object):
         else:
             self.screen = Model()
         summon_core.assign_model(self.winid, "screen", self.screen.id)
+        
+        self.__splits = set()
         
         # listeners
         self.viewChangeListeners = set()
@@ -965,6 +967,55 @@ class Window (object):
         """returns a new window with same model and properties as this window"""
         
         return DuplicateWindow(self)
+    
+    def split(self, direction="left", width=200):
+        """Split a window into two 'tied' windows"""
+        
+        pos = self.get_position()
+        size = self.get_size()
+        deco = self.get_decoration()
+        x1, y1, x2, y2 = self.get_visible()
+
+        if direction == "left":
+            width2 = width * (x2 - x1) / size[0]
+            dup = DuplicateWindow(self,
+                                 position=[pos[0]-width-deco[0], pos[1]],
+                                 size=[width, size[1]])
+            dup.set_visible(x1-width2, y1, x1, y2, "exact")
+            self.__splits.add(multiwindow.WindowEnsemble([dup, self],
+                stacky=True, sameh=True, tiey=True, piny=True,
+                master=self, close_with_master=False))
+                
+        elif direction == "right":
+            width2 = width * (x2 - x1) / size[0]
+            dup = DuplicateWindow(self,
+                                 position=[pos[0]+size[0]+deco[0], pos[1]],
+                                 size=[width, size[1]])
+            dup.set_visible(x2, y1, x2+width2, y2, "exact")
+            self.__splits.add(multiwindow.WindowEnsemble([self, dup],
+                stacky=True, sameh=True, tiey=True, piny=True,
+                master=self, close_with_master=False))
+                
+        elif direction == "top":
+            width2 = width * (y2 - y1) / size[1]
+            
+            dup = DuplicateWindow(self,
+                                 position=[pos[0], pos[1]-width-deco[1]],
+                                 size=[size[0], width])
+            dup.set_visible(x1, y2, x2, y2+width2, "exact")
+            self.__splits.add(multiwindow.WindowEnsemble([dup, self],
+                stackx=True, samew=True, tiex=True, pinx=True,
+                master=self, close_with_master=False))
+
+        elif direction == "bottom":
+            width2 = width * (y2 - y1) / size[1]
+            dup = DuplicateWindow(self,
+                                 position=[pos[0], pos[1]+size[1]+deco[1]],
+                                 size=[size[0], width])
+            dup.set_visible(x1, y1-width2, x2, y1, "exact")
+            self.__splits.add(multiwindow.WindowEnsemble([self, dup],
+                stackx=True, samew=True, tiex=True, pinx=True,
+                master=self, close_with_master=False))       
         
 
 def copy_window_state(winSrc, winDst):
@@ -991,11 +1042,18 @@ def copy_window_state(winSrc, winDst):
 class DuplicateWindow (Window):
     """Creates a duplicate of another window"""
 
-    def __init__(self, win):
+    def __init__(self, win, name=None, position=None, size=None):
+        if name == None:
+            name = win.get_name()
+        if position == None:
+            position = win.get_position()
+        if size == None:
+            size = win.get_size()    
+        
         Window.__init__(self, 
-                        win.get_name(), 
-                        position=win.get_position(),
-                        size=win.get_size(), 
+                        name, 
+                        position=position,
+                        size=size, 
                         world=win.world, 
                         winconfig=win.winconfig)
         copy_window_state(win, self)
@@ -1294,6 +1352,12 @@ class SummonMenu (Menu):
         self.window_menu = Menu()
         self.window_menu.add_entry("duplicate   (ctrl+d)", win.duplicate)        
         self.window_menu.add_entry("overview   (ctrl+o)", lambda: OverviewWindow(win))
+        self.window_menu.split_menu = Menu()
+        self.window_menu.split_menu.add_entry("left", lambda: win.split("left"))
+        self.window_menu.split_menu.add_entry("right", lambda: win.split("right"))
+        self.window_menu.split_menu.add_entry("top", lambda: win.split("top"))
+        self.window_menu.split_menu.add_entry("bottom", lambda: win.split("bottom"))
+        self.window_menu.add_submenu("Split", self.window_menu.split_menu)
         self.add_submenu("Window", self.window_menu)
 
         # zoom
@@ -1310,10 +1374,13 @@ class SummonMenu (Menu):
             lambda: summon.svg.printScreenPng(win))
         self.add_submenu("Print screen", self.print_screen_menu)        
 
+        from summon import inspect
+
         # misc
         self.misc = Menu()
         self.misc.add_entry("toggle crosshair  (ctrl+x)", win.toggle_crosshair)
         self.misc.add_entry("toggle aliasing   (ctrl+l)", win.toggle_aliasing)
+        #self.misc.add_entry("inspect", lambda: inspect.inspect_window(win))
         self.add_submenu("Misc", self.misc)
 
         self.add_entry("close   (q)", win.close)
@@ -1356,7 +1423,57 @@ class VisObject (object):
         self.win = win
 
 
+class Region (object):
+    """This class defines a region in a general way that can be used 
+       with hotspots"""
+    def __init__(self, x1, y1, x2, y2):
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
+    
+    def detect(self, x, y):
+        return True
 
+class RegionFunction (Region):
+    """This class defines a region in a general way that can be used 
+       with hotspots"""
+    def __init__(self, x1, y1, x2, y2, func):
+        Region.__init__(self, x1, y1, x2, y2)
+        self.func = func
+    
+    def detect(self, x, y):
+        return self.func(x, y)
+
+
+class RegionPolygon (Region):
+    """This class defines a region in a general way that can be used 
+       with hotspots"""
+    def __init__(self, pts):
+        self.x = []
+        self.y = []
+        self.pts = []
+        for i in xrange(0, len(pts), 2):
+            self.x.append(pts[i])
+            self.y.append(pts[i+1])
+            self.pts.append((pts[i], pts[i+1]))
+
+        Region.__init__(self, min(x), min(y), max(x), max(y))
+    
+    def detect(self, px, py):
+        return vector.in_polygon2(self.pts, (px, py))
+
+class RegionCircle (Region):
+    """This class defines a region in a general way that can be used 
+       with hotspots"""
+    def __init__(self, x, y, radius):        
+        Region.__init__(self, x-radius, y-radius, x+radius, y+radius)
+        self.x = x
+        self.y = y
+        self.radius = radius
+    
+    def detect(self, x, y):
+        return math.sqrt((x-self.x)**2 + (y-self.y)**2) < self.radius
 
 #=============================================================================
 # coordinate system conversions
@@ -1396,7 +1513,7 @@ def iter_vertices(elm, curcolor=None):
     verts = []
     
     # iterate over primitives
-    for prim in elm.get_contents():
+    for prim in elm.get():
         if is_color(prim):
             # color primitive
             rgb = list(prim[1:])
@@ -1415,7 +1532,7 @@ def iter_vertices(elm, curcolor=None):
             
                 # push a new vertex                    
                 verts.append(coords[i:i+2])
-
+                
                 if isinstance(elm, points):            nverts, nkeep = 1, 0
                 elif isinstance(elm, lines):           nverts, nkeep = 2, 0
                 elif isinstance(elm, line_strip):      nverts, nkeep = 2, 1

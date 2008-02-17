@@ -92,8 +92,10 @@ bool Transform::Build(int header, const Scm &code)
             Scm first  = code.GetScm(0);
             Scm second = code.GetScm(1);
 
-            if (!ScmFloatp(first) || !ScmFloatp(second))
+            if (!ScmFloatp(first) || !ScmFloatp(second)) {
+                Error("Expected first and second arguments to be floats");
                 return false;
+            }
 
             Set(m_kind, Scm2Float(first), Scm2Float(second));
 
@@ -104,8 +106,10 @@ bool Transform::Build(int header, const Scm &code)
         case ROTATE_CONSTRUCT: {
             Scm first  = code.GetScm(0);
 
-            if (!ScmFloatp(first))
+            if (!ScmFloatp(first)) {
+                Error("Expected first argument to be a float");
                 return false;
+            }
             
             Set(m_kind, Scm2Float(first));
 
@@ -120,6 +124,48 @@ bool Transform::Build(int header, const Scm &code)
     
     return false;
 }
+
+
+bool Transform::SetContents(const Scm &code)
+{
+    switch (m_kind) {
+        case TRANSLATE_CONSTRUCT:
+        case SCALE_CONSTRUCT:
+        case FLIP_CONSTRUCT: {
+            Scm first  = code.GetScm(0);
+            Scm second = code.GetScm(1);
+
+            if (!ScmFloatp(first) || !ScmFloatp(second)) {
+                Error("Expected first and second arguments to be floats");
+                return false;
+            }
+
+            Set(m_kind, Scm2Float(first), Scm2Float(second));
+            return true;
+            }
+
+        case ROTATE_CONSTRUCT: {
+            Scm first  = code.GetScm(0);
+
+            if (!ScmFloatp(first)) {
+                Error("Expected first argument to be a float");
+                return false;
+            }
+            
+            Set(m_kind, Scm2Float(first));
+            return true;
+            }
+            
+        default:
+            Error("Unknown transform");
+            assert(0);
+    }
+    
+    // NOTE: should never get here
+    return false;
+}
+
+
 
 Scm Transform::GetContents()
 {

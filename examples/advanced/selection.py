@@ -32,50 +32,39 @@ drag = Drag()
 # I may need to make drag a primitive...
 
 
-def hotspot_drag(x1, y1, x2, y2, startfunc, dragfunc, donefunc):
-    def func(x, y):
-        if drag.state == "start":
-            startfunc(x, y)
-        elif drag.state == "done":
-            donefunc(x, y)
-        elif drag.state == "drag":
-            dragfunc(x, y)
-
-    return hotspot("click", x1, y1, x2, y2, func, give_pos=True)
-    
 
 def box(win, pos1, pos2):
     pos1 = list(pos1)
     pos2 = list(pos2)
+    width = abs(pos1[0] - pos2[0])
+    height = abs(pos1[1] - pos2[1])
+    trans = [float(min(pos1[0], pos2[0])),
+             float(min(pos1[1], pos2[1]))]
 
-    def startfunc(x, y):
-        pos[:] = [x, y]
-        win.select.enable(False)
-        win.drag = True        
+    def func(event, x, y):
+        if event == "drag_start":
+            pos[:] = [trans[0] + x, trans[1] + y]
         
-    def donefunc(x, y):
-        pos[:] = []
+        elif event == "drag_stop":
+            pos[:] = []
 
             
-    def dragfunc(x, y):
-        if len(pos) == 0:
-            return
-        
-        click = [x, y]
+        elif event == "drag":
+            if len(pos) == 0:
+                return
+            click = [trans[0] + x, trans[1] + y]
 
-        vx = click[0] - pos[0]
-        vy = click[1] - pos[1]
-        pos[:] = click
-
-        pos1[0] += vx
-        pos1[1] += vy
-        pos2[0] += vx
-        pos2[1] += vy
-
-        g[0] = win.replace_group(g[0], group(
-               makebox(pos1[0], pos1[1], pos2[0], pos2[1]),
-               hotspot_drag(pos1[0], pos1[1], pos2[0], pos2[1], 
-                            startfunc, dragfunc, donefunc)))
+            vx = click[0] - pos[0]
+            vy = click[1] - pos[1]
+            pos[:] = click
+            
+            trans[0] += vx
+            trans[1] += vy
+            
+            old = g[0].get_parent()
+            old.remove(g[0])
+            win.remove_group(old)
+            win.add_group(translate(trans[0], trans[1], g[0]))
 
     def makebox(x1, y1, x2, y2):
         return group(color(0, 0, 0, .5),
@@ -88,10 +77,9 @@ def box(win, pos1, pos2):
     pos = []        
     g = [None]
     g[0] = group(color(0, 1, 0),
-              makebox(pos1[0], pos1[1], pos2[0], pos2[1]),
-              hotspot_drag(pos1[0], pos1[1], pos2[0], pos2[1], 
-                           startfunc, dragfunc, donefunc))
-    return g[0]
+                 makebox(0, 0, width, height),
+                 hotspot("drag", 0, 0, width, height, func))
+    return translate(trans[0], trans[1], g[0])
 
 
 
@@ -101,9 +89,9 @@ def selected(pos1, pos2):
 
 win = summon.Window("selection")
 win.drag = False
-win.add_binding(input_click("left", "up", "ctrl"), drag.done)
-win.add_binding(input_click("left", "down", "ctrl"), drag.start)
-win.add_binding(input_motion("left", "down", "ctrl"), drag.drag)
+win.add_binding(input_click("left", "up", "shift"), "hotspot_drag_stop")
+win.add_binding(input_click("left", "down", "shift"), "hotspot_drag_start")
+win.add_binding(input_motion("left", "down", "shift"), "hotspot_drag")
 win.select.set_callback(selected)
 #sel = select.Select(win, selected, strokeColor=(1, .5, 1, .8), 
 #                         fillColor=(0, .5, 1, .5))

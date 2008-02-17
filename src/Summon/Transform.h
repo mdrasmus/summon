@@ -80,6 +80,7 @@ public:
     }
     
     
+    virtual bool SetContents(const Scm &code);
     virtual bool Build(int header, const Scm &code);
     virtual Scm GetContents();
     
@@ -90,7 +91,7 @@ public:
                                                 const Camera &camera);
     
     virtual void Update();
-    virtual Element *GetTransformParent()
+    virtual Transform *GetTransformParent()
     {
         return this;
     }

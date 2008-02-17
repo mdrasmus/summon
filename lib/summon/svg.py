@@ -93,7 +93,7 @@ class SvgWriter:
     def printText(self, elm):
         """write the SVG for a text element"""
         
-        c = elm.get_contents()
+        c = elm.get()
         kind = c[0]
         msg = c[1]
         x1, y1, x2, y2 = c[2:6]
@@ -145,7 +145,7 @@ class SvgWriter:
     def printBeginTransform(self, elm):
         """write the opening tag for a transform"""
     
-        c = elm.get_contents()    
+        c = elm.get()
         if isinstance(elm, translate):
             print >>self.out, "<g transform='translate(%f,%f)'>" % (c[1], c[2])
             
@@ -200,7 +200,7 @@ class SvgWriter:
     
     def pushTransform(self, elm):
     
-        c = elm.get_contents()[1:]
+        c = elm.get()[1:]
         if isinstance(elm, translate):
             mat = transform.makeTransMatrix(c)
             

@@ -33,8 +33,7 @@ bool TextElement::Build(int header, const Scm &code2)
 {
     //int header;
     float x1, y1, x2, y2;
-    if (!ParseScm(code2, "sffff", &text, &x1, &y1, &x2, &y2))
-    {
+    if (!ParseScm(code2, "sffff", &text, &x1, &y1, &x2, &y2)) {
         Error("Bad format for text construct");
         return false;
     }
@@ -132,7 +131,7 @@ Scm TextElement::GetContents()
             assert(0);
     }
     
-    return ScmAppend(BuildScm("isffff", id, text.c_str(), 
+    return ScmAppend(BuildScm("dsffff", id, text.c_str(), 
                                         pos1.x, pos1.y, pos2.x, pos2.y),
                     just);
 
