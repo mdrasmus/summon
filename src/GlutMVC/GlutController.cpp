@@ -34,7 +34,8 @@ namespace Summon
 long MsecTime()
 {
 	struct timeval time;
-	gettimeofday(&time, NULL);
+	
+	//gettimeofday(&time, NULL);
 	return time.tv_sec * 1000 + time.tv_usec / 1000;
 }
 

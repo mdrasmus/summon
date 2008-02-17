@@ -2,8 +2,15 @@
 # SUMMON - Cygwin Makefile
 #
 
+
 MODULE = summon_core.dll
 SRCPREFIX=src
+
+CC = g++
+AR = ar
+MAKE = make
+RM = rm -rf
+CP = cp -r
 
 # no glut extension for cygwin
 # Closing windows is therefore not handled properly
@@ -23,7 +30,7 @@ LDFLAGS = -L/lib/w32api -L/usr/local/lib -lglut32 -lopengl32 \
 	-lSDL -L/lib/python2.5/config -lpython2.5
 
 
-export MODULE CFLAGS LDFLAGS
+export MODULE CFLAGS LDFLAGS CC MAKE RM CP
 
 
 # make rule for summon module

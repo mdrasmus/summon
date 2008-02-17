@@ -1,0 +1,41 @@
+#
+# SUMMON - Cygwin Makefile
+#
+
+MODULE = summon_core.dll
+
+prefix=/usr/
+
+# no glut extension for cygwin
+# Closing windows is therefore not handled properly
+CFLAGS=-DNOGLUTEXT
+CC = mingw32-g++
+AR = ar
+MAKE = mingw32-make
+RM = del /q
+CP = copy
+
+all: lib/$(MODULE)
+
+
+# linking
+LDFLAGS = -L../../windows/lib -LC:/Python24/libs \
+	-lglut32 -lopengl32 -lSDL -lOpenGLUT -lpython24
+
+CFLAGS = -I../../windows/include -IC:/Python24/include -DNOGLUTEXT
+
+
+export MODULE CFLAGS LDFLAGS CC MAKE RM CP
+
+SRCPREFIX=src
+include src/Makefile.in
+
+# make rule for summon module
+lib/$(MODULE): src/Summon/$(MODULE)	
+	$(CP) src\Summon\$(MODULE) lib
+
+clean: cleanall
+	$(RM) lib/$(MODULE)
+
+install: lib/$(MODULE)
+	$(CP) lib/* $(PYTHON_PREFIX)

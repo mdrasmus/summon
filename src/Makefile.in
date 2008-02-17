@@ -1,5 +1,3 @@
-CC = g++
-AR = ar
 
 INCLUDE = \
     -I$(SRCPREFIX)/Common \
@@ -12,13 +10,13 @@ MY_LIBS = \
         $(SRCPREFIX)/MVC/libMVC.a 
 
 COMPILE = -c \
-    -Wall -fno-strict-aliasing  \
+    -Wall  \
     $(INCLUDE) 
 
 ifdef DEBUG
 	COMPILE := $(COMPILE) -g
 else
-    COMPILE := $(COMPILE) -O3
+    #COMPILE := $(COMPILE) -O3
 endif
 
 # Profiling code
@@ -26,30 +24,24 @@ ifdef PROFILE
     COMPILE := $(COMPILE) -pg 
 endif
 
-#
-# Python COMPILE flags
-#
-COMPILE := $(COMPILE) -I/usr/include/python2.4 -I/usr/include/python2.5
-
-
 
 # rules for subsystems
 $(SRCPREFIX)/Common/libCommon.a::
-	make -C $(SRCPREFIX)/Common
+	$(MAKE) -C $(SRCPREFIX)/Common
     
 $(SRCPREFIX)/GlutMVC/libGlutMVC.a::
-	make -C $(SRCPREFIX)/GlutMVC
+	$(MAKE) -C $(SRCPREFIX)/GlutMVC
 
 $(SRCPREFIX)/MVC/libMVC.a::
-	make -C $(SRCPREFIX)/MVC
+	$(MAKE) -C $(SRCPREFIX)/MVC
 
 $(SRCPREFIX)/Summon/$(MODULE)::
-	make -C $(SRCPREFIX)/Summon
+	$(MAKE) -C $(SRCPREFIX)/Summon
 
 
 # basic compile rule
 $(OBJS): %.o: %.cpp
-	$(CC) $(CFLAGS) $(COMPILE) -o $@ $<
+	$(CC) $(COMPILE) $(CFLAGS) -o $@ $<
 
 # basic library building
 $(LIB): $(OBJS)
@@ -61,10 +53,10 @@ test:
 
 # clean rules
 clean:
-	rm -rf $(OBJS) $(LIB) $(MODULE)
+	$(RM) $(OBJS) $(LIB) $(MODULE)
 
 cleanall:
-	make clean -C $(SRCPREFIX)/Common
-	make clean -C $(SRCPREFIX)/GlutMVC
-	make clean -C $(SRCPREFIX)/MVC
-	make clean -C $(SRCPREFIX)/Summon
+	$(MAKE) clean -C $(SRCPREFIX)/Common
+	$(MAKE) clean -C $(SRCPREFIX)/GlutMVC
+	$(MAKE) clean -C $(SRCPREFIX)/MVC
+	$(MAKE) clean -C $(SRCPREFIX)/Summon

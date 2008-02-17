@@ -1374,7 +1374,7 @@ class SummonMenu (Menu):
             lambda: summon.svg.printScreenPng(win))
         self.add_submenu("Print screen", self.print_screen_menu)        
 
-        from summon import inspect
+        #from summon import inspect
 
         # misc
         self.misc = Menu()

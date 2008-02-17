@@ -52,7 +52,7 @@ class GroupInspect (object):
                                     x1, midy, x2, y2,
                                     "center", "middle"),
                          maxx=2, maxy=2,
-                         minx=.1, miny=.1
+                         minx=.1, miny=.1,
                          link=True, link_type="smaller",
                          origin=((x1+x2)/2.0, y2-(y1+y2)/4.0)),
                      hotspot("click", x1, midy, x2, y2, self.expand))

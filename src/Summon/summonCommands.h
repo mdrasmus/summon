@@ -34,7 +34,8 @@
 #include "ScriptCommand.h"
 #include "Vertex.h"
 
-
+//NOTE:  somebody in the windows build defines this! undefine it so it doesn't break our code below
+#undef lst2 
 
 namespace Summon
 {
@@ -663,6 +664,7 @@ public:
     
     Scm code;
 };
+
 
 class RemoveGroupCommand2 : public ElementCommand
 {
