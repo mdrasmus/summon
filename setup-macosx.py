@@ -81,7 +81,7 @@ setup(
         Extension(
             'summon_core', 
             ["src/Common/Script.cpp",
-             "src/Common/ScriptCommand.cpp",
+             "src/Common/common.cpp",
              "src/GlutMVC/Glut2DController.cpp",
              "src/GlutMVC/Glut2DView.cpp",
              "src/GlutMVC/GlutController.cpp",
@@ -93,7 +93,7 @@ setup(
              "src/MVC/Input.cpp",
              "src/MVC/Model.cpp",
              "src/MVC/StringCommand.cpp",
-             "src/MVC/common.cpp",
+			 "src/SummonSceneGraph/summon_scene_graph.cpp",
              "src/SummonSceneGraph/elements.cpp",
              "src/SummonSceneGraph/Element.cpp",
              "src/SummonSceneGraph/Graphic.cpp",
@@ -102,6 +102,7 @@ setup(
              "src/SummonSceneGraph/Transform.cpp",
              "src/SummonSceneGraph/TransformMatrix.cpp",
              "src/SummonSceneGraph/ZoomClamp.cpp",
+			 "src/Summon/ScriptCommand.cpp",
              "src/Summon/Summon.cpp",             
              "src/Summon/summonCommands.cpp",
              "src/Summon/SummonController.cpp",
@@ -111,6 +112,7 @@ setup(
                           "src/GlutMVC",
                           "src/Common",
                           "src/Summon",
+                          "src/SummonSceneGraph",
                           
                           "/sw/include",
                           "/usr/X11R6/include"],
