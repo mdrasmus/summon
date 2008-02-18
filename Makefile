@@ -19,7 +19,7 @@ MODULE = summon_core.so
 
 # options for compiling and linking
 LDFLAGS := $(LDFLAGS) -lglut -lGL -lSDL -lutil -lpython$(PYTHON_VERSION) -pthread 
-CFLAGS := $(CFLAGS) -I$(PYTHON_INCLUDE)
+CFLAGS := $(CFLAGS) -I$(PYTHON_INCLUDE) -fno-strict-aliasing
 
 # programs
 CC = g++

@@ -34,8 +34,8 @@ using namespace std;
 Scm Scm_NULL(NULL);
 Scm Scm_NONE(Py_None);
 Scm Scm_EOL;
-Scm Scm_TRUE(Py_True);
-Scm Scm_FALSE(Py_False);
+Scm Scm_TRUE;
+Scm Scm_FALSE;
 
 PyObject *python_globals;
 
@@ -50,6 +50,8 @@ void InitPython()
     if (once) return;
     once = true;
 
+    Scm_TRUE  = Py2Scm(Py_True);
+    Scm_FALSE = Py2Scm(Py_False);
     Scm_EOL   = Py2ScmTake(PyTuple_New(0));
     
     python_globals = PyModule_GetDict(PyImport_AddModule((char*) "__main__"));
