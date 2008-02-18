@@ -39,9 +39,9 @@ vector<clock_t> g_logTimes;
 
 
 // define timing function
-#if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
+#if defined(SUMMON_MSW) || defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
     // windows
-#   include <time.h>
+#   include <windows.h>
     
     long MsecTime()
     {
