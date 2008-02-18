@@ -2,43 +2,49 @@
 # SUMMON - Linux Makefile
 #
 
-VERSION=1.8.5
-MODULE=summon_core.so
+# install prefix (can overload on command line)
+prefix = /usr
 
-prefix=/usr/
-PYTHON_PREFIX=$(prefix)/lib/python2.4/site-packages/
+# python version (can be 2.4 or 2.5)
+PYTHON_VERSION = 2.4
 
+# python install location
+PYTHON_PREFIX = $(prefix)/lib/python$(PYTHON_VERSION)/site-packages/
+
+# python include path
+PYTHON_INCLUDE = $(prefix)/include/python$(PYTHON_VERSION)
+
+# module name
+MODULE = summon_core.so
+
+# options for compiling and linking
+LDFLAGS := $(LDFLAGS) -lglut -lGL -lSDL -lutil -lpython$(PYTHON_VERSION) -pthread 
+CFLAGS := $(CFLAGS) -I$(PYTHON_INCLUDE)
+
+# programs
 CC = g++
 AR = ar
 MAKE = make
 RM = rm -rf
 CP = cp -r
 
+export MODULE CFLAGS LDFLAGS CC AR MAKE RM CP
+
+#=============================================================================
+# main target
+
 all: lib/$(MODULE)
 
-# profiling
-ifdef PROFILE
-    LDFLAGS := $(LDFLAGS) -pg
-endif
-
-# linking for summon module on Linux
-LDFLAGS := $(LDFLAGS) -lglut -lGL -lSDL -lutil -lpython2.4 -pthread 
-
-CFLAGS := $(CFLAGS) -I/usr/include/python2.4
-
-export MODULE CFLAGS LDFLAGS CC MAKE RM CP
-
 # include basic rules
-SRCPREFIX=src
-include src/Makefile.in
+SRCPREFIX=.
+include Makefile.in
 
-# make rule for summon module on Linux
+# top-level rules
 lib/$(MODULE): src/Summon/$(MODULE)	
 	$(CP) src/Summon/$(MODULE) lib
 
 clean: cleanall
 	$(RM) lib/$(MODULE)
-
 
 install: lib/$(MODULE)
 	$(CP) lib/* $(PYTHON_PREFIX)

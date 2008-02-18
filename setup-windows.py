@@ -113,7 +113,6 @@ setup(
                           
                           "windows/include"],
             libraries=["OpenGLUT", "opengl32", "SDL"],
-            #extra_link_args=["OpenGLUT.lib"],
             library_dirs=["windows/lib"],
             undef_macros=["NDEBUG"],
             # don't use -DNDEBUG (it breaks summon at runtime)

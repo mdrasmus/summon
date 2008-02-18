@@ -2,43 +2,55 @@
 # SUMMON - Cygwin Makefile
 #
 
+# install prefix (can overload on command line)
+prefix = /usr
 
+# python version (can be 2.4 or 2.5)
+PYTHON_VERSION = 2.4
+
+# python install location
+PYTHON_PREFIX = $(prefix)/lib/python$(PYTHON_VERSION)/site-packages/
+
+# python include path
+PYTHON_INCLUDE = $(prefix)/include/python$(PYTHON_VERSION)
+
+# module name
 MODULE = summon_core.dll
-SRCPREFIX=src
 
+# options for compiling and linking
+LDFLAGS = -L/lib/w32api -L/usr/local/lib -lglut32 -lopengl32 \
+	-lSDL -L/lib/python$(PYTHON_VERSION)/config -lpython$(PYTHON_VERSION)
+CFLAGS := $(CFLAGS) -I$(PYTHON_INCLUDE) 
+
+# no glut extension for cygwin
+# Closing windows is therefore not handled properly
+CFLAGS := $(CFLAGS) -DNOGLUTEXT
+
+
+# programs
 CC = g++
 AR = ar
 MAKE = make
 RM = rm -rf
 CP = cp -r
 
-# no glut extension for cygwin
-# Closing windows is therefore not handled properly
-CFLAGS=-DNOGLUTEXT
+export MODULE CFLAGS LDFLAGS CC AR MAKE RM CP
+
+#=============================================================================
+# main target
 
 all: lib/$(MODULE)
 
-prefix=/usr/
-PYTHON_PREFIX=$(prefix)/lib/python2.4/site-packages/
+# include basic rules
+SRCPREFIX=.
+include Makefile.in
 
-include src/Makefile.in
-
-
-
-# linking
-LDFLAGS = -L/lib/w32api -L/usr/local/lib -lglut32 -lopengl32 \
-	-lSDL -L/lib/python2.5/config -lpython2.5
-
-
-export MODULE CFLAGS LDFLAGS CC MAKE RM CP
-
-
-# make rule for summon module
+# top-level rules
 lib/$(MODULE): src/Summon/$(MODULE)	
-	cp src/Summon/$(MODULE) lib
+	$(CP) src/Summon/$(MODULE) lib
 
 clean: cleanall
-	rm -rf lib/$(MODULE)
+	$(RM) lib/$(MODULE)
 
 install: lib/$(MODULE)
-	cp -r lib/* $(PYTHON_PREFIX)
+	$(CP) lib/* $(PYTHON_PREFIX)
