@@ -37,6 +37,33 @@ vector<string> g_logStages;
 vector<clock_t> g_logTimes;
 
 
+// define timing function
+#if defined(SUMMON_MSW) || defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
+    // windows
+#   include <windows.h>
+    
+    long MsecTime()
+    {
+        FILETIME ft;
+        GetSystemTimeAsFileTime(&ft);
+        long tmpres = ft.dwLowDateTime / 10;
+    }
+
+
+#else
+    // unix
+#   include <sys/times.h>
+    
+    long MsecTime()
+    {
+	    struct timeval time;
+	    gettimeofday(&time, NULL);
+	    return time.tv_sec * 1000 + time.tv_usec / 1000;
+    }
+#endif
+
+
+
 bool Chomp(char *str)
 {
    int len = strlen(str);
