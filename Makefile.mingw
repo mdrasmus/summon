@@ -1,36 +1,48 @@
 #
-# SUMMON - Cygwin Makefile
+# SUMMON - MinGW Makefile
 #
 
+
+# python version (can be 24 or 25)
+PYTHON_VERSION = 24
+
+# python install location
+PYTHON_PREFIX = C:/Python$(PYTHON_VERSION)/site-packages/
+
+# python include path
+PYTHON_INCLUDE = C:/Python$(PYTHON_VERSION)/include/
+
+# module name
 MODULE = summon_core.dll
 
-prefix=/usr/
+# options for compiling and linking
+LDFLAGS = -L../../windows/lib -LC:/Python24/libs \
+	-lglut32 -lopengl32 -lSDL -lOpenGLUT -lpython24
+CFLAGS = -I../../windows/include -I$(PYTHON_INCLUDE)
 
 # no glut extension for cygwin
 # Closing windows is therefore not handled properly
-CFLAGS=-DNOGLUTEXT
+CFLAGS := $(CFLAGS) -DNOGLUTEXT
+
+# programs
 CC = mingw32-g++
 AR = ar
 MAKE = mingw32-make
 RM = del /q
 CP = copy
 
-all: lib/$(MODULE)
-
-
-# linking
-LDFLAGS = -L../../windows/lib -LC:/Python24/libs \
-	-lglut32 -lopengl32 -lSDL -lOpenGLUT -lpython24
-
-CFLAGS = -I../../windows/include -IC:/Python24/include -DNOGLUTEXT
-
-
 export MODULE CFLAGS LDFLAGS CC MAKE RM CP
 
+#=============================================================================
+# main target
+
+all: lib/$(MODULE)
+
+# include basic rules
 SRCPREFIX=src
 include src/Makefile.in
 
-# make rule for summon module
+# top-level rules
 lib/$(MODULE): src/Summon/$(MODULE)	
 	$(CP) src\Summon\$(MODULE) lib
 

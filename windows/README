@@ -1,0 +1,14 @@
+For easing Windows installation, two third party packages are also included
+under the windows directory.  OpenGLUT and SDL  have their own copyrights and
+licenses, which are listed in windows/openglut/ and windows/sdl/ directories, 
+respectively.
+
+To install third party libraries, copy windows/lib/OpenGLUT.DLL and
+windos/lib/SDL.DLL to C:\windows\system32 (or equivalent).
+
+Directory Layout: 
+
+windows/include/    -- include files for third party packages
+windows/lib/        -- library files for third party packages
+windows/sdl/        -- copyright and license info for SDL
+windows/openglut/   -- copyright and license info for OpenGLUT
