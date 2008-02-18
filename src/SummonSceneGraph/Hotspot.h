@@ -61,7 +61,7 @@ public:
     enum {
         CLICK,
         OVER,
-        OUT,
+//        OUT,
         DRAG,
         DRAG_START,
         DRAG_STOP

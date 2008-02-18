@@ -23,11 +23,12 @@
 
 
 #include "first.h"
-//#include <sys/times.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string>
 #include "common.h"
+
+
 
 namespace Summon {
 
@@ -35,6 +36,34 @@ using namespace std;
 
 vector<string> g_logStages;
 vector<clock_t> g_logTimes;
+
+
+// define timing function
+#if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
+    // windows
+#   include <time.h>
+    
+    long MsecTime()
+    {
+        FILETIME ft;
+        GetSystemTimeAsFileTime(&ft);
+        long tmpres = ft.dwLowDateTime / 10;
+    }
+
+
+#else
+    // unix
+#   include <sys/times.h>
+    
+    long MsecTime()
+    {
+	    struct timeval time;
+	    gettimeofday(&time, NULL);
+	    return time.tv_sec * 1000 + time.tv_usec / 1000;
+    }
+#endif
+
+
 
 
 bool Chomp(char *str)

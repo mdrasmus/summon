@@ -41,7 +41,7 @@ enum {
 };
 
 
-
+long MsecTime();
 void Log(int level, const char *fmt, ...);
 void PushStage(const char *stage);
 void PopStage();

@@ -1,4 +1,4 @@
-SRCPREFIX = ..
+SRCPREFIX = ../..
 LIB = libSummonSceneGraph.a
 OBJS = summon_scene_graph.o \
        elements.o \
@@ -12,4 +12,4 @@ OBJS = summon_scene_graph.o \
 
 all: $(LIB)
 
-include ../Makefile.in
+include ../../Makefile.in

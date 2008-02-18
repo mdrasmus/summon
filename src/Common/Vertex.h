@@ -41,7 +41,7 @@ public:
         x(other.x), y(other.y) {}
    
     template <class T2>
-    Vertex2(const Vertex2<T> &v) :
+    Vertex2(const Vertex2<T2> &v) :
         x(T(v.x)), y(T(v.y)) {}
     
     void Set(T _x, T _y) {

@@ -3,7 +3,7 @@ Copyright 2005-2008 Matt Rasmussen
 
 
 To install SUMMON, do the following:
-    1. install thrid-party libraries
+    1. install third-party libraries
     2. install SUMMON by one of these strategies
         1. distutils (ex: python setup.py install)
         2. binary install (rpm, *.exe)
@@ -13,7 +13,7 @@ For more documentation see doc/summon_manual.pdf
 
 
 =============================================================================
-THIRD PARTY SOFTWARE
+1. THIRD-PARTY SOFTWARE
 
 The following third party packages are needed for SUMMON:
     - SDL
@@ -23,30 +23,43 @@ This software is available for all major platforms.  See below for platform
 specific instructions:
 
 
-=== LINUX (Debian)
-On Debian Linux the following apt-get command should install the third party
+=== 1.1 LINUX (Debian)
+On Debian Linux the following apt-get command should install the third-party
 packages:
 
     apt-get install libsdl-dev freeglut-dev
 
 Other Linux distributions should have the same packages under similar names
 
-=== MAC OS X
+
+=== 1.2 MAC OS X
 Using fink to install third party packages:
 
     /sw/bin/fink install sdl glut
     
-=== WINDOWS (XP, Vista) NATIVE
-Download the windows version of GLUT from http://openglut.sourceforge.net/
-Make sure to copy OpenGLUT.dll to your C:\windows\system32 directory (or wherever
-your DLLs are located)
 
-Download the windows version of SDL from http://www.libsdl.org/
-Make sure to copy SDL.dll to your C:\windows\system32 directory (or wherever your
-DLLs are located)
+=== 1.3 WINDOWS (XP, Vista) NATIVE
+
+For your convenience, the ZIP archive of SUMMON includes compiled third-party
+libraries.  To install them, copy summon/windows/lib/OpenGLUT.DLL and
+summon/windows/lib/SDL.DLL to  your C:\windows\system32 directory (or wherever
+your DLLs are located).
+
+    Installation directly from third-party:
+    
+    If the above instructions do not work for you, you can also install
+    third-party libraries downloaded directly from third-parties:
+
+    1. Download the windows version of GLUT from
+    http://openglut.sourceforge.net/ Make sure to copy OpenGLUT.dll to your
+    C:\windows\system32 directory (or wherever your DLLs are located)
+
+    2. Download the windows version of SDL from http://www.libsdl.org/ Make sure
+    to copy SDL.dll to your C:\windows\system32 directory (or wherever your DLLs
+    are located)
 
 
-=== WINDOWS (XP, Vista) CYGWIN
+=== 1.4 WINDOWS (XP, Vista) CYGWIN
 
 SUMMON can also be installed in a Cygwin environment.  The following packages
 can be installed through Cygwin's setup.exe 
@@ -61,108 +74,114 @@ SDL must be compiled and installed manually from http://www.libsdl.org/
 
 
 =============================================================================
-CROSSPLATFORM INSTALLATION OF SUMMON WITH DISTUTILS (Ideally)
+2. CROSSPLATFORM INSTALLATION OF SUMMON WITH DISTUTILS (Ideally)
 
 Download and unzip the archive summon-XXX.tar.gz from
 http://people.csail.mit.edu/rasmus/summon
 Within the uncompressed directory do one of the following:
 
-=== UNIX (ex: Linux)
+=== 2.1 UNIX (ex: Linux)
 To install summon with python distutils use the following command:
 
     python setup.py install
 
-or to install in your home directory use:
+NOTE: you  may need root permissions for system-wide installation.  To install 
+in your home directory use:
 
     python setup.py install --prefix=$HOME
 
 
-=== MAC OS X
+=== 2.2 MAC OS X
 For installing on Mac OS X use the following command:
     
     python setup-macosx.py install
 
 
-=== WINDOWS
+=== 2.3 WINDOWS
 It is recommended to use the Windows Install available from the SUMMON website
 (see below for more).
 
 However, if you are _really_ interested in using distutils, a windows specific
-version of the distutils file (setup-windows.py) is available.  You may need to
-edit it to properly configure the headers and linking of third part libraries
-(OpenGLUT, SDL, OpenGL).
+version of the distutils file (setup-windows.py) is available.  It is configured
+by default to compile SUMMON with third-party software pre-installed in
+summon/windows.
 
-I have found that using mingw32 and the command
+If you have Visual Studio 7.1 (the default windows compiler) the following
+command should build and install SUMMON:
+
+    python setup-windows.py install
+
+The mingw32 compiler also works very well (and is easier to get).  You the
+following commands to compile and install:
+
     python setup-windows.py build --compiler=mingw32
-works best.  Although, Visual Studio 7.1 should also work.
+    python setup-windows.py install
+   
+
+=============================================================================
+3. SUMMON BINARY INSTALL
+
+=== 3.1 LINUX RPM
+Download the rpm package from the SUMMON website
+
+    rpm -i summon-XXX-1.i386.rpm
+
+
+=== 3.2 WINDOWS 
+Download from the SUMMON website and run the Installer
+summon-XXX.win32-py2.4.exe
+
+For source code examples, you still need to download and unzip the ZIP file,
+summon-XXX.zip
+
 
 
 =============================================================================
-SUMMON BINARY INSTALL
-
-=== LINUX RPM
-Download the rpm from the summon website
-
-rpm -i summon-XXX-1.i386.rpm
+4. SUMMON INSTALL WITH MAKE
 
 
-=== WINDOWS 
-Download and run the Installer summon-XXX.win32-py2.4.exe
-
-For source code examples, you still need to download and unzip the tar file,
-summon-XXX.tar.gz
-
-
-
-=============================================================================
-SUMMON INSTALL WITH MAKE
-
-
-=== LINUX MAKE
+=== 4.1 LINUX MAKE
 You can also use the Makefiles to install summon in the source directory.
 On Linux, you may run:
 
     make
     
 
-Next, you must add the summon source directory to your python path using
-(assuming you use the bash shell, add these lines to your ~/.bashrc file):
+Next, you must add the summon source directory to your python path using:
 
     export PYTHONPATH=$PYTHONPATH:path/to/summon-XXX/lib
     export PATH=$PATH:path/to/summon-XXX/bin
+    
+NOTE: this assumes you use the bash shell.  Add these lines to your ~/.bashrc 
+startup file
 
 
-=== WINDOWS MAKE
-On windows, you can run nmake with the properly setup environment variables. 
-You will likely need to edit Makefile.win first to configure the location of 
-third party libraries.
+=== 4.2 WINDOWS MAKE
+A makefile for compiling SUMMON with mingw for windows is included.  The
+following command will compile SUMMON:
 
-    <<edit Makefile.win>>
-    nmake -f Makefile.win
+    make -f Makefile.mingw
 
-For convenience, you can use winsh.bat to run the above command in a proper
-environment for Microsoft Visual Studio 8.0:
+Be sure to add the following paths to your environment variables.
 
-    winsh.bat nmake -f Makefile.win
+    append to PYTHONPATH path/to/summon-XXX/lib
+    append to PATH path/to/summon-XXX/bin
 
 
-
-=== WINDOWS CYGWIN MAKE
+=== 4.3 WINDOWS CYGWIN MAKE
 I have had trouble using setup.py for installing on CYGWIN, so I made a Makefile
 specifically for installing on CYGWIN.  
 Note: make sure that the *development* packages of freeglut and SDL are
 installed first.  
-Then execute make with the following command
-
+Execute make with the following command:
 
     make -f Makefile.cygwin
 
 Next, you must add the summon source directory to your python path using
-(assuming you use the bash shell, add these lines to your ~/.bashrc file):
 
     export PYTHONPATH=$PYTHONPATH:path/to/summon-XXX/lib
     export PATH=$PATH:path/to/summon-XXX/bin
 
-
-
+NOTE: this assumes you use the bash shell.  Add these lines to your ~/.bashrc 
+startup file
 

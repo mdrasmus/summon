@@ -1,4 +1,4 @@
-SRCPREFIX = ..
+SRCPREFIX = ../..
 OBJS = ScriptCommand.o \
        Summon.o \
        summonCommands.o \
@@ -8,9 +8,9 @@ OBJS = ScriptCommand.o \
 
 all:: $(MODULE)
 
-include ../Makefile.in
+include ../../Makefile.in
 
-
-$(MODULE): $(OBJS) $(MY_LIBS)
-	$(CC) -shared $(OBJS) $(MY_LIBS) $(LDFLAGS) -o $(MODULE)
+# extra targets
+$(MODULE): $(OBJS) $(SUMMON_LIBS)
+	$(CC) -shared $(OBJS) $(SUMMON_LIBS) $(LDFLAGS) -o $(MODULE)
 

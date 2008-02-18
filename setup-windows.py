@@ -112,12 +112,9 @@ setup(
                           "src/Common",
                           "src/Summon",
                           
-                          "/dev/OpenGLUT-0.6.3",
-                          "/dev/SDL-1.2.11/include"],
+                          "windows/include"],
             libraries=["OpenGLUT", "opengl32", "SDL"],
-            extra_link_args=["/dev/OpenGLUT-0.6.3/OpenGLUT.lib"],
-            library_dirs=["/dev/SDL-1.2.11/lib",
-                          "/dev/OpenGLUT-0.6.3"],
+            library_dirs=["windows/lib"],
             undef_macros=["NDEBUG"],
             # don't use -DNDEBUG (it breaks summon at runtime)
             define_macros=[("NOGLUTEXT", "1")])]

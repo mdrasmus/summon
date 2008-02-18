@@ -70,7 +70,7 @@ _int2hotspot_event = [
     "drag_stop"
 ]
 
-_INF = float("inf")
+_INF = float("1e1000")
 
 #=============================================================================
 # Element classes

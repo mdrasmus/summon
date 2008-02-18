@@ -1,0 +1,78 @@
+#=============================================================================
+# default flags for compiling and linking
+
+SUMMON_INCLUDE = \
+    -I$(SRCPREFIX)/src/Common \
+    -I$(SRCPREFIX)/src/MVC \
+    -I$(SRCPREFIX)/src/GlutMVC \
+    -I$(SRCPREFIX)/src/SummonSceneGraph
+
+SUMMON_LIBS = \
+    $(SRCPREFIX)/src/GlutMVC/libGlutMVC.a \
+    $(SRCPREFIX)/src/MVC/libMVC.a \
+    $(SRCPREFIX)/src/SummonSceneGraph/libSummonSceneGraph.a \
+    $(SRCPREFIX)/src/Common/libCommon.a 
+    
+COMPILE = -c \
+    -Wall  \
+    $(SUMMON_INCLUDE) 
+
+#=============================================================================
+# conditional options
+
+# debugging
+ifdef DEBUG
+	COMPILE := $(COMPILE) -g
+else
+	COMPILE := $(COMPILE) -O3
+endif
+
+# profiling
+ifdef PROFILE
+    COMPILE := $(COMPILE) -pg
+    LDFLAGS := $(LDFLAGS) -pg
+endif
+
+#=============================================================================
+# rules for subsystems
+
+$(SRCPREFIX)/src/Common/libCommon.a::
+	$(MAKE) -C $(SRCPREFIX)/src/Common
+
+$(SRCPREFIX)/src/MVC/libMVC.a::
+	$(MAKE) -C $(SRCPREFIX)/src/MVC
+    
+$(SRCPREFIX)/src/GlutMVC/libGlutMVC.a::
+	$(MAKE) -C $(SRCPREFIX)/src/GlutMVC
+
+$(SRCPREFIX)/src/SummonSceneGraph/libSummonSceneGraph.a::
+	$(MAKE) -C $(SRCPREFIX)/src/SummonSceneGraph
+
+$(SRCPREFIX)/src/Summon/$(MODULE)::
+	$(MAKE) -C $(SRCPREFIX)/src/Summon
+
+
+#=============================================================================
+# basic compile and link rules
+
+$(OBJS): %.o: %.cpp
+	$(CC) $(COMPILE) $(CFLAGS) -o $@ $<
+
+# basic library building
+$(LIB): $(OBJS)
+	$(AR) -r $(LIB) $(OBJS)
+
+# test compiling
+test:
+	echo $(COMPILE)
+
+# clean rules
+clean:
+	$(RM) $(OBJS) $(LIB) $(MODULE)
+
+cleanall:
+	$(MAKE) clean -C $(SRCPREFIX)/src/Common
+	$(MAKE) clean -C $(SRCPREFIX)/src/MVC
+	$(MAKE) clean -C $(SRCPREFIX)/src/GlutMVC
+	$(MAKE) clean -C $(SRCPREFIX)/src/Summon
+	$(MAKE) clean -C $(SRCPREFIX)/src/SummonSceneGraph

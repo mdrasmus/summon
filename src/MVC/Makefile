@@ -1,4 +1,4 @@
-SRCPREFIX = ..
+SRCPREFIX = ../..
 LIB=libMVC.a
 OBJS = \
         Binding.o \
@@ -9,4 +9,4 @@ OBJS = \
 
 all: $(LIB)
 
-include ../Makefile.in
+include ../../Makefile.in
