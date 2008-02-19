@@ -153,13 +153,11 @@ void MultRotateMatrix(const float *a, float angle, float *c)
     float s = sin(angle * (M_PI/180.0));
     float o = cos(angle * (M_PI/180.0));
     
-    for (int i=0; i<4; i++) {
-        c[i*4+0] = a[i*4+0] * o +
-                   a[i*4+1] * s;
-        c[i*4+1] = a[i*4+0] * -s +
-                   a[i*4+1] * o;
-        c[i*4+2] = a[i*4+2];
-        c[i*4+3] = a[i*4+3];
+    for (int i=0; i<16; i+=4) {
+        c[i+0] = a[i+0] * o + a[i+1] * s;
+        c[i+1] = a[i+0] * -s + a[i+1] * o;
+        c[i+2] = a[i+2];
+        c[i+3] = a[i+3];
     }
 }
 
@@ -190,11 +188,11 @@ void MultScaleMatrix(const float *a, const float *vec, float *c)
         }
     }*/
 
-    for (int i=0; i<4; i++) {
-        c[i*4+0] = a[i*4+0] * vec[0];
-        c[i*4+1] = a[i*4+1] * vec[1];
-        c[i*4+2] = a[i*4+2] * vec[2];
-        c[i*4+3] = a[i*4+3];
+    for (int i=0; i<16; i++) {
+        c[i] = a[i] * vec[0]; i++;
+        c[i] = a[i] * vec[1]; i++;
+        c[i] = a[i] * vec[2]; i++;
+        c[i] = a[i];
     }
 }
 
