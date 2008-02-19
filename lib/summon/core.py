@@ -616,6 +616,7 @@ class text_clip (custom_group, text):
                     translate(-ox, -oy,
                         zoom_clamp(
                             text_scale(txt, x1, y1, x2, y2, *justified),
+                            lines(x1, y1, x2, y2),
                             
                             miny=minheight / texth, maxy=maxheight / texth,
                             link=True, link_type="smaller", 

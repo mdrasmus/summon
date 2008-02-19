@@ -60,6 +60,11 @@ public:
     bool IsClipped(const Camera &camera) const;
 
 protected:
+    inline float ComputeWorldAngle(const TransformMatrix *parent,
+                                   const Camera &camera) const;
+    inline Vertex2f ComputePrezoom(const TransformMatrix *parent, 
+                                   float worldAngle) const;
+
     float m_minx;
     float m_miny;
     float m_maxx;
