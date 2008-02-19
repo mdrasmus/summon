@@ -63,8 +63,11 @@ public:
     
     enum {
         CLICK,
-        OVER,
-        OUT
+        MOUSE_OVER,
+        MOUSE_OUT,
+        DRAG,
+        DRAG_START,
+        DRAG_STOP
     };
     
     int kind;
