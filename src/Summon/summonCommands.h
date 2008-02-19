@@ -34,7 +34,8 @@
 #include "ScriptCommand.h"
 #include "Vertex.h"
 
-
+//NOTE:  somebody in the windows build defines this! undefine it so it doesn't break our code below
+#undef lst2 
 
 namespace Summon
 {
@@ -75,7 +76,8 @@ enum {
     REMOVE_GROUP_COMMAND2,
     REPLACE_GROUP_COMMAND2,
     SHOW_GROUP_COMMAND2,
-    GET_BOUNDING_COMMAND2,    
+    GET_BOUNDING_COMMAND2,
+    SET_CONTENTS_COMMAND,
     
     // model commands
     ADD_GROUP_COMMAND,
@@ -124,6 +126,9 @@ enum {
     CLEAR_BINDING_COMMAND,
     CLEAR_ALL_BINDINGS_COMMAND,
     HOTSPOT_CLICK_COMMAND,
+    HOTSPOT_DRAG_COMMAND,
+    HOTSPOT_DRAG_START_COMMAND,
+    HOTSPOT_DRAG_STOP_COMMAND,
     GET_MOUSE_POS_COMMAND,
     SET_WINDOW_ON_RESIZE_COMMAND,
     SET_WINDOW_ON_MOVE_COMMAND,
@@ -173,8 +178,6 @@ enum {
         
     SUMMON_COMMANDS_END
 };
-
-
 
 
 void summonCommandsInit();
@@ -249,7 +252,7 @@ public:
     virtual const char *GetDescription() 
     { return "creates a new window and returns its id"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "sdddd", &name, &size.x, &size.y,
                                                      &position.x, &position.y);
@@ -272,7 +275,7 @@ public:
     virtual const char *GetDescription() 
     { return "closes a window"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         if (ScmLength(lst) > 0)
             return ParseScm(lst, "d", &windowid);
@@ -325,7 +328,7 @@ public:
     virtual const char *GetDescription() 
     { return "assigns a model to a window"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "dsd", &windowid, &kind, &modelid);
     }
@@ -348,7 +351,7 @@ public:
     virtual const char *GetDescription() 
     { return "deletes a model"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "d", &modelid);
     }
@@ -386,7 +389,7 @@ public:
     virtual const char *GetDescription() 
     { return "set the callback for a window close"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "p", &callback);
     }
@@ -407,7 +410,7 @@ public:
     virtual const char *GetDescription() 
     { return "calls a function 'func' after a delay in seconds"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "fp", &delay, &proc);
     }
@@ -429,7 +432,7 @@ public:
     virtual const char *GetDescription() 
     { return "calls function 'func' on every redraw"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "p", &proc);
     }
@@ -466,7 +469,7 @@ public:
     virtual const char *GetDescription() 
     { return "deletes a menu"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "d", &menuid);
     }
@@ -486,7 +489,7 @@ public:
     virtual const char *GetDescription() 
     { return "adds an entry to a menu"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "dsp", &menuid, &text, &func);
     }
@@ -509,7 +512,7 @@ public:
     virtual const char *GetDescription() 
     { return "adds a submenu to a menu"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "dsd", &menuid, &text, &submenuid);
     }
@@ -532,7 +535,7 @@ public:
     virtual const char *GetDescription() 
     { return "remove a menu item from a menu"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "dd", &menuid, &index);
     }
@@ -554,7 +557,7 @@ public:
     virtual const char *GetDescription() 
     { return "set a menu item to a menu entry"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "ddsp", &menuid, &index, &text, &func);
     }
@@ -577,7 +580,7 @@ public:
     virtual const char *GetDescription() 
     { return "set a menu item to a menu entry"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "ddsd", &menuid, &index, &text, &submenuid);
     }
@@ -601,7 +604,7 @@ public:
     virtual const char *GetDescription() 
     { return "attach a menu to a window"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "ddd", &windowid, &menuid, &button);
     }
@@ -623,7 +626,7 @@ public:
     virtual const char *GetDescription() 
     { return "detach a menu from a window"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "ddd", &windowid, &menuid, &button);
     }
@@ -654,13 +657,14 @@ public:
     virtual const char *GetDescription() 
     { return "adds drawing groups as children to another group"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "dc", &groupid, &code);
     }
     
     Scm code;
 };
+
 
 class RemoveGroupCommand2 : public ElementCommand
 {
@@ -673,19 +677,21 @@ public:
     virtual const char *GetDescription() 
     { return "removes drawing groups from another group"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
+        Scm lst2 = lst;
+    
         // parse groupid
-        if (ScmIsList(lst) && ScmIsInt(lst.GetScm(0))) {
-            groupid = Scm2Int(lst.GetScm(0));
-            lst.Pop();
+        if (ScmIsList(lst2) && ScmIsInt(lst2.GetScm(0))) {
+            groupid = Scm2Int(lst2.GetScm(0));
+            lst2.Pop();
         } else {
             return false;
         }
     
         // parse group ids
-        for (int i=0; i<lst.Size(); i++) {
-            Scm elmid = lst.GetScm(i);
+        for (int i=0; i<lst2.Size(); i++) {
+            Scm elmid = lst2.GetScm(i);
             if (ScmIsInt(elmid)) {
                 groupids.push_back(Scm2Int(elmid));
             } else {
@@ -712,7 +718,7 @@ public:
     virtual const char *GetDescription() 
     { return "replaces a drawing group"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         if (ParseScm(lst, "dd", &groupid, &oldgroupid)) {
             code = ScmCddr(lst);
@@ -738,7 +744,7 @@ public:
     virtual const char *GetDescription() 
     { return "sets the visibilty of a group"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "db", &groupid, &visible);
     }
@@ -755,12 +761,35 @@ public:
     virtual const char *GetName() { return "get_bounding2"; }
     virtual const char *GetUsage() { return "groupid"; }
     virtual const char *GetDescription() 
-    { return "returns a bounding box for a group and its contents"; }
+    { return "returns a bounding box for an element and its contents"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "d", &groupid);
     }
+};
+
+
+class SetContentsCommand : public ElementCommand
+{
+public:
+    virtual Command* Create() { return new SetContentsCommand(); }
+    virtual int GetId() { return SET_CONTENTS_COMMAND; }
+
+    virtual const char *GetName() { return "set_contents"; }
+    virtual const char *GetUsage() { return "groupid"; }
+    virtual const char *GetDescription() 
+    { return "returns the contents of an element"; }
+    
+    virtual bool Setup(const Scm &lst)
+    {
+        if (!ParseScm(lst, "d", &groupid))
+            return false;
+        code = ScmCdr(lst);
+        return true;
+    }
+    
+    Scm code;
 };
 
 
@@ -788,7 +817,7 @@ public:
     virtual const char *GetDescription() 
     { return "adds drawing groups to the current model"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "dc", &modelid, &code);
     }
@@ -807,7 +836,7 @@ public:
     virtual const char *GetDescription() 
     { return "inserts drawing groups under an existing group"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "ddc", &modelid, &groupid, &code);
     }
@@ -828,19 +857,21 @@ public:
     virtual const char *GetDescription() 
     { return "removes drawing groups from the current display"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
+        Scm lst2 = lst;
+    
         // parse modelid
-        if (ScmIsList(lst) && ScmIsInt(lst.GetScm(0))) {
-            modelid = Scm2Int(lst.GetScm(0));
-            lst.Pop();
+        if (ScmIsList(lst2) && ScmIsInt(lst2.GetScm(0))) {
+            modelid = Scm2Int(lst2.GetScm(0));
+            lst2.Pop();
         } else {
             return false;
         }
     
         // parse group ids
-        for (int i=0; i<lst.Size(); i++) {
-            Scm elmid = lst.GetScm(i);
+        for (int i=0; i<lst2.Size(); i++) {
+            Scm elmid = lst2.GetScm(i);
             if (ScmIsInt(elmid)) {
                 groupids.push_back(Scm2Int(elmid));
             } else {
@@ -867,7 +898,7 @@ public:
     virtual const char *GetDescription() 
     { return "replaces a drawing group on the current display"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         if (ParseScm(lst, "dd", &modelid, &groupid)) {
             code = ScmCddr(lst);
@@ -893,7 +924,7 @@ public:
     virtual const char *GetDescription() 
     { return "removes all drawing groups from the current display"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "d", &modelid);
     }
@@ -911,7 +942,7 @@ public:
     virtual const char *GetDescription() 
     { return "sets the visibilty of a group"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "ddb", &modelid, &groupid, &visible);
     }
@@ -932,7 +963,7 @@ public:
     virtual const char *GetDescription() 
     { return "gets the group id of the root group"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "d", &modelid);
     }
@@ -951,7 +982,7 @@ public:
     virtual const char *GetDescription() 
     { return "returns a bounding box for a group and its contents"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "dd", &modelid, &groupid);
     }
@@ -977,7 +1008,7 @@ public:
     virtual const char *GetDescription() 
     { return "sets the name of a window"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "ds", &windowid, &name);
     }
@@ -997,7 +1028,7 @@ public:
     virtual const char *GetDescription() 
     { return "get the name of a window"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "d", &windowid);
     }
@@ -1015,7 +1046,7 @@ public:
     virtual const char *GetDescription() 
     { return "sets the position of a window"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "ddd", &windowid, &x, &y);
     }
@@ -1034,7 +1065,7 @@ public:
     virtual const char *GetDescription() 
     { return "gets the position of a window"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "d", &windowid);
     }
@@ -1052,7 +1083,7 @@ public:
     virtual const char *GetDescription() 
     { return "sets current window's size"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "ddd", &windowid, &width, &height);
     }
@@ -1074,7 +1105,7 @@ public:
     virtual const char *GetDescription() 
     { return "gets current window's size"; }
 
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "d", &windowid);
     }    
@@ -1091,7 +1122,7 @@ public:
     virtual const char *GetDescription() 
     { return "sets current window's boundary"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "dffff", &windowid, &pos1.x, &pos1.y, 
                         &pos2.x, &pos2.y);
@@ -1113,7 +1144,7 @@ public:
     virtual const char *GetDescription() 
     { return "gets current window's boundary"; }
 
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "d", &windowid);
     }
@@ -1132,7 +1163,7 @@ public:
     virtual const char *GetDescription() 
     { return "raises or lowers a window"; }
 
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "db", &windowid, &raise);
     }
@@ -1152,7 +1183,7 @@ public:
     virtual const char *GetDescription() 
     { return "sets the translation of a window"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "dff", &windowid, &x, &y);
     }
@@ -1171,7 +1202,7 @@ public:
     virtual const char *GetDescription() 
     { return "gets the translation of a window"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "d", &windowid);
     }
@@ -1189,7 +1220,7 @@ public:
     virtual const char *GetDescription() 
     { return "sets the zoom of a window"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "dff", &windowid, &x, &y);
     }
@@ -1208,7 +1239,7 @@ public:
     virtual const char *GetDescription() 
     { return "gets the zoom of a window"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "d", &windowid);
     }
@@ -1226,7 +1257,7 @@ public:
     virtual const char *GetDescription() 
     { return "sets the focus point of a window"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "dff", &windowid, &x, &y);
     }
@@ -1245,7 +1276,7 @@ public:
     virtual const char *GetDescription() 
     { return "gets the focus point of a window"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "d", &windowid);
     }
@@ -1263,7 +1294,7 @@ public:
     virtual const char *GetDescription() 
     { return "sets background color"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         float r, g, b;
         
@@ -1289,7 +1320,7 @@ public:
     virtual const char *GetDescription() 
     { return "gets background color"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "d", &windowid);
     }
@@ -1307,7 +1338,7 @@ public:
     virtual const char *GetDescription() 
     { return "change display to contain region (x1,y1)-(x2,y2)"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "dffff", &windowid,
                         &data[0], &data[1], &data[2], &data[3]);
@@ -1328,7 +1359,7 @@ public:
     virtual const char *GetDescription() 
     { return "gets visible bounding box"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "d", &windowid);
     }
@@ -1346,7 +1377,7 @@ public:
     virtual const char *GetDescription() 
     { return "sets anti-aliasing status"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "db", &windowid, &enabled);
     }
@@ -1366,7 +1397,7 @@ public:
     virtual const char *GetDescription() 
     { return "shows and hides the mouse crosshair"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "db", &windowid, &enabled);
     }
@@ -1386,7 +1417,7 @@ public:
     virtual const char *GetDescription() 
     { return "sets mouse crosshair color"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         float r, g, b, a;
         
@@ -1442,7 +1473,7 @@ public:
     virtual const char *GetDescription() 
     { return "translate the view by (x,y)"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "dff", &windowid, &trans.x, &trans.y);
     }
@@ -1476,7 +1507,7 @@ public:
     virtual const char *GetName() { return "zoom"; }
     virtual const char *GetUsage() { return "id, factorX, factorY"; }
     virtual const char *GetDescription() { return "zoom view by a factor"; }
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "dff", &windowid, &zoom.x, &zoom.y);
     }
@@ -1514,7 +1545,7 @@ public:
     virtual const char *GetDescription() 
     { return "zoom x-axis by a factor"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         zoom.y = 1.0;
         return ParseScm(lst, "df", &windowid, &zoom.x);
@@ -1553,7 +1584,7 @@ public:
     { return "zoom y-axis by a factor"; }
 
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         zoom.x = 1.0;
         return ParseScm(lst, "df", &windowid, &zoom.y);
@@ -1581,7 +1612,7 @@ public:
     virtual const char *GetName() { return "focus"; }
     virtual const char *GetUsage() { return "id, x, y"; }
     virtual const char *GetDescription() { return "focus the view on (x,y)"; }
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "ddd", &windowid, &focus.x, &focus.y);
     }
@@ -1609,7 +1640,7 @@ public:
     virtual const char *GetDescription() 
     { return "bind an input to a command or procedure"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         Scm inputArg;
         Scm commandArg;
@@ -1655,7 +1686,7 @@ public:
     virtual const char *GetDescription() 
     { return "clear all bindings for an input"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         Scm inputArg;
     
@@ -1686,7 +1717,7 @@ public:
     virtual const char *GetDescription() 
     { return "clear all bindings for all input"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "d", &windowid);
     }
@@ -1717,12 +1748,50 @@ public:
         }
     }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "ddd", &windowid, &pos.x, &pos.y);
     }
     
     Vertex2i pos;
+};
+
+
+class HotspotDragCommand : public HotspotClickCommand
+{
+public:
+    virtual Command* Create() { return new HotspotDragCommand(); }
+    virtual int GetId() { return HOTSPOT_DRAG_COMMAND; }
+
+    virtual const char *GetName() { return "hotspot_drag"; }
+    virtual const char *GetUsage() { return "x, y"; }
+    virtual const char *GetDescription() 
+    { return "activates a hotspot with a 'drag' action"; }
+};
+
+class HotspotDragStartCommand : public HotspotClickCommand
+{
+public:
+    virtual Command* Create() { return new HotspotDragStartCommand(); }
+    virtual int GetId() { return HOTSPOT_DRAG_START_COMMAND; }
+
+    virtual const char *GetName() { return "hotspot_drag_start"; }
+    virtual const char *GetUsage() { return "x, y"; }
+    virtual const char *GetDescription() 
+    { return "activates a hotspot with a 'drag_start' action"; }
+};
+
+
+class HotspotDragStopCommand : public HotspotClickCommand
+{
+public:
+    virtual Command* Create() { return new HotspotDragStopCommand(); }
+    virtual int GetId() { return HOTSPOT_DRAG_STOP_COMMAND; }
+
+    virtual const char *GetName() { return "hotspot_drag_stop"; }
+    virtual const char *GetUsage() { return "x, y"; }
+    virtual const char *GetDescription() 
+    { return "activates a hotspot with a 'drag_stop' action"; }
 };
 
 
@@ -1737,7 +1806,7 @@ public:
     virtual const char *GetDescription() 
     { return "gets the current mouse position in the requested coordinates"; }
 
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "ds", &windowid, &kind);
     }
@@ -1758,7 +1827,7 @@ public:
     virtual const char *GetDescription() 
     { return "registers a callback for window resize"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "dc", &windowid, &proc);
     }
@@ -1778,7 +1847,7 @@ public:
     virtual const char *GetDescription() 
     { return "registers a callback for window move"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         return ParseScm(lst, "dc", &windowid, &proc);
     }
@@ -1813,7 +1882,7 @@ public:
     virtual const char *GetDescription() 
     { return "executes a procedure that takes no arguments"; }
     
-    virtual bool Setup(Scm lst)
+    virtual bool Setup(const Scm &lst)
     {
         if (ScmProcedurep(ScmCar(lst))) {
             proc = ScmCar(lst);

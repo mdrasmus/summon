@@ -76,7 +76,17 @@ _INPUT_CLICK_CONSTRUCT = _i.next()
 _INPUT_MOTION_CONSTRUCT = _i.next()
 
 
-_INF = float("inf")
+# hotspot events
+_int2hotspot_event = [
+    "click",
+    "over", # TODO: future use
+    "out",  # TODO: future use
+    "drag", 
+    "drag_start",
+    "drag_stop"
+]
+
+_INF = float("1e1000")
 
 #=============================================================================
 # Element classes
@@ -169,10 +179,15 @@ class Element:
     def __hash__(self):
         return self.ptr
     
-    def get_contents(self):
-        """Returns the a tuple in a format specific to the content 
-           of this element"""
+    def get(self):
+        """Returns the content of an element as a tuple in a format specific 
+           to the particular element type"""
         return summon_core.get_element_contents(self.ptr)
+
+    def set(self, *args):
+        """Sets the contents of the element
+           The argument format is specific to the particular element type"""
+        return summon_core.set_contents(self.ptr, *args)
 
     def get_children(self):
         """Returns the children of this element as a list"""
@@ -197,11 +212,30 @@ class Element:
         """Remove drawing elements from the children of this element"""
         summon_core.remove_group2(self.ptr, *[x.ptr for x in elements])
 
+    def remove_self(self):
+        """Remove the element from its own parent"""
+        elementid, parent = summon_core.get_element_parent(self.ptr)
+        
+        if parent == 0:
+            raise Exception("element has no parent, cannot remove")
+        else:
+            summon_core.remove_group2(parent, self.ptr)
+    
     def replace(self, oldchild, newchild):
         """Replace a child element 'oldchild' with a new child 'newchild'"""
         summon_core.replace_group2(self.ptr, oldchild.ptr, newchild)
         return newchild
+    
+    def replace_self(self, newelm):
+        """Replace the element with a new element"""
+        elementid, parent = summon_core.get_element_parent(self.ptr)
         
+        if parent == 0:
+            raise Exception("element has no parent, cannot replace")
+        else:
+            summon_core.replace_group2(parent, self.ptr, newelm)
+            return newelm
+    
     def set_visible(self, vis):
         """Set the visibility of an element"""
         summon_core.show_group2(self.ptr, vis)
@@ -232,7 +266,7 @@ class hotspot (Element):
     
     def __init__(self, kind="click", x1=None, y1=None, x2=None, y2=None, 
                  func=None, give_pos=False, **options):
-        """kind     - must be the string "click" (more options in future versions)
+        """kind     - must be one of these strings: "click", "drag"
            x1       - 1st x-coordinate of rectangular region
            y1       - 1st y-coordinate of rectangular region
            x2       - 2nd x-coordinate of rectangular region
@@ -240,10 +274,30 @@ class hotspot (Element):
            func     - callback function of no arguments
            give_pos - a bool determining whether the mouse position should be
                       given to the function 'func'
+          
+          Requirements of callback func:
+          - for hotspot("click", x1, y1, x2, y2, func)
+            func must except no arguments
+            
+          - for hotspot("click", x1, y1, x2, y2, func, give_pos=True)
+            func must except two arguments (x, y) which are the location of
+            the mouse click in local world coordinates
+        
+          - for hotspot("drag", x1, y1, x2, y2, func)
+            func must except three arguments (state, x, y) which are the 
+            location of the mouse click in local world coordinates and the
+            drag event ("drag", "drag_start", "drag_stop")
         """
         
-        Element.__init__(self, _HOTSPOT_CONSTRUCT, 
-                         _tuple(kind, x1, y1, x2, y2, func, give_pos), options)
+        if kind == "drag":
+            def func2(event, x, y):
+                func(_int2hotspot_event[event], x, y)
+            Element.__init__(self, _HOTSPOT_CONSTRUCT, 
+                             (kind, x1, y1, x2, y2, func2, give_pos), options)
+        else:
+            Element.__init__(self, _HOTSPOT_CONSTRUCT, 
+                             (kind, x1, y1, x2, y2, func, give_pos), options)
+            
 
 
 def hotspot_custom(kind, x1, y1, x2, y2, detect, func, give_pos=False):
@@ -256,12 +310,18 @@ def hotspot_custom(kind, x1, y1, x2, y2, detect, func, give_pos=False):
     detect(mouse_x, mouse_y) will be called.  If it returns True the given
     function 'func' will be called.
     """
-    def detect2(px, py):
-        if detect(px, py):
-            if give_pos:
-                func(px, py)
-            else:
-                func()
+    
+    if kind == "drag":
+        def detect2(event, px, py):
+            if detect(px, py):
+                func(event, px, py)
+    else:
+        def detect2(px, py):
+            if detect(px, py):
+                if give_pos:
+                    func(px, py)
+                else:
+                    func()
         
     return hotspot(kind, x1, y1, x2, y2, detect2, give_pos=True)
 
@@ -299,6 +359,16 @@ def hotspot_polygon(kind, pts, func, give_pos=False):
     
     return hotspot_custom(kind, min(x), min(y), max(x), max(y), 
                           detect, func, give_pos=give_pos)
+
+
+def hotspot_region(kind, region, func, give_pos=False):
+    """
+    Designates a region (summon.Region) of the screen to react to mouse clicks
+    """
+    
+    return hotspot_custom(kind, region.x1, region.y1, 
+                          region.x2, region.y2, region.detect, func, 
+                          give_pos=give_pos)
 
 #=============================================================================
 # graphics

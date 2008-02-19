@@ -1,7 +1,7 @@
 
 
 Files that need to be updated when version changes
-- Makefile
+- Makefile.pkg
 - setup.py
 - setup-macosx.py
 - setup-windows.py

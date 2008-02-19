@@ -122,7 +122,8 @@ void SummonModel::ExecCommand(Command &command)
 
 // This function is called when a HotspotClick command is executed
 // Checks to see if any hotspots have been activated
-list<Command*> SummonModel::HotspotClick(Vertex2f pos, const Camera camera)
+list<Command*> SummonModel::HotspotClick(Vertex2f pos, const Camera camera, 
+                                         int kind)
 {
     list<Command*> cmds;
     
@@ -131,15 +132,18 @@ list<Command*> SummonModel::HotspotClick(Vertex2f pos, const Camera camera)
     {
         Hotspot *hotspot = (*i);
     
-        if (hotspot->IsCollide(pos, camera)) {
-            // TODO: add function for passing click pos as argument to 
-            // proc command
+        if (hotspot->IsCollide(pos, camera, kind)) {
             CallProcCommand *cmd = (CallProcCommand*) hotspot->GetProc()->Create();
             
             if (hotspot->GivePos()) {
                 Vertex2f pos2 = hotspot->GetLocalPos(pos, camera);
-                Scm mousePos = BuildScm("ff", pos2.x, pos2.y);
-                cmd->args = mousePos;
+                Scm args;
+                
+                if (hotspot->GiveKind()) {
+                    cmd->args = BuildScm("dff", kind, pos2.x, pos2.y);
+                } else {
+                    cmd->args = BuildScm("ff", pos2.x, pos2.y);
+                }
             } else {
                 cmd->args = Scm_EOL;
             }
@@ -320,8 +324,10 @@ void SummonModel::UpdateHotspot(Hotspot *hotspot)
 {    
     // register hotspot
     if (!m_hotspotClickSet.HasKey(hotspot)) {
-        m_hotspotClickSet.Insert(hotspot, true);
         m_hotspotClicks.push_back(hotspot);
+        HotspotListIter i = --m_hotspotClicks.end();
+        m_hotspotClickSet.Insert(hotspot, i);
+        
     }
 }
 
@@ -331,7 +337,9 @@ void SummonModel::UpdateHotspot(Hotspot *hotspot)
 void SummonModel::RemoveHotspots(Element *elm)
 {
     if (elm->GetId() == HOTSPOT_CONSTRUCT) {
-        m_hotspotClicks.remove((Hotspot*) elm);
+        HotspotListIter i = m_hotspotClickSet.Get((Hotspot*) elm);
+        //m_hotspotClicks.remove((Hotspot*) elm);
+        m_hotspotClicks.erase(i);
         m_hotspotClickSet.Remove((Hotspot*) elm);
     } else {
         // recurse to child elements

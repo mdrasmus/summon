@@ -236,3 +236,32 @@ def message_bubble(x, y, width, height, contents=None,
 
 
 
+def draggable(region, aGroup):
+    def onDrag(event, x, y):
+        if event == "drag_start":
+            mouse[:] = [trans[0] + x, trans[1] + y]
+        
+        elif event == "drag_stop":
+            mouse[:] = []
+
+            
+        elif event == "drag":
+            if len(mouse) == 0:
+                return
+            click = [trans[0] + x, trans[1] + y]
+
+            vx = click[0] - mouse[0]
+            vy = click[1] - mouse[1]
+            mouse[:] = click
+            
+            trans[0] += vx
+            trans[1] += vy
+                
+            vis.set(trans[0], trans[1])
+    
+    mouse = []
+    trans = [0, 0]
+    vis = translate(0, 0, group(aGroup,
+                    hotspot_region("drag", region, onDrag)))
+    return vis
+

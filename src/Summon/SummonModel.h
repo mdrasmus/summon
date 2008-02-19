@@ -60,7 +60,7 @@ public:
     void Update(Element *element=NULL);
 
     // model queries
-    list<Command*> HotspotClick(Vertex2f pos, const Camera camera);    
+    list<Command*> HotspotClick(Vertex2f pos, const Camera camera, int kind);
     void FindBounding(Element *elm, Vertex2f *pos1, Vertex2f *pos2);
     inline Element *GetRoot()
     { return m_root; }
@@ -84,7 +84,8 @@ protected:
     ModelKind m_kind;
     Element *m_root;
     list<Hotspot*> m_hotspotClicks;
-    HashTable<Hotspot*, bool, HashPointer> m_hotspotClickSet;
+    typedef list<Hotspot*>::iterator HotspotListIter;
+    HashTable<Hotspot*, HotspotListIter, HashPointer> m_hotspotClickSet;
 };
 
 inline SummonModel *GetModelOfElement(Element *elm)

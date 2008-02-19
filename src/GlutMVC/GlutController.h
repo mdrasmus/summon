@@ -64,7 +64,9 @@ protected:
     int m_mod;
     long m_clickStart;
     long m_clickTime;
+    Vertex2i m_clickPos;
     bool m_drag;
+    int m_mindrag;
 };
 
 }

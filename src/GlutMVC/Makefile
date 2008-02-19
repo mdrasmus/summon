@@ -1,4 +1,4 @@
-SRCPREFIX = ..
+SRCPREFIX = ../..
 LIB=libGlutMVC.a
 OBJS = \
         Glut2DController.o \
@@ -10,4 +10,4 @@ OBJS = \
 
 all: $(LIB)
 
-include ../Makefile.in
+include ../../Makefile.in

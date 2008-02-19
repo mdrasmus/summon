@@ -110,8 +110,9 @@ setup(
                           "src/GlutMVC",
                           "src/Common",
                           "src/Summon",
-                          "/usr/X11R6/include",
-                          "/sw/include"],
+                          
+                          "/sw/include",
+                          "/usr/X11R6/include"],
             libraries=["glut", "GL", "SDL"],
             library_dirs=["/sw/lib",
                           "/usr/X11R6/lib"],

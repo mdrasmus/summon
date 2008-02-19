@@ -268,6 +268,9 @@ Scm BuildScm(const char *fmt, ...)
                 Py_INCREF(py);
                 PyTuple_SET_ITEM(tup, i, py);
                 } break;
+            default:
+                // unknown format code
+                assert(0);
         }
     }
     

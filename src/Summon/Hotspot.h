@@ -36,7 +36,9 @@ class Hotspot : public Element
 public:
     Hotspot() : 
         Element(HOTSPOT_CONSTRUCT), 
-        m_proc(NULL) 
+        m_proc(NULL),
+        m_givePos(false),
+        m_isDragging(false)
     {}
     
     virtual ~Hotspot()
@@ -57,9 +59,10 @@ public:
     inline CallProcCommand *GetProc()
     { return m_proc; }
     
-    bool IsCollide(const Vertex2f &pt, const Camera &camera);
+    bool IsCollide(const Vertex2f &pt, const Camera &camera, int kind);
     Vertex2f GetLocalPos(const Vertex2f &pos, const Camera &camera);
     bool GivePos() { return m_givePos; }
+    bool GiveKind() { return kind == DRAG; }
     
     enum {
         CLICK,
@@ -78,6 +81,7 @@ public:
 protected:
     CallProcCommand *m_proc;
     bool m_givePos;
+    bool m_isDragging;
 };
 
 
