@@ -578,6 +578,8 @@ class text_clip (custom_group, text):
         textw = float(summon_core.get_text_width(0, txt))
         texth = float(summon_core.get_text_height(0))
         textr = textw / texth
+        minwidth = minheight * textr
+        maxwidth = maxheight * textr
         
         # calculate box dimensions
         boxw = float(abs(x1-x2))
@@ -616,9 +618,10 @@ class text_clip (custom_group, text):
                     translate(-ox, -oy,
                         zoom_clamp(
                             text_scale(txt, x1, y1, x2, y2, *justified),
-                            lines(x1, y1, x2, y2),
+                            #lines(x1, y1, x2, y2),
                             
                             miny=minheight / texth, maxy=maxheight / texth,
+                            minx=minwidth / textw, maxx=maxwidth / textw,
                             link=True, link_type="smaller", 
                             origin=(ox, oy), axis=(ox+1.0, oy),
                             clip=True)))))
