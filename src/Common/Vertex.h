@@ -103,7 +103,7 @@ bool operator!= (const Vertex2<T> &u, const Vertex2<T> &v) {
 
 // Vertex must be a unit vector
 template <class T>
-inline float vertex2angle(const Vertex2<T> &v)
+inline float Vertex2Angle(const Vertex2<T> &v)
 {
     if (v.x >= 1.0)
         return 0.0;

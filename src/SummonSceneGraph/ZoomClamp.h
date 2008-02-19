@@ -62,8 +62,8 @@ public:
 protected:
     inline float ComputeWorldAngle(const TransformMatrix *parent,
                                    const Vertex2f &cameraZoom) const;
-    inline Vertex2f ComputePrezoom(const TransformMatrix *parent,
-                                   const Vertex2f &cameraZoom) const;
+    inline Vertex2f ComputeEffectiveZoom(const TransformMatrix *parent,
+                                         const Vertex2f &cameraZoom) const;
 
     float m_minx;
     float m_miny;

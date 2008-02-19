@@ -636,20 +636,16 @@ void SummonView::DrawElement(Element *element, const Style &lastStyle, bool crea
 
 bool SummonView::DrawZoomClamp(ZoomClamp *zoomClamp)
 {
-    // determine desired clamped zoom
-    if (zoomClamp->IsClipped(m_camera))
-    {
-        // clip children
-        return false;
-    } else {
+    // perform zoom clamp transform
+    TransformMatrix matrix;  // working temp space        
+    const TransformMatrix *trans = zoomClamp->GetTransform(&matrix, m_camera);
+    
+    // if trans == NULL then zoom_clap is clipped
+    if (trans) {
         // reset transform to simply camera transform
         glLoadIdentity();
         TransformWorld();
         
-        // perform zoom clamp transform
-        TransformMatrix matrix;  // working temp space        
-        const TransformMatrix *trans = zoomClamp->GetTransform(&matrix, m_camera);
-
         // convert matrix to column-major
         // TODO: switch my matrices to column-major
         const float *m = trans->mat;
@@ -658,10 +654,10 @@ bool SummonView::DrawZoomClamp(ZoomClamp *zoomClamp)
                          m[2], m[6], m[10], m[14],
                          m[3], m[7], m[11], m[15]};
 
-        glMultMatrixf(tmp);
-        
+        glMultMatrixf(tmp);        
         return true;
-    }
+    } else
+        return false;
 }
 
 

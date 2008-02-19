@@ -57,15 +57,15 @@ bool ZoomClamp::IsClipped(const Camera &camera) const
 {
     if (!m_clip) {
         return false;
-    } else if (m_transformParent != NULL) {
+    } else {
         TransformMatrix matrix;
         const TransformMatrix *parent;
-        Vertex2f prezoom;
-        
-        parent = m_transformParent->GetTransform(&matrix, camera);
-        Vertex2f cameraZoom = ComputePrezoom(parent, camera.zoom);
+        if (m_transformParent != NULL)
+            parent = m_transformParent->GetTransform(&matrix, camera);
+        Vertex2f cameraZoom = ComputeEffectiveZoom(parent, camera.zoom);
         
         // calculate prezoom
+        Vertex2f prezoom;
         if (parent)
             parent->GetScaling(&prezoom.x, &prezoom.y);
         else
@@ -74,8 +74,6 @@ bool ZoomClamp::IsClipped(const Camera &camera) const
         
         return prezoom.x * cameraZoom.x < m_minx || 
                prezoom.y * cameraZoom.y < m_miny;
-    } else {
-        return camera.zoom.x < m_minx || camera.zoom.y < m_miny;
     }
 }
 
@@ -97,18 +95,18 @@ float ZoomClamp::ComputeWorldAngle(const TransformMatrix *parent,
         Vertex2f worldVector((wax - wox) * cameraZoom.x, 
                              (way - woy) * cameraZoom.y);
         worldVector.Normalize();
-        return vertex2angle(worldVector);
-    }
+        return Vertex2Angle(worldVector);
+    } else
         return 0.0;
 }
 
-Vertex2f ZoomClamp::ComputePrezoom(const TransformMatrix *parent, 
+Vertex2f ZoomClamp::ComputeEffectiveZoom(const TransformMatrix *parent, 
                                    const Vertex2f &cameraZoom) const
 {
     TransformMatrix tmp, tmp2;
     Vertex2f cameraZoom2;
     
-    Vertex2f zoom1(1.0, 1.0);
+    static const Vertex2f zoom1(1.0, 1.0);
     float worldAngle;
     if (parent)
         worldAngle = ComputeWorldAngle(parent, zoom1);
@@ -118,14 +116,13 @@ Vertex2f ZoomClamp::ComputePrezoom(const TransformMatrix *parent,
     if (m_useAxis) {
         Vertex2f preclampVector((m_axis.x - m_origin.x), (m_axis.y - m_origin.y));
         preclampVector.Normalize();
-        float preclampAngle = vertex2angle(preclampVector);
+        float preclampAngle = Vertex2Angle(preclampVector);
         float prerotate = worldAngle - preclampAngle;
 
         float zoom[3] = { cameraZoom.x, cameraZoom.y, 1.0 };
         MakeScaleMatrix(zoom, tmp.mat);
         MultRotateMatrix(tmp.mat, 180.0 / M_PI * prerotate, tmp2.mat);
         tmp2.GetScaling(&cameraZoom2.x, &cameraZoom2.y);
-        //printf("c %f %f\n", cameraZoom.x, cameraZoom.y);
     } else {
         cameraZoom2 = cameraZoom;
     }
@@ -157,9 +154,7 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
                                                const Camera &camera)
 {
     const TransformMatrix *parent = NULL;
-    float worldAngle;
     TransformMatrix tmp, tmp2;
-    Vertex2f prezoom;
     
     // determine translation to zoom clamp origin
     float trans[3];
@@ -171,21 +166,24 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
         trans[0] = m_origin.x;
         trans[1] = m_origin.y;
     }
-    trans[2] = 0.0;    
-    
+    trans[2] = 0.0;
 
-    // calculate world angle    
-    worldAngle = ComputeWorldAngle(parent, camera.zoom);
-
-    
     // calculate prezoom
+    Vertex2f prezoom;
     if (parent)
         parent->GetScaling(&prezoom.x, &prezoom.y);
     else
         prezoom.Set(1.0, 1.0);
     
     // compute camerazoom
-    Vertex2f cameraZoom = ComputePrezoom(parent, camera.zoom);
+    Vertex2f cameraZoom = ComputeEffectiveZoom(parent, camera.zoom);
+
+    // test for clipping
+    if (m_clip && (prezoom.x * cameraZoom.x < m_minx || 
+                   prezoom.y * cameraZoom.y < m_miny))
+    {
+        return NULL;
+    }
 
     // determine desired clamped zoom    
     float zoom[3] = { prezoom.x * cameraZoom.x, 
@@ -208,11 +206,12 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
     
     
     // apply compensating rotation, if axis is specified
-    if (m_useAxis) {       
-        Vertex2f clampVector((m_axis.x - m_origin.x) * zoom[0] * cameraZoom.x,
-                             (m_axis.y - m_origin.y) * zoom[1] * cameraZoom.y);
+    if (m_useAxis) {
+        float worldAngle = ComputeWorldAngle(parent, camera.zoom);
+        Vertex2f clampVector((m_axis.x - m_origin.x) * zoom[0],
+                             (m_axis.y - m_origin.y) * zoom[1]);
         clampVector.Normalize();
-        float clampAngle = vertex2angle(clampVector);                     
+        float clampAngle = Vertex2Angle(clampVector);                     
         float diffAngle = worldAngle - clampAngle;
         
         float zoom2[3] = { 1.0 / camera.zoom.x, 1.0 / camera.zoom.y, 1.0 };
@@ -223,8 +222,8 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
         // compensate for origin, if needed
         if (m_origin.x != 0.0 || m_origin.y != 0.0) {            
             MultScaleMatrix(tmp.mat, zoom, tmp2.mat);
-            trans[0] = - m_origin.x;
-            trans[1] = - m_origin.y;            
+            trans[0] = -m_origin.x;
+            trans[1] = -m_origin.y;
             MultTransMatrix(tmp2.mat, trans, matrix->mat);
         } else {
             MultScaleMatrix(tmp.mat, zoom, matrix->mat);

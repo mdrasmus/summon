@@ -81,8 +81,10 @@ void MultTransMatrix(const float *a, const float *vec, float *c)
                        a[i*4+1] * b[1*4+j] +
                        a[i*4+2] * b[2*4+j] +
                        a[i*4+3] * b[3*4+j];
-        }
-    }*/
+        }    
+    }
+    
+    //
     
     for (int i=0; i<16; i+=4) {
         c[i+0] = a[i+0];
@@ -93,6 +95,25 @@ void MultTransMatrix(const float *a, const float *vec, float *c)
                  a[i+2] * vec[2] +
                  a[i+3];
     }
+    
+    */
+    
+    c[0] = a[0];
+    c[1] = a[1];
+    c[2] = a[2];
+    c[3] = a[0] * vec[0] + a[1] * vec[1] + a[2] * vec[2] + a[3];
+    c[4] = a[4];
+    c[5] = a[5];
+    c[6] = a[6];
+    c[7] = a[4] * vec[0] + a[5] * vec[1] + a[6] * vec[2] + a[7];
+    c[8] = a[8];
+    c[9] = a[9];
+    c[10] = a[10];
+    c[11] = a[8] * vec[0] + a[9] * vec[1] + a[10] * vec[2] + a[11];
+    c[12] = a[12];
+    c[13] = a[13];
+    c[14] = a[14];
+    c[15] = a[12] * vec[0] + a[13] * vec[1] + a[14] * vec[2] + a[15];
 }
 
 void MakeRotateMatrix(float angle, const float *vec, float *m)
@@ -148,10 +169,8 @@ void MultRotateMatrix(const float *a, float angle, float *c)
                        a[i*4+3] * b[3*4+j];
         }
     }
-    */
     
-    float s = sin(angle * (M_PI/180.0));
-    float o = cos(angle * (M_PI/180.0));
+    //
     
     for (int i=0; i<16; i+=4) {
         c[i+0] = a[i+0] * o + a[i+1] * s;
@@ -159,6 +178,29 @@ void MultRotateMatrix(const float *a, float angle, float *c)
         c[i+2] = a[i+2];
         c[i+3] = a[i+3];
     }
+    
+    */
+    
+    float s = sin(angle * (M_PI/180.0));
+    float o = cos(angle * (M_PI/180.0));
+    
+    c[0] = a[0] * o + a[1] * s;
+    c[1] = a[1] * o - a[0] * s;
+    c[2] = a[2];
+    c[3] = a[3];
+    c[4] = a[4] * o + a[5] * s;
+    c[5] = a[5] * o - a[4] * s;
+    c[6] = a[6];
+    c[7] = a[7];
+    c[8] = a[8] * o + a[9] * s;
+    c[9] = a[9] * o - a[8] * s;
+    c[10] = a[10];
+    c[11] = a[11];
+    c[12] = a[12] * o + a[13] * s;
+    c[13] = a[13] * o - a[12] * s;
+    c[14] = a[14];
+    c[15] = a[15];
+
 }
 
 
@@ -186,14 +228,38 @@ void MultScaleMatrix(const float *a, const float *vec, float *c)
                        a[i*4+2] * b[2*4+j] +
                        a[i*4+3] * b[3*4+j];
         }
-    }*/
-
+    }
+    
+    //
+    
     for (int i=0; i<16; i++) {
         c[i] = a[i] * vec[0]; i++;
         c[i] = a[i] * vec[1]; i++;
         c[i] = a[i] * vec[2]; i++;
         c[i] = a[i];
     }
+
+    
+    */
+
+    c[0] = a[0] * vec[0];
+    c[1] = a[1] * vec[1];
+    c[2] = a[2] * vec[2];
+    c[3] = a[3];
+    c[4] = a[4] * vec[0];
+    c[5] = a[5] * vec[1];
+    c[6] = a[6] * vec[2];
+    c[7] = a[7];
+    c[8] = a[8] * vec[0];
+    c[9] = a[9] * vec[1];
+    c[10] = a[10] * vec[2];
+    c[11] = a[11];
+    c[12] = a[12] * vec[0];
+    c[13] = a[13] * vec[1];
+    c[14] = a[14] * vec[2];
+    c[15] = a[15];
+
+    
 }
 
 void MakeIdentityMatrix(float *m)
