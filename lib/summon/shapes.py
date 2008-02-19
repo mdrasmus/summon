@@ -80,19 +80,13 @@ def arc_path(x, y, angle1, angle2, radius, ndivs=10):
     """
     
     pts = []
-    i =  angle1
     curve = float(angle2 - angle1)
+    step = curve / float(ndivs)
     
-    if angle2 < angle1:
-        while i >= angle2:
-            pts.append(x + radius * math.cos(i))
-            pts.append(y + radius * math.sin(i))
-            i += curve / ndivs
-    else:
-        while i <= angle2:
-            pts.append(x + radius * math.cos(i))
-            pts.append(y + radius * math.sin(i))
-            i += (.25 * math.pi / ndivs)
+    for i in xrange(ndivs+1):
+        a = angle1 + i * step
+        pts.append(x + radius * math.cos(a))
+        pts.append(y + radius * math.sin(a))
     return pts
 
 

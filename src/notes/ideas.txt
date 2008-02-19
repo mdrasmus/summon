@@ -1,6 +1,9 @@
 =============================================================================
 Open Ideas
 
+  - handle z-order of hotspots and allow hotspot consumption
+    - if hotspot function reture True then click is "consumed"
+
   - add data structures for key bindings.  Can be done in python.
     - make sure select binding uses this new data structure
 
@@ -38,7 +41,50 @@ Open Ideas
     - keep Scm, and use lists instead of tuples?
       - I don't think I use ScmCons much, so this isn't needed.  I think
   - add direct bitmap screenshot?
+  - add textures, image loading
 
+=============================================================================
+Tue Feb 19 15:08:16 EST 2008
+
+Save screen directly to file:
+
+
+GLubyte *data = new GLubyte[pPreferences->Screen_W * pPreferences->Screen_H * 3];
+
+// read gl screen
+glReadPixels( 0, 0, pPreferences->Screen_W, pPreferences->Screen_H,
+	GL_RGB, GL_UNSIGNED_BYTE, (GLvoid *)data );
+
+// create SDL surface
+SDL_Surface *temp = SDL_CreateRGBSurface( SDL_SWSURFACE, pPreferences->Screen_W, 
+	pPreferences->Screen_H, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000 );
+
+SDL_LockSurface( temp );
+
+Uint32 *pdata = (Uint32 *)temp->pixels;
+
+// copy into SDL surface
+for( int y = temp->h - 1, y2 = 0; y >= 0 && y2 < pPreferences->Screen_H; --y, ++y2 )
+{
+	for( int x = temp->w -1; x >= 0; --x )
+	{
+		pdata[y * temp->pitch/4 + x] =
+			SDL_MapRGBA( temp->format,
+				data[ y2 * pPreferences->Screen_W * 3 + x * 3 + 0 ],
+				data[ y2 * pPreferences->Screen_W * 3 + x * 3 + 1 ],
+				data[ y2 * pPreferences->Screen_W * 3 + x * 3 + 2 ],
+				255 );
+	}
+}
+
+SDL_UnlockSurface( temp );
+
+// save the surface
+SDL_SaveBMP( temp, filename );
+
+// delete screen data
+SDL_FreeSurface( temp );
+delete[] data;
 
 =============================================================================
 Mon Feb  4 14:42:29 EST 2008
