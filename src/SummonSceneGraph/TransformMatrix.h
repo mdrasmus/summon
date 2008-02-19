@@ -33,12 +33,15 @@ namespace Summon {
 
 void MultMatrix(const float *mat1, const float *mat2, float *mat3);
 void MakeTransMatrix(const float *vec, float *m);
+void MultTransMatrix(const float *a, const float *vec, float *c);
 void MakeRotateMatrix(float angle, const float *vec, float *m);
 
 // Assume a vector of <0, 0, 1>
 void MakeRotateMatrix(float angle, float *m);
+void MultRotateMatrix(const float *a, float angle, float *c);
 
 void MakeScaleMatrix(const float *vec, float *m);
+void MultScaleMatrix(const float *a, const float *vec, float *c);
 void MakeIdentityMatrix(float *m);
 void MakeTransScaleMatrix(const float *trans, const float *zoom, float *m);
 void CopyMatrix(float *des, const float *src);

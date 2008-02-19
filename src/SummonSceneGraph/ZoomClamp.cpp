@@ -105,7 +105,7 @@ float ZoomClamp::ComputeWorldAngle(const TransformMatrix *parent,
 Vertex2f ZoomClamp::ComputePrezoom(const TransformMatrix *parent, 
                                    const Vertex2f &cameraZoom) const
 {
-    TransformMatrix tmp, tmp2, tmp3;
+    TransformMatrix tmp, tmp2;
     Vertex2f cameraZoom2;
     
     Vertex2f zoom1(1.0, 1.0);
@@ -123,10 +123,8 @@ Vertex2f ZoomClamp::ComputePrezoom(const TransformMatrix *parent,
 
         float zoom[3] = { cameraZoom.x, cameraZoom.y, 1.0 };
         MakeScaleMatrix(zoom, tmp.mat);
-        MakeRotateMatrix(180.0 / M_PI * prerotate, tmp2.mat);
-        MultMatrix(tmp.mat, tmp2.mat, tmp3.mat);
-        
-        tmp3.GetScaling(&cameraZoom2.x, &cameraZoom2.y);
+        MultRotateMatrix(tmp.mat, 180.0 / M_PI * prerotate, tmp2.mat);
+        tmp2.GetScaling(&cameraZoom2.x, &cameraZoom2.y);
         //printf("c %f %f\n", cameraZoom.x, cameraZoom.y);
     } else {
         cameraZoom2 = cameraZoom;
@@ -144,14 +142,13 @@ Vertex2f ZoomClamp::ComputePrezoom(const TransformMatrix *parent,
             translate(parent_trans + origin,
                 scale(1/camera_scale,
                     rotate(rot,
-                        scale(zoom_clamp(prezoom(rot, camera_scale, parent_scale)),
+                        scale(zoom_clamp(prezoom(parent_rot, camera_scale, parent_scale)),
                             translate(-origin, 
                                 contents)))))))
 
-    prezoom(rot, camera_scale, parent_scale) =
+    prezoom(parent_rot, camera_scale, parent_scale) =
         parent_scale * scale(camera_scale,
-                           rotate(rot,
-                               X)).get_scaling()
+                           rotate(parent_rot)).get_scaling()
 
 */
 
@@ -161,7 +158,7 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
 {
     const TransformMatrix *parent = NULL;
     float worldAngle;
-    TransformMatrix tmp, tmp2, tmp3;
+    TransformMatrix tmp, tmp2;
     Vertex2f prezoom;
     
     // determine translation to zoom clamp origin
@@ -219,32 +216,19 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
         float diffAngle = worldAngle - clampAngle;
         
         float zoom2[3] = { 1.0 / camera.zoom.x, 1.0 / camera.zoom.y, 1.0 };
-        MakeScaleMatrix(zoom2, tmp2.mat);
-        MakeTransMatrix(trans, tmp3.mat);
-        MultMatrix(tmp3.mat, tmp2.mat, tmp.mat);
+        MakeTransMatrix(trans, tmp.mat);        
+        MultScaleMatrix(tmp.mat, zoom2, tmp2.mat);
+        MultRotateMatrix(tmp2.mat, 180.0 / M_PI * diffAngle, tmp.mat);
         
         // compensate for origin, if needed
         if (m_origin.x != 0.0 || m_origin.y != 0.0) {            
-            MakeRotateMatrix(180.0 / M_PI * diffAngle, tmp2.mat);        
-            MultMatrix(tmp.mat, tmp2.mat, tmp3.mat);
-            
-            MakeScaleMatrix(zoom, tmp.mat);
-            MultMatrix(tmp3.mat, tmp.mat, tmp2.mat);
-            
+            MultScaleMatrix(tmp.mat, zoom, tmp2.mat);
             trans[0] = - m_origin.x;
-            trans[1] = - m_origin.y;
-            
-            MakeTransMatrix(trans, tmp.mat);
-            MultMatrix(tmp2.mat, tmp.mat, matrix->mat);
+            trans[1] = - m_origin.y;            
+            MultTransMatrix(tmp2.mat, trans, matrix->mat);
         } else {
-            MakeRotateMatrix(180.0 / M_PI * diffAngle, tmp2.mat);        
-            MultMatrix(tmp.mat, tmp2.mat, tmp3.mat);
-            
-            MakeScaleMatrix(zoom, tmp.mat);
-            MultMatrix(tmp3.mat, tmp.mat, matrix->mat);
+            MultScaleMatrix(tmp.mat, zoom, matrix->mat);
         }
-        
-        
         
     } else {
         zoom[0] /= cameraZoom.x;
