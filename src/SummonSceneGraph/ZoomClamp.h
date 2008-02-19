@@ -75,6 +75,7 @@ protected:
     bool m_useAxis;
     Vertex2f m_origin;
     Vertex2f m_axis;
+    Vertex2f m_prezoom;
     
     virtual Transform *GetDynamicTransformParent()
     {

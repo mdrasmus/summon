@@ -613,18 +613,16 @@ class text_clip (custom_group, text):
         
         # init drawing elements
         custom_group.__init__(self, 
-            translate(ox, oy,
-                scale(boxw/textw, boxh/texth,
-                    translate(-ox, -oy,
-                        zoom_clamp(
-                            text_scale(txt, x1, y1, x2, y2, *justified),
-                            #lines(x1, y1, x2, y2),
-                            
-                            miny=minheight / texth, maxy=maxheight / texth,
-                            minx=minwidth / textw, maxx=maxwidth / textw,
-                            link=True, link_type="smaller", 
-                            origin=(ox, oy), axis=(ox+1.0, oy),
-                            clip=True)))))
+            zoom_clamp(
+                text_scale(txt, x1, y1, x2, y2, *justified),
+                #lines(x1, y1, x2, y2),
+
+                miny=minheight / texth, maxy=maxheight / texth,
+                minx=minwidth / textw, maxx=maxwidth / textw,
+                link=True, link_type="smaller", 
+                origin=(ox, oy), axis=(ox+1.0, oy),
+                clip=True,
+                prezoom=(boxw/textw, boxh/texth)))
     
     
     def get(self):
@@ -746,6 +744,7 @@ class zoom_clamp (Transform):
         link_type = options.get("link_type", "larger")
         origin = options.get("origin", (0.0, 0.0))
         axis = options.get("axis", origin)
+        prezoom = options.get("prezoom", (1.0, 1.0))
         
         
         assert len(origin) == 2, Exception("origin must be a tuple of 2 floats")
@@ -772,6 +771,7 @@ class zoom_clamp (Transform):
         Element.__init__(self, _ZOOM_CLAMP_CONSTRUCT, 
                          _tuple(minx, miny, maxx, maxy, clip, link, link_type,
                                 origin[0], origin[1], axis[0], axis[1],
+                                prezoom[0], prezoom[1],
                                 *elements), 
                          options)
     

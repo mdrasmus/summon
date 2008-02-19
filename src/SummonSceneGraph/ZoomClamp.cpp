@@ -31,9 +31,10 @@ namespace Summon {
 
 bool ZoomClamp::Build(int header, const Scm &code)
 {
-    if (!ParseScm(code, "ffffbbbffff", &m_minx, &m_miny, &m_maxx, &m_maxy, 
+    if (!ParseScm(code, "ffffbbbffffff", &m_minx, &m_miny, &m_maxx, &m_maxy, 
                   &m_clip, &m_link, &m_linkType, 
-                  &m_origin.x, &m_origin.y, &m_axis.x, &m_axis.y)) 
+                  &m_origin.x, &m_origin.y, &m_axis.x, &m_axis.y,
+                  &m_prezoom.x, &m_prezoom.y)) 
     {
         Error("Bad format for zoom_clamp construct");
         return false;
@@ -41,15 +42,16 @@ bool ZoomClamp::Build(int header, const Scm &code)
     
     m_useAxis = (m_axis != m_origin);
     
-    return Element::Build(header, code.Slice(11));
+    return Element::Build(header, code.Slice(13));
 }
 
 
 Scm ZoomClamp::GetContents()
 {
-    return BuildScm("ffffbbbffff", m_minx, m_miny, m_maxx, m_maxy, 
+    return BuildScm("ffffbbbffffff", m_minx, m_miny, m_maxx, m_maxy, 
                     m_clip, m_link, m_linkType,
-                    m_origin.x, m_origin.y, m_axis.x, m_axis.y);
+                    m_origin.x, m_origin.y, m_axis.x, m_axis.y,
+                    m_prezoom.x, m_prezoom.y);
 }
 
 
@@ -66,10 +68,12 @@ bool ZoomClamp::IsClipped(const Camera &camera) const
         
         // calculate prezoom
         Vertex2f prezoom;
-        if (parent)
+        if (parent) {
             parent->GetScaling(&prezoom.x, &prezoom.y);
-        else
-            prezoom.Set(1.0, 1.0);
+            prezoom.x *= m_prezoom.x;
+            prezoom.y *= m_prezoom.y;
+        } else
+            prezoom = m_prezoom;
             
         
         return prezoom.x * cameraZoom.x < m_minx || 
@@ -170,10 +174,12 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
 
     // calculate prezoom
     Vertex2f prezoom;
-    if (parent)
+    if (parent) {
         parent->GetScaling(&prezoom.x, &prezoom.y);
-    else
-        prezoom.Set(1.0, 1.0);
+        prezoom.x *= m_prezoom.x;
+        prezoom.y *= m_prezoom.y;
+    } else
+        prezoom = m_prezoom;
     
     // compute camerazoom
     Vertex2f cameraZoom = ComputeEffectiveZoom(parent, camera.zoom);
