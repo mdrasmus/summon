@@ -236,11 +236,7 @@ def writeSvg(outfile, group, visible=(0.0, 0.0, 500.0, 500.0), size=(500, 500),
 
 def printScreen(win, filename = None, visgroup=None):
     if filename == None:
-        import warnings
-        warnings.filterwarnings("ignore", ".*", RuntimeWarning)    
-        filename = os.tempnam(".", "_") + ".svg"
-        warnings.filterwarnings("default", ".*", RuntimeWarning)        
-        filename = filename.replace("./", "./summon")
+        filename = summon.tempfile(".svg")
     
     if visgroup == None:
         visgroup = win.get_root()

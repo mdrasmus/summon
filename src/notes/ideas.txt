@@ -14,9 +14,6 @@ Open Ideas
   - add Element.set_contents()
     - this is started and implemented for transforms.  Could think about
       what other elements could use this feature.
-
-  - can I make a smarter text_clip from zoom_clamp
-    - almost done check multwindow for weird behavior
   
   - make sure SVG is fully up to date
     - get_bounding for SVG
@@ -40,7 +37,6 @@ Open Ideas
     - should I remain scripting language neutral?
     - keep Scm, and use lists instead of tuples?
       - I don't think I use ScmCons much, so this isn't needed.  I think
-  - add direct bitmap screenshot?
   - add textures, image loading
 
 =============================================================================

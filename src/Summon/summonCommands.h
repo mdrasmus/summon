@@ -38,7 +38,6 @@
 //NOTE:  somebody in the windows build defines this! undefine it so it doesn't break our code below
 #undef lst2 
 
-
 namespace Summon
 {
 
@@ -60,8 +59,9 @@ enum {
     DEL_MODEL_COMMAND,
     GET_WINDOW_DECORATION_COMMAND,
     SET_WINDOW_CLOSE_CALLBACK_COMMAND,
+    SCREENSHOT_WINDOW_COMMAND,
     TIMER_CALL_COMMAND,
-    REDRAW_CALL_COMMAND,
+    REDRAW_CALL_COMMAND,    
     
     // menu commands
     NEW_MENU_COMMAND,
@@ -359,6 +359,29 @@ public:
     }
     
     Scm callback;
+};
+
+
+
+class ScreenshotWindowCommand : public ScriptCommand
+{
+public:
+    virtual Command* Create() { return new ScreenshotWindowCommand(); }
+    virtual int GetId() { return SCREENSHOT_WINDOW_COMMAND; }
+
+    virtual const char *GetName() { return "screenshot_window"; }
+    virtual const char *GetUsage() 
+    { return ""; }
+    virtual const char *GetDescription() 
+    { return "save a screenshot of a window"; }
+    
+    virtual bool Setup(const Scm &lst)
+    {
+        return ParseScm(lst, "ds", &winid, &filename);
+    }
+    
+    int winid;
+    string filename;
 };
 
 

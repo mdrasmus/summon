@@ -907,6 +907,15 @@ void SummonView::SetBoundary(const Vertex2f &pos1, const Vertex2f &pos2)
 }
 
 
+void SummonView::CopyPixels(void *pixels)
+{
+    MakeCurrentWindow();
+    Vertex2i winsize = GetWindowSize();
+    glReadPixels(0, 0, winsize.x, winsize.y, 
+        GL_RGB, GL_UNSIGNED_BYTE, (GLvoid*) pixels);
+}
+
+
 // adjust translate and zoom as necessary to maintain boundary
 void SummonView::CheckBoundary(bool useZoomx, bool useZoomy)
 {

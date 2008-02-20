@@ -3,6 +3,11 @@ SUMMON Change Log
 
 NEXT RELEASE
 - better windows install
+- added direct bitmap screenshot
+- added first version of visualization inspector
+- better behavior of text_clipS inside transforms by implementing them with
+  zoom_clampS 
+- support for dragging
 
 
 2008/02/04 - summon-1.8.5

@@ -75,7 +75,9 @@ def draw_summon():
 win = summon.Window("18_summon", size=(800,400))
 win.set_bgcolor(1, 1, 1)
 
-n = 20
+
+'''
+n = 1
 for i in xrange(n, -1, -1):
     c = 1-i/float(n)
     r = i / float(n)
@@ -83,11 +85,64 @@ for i in xrange(n, -1, -1):
     win.add_group(scale(1+r, 1+r,
                         color(c, c, 1, c*.5),
                             draw_summon()))
+'''
+
+def blur():
+    return group(color(0, 0, 1, .2),
+                 shapes.box(-2000, 380, 2000, 600),
+                 color(0, 0, 0),
+                 shapes.box(-2000, 380, 2000, 420),
+                 quads(color(1, 1, 1, 1), -2000, 380, -2000, 600,
+                       color(1, 1, 1, 0), -1200, 600, -1200, 380),
+                 quads(color(1, 1, 1, 1), 2000, 380, 2000, 600,
+                       color(1, 1, 1, 0), 1200, 600, 1200, 380))
+
+
+def blur2(x, c):
+    return group(
+                 quads(c, -2000, 0, 2000, 0,
+                       color(0, 0, 0, 0), 2000, 300, -2000, 300),
+                 quads(color(1, 1, 1, 1), -2000, 0, -2000, 600,
+                       color(1, 1, 1, 0), -x, 600, -x, 0),
+                 quads(color(1, 1, 1, 1), 2000, 0, 2000, 600,
+                       color(1, 1, 1, 0), x, 600, x, 0))
+
+
+if 0:    
+    group(
+                 triangle_strip(
+                    color(1, 1, 1), -2000, 380, 
+                    color(1, 1, 1), -2000, 420,
+                    color(0, 0, 0), -1500, 380,
+                    color(0, 0, 0), -1500, 420,
+                    color(0, 0, 0), 1500, 380,
+                    color(0, 0, 0), 1500, 420,
+                    color(1, 1, 1), 2000, 380, 
+                    color(1, 1, 1), 2000, 420),
+                 color(0, 0, 1, .2),
+                 shapes.box(-2000, 380, 2000, 600))
+                 
+if 0:
+                 triangle_strip(
+                    color(1, 1, 1), -2000, 420, 
+                    color(0, 0, 1), -200, 420,
+                    color(1, 1, 1), -200, 1000,
+                    color(0, 0, 1), 200, 420,
+                    color(1, 1, 1), 200, 1000,
+                    color(1, 1, 1), 2000, 420)
+
 win.add_group(group(
-    color(0, 0, .5), 
+    blur2(1200, color(0, .2, .5, .8)),
+    rotate(180, blur2(0, color(0, 0, .5, .5))),
+
+    color(0, 0, 0), 
     draw_summon(),
+    
+    
     color(0, 0, 0),
-    text_clip("Matt Rasmussen 2008", -1500, -600, 1500, -1000, 0, 20, 
-              "middle", "center")))
+    text_clip("visualization prototyping and scripting", 
+              -1600, -450, 1600, -900, 0, 20, 
+              "top", "center")))
 
 win.home()
+#win.zoom_camera(.8, .8)()

@@ -38,6 +38,10 @@ using namespace Summon;
 // python visible prototypes
 extern "C" {
 
+// NOTE: this will some day become its own python module for just importing
+// the scene graph without OpenGL.
+
+
 /*
 // functions directly visible in python
 static PyObject *MakeElement(PyObject *self, PyObject *args);

@@ -39,9 +39,11 @@
 #include <GL/gl.h>
 
 // SDL headers
+#include <SDL/SDL.h>
 #include <SDL/SDL_thread.h>
 #include <SDL/SDL_mutex.h>
 #include <SDL/SDL_timer.h>
+
 
 // summon headers
 #include "common.h"
@@ -63,6 +65,7 @@ static PyObject *SummonMainLoop(PyObject *self, PyObject *tup);
 static PyObject *SummonShutdown(PyObject *self, PyObject *tup);
 static PyObject *GetTextWidth(PyObject *self, PyObject *args);
 static PyObject *GetTextHeight(PyObject *self, PyObject *args);
+static PyObject *Screenshot(PyObject *self, PyObject *args);
 
 // python module method table
 // NOTE: the (char*) casts are needed to avoid compiler warnings.
@@ -100,7 +103,7 @@ static PyMethodDef g_summonMethods[] = {
 
     // get the height of a text string
     {(char*) "get_text_height", GetTextHeight, METH_VARARGS, (char*) ""},
-
+    
     // cap the methods table with NULL method
     {NULL, NULL, 0, NULL}
 };
@@ -366,6 +369,18 @@ public:
                 
                 } break;
             
+            case SCREENSHOT_WINDOW_COMMAND: {
+                ScreenshotWindowCommand *cmd = 
+                    (ScreenshotWindowCommand *) &command;
+                    
+                SummonWindow *window = GetWindow(cmd->winid);
+                if (!window)
+                    Error("unknown window id '%d'", cmd->winid);
+                
+                ScreenshotWindow(window, cmd->filename);
+                
+                } break;
+            
             case TIMER_CALL_COMMAND: {
                 // set the function to call when the timer goes off
                 TimerCallCommand *cmd = (TimerCallCommand*) &command;
@@ -620,7 +635,82 @@ public:
                 //display exceptions, return None
                 PyErr_Print();
         }
-    }    
+    }
+    
+    bool ScreenshotWindow(SummonWindow *window, string filename)
+    {
+        Vertex2i winsize = window->GetView()->GetWindowSize();
+        
+        // allocate pixel data
+        GLubyte *pixels = new GLubyte[winsize.x * winsize.y * 3];
+        
+        // read gl screen
+        window->GetView()->CopyPixels(pixels);
+
+        // create SDL surface
+        Uint32 rmask, gmask, bmask, amask;
+#       if SDL_BYTEORDER == SDL_BIG_ENDIAN
+           rmask = 0xff000000;
+           gmask = 0x00ff0000;
+           bmask = 0x0000ff00;
+           amask = 0x000000ff;
+#       else
+           rmask = 0x000000ff;
+           gmask = 0x0000ff00;
+           bmask = 0x00ff0000;
+           amask = 0xff000000;
+#       endif
+        
+        static const int bpp = 32;
+        //SDL_Surface *s = SDL_SetVideoMode(winsize.x, winsize.y, bpp, 
+        //    SDL_SWSURFACE);
+        SDL_Surface *surface = SDL_CreateRGBSurface(SDL_SWSURFACE, 
+            winsize.x, winsize.y, 
+            bpp, rmask, gmask, bmask, amask);
+        
+        if (!surface) {
+            Error("Internal error: cannot allocate SDL surface: %s",
+                  SDL_GetError());
+            delete [] pixels;
+            return false;
+        }
+        
+        SDL_LockSurface(surface);
+        Uint32 *pdata = (Uint32 *) surface->pixels;
+
+        // copy into SDL surface
+        for (int y = surface->h - 1, y2 = 0; 
+             y >= 0 && y2 < winsize.y; 
+             --y, ++y2)
+        {
+	        for (int x = surface->w - 1; x >= 0; --x)
+	        {
+		        pdata[y * surface->pitch/4 + x] = 
+			        SDL_MapRGBA(surface->format,
+				        pixels[y2 * winsize.x * 3 + x * 3 + 0],
+				        pixels[y2 * winsize.x * 3 + x * 3 + 1],
+				        pixels[y2 * winsize.x * 3 + x * 3 + 2],
+				        255);
+	        }
+        }
+
+        SDL_UnlockSurface(surface);
+
+        // save the surface
+        if (SDL_SaveBMP(surface, filename.c_str()) != 0) {
+            Error("Error saving screenshot '%s'", filename.c_str());
+            SDL_FreeSurface(surface);
+            delete [] pixels;
+            return false;
+        }
+
+        // cleanup
+        SDL_FreeSurface(surface);
+        delete [] pixels;
+        
+        return true;
+    }
+       
     
 private:    
     // Creates a new SUMMON window
@@ -1274,7 +1364,7 @@ static PyObject *GetTextWidth(PyObject *self, PyObject *args)
 {
     void *font = GLUT_STROKE_MONO_ROMAN;
     
-    long font2 = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
+    //long font2 = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
     const unsigned char *text = (const unsigned char *) 
         PyString_AS_STRING(PyTuple_GET_ITEM(args, 1));
     
@@ -1286,6 +1376,7 @@ static PyObject *GetTextHeight(PyObject *self, PyObject *args)
     void *font = GLUT_STROKE_MONO_ROMAN;
     return PyFloat_FromDouble(getTextHeight(font));
 }
+
 
 
 // Module initialization for python

@@ -843,6 +843,15 @@ class Window (object):
         return summon_core.show_crosshair(self.winid, enabled)
     
     
+    def screenshot(self, filename=None):
+        """saves a bitmap screenshot of the window"""
+        
+        if filename == None:
+            filename = tempfile(".bmp")
+        summon_core.screenshot_window(self.winid, filename)
+        print "wrote '%s'" % filename
+        
+    
     #=============================================================
     # controller
     
@@ -1385,19 +1394,19 @@ class SummonMenu (Menu):
 
         # print screen options
         self.print_screen_menu = Menu()
-        self.print_screen_menu.add_entry("svg   (ctrl+p)", 
+        self.print_screen_menu.add_entry("bmp   (ctrl+p)", 
+            lambda: win.screenshot())
+        self.print_screen_menu.add_entry("svg   (ctrl+P)", 
             lambda: summon.svg.printScreen(win))
-        self.print_screen_menu.add_entry("png   (ctrl+P)", 
-            lambda: summon.svg.printScreenPng(win))
         self.add_submenu("Print screen", self.print_screen_menu)        
 
-        #from summon import inspector
+        from summon import inspector
 
         # misc
         self.misc = Menu()
         self.misc.add_entry("toggle crosshair  (ctrl+x)", win.toggle_crosshair)
         self.misc.add_entry("toggle aliasing   (ctrl+l)", win.toggle_aliasing)
-        #self.misc.add_entry("inspect", lambda: inspect.inspect_window(win))
+        self.misc.add_entry("inspect", lambda: inspector.inspect_window(win))
         self.add_submenu("Misc", self.misc)
 
         self.add_entry("close   (q)", win.close)
@@ -1582,6 +1591,26 @@ def get_text_width(text):
 def get_text_height(text):
     return summon_core.get_text_height(0)
 
+def tempfile(ext, prefix="summon"):
+    """Returns a temporary filename"""
+    
+    i = 1
+    
+    while True:
+        filename = "%s_%04d%s" % (prefix, i, ext)
+        if not os.path.exists(filename):
+            break
+        i += 1
+    
+    return filename
+    
+    #import warnings
+    #warnings.filterwarnings("ignore", ".*", RuntimeWarning)    
+    #filename = os.tempnam(".", "_") + ext
+    #warnings.filterwarnings("default", ".*", RuntimeWarning)        
+    #filename = filename.replace("./", "./" + prefix)
+    
+    return filename
 
 #=============================================================================
 # additonal modules imported here

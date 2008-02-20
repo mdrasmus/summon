@@ -83,7 +83,6 @@ def config_window(win):
 
     # add print screen bindings
     import summon.svg
-
-    win.set_binding(input_key("p", "ctrl"), lambda: summon.svg.printScreen(win))
-    win.set_binding(input_key("p", "ctrl", "shift"), lambda: summon.svg.printScreenPng(win))
-
+    
+    win.set_binding(input_key("p", "ctrl"), lambda: win.screenshot())
+    win.set_binding(input_key("p", "ctrl", "shift"), lambda: summon.svg.printScreen(win))

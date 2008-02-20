@@ -112,7 +112,7 @@ public:
         ExecCommand(cmd);
     }
     
-
+    
     
     void SetBoundary(const Vertex2f &pos1, const Vertex2f &pos2);
     bool WithinView(const Vertex2f &pos1, const Vertex2f &pos2);
@@ -139,7 +139,9 @@ public:
             glutPostRedisplay();
             m_needRedisplay = false;
         }
-    }    
+    }
+    
+    void CopyPixels(void *pixels);
 
 protected:
 
