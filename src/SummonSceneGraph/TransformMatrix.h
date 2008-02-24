@@ -156,7 +156,7 @@ public:
 };
 
 
-extern TransformMatrix g_transformIndentity;
+extern TransformMatrix g_transformIdentity;
 
 } // namespace Summon
 

@@ -192,7 +192,7 @@ const TransformMatrix *Element::GetTransform(TransformMatrix *matrix,
                                              const Camera &camera)
 {
     if (m_transformParent == NULL) {
-        return &g_transformIndentity;
+        return &g_transformIdentity;
     } else {
         return m_transformParent->GetTransform(matrix, camera);
     }

@@ -27,7 +27,7 @@
 
 namespace Summon {
 
-TransformMatrix g_transformIndentity(true);
+TransformMatrix g_transformIdentity(true);
 
 
 /*

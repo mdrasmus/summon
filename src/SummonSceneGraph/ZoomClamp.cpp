@@ -188,7 +188,7 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
     if (m_clip && (prezoom.x * cameraZoom.x < m_minx || 
                    prezoom.y * cameraZoom.y < m_miny))
     {
-        return NULL;
+        return &g_transformIdentity;
     }
 
     // determine desired clamped zoom    

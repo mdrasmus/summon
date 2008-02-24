@@ -634,12 +634,12 @@ void SummonView::DrawElement(Element *element, const Style &lastStyle, bool crea
 
 bool SummonView::DrawZoomClamp(ZoomClamp *zoomClamp)
 {
-    // perform zoom clamp transform
-    TransformMatrix matrix;  // working temp space        
-    const TransformMatrix *trans = zoomClamp->GetTransform(&matrix, m_camera);
+    // if trans == NULL then zoom_clamp is clipped
+    if (!zoomClamp->IsClipped(m_camera)) {
+        // perform zoom clamp transform
+        TransformMatrix matrix;  // working temp space        
+        const TransformMatrix *trans = zoomClamp->GetTransform(&matrix, m_camera);
     
-    // if trans == NULL then zoom_clap is clipped
-    if (trans) {
         // reset transform to simply camera transform
         glLoadIdentity();
         TransformWorld();
