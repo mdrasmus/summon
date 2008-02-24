@@ -46,7 +46,7 @@ void glutInputsInit();
 class KeyboardInput : public Input
 {
 public:
-    KeyboardInput() : key(0), mod(0) {}
+    KeyboardInput() : key(0), mod(0), pos(0, 0) {}
     
     inline virtual Input* Create() { return new KeyboardInput(); }
     inline virtual InputId GetId() { return KEYBOARD_INPUT; }
@@ -77,7 +77,7 @@ public:
 class SpecialKeyInput : public Input
 {
 public:
-    SpecialKeyInput() : key(0), mod(0) {}
+    SpecialKeyInput() : key(0), mod(0), pos(0,0) {}
     
     inline virtual Input* Create() { return new SpecialKeyInput(); }
     inline virtual InputId GetId() { return SPECIAL_KEY_INPUT; }

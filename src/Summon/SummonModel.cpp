@@ -105,14 +105,14 @@ void SummonModel::ExecCommand(Command &command)
             break;
         
         case GET_BOUNDING_COMMAND: {
-            ShowGroupCommand *show = (ShowGroupCommand*) &command;
+            GetBoundingCommand *cmd = (GetBoundingCommand*) &command;
             
             // get the bounding box of an element
-            Element *elm = Id2Element(show->groupid);
+            Element *elm = Id2Element(cmd->groupid);
             Vertex2f pos1, pos2;
             FindBounding(elm, &pos1, &pos2);
             
-            show->SetReturn(BuildScm("ffff", pos1.x, pos1.y, pos2.x, pos2.y));
+            cmd->SetReturn(BuildScm("ffff", pos1.x, pos1.y, pos2.x, pos2.y));
             } break;
         default:
             // unknown command given
@@ -352,7 +352,7 @@ void SummonModel::RemoveHotspots(Element *elm)
 // TODO: this needs a camera argument, but maybe not.
 void SummonModel::FindBounding(Element *elm, Vertex2f *pos1, Vertex2f *pos2)
 {
-    const Camera camera;
+    const Camera camera(Vertex2f(0, 0), Vertex2f(1, 1), Vertex2f(0, 0));
 
     // find smallest bouding box
     float top    = FLOAT_MIN, 

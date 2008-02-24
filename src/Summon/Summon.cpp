@@ -55,6 +55,17 @@
 #define MODULE_NAME "summon_core"
 
 
+#ifdef DEBUG_X
+#include <X11/Xlib.h>
+
+static int AbortOnXError(Display *display, XErrorEvent *theEvent)
+{
+    abort();
+    return 0 ;
+}
+#endif
+
+
 //=============================================================================
 // python visible prototypes
 extern "C" {
@@ -1385,6 +1396,11 @@ initsummon_core()
 {
     // prepare the python environment for summon
     InitPython();
+
+#   ifdef DEBUG_X
+        // catch and die on X errors
+        XSetErrorHandler(AbortOnXError);
+#   endif
     
     // create Summon module (global singleton)
     g_summon = new Summon::SummonModule();    
