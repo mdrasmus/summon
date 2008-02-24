@@ -39,6 +39,25 @@ Open Ideas
       - I don't think I use ScmCons much, so this isn't needed.  I think
   - add textures, image loading
 
+#=============================================================================
+# Sat Feb 23 21:14:56 EST 2008
+
+# key repeating
+
+void glutIgnoreKeyRepeat(int ignore);
+void glutKeyboardUpFunc(void (*func)(unsigned char key, int x, int y));
+void glutSpecialUpFunc(void (*func)(int key, int x, int y));
+
+glutIgnoreKeyRepeat(1);
+
+
+- found GLUT bug with ./examples/tests/windows.py
+  - seems like they call MakeCurrent window wrong 
+    (wrong window id or something)
+    their stack does not contain any of my functions yet (so their fault).
+  - could compile with debugging a freeglut lib and link against it.
+
+
 =============================================================================
 Tue Feb 19 15:08:16 EST 2008
 
@@ -81,6 +100,16 @@ SDL_SaveBMP( temp, filename );
 // delete screen data
 SDL_FreeSurface( temp );
 delete[] data;
+
+
+
+- SDL window positioning
+  - however, SDL does not support multiple windows :(
+#include <stdlib.h>
+
+putenv("SDL_VIDEO_WINDOW_POS=300,150");
+setenv("SDL_VIDEO_WINDOW_POS", "300,150", 1);
+
 
 =============================================================================
 Mon Feb  4 14:42:29 EST 2008

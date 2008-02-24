@@ -61,7 +61,7 @@ bool ZoomClamp::IsClipped(const Camera &camera) const
         return false;
     } else {
         TransformMatrix matrix;
-        const TransformMatrix *parent;
+        const TransformMatrix *parent = NULL;
         if (m_transformParent != NULL)
             parent = m_transformParent->GetTransform(&matrix, camera);
         Vertex2f cameraZoom = ComputeEffectiveZoom(parent, camera.zoom);
@@ -250,6 +250,21 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
     }
     
     return matrix;
+}
+
+
+void ZoomClamp::FindBounding(float *top, float *bottom, 
+                             float *left, float *right,
+                             const TransformMatrix *matrix,
+                             const Camera &camera)
+{
+    TransformMatrix matrix2;
+    GetTransform(&matrix2, camera);
+
+    // loop through children of this element
+    for (Element::Iterator i=Begin(); i!=End(); i++) {
+        (*i)->FindBounding(top, bottom, left, right, &matrix2, camera);
+    }
 }
 
 } // namespace Summon

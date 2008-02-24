@@ -25,7 +25,7 @@ import summon.svg
 import summon_config
 
 
-VERSION = "1.8.5"
+VERSION = "1.8.6"
 
 VERSION_INFO = """\
 -----------------------------------------------------------------------------
@@ -654,7 +654,6 @@ class Window (object):
     
     def home(self):
         """centers the view such that all graphical elements are visible"""
-        #ret = summon_core.home(self.winid)
         box = self.world.get_bounding()
         
         if box[0] > -util.INF and \

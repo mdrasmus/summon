@@ -214,6 +214,7 @@ bool ParseInput(Scm lst, Input **input)
     }
 }
 
+// TODO: add escape, backspace, and delete keys.  They are ASCII characters
 bool ParseKeyInput(Scm lst, Input **input)
 {
     if (!ScmIsList(lst) || !lst.GetScm(0).IsString()) {

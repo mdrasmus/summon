@@ -84,8 +84,9 @@ public:
     virtual bool Build(int header, const Scm &code);
     virtual Scm GetContents();
     
-    void FindBounding(float *top, float *bottom, float *left, float *right,
-                      TransformMatrix *matrix);
+    virtual void FindBounding(float *top, float *bottom, float *left, float *right,
+                              const TransformMatrix *matrix,
+                              const Camera &camera=g_defaultCamera);
     
     virtual const TransformMatrix *GetTransform(TransformMatrix *matrix,
                                                 const Camera &camera);

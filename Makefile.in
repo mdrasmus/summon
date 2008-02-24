@@ -27,6 +27,10 @@ else
 	COMPILE := $(COMPILE) -O3
 endif
 
+ifdef DEBUG_X
+    COMPILE := $(COMPILE) -DDEBUG_X
+endif
+
 # profiling
 ifdef PROFILE
     COMPILE := $(COMPILE) -pg

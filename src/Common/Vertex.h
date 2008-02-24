@@ -34,7 +34,11 @@ template <class T>
 class Vertex2
 {
 public:
-    Vertex2(T x = 0, T y = 0)  :
+
+    Vertex2() {}
+    //Vertex2() : x(0), y(0) {}
+
+    Vertex2(T x, T y)  :
         x(x), y(y) {}  
    
     Vertex2(const Vertex2<T> &other) :

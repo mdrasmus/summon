@@ -2,6 +2,8 @@
 
     Summon - SVG output
 
+NOTE: zoom_clamps are not supported yet and text elements have basic support
+
 """
 
 from summon.core import *
@@ -104,6 +106,8 @@ class SvgWriter:
         boxheight = y2 - y1
         boxwidth = x2 - x1
         
+        # add justification support
+        
         # TODO: add text_scale support
         if isinstance(elm, text_scale) or isinstance(elm, text_clip):
             textheight = 20.0
@@ -179,12 +183,14 @@ class SvgWriter:
     def printElm(self, elm):
         """write the SVG an element and all of its children"""
         
+        # print leaf elements
         if isinstance(elm, Graphic):
             self.printGraphic(elm)
         
         if isinstance(elm, text):
             self.printText(elm)
-
+        
+        # pre-process
         if isinstance(elm, Transform):
             self.printBeginTransform(elm)
             self.pushTransform(elm)
@@ -193,6 +199,7 @@ class SvgWriter:
         for child in elm:
             self.printElm(child)
 
+        # post-process
         if isinstance(elm, Transform):
             self.printEndTransform(elm)
             self.popTransform(elm)
@@ -216,6 +223,7 @@ class SvgWriter:
         else:
             mat = transform.makeIdentityMatrix()
         
+        # should this be flipped?
         self.trans.append(transform.multMatrix(mat, self.trans[-1]))
     
     

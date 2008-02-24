@@ -56,8 +56,11 @@ public:
     virtual const TransformMatrix *GetTransform(TransformMatrix *matrix,
                                                 const Camera &camera);
 
-    // TODO: needs to include prescale
     bool IsClipped(const Camera &camera) const;
+
+    virtual void FindBounding(float *top, float *bottom, float *left, float *right,
+                              const TransformMatrix *matrix, 
+                              const Camera &camera=g_defaultCamera);
 
 protected:
     inline float ComputeWorldAngle(const TransformMatrix *parent,

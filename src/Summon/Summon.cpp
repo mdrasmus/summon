@@ -55,6 +55,17 @@
 #define MODULE_NAME "summon_core"
 
 
+#ifdef DEBUG_X
+#include <X11/Xlib.h>
+
+static int AbortOnXError(Display *display, XErrorEvent *theEvent)
+{
+    abort();
+    return 0 ;
+}
+#endif
+
+
 //=============================================================================
 // python visible prototypes
 extern "C" {
@@ -65,7 +76,6 @@ static PyObject *SummonMainLoop(PyObject *self, PyObject *tup);
 static PyObject *SummonShutdown(PyObject *self, PyObject *tup);
 static PyObject *GetTextWidth(PyObject *self, PyObject *args);
 static PyObject *GetTextHeight(PyObject *self, PyObject *args);
-static PyObject *Screenshot(PyObject *self, PyObject *args);
 
 // python module method table
 // NOTE: the (char*) casts are needed to avoid compiler warnings.
@@ -524,6 +534,7 @@ public:
                 
                 if (model) {
                     Vertex2f pos1, pos2;
+                    
                     model->FindBounding(elm, &pos1, &pos2);
             
                     cmd->SetReturn(BuildScm("ffff", pos1.x, pos1.y, pos2.x, pos2.y));
@@ -1385,6 +1396,11 @@ initsummon_core()
 {
     // prepare the python environment for summon
     InitPython();
+
+#   ifdef DEBUG_X
+        // catch and die on X errors
+        XSetErrorHandler(AbortOnXError);
+#   endif
     
     // create Summon module (global singleton)
     g_summon = new Summon::SummonModule();    

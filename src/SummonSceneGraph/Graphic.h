@@ -84,7 +84,8 @@ public:
     virtual Scm GetContents();
     
     void FindBounding(float *top, float *bottom, float *left, float *right,
-                      TransformMatrix *matrix);
+                      const TransformMatrix *matrix,
+                      const Camera &camera=g_defaultCamera);
     
     inline int NextPrimitive(int ptr)
     {
