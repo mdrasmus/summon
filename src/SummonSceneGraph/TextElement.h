@@ -32,6 +32,10 @@
 
 namespace Summon {
 
+Vertex2f JustifyBox(int justified, const Vertex2f &pos1, const Vertex2f &pos2, 
+                    float textWidth, float textHeight, 
+                    float boxWidth, float boxHeight);
+
 
 
 class TextElement : public Element

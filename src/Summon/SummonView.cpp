@@ -311,8 +311,6 @@ void SummonView::ExecCommand(Command &command)
             AttachMenuCommand *cmd = (AttachMenuCommand*) &command;
             int button = -1;
             
-            
-            
             switch (cmd->button) {
                 case 0: button = GLUT_LEFT_BUTTON; break;
                 case 1: button = GLUT_MIDDLE_BUTTON; break;
@@ -686,30 +684,6 @@ void SummonView::DrawGraphic(Graphic *graphic)
 
 
 
-Vertex2f JustifyBox(int justified, Vertex2f pos1, Vertex2f pos2, 
-                    float textWidth, float textHeight, 
-                    float boxWidth, float boxHeight)
-{
-    // find drawing point based on justification
-    Vertex2f pos = pos1;
-
-    if (justified & TextElement::LEFT)
-        pos.x = pos1.x;
-    else if (justified & TextElement::CENTER)
-        pos.x = pos1.x + (boxWidth - textWidth) / 2.0;
-    else if (justified & TextElement::RIGHT)
-        pos.x = pos2.x - textWidth;
-
-    if (justified & TextElement::TOP)
-        pos.y = pos2.y - textHeight;
-    else if (justified & TextElement::MIDDLE)
-        pos.y = pos1.y + (boxHeight - textHeight) / 2.0;
-    else if (justified & TextElement::BOTTOM)
-        pos.y = pos1.y;
-    
-    return pos;
-}
-
 
 bool SummonView::WithinView(const Vertex2f &pos1, const Vertex2f &pos2)
 {
@@ -787,8 +761,10 @@ void SummonView::DrawTextElement(TextElement *elm)
     } else if (elm->kind == TextElement::KIND_SCALE) {
         // Scale text
     
-        const void *font = GLUT_STROKE_MONO_ROMAN;
-        const float fontSize = getTextHeight(font);
+        // TODO: make text size a property of TextElement
+        // and move this code to TextElement such that it executes only once.
+        static const void *font = GLUT_STROKE_MONO_ROMAN;
+        static const float fontSize = getTextHeight(font);
         float textWidth  = getTextWidth(font, text);
         float textHeight = fontSize;
         
@@ -813,76 +789,16 @@ void SummonView::DrawTextElement(TextElement *elm)
             glutStrokeCharacter((void*) font, *chr);
         glPopMatrix();
         
-    } else if (elm->kind == TextElement::KIND_CLIP) {
-        // Clip text
-        // TODO: must properly use elm->scale
-    
-        const void *font = GLUT_STROKE_MONO_ROMAN;
-        const float fontSize = getTextHeight(font);
-        float textWidth  = getTextWidth(font, text);    
-                
-        Vertex2f zoom = GetZoom();
-        if (elm->modelKind == MODEL_SCREEN) {
-            zoom.x = 1.0;
-            zoom.y = 1.0;
-        }
-        
-        // flip zooming if text is known to be vertical
-        if (elm->justified & TextElement::VERTICAL) {
-            swap(zoom.x, zoom.y);
-        }
-        
-        pos1.x *= zoom.x;
-        pos1.y *= zoom.y;
-        pos2.x *= zoom.x;
-        pos2.y *= zoom.y;
-        
-        float textHeight = fontSize;
-        float boxWidth   = pos2.x - pos1.x;
-        float boxHeight  = pos2.y - pos1.y;
-        
-        float xscale = boxWidth / textWidth;
-        float yscale = boxHeight / textHeight;
-        float tscale = min(xscale, yscale);
-
-        textWidth *= tscale;
-        textHeight *= tscale;
-        
-        
-        // clip text if it falls outside its height restrictions
-        if (textHeight < elm->minHeight)
-            return;
-        if (textHeight > elm->maxHeight) {
-            textWidth *= elm->maxHeight / textHeight;
-            textHeight = elm->maxHeight;
-        }
-        
-        Vertex2f pos = JustifyBox(elm->justified, pos1, pos2, 
-                                  textWidth, textHeight, boxWidth, boxHeight);
-        
-        const unsigned char *chr = text;
-        glPushMatrix();
-        
-        // do not let user scaling affect text scaling
-        glScalef(1.0/zoom.x, 1.0/zoom.y, 1.0);
-        
-        glTranslatef(pos.x, pos.y, 0.0);        
-        
-        
-        glScalef(textHeight/fontSize, textHeight/fontSize, 
-                 textHeight/fontSize);
-        for (; *chr; chr++)
-            glutStrokeCharacter((void*) font, *chr);
-        glPopMatrix();
     }
 }
 
 
 void SummonView::DrawText(void *font, string text, float x, float y)
 {
+    const char *str = text.c_str();
     glRasterPos2f(x, y);
     for(unsigned int i=0; i<text.size(); i++ )
-        glutBitmapCharacter(font , (text.c_str())[i] );
+        glutBitmapCharacter(font , str[i]);
 }
 
 
@@ -890,6 +806,15 @@ void SummonView::SetBgColor(Color &color)
 {
     m_bgColor = color;
     m_bgColor.a = 0.0;
+}
+
+
+void SummonView::CopyPixels(void *pixels)
+{
+    MakeCurrentWindow();
+    Vertex2i winsize = GetWindowSize();
+    glReadPixels(0, 0, winsize.x, winsize.y, 
+        GL_RGB, GL_UNSIGNED_BYTE, (GLvoid*) pixels);
 }
 
 
@@ -904,15 +829,6 @@ void SummonView::SetBoundary(const Vertex2f &pos1, const Vertex2f &pos2)
         swap(m_boundary1.y, m_boundary2.y);
     
     CheckBoundary();
-}
-
-
-void SummonView::CopyPixels(void *pixels)
-{
-    MakeCurrentWindow();
-    Vertex2i winsize = GetWindowSize();
-    glReadPixels(0, 0, winsize.x, winsize.y, 
-        GL_RGB, GL_UNSIGNED_BYTE, (GLvoid*) pixels);
 }
 
 

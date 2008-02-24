@@ -733,6 +733,8 @@ class zoom_clamp (Transform):
            axis       -- a tuple (ax, ay) that together with origin define
                          a line that is stationary with is parent
                          (default: (origin[0]+1, origin[1]))
+           prezoom    -- apply an extra zoom (zx, zy) to the contents before 
+                         clamping
         """
         
         minx = options.get("minx", 0.0)
@@ -746,6 +748,11 @@ class zoom_clamp (Transform):
         axis = options.get("axis", origin)
         prezoom = options.get("prezoom", (1.0, 1.0))
         
+        assert "xmax" not in options and \
+               "ymax" not in options and \
+               "xmin" not in options and \
+               "ymin" not in options, \
+               Exception("Arguments are misspelled (i.e. should be maxy not ymax)")
         
         assert len(origin) == 2, Exception("origin must be a tuple of 2 floats")
         assert len(axis) == 2, Exception("axis must be a tuple of 2 floats")

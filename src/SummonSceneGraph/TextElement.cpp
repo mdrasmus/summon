@@ -38,7 +38,7 @@ bool TextElement::Build(int header, const Scm &code2)
         return false;
     }
     
-    Scm code = code2.Slice(5); //ScmCddr(ScmCdddr(code2));
+    Scm code = code2.Slice(5);
     
     switch (header) {
         case TEXT_CONSTRUCT:        kind = KIND_BITMAP; break;
@@ -137,5 +137,29 @@ Scm TextElement::GetContents()
 
 }
 
+
+Vertex2f JustifyBox(int justified, const Vertex2f &pos1, const Vertex2f &pos2, 
+                    float textWidth, float textHeight, 
+                    float boxWidth, float boxHeight)
+{
+    // find drawing point based on justification
+    Vertex2f pos = pos1;
+
+    if (justified & TextElement::LEFT)
+        pos.x = pos1.x;
+    else if (justified & TextElement::CENTER)
+        pos.x = pos1.x + (boxWidth - textWidth) / 2.0;
+    else if (justified & TextElement::RIGHT)
+        pos.x = pos2.x - textWidth;
+
+    if (justified & TextElement::TOP)
+        pos.y = pos2.y - textHeight;
+    else if (justified & TextElement::MIDDLE)
+        pos.y = pos1.y + (boxHeight - textHeight) / 2.0;
+    else if (justified & TextElement::BOTTOM)
+        pos.y = pos1.y;
+    
+    return pos;
+}
 
 } // namespace Summon
