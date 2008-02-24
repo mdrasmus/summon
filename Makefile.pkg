@@ -7,6 +7,7 @@ VERSION=1.8.6
 PYTHON_VERSION=2.4
 PACKAGE=summon-$(VERSION).tar.gz
 RPM=summon-$(VERSION)-1.i386.rpm
+ZIP=summon-$(VERSION).zip
 WININST=summon-$(VERSION).win32-py$(PYTHON_VERSION).exe
 WWWDIR=/scratch-sm/www/pub/summon
 WWWHOST=rasmus@compbio.mit.edu
@@ -18,6 +19,7 @@ pkg:: dist/$(PACKAGE)
 dist/$(PACKAGE):
 	rm -f MANIFEST
 	python setup.py sdist
+    python setup.py sdist --format=zip
 	python setup.py bdist --format=rpm
 
 
@@ -25,6 +27,7 @@ dist/$(PACKAGE):
 pub: dist/$(PACKAGE)
 	scp dist/$(PACKAGE) $(WWWHOST):$(WWWDIR)
 	scp dist/$(RPM) $(WWWHOST):$(WWWDIR)
+	scp dist/$(ZIP) $(WWWHOST):$(WWWDIR)
 	if [ -f dist/$(WININST) ]; then scp dist/$(WININST) $(WWWHOST):$(WWWDIR); fi
 	ssh $(WWWHOST) chmod o+r $(WWWDIR)/$(PACKAGE)
 	ssh $(WWWHOST) chmod o+r $(WWWDIR)/$(RPM)
