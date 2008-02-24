@@ -247,7 +247,8 @@ Scm Graphic::GetContents()
 
 
 void Graphic::FindBounding(float *top, float *bottom, float *left, float *right,
-                           TransformMatrix *matrix)
+                           const TransformMatrix *matrix,
+                           const Camera &camera)
 {    
    for (int ptr = 0; More(ptr); 
         ptr = NextPrimitive(ptr))

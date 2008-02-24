@@ -63,7 +63,7 @@ public:
 };
 
 
-extern const Camera defaultCamera;
+extern const Camera g_defaultCamera;
 
 // forward declaration
 class Transform;
@@ -142,7 +142,8 @@ public:
 
     
     virtual void FindBounding(float *top, float *bottom, float *left, float *right,
-                              TransformMatrix *matrix);
+                              const TransformMatrix *matrix, 
+                              const Camera &camera=g_defaultCamera);
 
     virtual void Update();
     virtual Transform *GetTransformParent();    

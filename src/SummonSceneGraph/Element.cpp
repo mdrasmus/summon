@@ -31,7 +31,7 @@
 namespace Summon {
 
 
-const Camera defaultCamera(Vertex2f(0, 0), Vertex2f(1, 1), Vertex2f(0, 0));
+const Camera g_defaultCamera(Vertex2f(0, 0), Vertex2f(1, 1), Vertex2f(0, 0));
 
 
 Element *GetElementFromObject(PyObject *obj)
@@ -179,11 +179,12 @@ Scm Element::GetContents()
 
 void Element::FindBounding(float *top, float *bottom, 
                            float *left, float *right,
-                           TransformMatrix *matrix)
+                           const TransformMatrix *matrix,
+                           const Camera &camera)
 {
     // loop through children of this element
     for (Element::Iterator i=Begin(); i!=End(); i++) {
-        (*i)->FindBounding(top, bottom, left, right, matrix);
+        (*i)->FindBounding(top, bottom, left, right, matrix, camera);
     }
 }
 
