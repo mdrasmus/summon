@@ -966,7 +966,7 @@ void SummonView::CheckBoundary(bool useZoomx, bool useZoomy)
     vis2 = ScreenToWorld(winsize.x, winsize.y);
     
     // adjust translate
-    Vertex2f trans;
+    Vertex2f trans(0, 0);
     
     if (vis1.x < m_boundary1.x) {
         trans.x = m_boundary1.x - vis1.x;

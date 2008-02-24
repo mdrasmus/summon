@@ -31,6 +31,8 @@
 namespace Summon {
 
 
+const Camera defaultCamera(Vertex2f(0, 0), Vertex2f(1, 1), Vertex2f(0, 0));
+
 
 Element *GetElementFromObject(PyObject *obj)
 {

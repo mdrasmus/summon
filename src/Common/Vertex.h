@@ -36,6 +36,7 @@ class Vertex2
 public:
 
     Vertex2() {}
+    //Vertex2() : x(0), y(0) {}
 
     Vertex2(T x, T y)  :
         x(x), y(y) {}  

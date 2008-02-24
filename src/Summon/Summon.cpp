@@ -76,7 +76,6 @@ static PyObject *SummonMainLoop(PyObject *self, PyObject *tup);
 static PyObject *SummonShutdown(PyObject *self, PyObject *tup);
 static PyObject *GetTextWidth(PyObject *self, PyObject *args);
 static PyObject *GetTextHeight(PyObject *self, PyObject *args);
-static PyObject *Screenshot(PyObject *self, PyObject *args);
 
 // python module method table
 // NOTE: the (char*) casts are needed to avoid compiler warnings.
@@ -535,6 +534,7 @@ public:
                 
                 if (model) {
                     Vertex2f pos1, pos2;
+                    
                     model->FindBounding(elm, &pos1, &pos2);
             
                     cmd->SetReturn(BuildScm("ffff", pos1.x, pos1.y, pos2.x, pos2.y));

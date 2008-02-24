@@ -350,10 +350,9 @@ void SummonModel::RemoveHotspots(Element *elm)
 
 
 // TODO: this needs a camera argument, but maybe not.
-void SummonModel::FindBounding(Element *elm, Vertex2f *pos1, Vertex2f *pos2)
+void SummonModel::FindBounding(Element *elm, Vertex2f *pos1, Vertex2f *pos2,
+                               const Camera &camera)
 {
-    const Camera camera(Vertex2f(0, 0), Vertex2f(1, 1), Vertex2f(0, 0));
-
     // find smallest bouding box
     float top    = FLOAT_MIN, 
           bottom = FLOAT_MAX, 
