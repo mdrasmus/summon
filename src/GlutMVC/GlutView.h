@@ -99,7 +99,7 @@ public:
         m_windowPos.x = x;
         m_windowPos.y = y;  
         MakeCurrentWindow();        
-        glutPositionWindow(x, y);          
+        glutPositionWindow(x, y);
     }
     
     inline Vertex2i GetPosition()

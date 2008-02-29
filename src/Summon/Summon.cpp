@@ -156,6 +156,7 @@ typedef enum {
 // glut callbacks
 static void FirstDisplay();
 static void FirstReshape(int width, int height);
+static void FirstTimer(int value);
 static void MenuCallback(int item);
 static void Timer(int value);
 
@@ -696,12 +697,10 @@ public:
         {
 	        for (int x = surface->w - 1; x >= 0; --x)
 	        {
+                int p = (y2 * winsize.x + x) * 3;
 		        pdata[y * surface->pitch/4 + x] = 
 			        SDL_MapRGBA(surface->format,
-				        pixels[y2 * winsize.x * 3 + x * 3 + 0],
-				        pixels[y2 * winsize.x * 3 + x * 3 + 1],
-				        pixels[y2 * winsize.x * 3 + x * 3 + 2],
-				        255);
+				        pixels[p + 0], pixels[p + 1], pixels[p + 2], 255);
 	        }
         }
 
@@ -828,53 +827,7 @@ private:
     //==================================================
     // synchronization and thread management    
 
-public:
-    // Starts GLUT processing
-    void StartGlut()
-    {
-        // init glut
-        int argc = 1;
-        char **argv = new char* [1];
-        argv[0] = (char*) "summon"; // avoid compiler warning (GLUT's fault)
-        glutInit(&argc, argv);
 
-        // create hidden window
-        // so that GLUT does not get upset (it always wants one window)
-        //glutInitDisplayMode(GLUT_RGBA);
-        glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA | GLUT_MULTISAMPLE );
-
-        // NOTE: requires freeglut > 2.4.0-1  (2005)
-        // or another GLUT implementation with this extension
-#       ifdef GLUT_ACTION_ON_WINDOW_CLOSE
-            glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
-#       endif
-
-        // initialize first hidden window
-        // NOTE: this is needed in order to estimate window decoration size.
-        // make the window a size that we have to change later on (this is the
-        // reason for the 2*INIT_WINDOW_SIZE).
-        glutInitWindowSize(2*INIT_WINDOW_SIZE, 2*INIT_WINDOW_SIZE);
-        glutInitWindowPosition(INIT_WINDOW_X, INIT_WINDOW_Y);
-        glutCreateWindow("SUMMON");
-        glutDisplayFunc(Summon::FirstDisplay);
-        glutReshapeFunc(Summon::FirstReshape);
-        glutReshapeWindow(3*INIT_WINDOW_SIZE, 3*INIT_WINDOW_SIZE);
-        
-        // aquire the SUMMON lock for this thread
-        Lock();
-        
-        // store summon thread ID
-        m_threadId = PyThread_get_thread_ident();
-
-
-        // begin processing of GLUT events
-        Py_BEGIN_ALLOW_THREADS
-        glutMainLoop();
-        Py_END_ALLOW_THREADS
-        
-    }
-
-private:  
     // Lock the SUMMON module for exclusive command execution
     inline void Lock()
     {
@@ -954,6 +907,52 @@ private:
 
 public:
 
+
+    // Starts GLUT processing
+    void StartGlut()
+    {
+        // init glut
+        int argc = 1;
+        char **argv = new char* [1];
+        argv[0] = (char*) "summon"; // avoid compiler warning (GLUT's fault)
+        glutInit(&argc, argv);
+
+        // create hidden window
+        // so that GLUT does not get upset (it always wants one window)
+        //glutInitDisplayMode(GLUT_RGBA);
+        glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA | GLUT_MULTISAMPLE );
+
+        // NOTE: requires freeglut > 2.4.0-1  (2005)
+        // or another GLUT implementation with this extension
+#       ifdef GLUT_ACTION_ON_WINDOW_CLOSE
+            glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
+#       endif
+
+        // initialize first hidden window
+        // NOTE: this is needed in order to estimate window decoration size.
+        // make the window a size that we have to change later on (this is the
+        // reason for the 2*INIT_WINDOW_SIZE).
+        glutInitWindowSize(2*INIT_WINDOW_SIZE, 2*INIT_WINDOW_SIZE);
+        glutInitWindowPosition(INIT_WINDOW_X, INIT_WINDOW_Y);
+        m_initWindow = glutCreateWindow("SUMMON");
+        glutDisplayFunc(Summon::FirstDisplay);
+        glutReshapeFunc(Summon::FirstReshape);
+        glutTimerFunc(100, Summon::FirstTimer, 0);
+        
+        // aquire the SUMMON lock for this thread
+        Lock();
+        
+        // store summon thread ID
+        m_threadId = PyThread_get_thread_ident();
+
+
+        // begin processing of GLUT events
+        Py_BEGIN_ALLOW_THREADS
+        glutMainLoop();
+        Py_END_ALLOW_THREADS
+        
+    }
+
     // used to help initialize window decoration    
     void FirstReshape(int width, int height)
     {
@@ -968,10 +967,11 @@ public:
         // window decoration processing
         if (!IsRunning()) {
             if (tries < maxtries && 
-                (glutGet(GLUT_WINDOW_WIDTH) != INIT_WINDOW_SIZE ||
-                 glutGet(GLUT_WINDOW_HEIGHT) != INIT_WINDOW_SIZE))
+                (width != INIT_WINDOW_SIZE ||
+                 height != INIT_WINDOW_SIZE))
             {
                 glutReshapeWindow(INIT_WINDOW_SIZE, INIT_WINDOW_SIZE);
+                glutPositionWindow(INIT_WINDOW_X, INIT_WINDOW_Y);
             } else {
                 // get window offset
                 m_windowOffset.x = glutGet(GLUT_WINDOW_X) - INIT_WINDOW_X;
@@ -995,6 +995,22 @@ public:
             glutReshapeWindow(INIT_WINDOW_SIZE, INIT_WINDOW_SIZE);
         }
     }
+    
+    // this timer checks in on initial window to make sure it was propperly
+    // initialized
+    void FirstTimer(int value)
+    {
+        if (!IsRunning()) {
+            glutSetWindow(m_initWindow);
+            FirstReshape(glutGet(GLUT_WINDOW_WIDTH),
+                         glutGet(GLUT_WINDOW_HEIGHT));
+            if (!IsRunning()) {
+                glutTimerFunc(100, Summon::FirstTimer, 0);
+            }
+        }
+    }
+    
+    
     
     //===========================================================
     // GLUT timer callback
@@ -1244,6 +1260,9 @@ private:
     // menus
     int m_nextMenuItem;
     map<int, Scm> m_menuItems;
+    
+    // initial hidden window id
+    int m_initWindow;
 };
 
 
@@ -1255,6 +1274,11 @@ static void FirstDisplay()
 static void FirstReshape(int width, int height)
 {    
     g_summon->FirstReshape(width, height);
+}
+
+static void FirstTimer(int value)
+{
+    g_summon->FirstTimer(value);
 }
 
 
