@@ -900,13 +900,11 @@ private:
         m_state = SUMMON_STATE_STOPPED;        
     }
     
-    
-    //=======================================================
-    // GLUT first timer
-    // dummy function needed for hidden window display
 
 public:
-
+    
+    //=======================================================
+    // GLUT startup and initial window creation
 
     // Starts GLUT processing
     void StartGlut()
