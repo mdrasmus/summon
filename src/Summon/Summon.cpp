@@ -208,10 +208,11 @@ public:
         for (CommandAttr::Iterator i=g_scriptAttr.Begin();
              i != g_scriptAttr.End(); i++)
         {
-            if (!g_constructAttr.Has((*i)->GetId()) &&
-                strlen(((ScriptCommand*) *i)->GetName()) > 0)
+            if (strlen(((ScriptCommand*) *i)->GetName()) > 0)
             {
                 m_summonCommands.push_back((ScriptCommand*) *i);
+            } else {
+                assert(0);
             }
         }
         

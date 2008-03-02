@@ -29,11 +29,12 @@
 namespace Summon
 {
 
+typedef unsigned char ElementId;
 
 // constructs
 enum {    
     // structure
-    GROUP_CONSTRUCT = 2000,
+    GROUP_CONSTRUCT,
     CUSTOM_GROUP_CONSTRUCT,
     DYNAMIC_GROUP_CONSTRUCT,
     HOTSPOT_CONSTRUCT,
@@ -77,7 +78,7 @@ void elementsInit();
 
 // element factory and registration
 class Element;
-typedef Factory<int, Element> ElementFactory;
+typedef Factory<ElementId, Element> ElementFactory;
 
 extern ElementFactory g_elementFactory;
 

@@ -22,7 +22,7 @@ import vector
 #=============================================================================
 # constuct IDs
 
-_i = iter(xrange(2000, 2000+200))
+_i = iter(xrange(2000))
 
 _GROUP_CONSTRUCT = _i.next()
 _CUSTOM_GROUP_CONSTRUCT = _i.next()

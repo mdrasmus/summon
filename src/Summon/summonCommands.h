@@ -164,19 +164,6 @@ extern CommandAttr g_glAttr;
 
 
 
-// constructs
-class Construct : public StringCommand
-{
-public:
-};
-
-extern CommandAttr g_constructAttr;
-
-#define RegisterConstruct(cmd) \
-    RegisterStringCommand(cmd) \
-    AddAttr(g_constructAttr)
-
-
 #define RegisterGlobalCommand(cmd) \
     RegisterStringCommand(cmd) \
     AddAttr(g_globalAttr)

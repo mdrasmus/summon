@@ -62,13 +62,12 @@ public:
     Vertex2f focus;
 };
 
-
+// default camera with no scroll or zoom
 extern const Camera g_defaultCamera;
 
 // forward declaration
 class Transform;
 
-typedef short ElementId;
 
 class Element
 {
@@ -166,8 +165,6 @@ protected:
     int m_referenced;
     void *m_model;
     list<Element*> m_children;
-    
-    // NOTE: actual type must be Transform*
     Transform *m_transformParent;
 };
 
