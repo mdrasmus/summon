@@ -172,8 +172,7 @@ public:
         
         m_commandWaiting(NULL),
         m_graphicsExec(false),
-        m_waiting(false),        
-        m_lock(SDL_CreateMutex()),
+        m_waiting(false),
         m_cond(SDL_CreateCond()),
         m_condlock(SDL_CreateMutex()),
 
@@ -189,7 +188,6 @@ public:
     virtual ~SummonModule()
     {
         // clean up SDL thread management 
-        SDL_DestroyMutex(m_lock);
         SDL_DestroyCond(m_cond);
         SDL_DestroyMutex(m_condlock);        
     }
@@ -828,23 +826,12 @@ private:
     //==================================================
     // synchronization and thread management    
 
-
-    // Lock the SUMMON module for exclusive command execution
-    inline void Lock()
-    {
-        assert(SDL_mutexP(m_lock) == 0);
-    }
     
-    // Unlock the SUMMON model to allow other threads to execute commands
-    inline void Unlock()
-    {
-        assert(SDL_mutexV(m_lock) == 0);
-    }
-  
     // Returns whether a command waiting to be executed
     inline bool IsCommandWaiting()
     {
-        return m_commandWaiting != NULL;
+        return m_commandWaiting != NULL ||
+               m_queuedCommands.size() > 0;
     }
     
     // Wait for a submitted command to be executed
@@ -939,7 +926,7 @@ public:
         glutTimerFunc(100, Summon::FirstTimer, 0);
         
         // aquire the SUMMON lock for this thread
-        Lock();
+        // Lock();
         
         // store summon thread ID
         m_threadId = PyThread_get_thread_ident();
@@ -1019,10 +1006,13 @@ public:
     {
         static int delay = 0;
         static int delayTime = 0;
-    
+        
         // do nothing if python is not initialized        
-        if (!Py_IsInitialized())
+        if (!Py_IsInitialized() && IsRunning())
             return;
+        
+        // get python GIL
+        m_gil = PyGILState_Ensure();
         
         // process window events
         ProcessWindowEvents();
@@ -1058,6 +1048,8 @@ public:
         } else {
             delayTime = 10;
         }
+        
+        PyGILState_Release(m_gil);
     }
     
 private:    
@@ -1068,9 +1060,9 @@ private:
             Command *cmd = m_timerCommand;
             m_timerCommand = NULL;
             
-            PyGILState_STATE gstate = PyGILState_Ensure();
+            //PyGILState_STATE gstate = PyGILState_Ensure();
             ExecCommand(*cmd);
-            PyGILState_Release(gstate);
+            //PyGILState_Release(gstate);
             
             delete cmd;
         }
@@ -1087,41 +1079,10 @@ private:
         if (IsCommandWaiting()) {
             if (m_graphicsExec) {
                 // graphics command is executed in this thread
-                
-                // command may also call python so aquire the GIL
-                PyGILState_STATE gstate = PyGILState_Ensure();
-                
+                                
                 ExecCommand(*m_commandWaiting);
                 m_commandWaiting = NULL;
                 m_graphicsExec = false;
-                
-                PyGILState_Release(gstate);
-            } else {
-                // non-graphic command will be execute in other thread
-                // release lock on SUMMON
-                Unlock();        
-
-                // sleep for  awhile to allow multiple non-graphics 
-                // commands to execute, as long as they are non-graphical
-                while (IsCommandWaiting() && !m_graphicsExec)
-                {
-                    /*
-                    // if there is a timer command, we cannot sleep past the
-                    // time at which it will go off.                
-                    if (m_timerCommand) {
-                        // sleep up until timer goes off
-                        int remaining = m_timerDelay - GetTime();
-                        if (remaining > 0)
-                            SDL_Delay(remaining);
-                        // don't loop
-                        break;
-                    } else {
-                        SDL_Delay(10);
-                    }*/
-                    SDL_Delay(10);
-                }
-            
-                Lock();
             }
             
             nodelay = true;
@@ -1141,12 +1102,13 @@ public:
     // call is from the non-GLUT thread, however if a GLUT-callback calls 
     // python code that then calls a SUMMON command, then this could also be
     // called in the GLUT thread.
-    inline void ThreadSafeExecCommand(Command *command)
+    // Returns true if command has been queued
+    inline bool ThreadSafeExecCommand(Command *command)
     {
         // do nothing until summon is initialized, shouldn't happen anyway
         // NOTE: Maybe I could make this an assert instead
         if (!IsRunning())
-            return;    
+            return false;    
     
         int curThreadId = PyThread_get_thread_ident();
         
@@ -1157,21 +1119,6 @@ public:
         } else {
             // we are the python/non-glut thread, more care is needed
             
-            // try to execute element commands directly
-            if (command->HasAttr(&g_elementAttr)) {
-                ElementCommand *elmCmd = (ElementCommand*) command;
-                Element *elm = Id2Element(elmCmd->groupid);
-                SummonModel *model = GetModelOfElement(elm);                
-                
-                // if element has no model, then locking is not necessary
-                if (!model) {
-                    // direct execution
-                    ExecCommand(*command);
-                    return;
-                }
-                // element is attached to model, so fall through for locking
-            }
-
             // commands that manipulate OpenGL must be passed to the other thread
             if (command->HasAttr(&g_glAttr)) {
                 // pass command to other thread
@@ -1191,23 +1138,12 @@ public:
                 assert(m_commandWaiting == NULL);
 
             } else {
-                // execute command in this thread once exclusive lock is obtained
-                assert(m_commandWaiting == NULL);
-                m_commandWaiting = command;
-                
-                // obtain exclusive lock to SUMMON module
-                Py_BEGIN_ALLOW_THREADS
-                Lock();
-                Py_END_ALLOW_THREADS
-                
                 // execute command in this thread
                 ExecCommand(*command);
-                
-                // release exclusive lock
-                m_commandWaiting = NULL;
-                Unlock();
             }
         }
+        
+        return false;
     }
 
 //======================================================================
@@ -1227,9 +1163,10 @@ private:
     bool m_graphicsExec;
     bool m_waiting;
     int m_threadId;
-    SDL_mutex *m_lock;
     SDL_cond *m_cond;    
     SDL_mutex *m_condlock;    
+    list<Command*> m_queuedCommands;
+    PyGILState_STATE m_gil;
 
 
     // user-defined time-delay command execution
@@ -1369,20 +1306,23 @@ Exec(PyObject *self, PyObject *tup)
     // populate command and execute
     if (cmd->Setup(args)) {
         // execute command
-        g_summon->ThreadSafeExecCommand(cmd);
+        bool queued = g_summon->ThreadSafeExecCommand(cmd);
         
-        // handle return value
-        PyObject *ret = Scm2Py(cmd->GetReturn());
-        if (ret)
-            Py_INCREF(ret);
-        else {
-            // set python exception
-            SetException();
+        if (!queued) {
+
+            // handle return value
+            PyObject *ret = Scm2Py(cmd->GetReturn());
+            if (ret)
+                Py_INCREF(ret);
+            else {
+                // set python exception
+                SetException();
+            }
+
+            // clean up and return result
+            delete cmd;
+            return ret;
         }
-        
-        // clean up and return result
-        delete cmd;
-        return ret;
     } else {
         // populating command failed, raise exception
         Error("error processing command '%s'", cmd->GetName());

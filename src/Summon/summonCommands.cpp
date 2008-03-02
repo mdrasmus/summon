@@ -35,7 +35,6 @@ using namespace std;
 
 CommandAttr g_elementAttr;
 CommandAttr g_globalAttr;
-CommandAttr g_constructAttr;
 CommandAttr g_modelAttr;
 CommandAttr g_viewAttr;
 CommandAttr g_controllerAttr;
@@ -50,8 +49,8 @@ void summonCommandsInit()
     
 #   define e() AddAttr(g_elementAttr)
 #   define g() AddAttr(g_globalAttr)
-#   define m() AddAttr(g_modelAttr)    
-#   define v() AddAttr(g_viewAttr)    
+#   define m() AddAttr(g_modelAttr)
+#   define v() AddAttr(g_viewAttr)
 #   define c() AddAttr(g_controllerAttr)
 #   define gl() AddAttr(g_glAttr)
 

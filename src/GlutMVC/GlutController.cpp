@@ -72,44 +72,12 @@ Vertex2i GlutController::GetMousePos()
 {
     return m_lastMouse;
 }
-   
-void GlutController::GlutKey(unsigned char key, int x, int y)
-{
-    PyGILState_STATE gstate = PyGILState_Ensure();
-    g_controllers[glutGetWindow()]->Key(key, x, y);
-    PyGILState_Release(gstate);
-}
-
-void GlutController::GlutSpecialKey(int key, int x, int y)
-{
-    PyGILState_STATE gstate = PyGILState_Ensure();
-    g_controllers[glutGetWindow()]->SpecialKey(key, x, y);
-    PyGILState_Release(gstate);    
-}
-
-void GlutController::GlutMotion(int x, int y)
-{
-    PyGILState_STATE gstate = PyGILState_Ensure();
-    g_controllers[glutGetWindow()]->Motion(x, y);
-    PyGILState_Release(gstate);
-}
-
-void GlutController::GlutPassiveMotion(int x, int y)
-{
-    PyGILState_STATE gstate = PyGILState_Ensure();
-    g_controllers[glutGetWindow()]->PassiveMotion(x, y);
-    PyGILState_Release(gstate);
-}
-
-void GlutController::GlutMouseClick(int button, int state, int x, int y)
-{
-    PyGILState_STATE gstate = PyGILState_Ensure();
-    g_controllers[glutGetWindow()]->MouseClick(button, state, x, y);
-    PyGILState_Release(gstate);    
-}
 
 
-// callbacks
+//=============================================================================
+// GLUT object-oriented callbacks
+
+
 void GlutController::Key(unsigned char key, int x, int y)
 {
     KeyboardInput input;
@@ -206,6 +174,46 @@ void GlutController::MouseClick(int button, int state, int x, int y)
 
     m_lastMouse = input.pos;
 }
+
+
+//=============================================================================
+// GLUT static callbacks
+   
+void GlutController::GlutKey(unsigned char key, int x, int y)
+{
+    PyGILState_STATE gstate = PyGILState_Ensure();
+    g_controllers[glutGetWindow()]->Key(key, x, y);
+    PyGILState_Release(gstate);
+}
+
+void GlutController::GlutSpecialKey(int key, int x, int y)
+{
+    PyGILState_STATE gstate = PyGILState_Ensure();
+    g_controllers[glutGetWindow()]->SpecialKey(key, x, y);
+    PyGILState_Release(gstate);    
+}
+
+void GlutController::GlutMotion(int x, int y)
+{
+    PyGILState_STATE gstate = PyGILState_Ensure();
+    g_controllers[glutGetWindow()]->Motion(x, y);
+    PyGILState_Release(gstate);
+}
+
+void GlutController::GlutPassiveMotion(int x, int y)
+{
+    PyGILState_STATE gstate = PyGILState_Ensure();
+    g_controllers[glutGetWindow()]->PassiveMotion(x, y);
+    PyGILState_Release(gstate);
+}
+
+void GlutController::GlutMouseClick(int button, int state, int x, int y)
+{
+    PyGILState_STATE gstate = PyGILState_Ensure();
+    g_controllers[glutGetWindow()]->MouseClick(button, state, x, y);
+    PyGILState_Release(gstate);    
+}
+
 
 
 

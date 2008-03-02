@@ -40,6 +40,16 @@ Open Ideas
   - add textures, image loading
 
 #=============================================================================
+# Sun Mar  2 16:58:14 EST 2008
+
+ideas on threads:
+
+I have GIL locks on all glut callbacks.  Every python exposed function has an
+implicit GIL lock and unlock.  Thus I have only one thread in summon code at 
+once.
+
+
+#=============================================================================
 # Sat Feb 23 21:14:56 EST 2008
 
 # key repeating

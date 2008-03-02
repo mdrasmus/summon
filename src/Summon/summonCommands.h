@@ -176,12 +176,14 @@ extern CommandAttr g_glAttr;
 class WindowCommand : public ScriptCommand
 {
 public:
+    WindowCommand(bool needReturn=false) : ScriptCommand(needReturn) {}
     int windowid;
 };
 
 class GetWindowsCommand : public ScriptCommand
 {
 public:
+    GetWindowsCommand() : ScriptCommand(true) {}
     virtual Command* Create() { return new GetWindowsCommand(); }
     virtual int GetId() { return GET_WINDOWS_COMMAND; }
 
@@ -195,6 +197,7 @@ public:
 class NewWindowCommand : public ScriptCommand
 {
 public:
+    NewWindowCommand() : ScriptCommand(true) {}
     virtual Command* Create() { return new NewWindowCommand(); }
     virtual int GetId() { return NEW_WINDOW_COMMAND; }
 
@@ -243,6 +246,7 @@ public:
 class GetModelsCommand : public ScriptCommand
 {
 public:
+    GetModelsCommand() : ScriptCommand(true) {}
     virtual Command* Create() { return new GetModelsCommand(); }
     virtual int GetId() { return GET_MODELS_COMMAND; }
 
@@ -256,6 +260,7 @@ public:
 class NewModelCommand : public ScriptCommand
 {
 public:
+    NewModelCommand() : ScriptCommand(true) {}
     virtual Command* Create() { return new NewModelCommand(); }
     virtual int GetId() { return NEW_MODEL_COMMAND; }
 
@@ -315,6 +320,7 @@ public:
 class GetWindowDecorationCommand : public ScriptCommand
 {
 public:
+    GetWindowDecorationCommand() : ScriptCommand(true) {}
     virtual Command* Create() { return new GetWindowDecorationCommand(); }
     virtual int GetId() { return GET_WINDOW_DECORATION_COMMAND; }
 
@@ -421,6 +427,7 @@ public:
 class NewMenuCommand : public ScriptCommand
 {
 public:
+    NewMenuCommand() : ScriptCommand(true) {}
     virtual Command* Create() { return new NewMenuCommand(); }
     virtual int GetId() { return NEW_MENU_COMMAND; }
 
@@ -454,6 +461,7 @@ public:
 class AddMenuEntryCommand : public ScriptCommand
 {
 public:
+    AddMenuEntryCommand() : ScriptCommand(true) {}
     virtual Command* Create() { return new AddMenuEntryCommand(); }
     virtual int GetId() { return ADD_MENU_ENTRY_COMMAND; }
 
@@ -477,6 +485,7 @@ public:
 class AddSubmenuCommand : public ScriptCommand
 {
 public:
+    AddSubmenuCommand() : ScriptCommand(true) {}
     virtual Command* Create() { return new AddSubmenuCommand(); }
     virtual int GetId() { return ADD_SUBMENU_COMMAND; }
 
@@ -522,6 +531,7 @@ public:
 class SetMenuEntryCommand : public ScriptCommand
 {
 public:
+    SetMenuEntryCommand() : ScriptCommand(true) {}
     virtual Command* Create() { return new SetMenuEntryCommand(); }
     virtual int GetId() { return SET_MENU_ENTRY_COMMAND; }
 
@@ -545,6 +555,7 @@ public:
 class SetSubmenuCommand : public ScriptCommand
 {
 public:
+    SetSubmenuCommand() : ScriptCommand(true) {}
     virtual Command* Create() { return new SetSubmenuCommand(); }
     virtual int GetId() { return SET_SUBMENU_COMMAND; }
 
@@ -569,6 +580,7 @@ public:
 class AttachMenuCommand : public WindowCommand
 {
 public:
+    AttachMenuCommand() : WindowCommand(true) {}
     virtual Command* Create() { return new AttachMenuCommand(); }
     virtual int GetId() { return ATTACH_MENU_COMMAND; }
 
@@ -591,6 +603,7 @@ public:
 class DetachMenuCommand : public WindowCommand
 {
 public:
+    DetachMenuCommand() : WindowCommand(true) {}
     virtual Command* Create() { return new DetachMenuCommand(); }
     virtual int GetId() { return DETACH_MENU_COMMAND; }
 
@@ -616,7 +629,8 @@ public:
 class ElementCommand : public ScriptCommand
 {
 public:
-    int groupid;    
+    ElementCommand(bool needReturn=false) : ScriptCommand(needReturn) {};
+    int groupid;
 };
 
 
@@ -729,6 +743,7 @@ public:
 class GetBoundingCommand2 : public ElementCommand
 {
 public:
+    GetBoundingCommand2() : ElementCommand(true) {}
     virtual Command* Create() { return new GetBoundingCommand2(); }
     virtual int GetId() { return GET_BOUNDING_COMMAND2; }
 
@@ -776,6 +791,7 @@ public:
 class ModelCommand : public ScriptCommand
 {
 public:
+    ModelCommand(bool needReturn=false) : ScriptCommand(needReturn) {}
     int modelid;
 };
 
@@ -929,6 +945,7 @@ public:
 class GetRootIdCommand : public ModelCommand
 {
 public:
+    GetRootIdCommand() : ModelCommand(true) {}
     virtual Command* Create() { return new GetRootIdCommand(); }
     virtual int GetId() { return GET_ROOT_ID_COMMAND; }
 
@@ -948,6 +965,7 @@ public:
 class GetBoundingCommand : public ModelCommand
 {
 public:
+    GetBoundingCommand() : ModelCommand(true) {}
     virtual Command* Create() { return new GetBoundingCommand(); }
     virtual int GetId() { return GET_BOUNDING_COMMAND; }
 
@@ -994,6 +1012,7 @@ public:
 class GetWindowNameCommand : public WindowCommand
 {
 public:
+    GetWindowNameCommand() : WindowCommand(true) {}
     virtual Command* Create() { return new GetWindowNameCommand(); }
     virtual int GetId() { return GET_WINDOW_NAME_COMMAND; }
 
@@ -1031,6 +1050,7 @@ public:
 class GetWindowPositionCommand : public WindowCommand
 {
 public:
+    GetWindowPositionCommand() : WindowCommand(true) {}
     virtual Command* Create() { return new GetWindowPositionCommand(); }
     virtual int GetId() { return GET_WINDOW_POSITION_COMMAND; }
 
@@ -1071,6 +1091,7 @@ public:
 class GetWindowSizeCommand : public WindowCommand
 {
 public:
+    GetWindowSizeCommand() : WindowCommand(true) {}
     virtual Command* Create() { return new GetWindowSizeCommand(); }
     virtual int GetId() { return GET_WINDOW_SIZE_COMMAND; }
 
@@ -1110,6 +1131,7 @@ public:
 class GetWindowBoundaryCommand : public WindowCommand
 {
 public:
+    GetWindowBoundaryCommand() : WindowCommand(true) {}
     virtual Command* Create() { return new GetWindowBoundaryCommand(); }
     virtual int GetId() { return GET_WINDOW_BOUNDARY_COMMAND; }
 
@@ -1168,6 +1190,7 @@ public:
 class GetTransCommand : public WindowCommand
 {
 public:
+    GetTransCommand() : WindowCommand(true) {}
     virtual Command* Create() { return new GetTransCommand(); }
     virtual int GetId() { return GET_TRANS_COMMAND; }
 
@@ -1205,6 +1228,7 @@ public:
 class GetZoomCommand : public WindowCommand
 {
 public:
+    GetZoomCommand() : WindowCommand(true) {}
     virtual Command* Create() { return new GetZoomCommand(); }
     virtual int GetId() { return GET_ZOOM_COMMAND; }
 
@@ -1242,6 +1266,7 @@ public:
 class GetFocusCommand : public WindowCommand
 {
 public:
+    GetFocusCommand() : WindowCommand(true) {}
     virtual Command* Create() { return new GetFocusCommand(); }
     virtual int GetId() { return GET_FOCUS_COMMAND; }
 
@@ -1286,6 +1311,7 @@ public:
 class GetBgColorCommand : public WindowCommand
 {
 public:
+    GetBgColorCommand() : WindowCommand(true) {}
     virtual Command* Create() { return new GetBgColorCommand(); }
     virtual int GetId() { return GET_BGCOLOR_COMMAND; }
 
@@ -1325,6 +1351,7 @@ public:
 class GetVisibleCommand : public WindowCommand
 {
 public:
+    GetVisibleCommand() : WindowCommand(true) {}
     virtual Command* Create() { return new GetVisibleCommand(); }
     virtual int GetId() { return GET_VISIBLE_COMMAND; }
 
@@ -1701,6 +1728,8 @@ public:
 class HotspotClickCommand : public WindowCommand
 {
 public:
+    HotspotClickCommand() : WindowCommand(true) {}
+
     virtual Command* Create() { return new HotspotClickCommand(); }
     virtual int GetId() { return HOTSPOT_CLICK_COMMAND; }
 
@@ -1772,6 +1801,8 @@ public:
 class GetMousePosCommand : public WindowCommand
 {
 public:
+    GetMousePosCommand() : WindowCommand(true) {}
+
     virtual Command* Create() { return new GetMousePosCommand(); }
     virtual int GetId() { return GET_MOUSE_POS_COMMAND; }
 
@@ -1834,6 +1865,7 @@ class CallProcCommand : public ScriptCommand
 {
 public:
     CallProcCommand(Scm code=Scm_NONE, Scm args=Scm_EOL) : 
+        ScriptCommand(true),
         args(Scm_EOL),    
         defined(false)
     {

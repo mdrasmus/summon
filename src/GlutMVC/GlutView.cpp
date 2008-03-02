@@ -92,29 +92,9 @@ void GlutView::ExecCommand(Command &command)
     }
 }
 
-void GlutView::GlutDisplay()
-{
-    PyGILState_STATE gstate = PyGILState_Ensure();
-    g_windows[glutGetWindow()]->Display();
-    PyGILState_Release(gstate);
-}
 
-void GlutView::GlutReshape(int width, int height)
-{
-    PyGILState_STATE gstate = PyGILState_Ensure();
-    g_windows[glutGetWindow()]->Reshape(width, height);
-    PyGILState_Release(gstate);
-}
-
-
-void GlutView::GlutClose()
-{
-    int winid = glutGetWindow();
-    PyGILState_STATE gstate = PyGILState_Ensure();
-    g_windows[winid]->OnClose();
-    PyGILState_Release(gstate);
-}
-
+//=============================================================================
+// Object-oriented callbacks
 
 void GlutView::Display()
 {
@@ -178,6 +158,33 @@ void GlutView::UpdatePosition()
     }
     
     m_windowPosLastKnown = m_windowPos;
+}
+
+
+//=============================================================================
+// GLUT static callbacks
+
+void GlutView::GlutDisplay()
+{
+    PyGILState_STATE gstate = PyGILState_Ensure();
+    g_windows[glutGetWindow()]->Display();
+    PyGILState_Release(gstate);
+}
+
+void GlutView::GlutReshape(int width, int height)
+{
+    PyGILState_STATE gstate = PyGILState_Ensure();
+    g_windows[glutGetWindow()]->Reshape(width, height);
+    PyGILState_Release(gstate);
+}
+
+
+void GlutView::GlutClose()
+{
+    int winid = glutGetWindow();  // TODO: I wonder why I placed this here
+    PyGILState_STATE gstate = PyGILState_Ensure();
+    g_windows[winid]->OnClose();
+    PyGILState_Release(gstate);
 }
 
 

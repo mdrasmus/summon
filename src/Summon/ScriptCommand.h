@@ -35,16 +35,24 @@ namespace Summon
 class ScriptCommand : public StringCommand
 {
 public:
-    ScriptCommand() : m_return(Scm_NONE) {}
+    ScriptCommand(bool needReturn=false) : 
+        m_return(Scm_NONE), 
+        m_needReturn(needReturn)
+    {}
     virtual ~ScriptCommand() {}
 
     virtual bool Setup(const Scm &lst) { return true; }
     
-    inline void SetReturn(Scm scm) { m_return = scm; }
+    inline void SetReturn(Scm scm) {
+        assert(m_needReturn); // NOTE: keep this while debugging
+        m_return = scm; 
+    }
     inline Scm GetReturn() { return m_return; }
+    inline bool NeedsReturn() { return m_needReturn; }
     
 protected:
     Scm m_return;
+    bool m_needReturn;
 };
 
 
