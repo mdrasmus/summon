@@ -167,21 +167,19 @@ class SummonModule : public CommandExecutor, public GlutViewListener
 public:
     SummonModule() :
         m_state(SUMMON_STATE_UNINITIALIZED),
-        m_nextWindowId(1),
         m_nextModelId(1),
+        m_nextWindowId(1),
+        m_windowOffset(0,0),
+        m_windowCloseCallback(Scm_EOL),
+        m_nextMenuItem(1),
         
-        m_commandWaiting(NULL),
-        m_graphicsExec(false),
         m_waiting(false),
         m_cond(SDL_CreateCond()),
         m_condlock(SDL_CreateMutex()),
 
         m_timerCommand(NULL),
-        m_timerDelay(0),
-        m_windowOffset(0,0),
-        m_windowCloseCallback(Scm_EOL),
-        
-        m_nextMenuItem(1)
+        m_timerDelay(0)
+
     {
     }
     
@@ -201,28 +199,19 @@ public:
         
         // init summon commands
         summonCommandsInit();
-        m_summonCommands.clear();
         
         for (CommandAttr::Iterator i=g_scriptAttr.Begin();
              i != g_scriptAttr.End(); i++)
         {
-            if (strlen(((ScriptCommand*) *i)->GetName()) > 0)
-            {
-                m_summonCommands.push_back((ScriptCommand*) *i);
-            } else {
-                assert(0);
-            }
-        }
+            ScriptCommand* cmd = (ScriptCommand*) *i;
         
-        // register summon commands through gateway function
-        for (unsigned int i=0; i<m_summonCommands.size(); i++) {
             // get command id
-            string idstr = int2string(m_summonCommands[i]->GetId());
+            string idstr = int2string(cmd->GetId());
 
             // create python name for command
-            string name = m_summonCommands[i]->GetName();
-            string help = string("(") + string(m_summonCommands[i]->GetUsage()) + 
-                          ")\\n" + m_summonCommands[i]->GetDescription();
+            string name = cmd->GetName();
+            string help = string("(") + string(cmd->GetUsage()) + 
+                          ")\\n" + cmd->GetDescription();
 
             // create wrapper function
             string pyCommands =  "import " MODULE_NAME "\n"
@@ -830,8 +819,7 @@ private:
     // Returns whether a command waiting to be executed
     inline bool IsCommandWaiting()
     {
-        return m_commandWaiting != NULL ||
-               m_queuedCommands.size() > 0;
+        return m_queuedCommands.size() > 0;
     }
     
     // Wait for a submitted command to be executed
@@ -844,7 +832,6 @@ private:
     // Notify those waiting that a command has been executed
     inline void NotifyExecOccurred()
     {
-        m_commandWaiting = NULL;
         assert(SDL_CondBroadcast(m_cond) == 0);
     }
 
@@ -1059,11 +1046,7 @@ private:
         if (m_timerCommand && GetTime() > m_timerDelay) {
             Command *cmd = m_timerCommand;
             m_timerCommand = NULL;
-            
-            //PyGILState_STATE gstate = PyGILState_Ensure();
             ExecCommand(*cmd);
-            //PyGILState_Release(gstate);
-            
             delete cmd;
         }
     }
@@ -1074,26 +1057,31 @@ private:
     // Returns true if command was executed
     inline bool ExecWaitingCommands()
     {
-        bool nodelay = false;
+        bool nodelay;
     
         if (IsCommandWaiting()) {
-            if (m_graphicsExec) {
-                // graphics command is executed in this thread
-                                
-                ExecCommand(*m_commandWaiting);
-                m_commandWaiting = NULL;
-                m_graphicsExec = false;
-            }
+            // graphics command is executed in this thread
+            
+            do {
+                ScriptCommand *cmd = m_queuedCommands.front();
+                m_queuedCommands.pop_front();
+                ExecCommand(*cmd);
+                
+                // if command is owned by queue, delete it
+                if (!cmd->NeedsReturn())
+                    delete cmd;
+            } while (m_queuedCommands.size() > 0);
             
             nodelay = true;
-        }
-        
+        } else
+            nodelay = false;
+            
         // wake up python thread if it is waiting for a graphic command to
         // complete
-        if (m_waiting && !m_graphicsExec)
+        if (m_waiting)
             NotifyExecOccurred();
         
-        return nodelay;
+        return nodelay;          
     }
 
 public:    
@@ -1103,44 +1091,47 @@ public:
     // python code that then calls a SUMMON command, then this could also be
     // called in the GLUT thread.
     // Returns true if command has been queued
-    inline bool ThreadSafeExecCommand(Command *command)
+    inline bool ThreadSafeExecCommand(ScriptCommand *command)
     {
         // do nothing until summon is initialized, shouldn't happen anyway
         // NOTE: Maybe I could make this an assert instead
         if (!IsRunning())
             return false;    
-    
-        int curThreadId = PyThread_get_thread_ident();
-        
+
         // determine which thread we are in
-        if (curThreadId == m_threadId) {
-            // execute command in this thread if we are in the summon/glut thread
-            ExecCommand(*command);
-        } else {
+        // execute command in this thread if we are in the summon/glut thread
+        int curThreadId = PyThread_get_thread_ident();
+
+        if (command->HasAttr(&g_glAttr) && curThreadId != m_threadId) {
             // we are the python/non-glut thread, more care is needed
-            
-            // commands that manipulate OpenGL must be passed to the other thread
-            if (command->HasAttr(&g_glAttr)) {
-                // pass command to other thread
-                assert(m_commandWaiting == NULL);
-                m_graphicsExec = true;
+            // commands that manipulate OpenGL must be passed to the 
+            // other thread
+
+            // pass command to other thread
+            m_queuedCommands.push_back(command);
+
+            if (command->NeedsReturn()) {
                 m_waiting = true;
-                m_commandWaiting = command;
 
                 // wait for graphics thread to exec command
-                // graphics thread will reset m_commandWaiting and m_graphicsExec
                 Py_BEGIN_ALLOW_THREADS
                 WaitForExec();
                 Py_END_ALLOW_THREADS
 
                 m_waiting = false;
 
-                assert(m_commandWaiting == NULL);
-
+                // all commands on queue should be executed
+                assert(m_queuedCommands.size() == 0);
+                
+                // command is still owned by caller
+                return false;
             } else {
-                // execute command in this thread
-                ExecCommand(*command);
+                // command is owned by queued
+                return true;
             }
+        } else {
+            // execute command in this thread
+            ExecCommand(*command);
         }
         
         return false;
@@ -1152,53 +1143,45 @@ private:
     // the state of the SUMMON module indicating whether it is ready for 
     // processing commands from python
     SummonState m_state;
-
-    // id numbers
-    int m_nextWindowId;
-    int m_nextModelId;
-
-
-    // thread management
-    Command *m_commandWaiting;
-    bool m_graphicsExec;
-    bool m_waiting;
-    int m_threadId;
-    SDL_cond *m_cond;    
-    SDL_mutex *m_condlock;    
-    list<Command*> m_queuedCommands;
-    PyGILState_STATE m_gil;
-
-
-    // user-defined time-delay command execution
-    Command *m_timerCommand;    
-    int m_timerDelay;
     
     
-    // list of commands directly visible in python
-    vector<StringCommand*> m_summonCommands;
-    
-    // all windows and models
-    typedef map<int, SummonWindow*>::iterator WindowIter;
+    // model data structures
+    int m_nextModelId;  // next id number to issue
     typedef map<int, SummonModel*>::iterator ModelIter;
-    map<int, SummonWindow*> m_windows;
     map<int, SummonModel*> m_models;
+    
+    
+    // window data structures
+    int m_initWindow;   // initial hidden window id
+    int m_nextWindowId; // next id number to issue
+    typedef map<int, SummonWindow*>::iterator WindowIter;
+    map<int, SummonWindow*> m_windows;
+    Vertex2i m_windowOffset; // SUMMON window decoration size
     
     // waiting queues for closing and deleting a window
     map<GlutView*, SummonWindow*> m_closeWaiting;
     vector<SummonWindow*> m_deleteWaiting;
-    
-    // SUMMON window decoration size
-    Vertex2i m_windowOffset;
-    
+
     // user-defined python function to call whenever a window closes    
     Scm m_windowCloseCallback;
-   
+
     // menus
     int m_nextMenuItem;
     map<int, Scm> m_menuItems;
     
-    // initial hidden window id
-    int m_initWindow;
+    
+    // thread management
+    bool m_waiting;
+    int m_threadId;
+    SDL_cond *m_cond;    
+    SDL_mutex *m_condlock;    
+    list<ScriptCommand*> m_queuedCommands;
+    PyGILState_STATE m_gil;
+    
+    
+    // user-defined time-delay command execution
+    Command *m_timerCommand;    
+    int m_timerDelay;
 };
 
 
