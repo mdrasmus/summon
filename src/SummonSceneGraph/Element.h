@@ -124,11 +124,14 @@ public:
     inline void RemoveChild(Element *elm)
     {
         elm->DecRef();
-        elm->m_next->m_prev = elm->m_prev; // this also works when firstChild is removed
-        elm->m_prev->m_next = elm->m_next; // this also works when last child is removed
         
-        // if removing first child, find new first child
-        if (m_child == elm)
+        if (elm->m_next)
+            elm->m_next->m_prev = elm->m_prev;
+        if (m_child != elm)
+            elm->m_prev->m_next = elm->m_next;
+        else
+            // if removing first child, find new first child
+            // NOTE: elm->m_next could be NULL and that is OK
             m_child = elm->m_next;
         
         // remove old links
