@@ -13,7 +13,8 @@ Open Ideas
 
   - add Element.set_contents()
     - this is started and implemented for transforms.  Could think about
-      what other elements could use this feature.
+      what other elements could use this feature.  Also think what the 
+      calling syntax should like in general.
   
   - make sure SVG is fully up to date
     - get_bounding for SVG
@@ -30,6 +31,9 @@ Open Ideas
     - style can be changed just like how color() works now
       except style only lasts until end of group.
     - need a stack of styles (could be managed in call stack of SummonView)
+    - style be an element
+      - color construct is the only otherthing besides vertices that can 
+        appear inside graphics
   
   - add button blink to SideBar
   - can I add mouse wheele binding?
@@ -42,14 +46,92 @@ Open Ideas
 #=============================================================================
 # Sun Mar  2 16:58:14 EST 2008
 
-ideas on threads:
+- ideas on threads:
 
-I have GIL locks on all glut callbacks.  Every python exposed function has an
-implicit GIL lock and unlock.  Thus I have only one thread in summon code at 
-once.
+  I have GIL locks on all glut callbacks.  Every python exposed function has an
+  implicit GIL lock and unlock.  Thus I have only one thread in summon code at 
+  once.
 
-DONE: I have greatly simplified threading for summon
+  DONE: I have greatly simplified threading for summon
 
+
+- ideas on reducing element memory size
+
+  I could have the following
+  
+  Element {
+  
+
+    ElementId m_id;                // 1 byte
+    bool m_visible;                // 1 bit (theoretically)
+    int m_referenced;              // 4 bytes (could this be smaller...)
+    void *m_model;                 // 4 bytes
+    Transform *m_transformParent;  // 4 bytes
+  
+    // tree structure
+    Element *m_parent;             // 4 bytes
+    Element *m_firstChild;         // 4 bytes
+    Element *m_next;               // 4 bytes
+    Element *m_prev;               // 4 bytes
+  };
+  
+  16 bytes for link list.  Faster remove, and replace.  Previously O(n) now O(1)
+  32 bytes for all of Element with proper packing
+  30 bytes if I place m_id and m_visible last.
+  
+  
+  I could avoid using m_lastChild if I have:  
+    m_firstChild->m_prev = last child
+  But still have
+    lastChild->m_next = NULL;
+  
+  
+  AddElement(Element *elm) {
+    if (!m_firstChild) {
+        m_firstChild = elm;
+        elm->m_prev = elm;
+    } else {
+        const Element *lastChild = m_firstChild->m_prev;
+        lastChild->m_next = elm;
+        elm->m_prev = lastChild;
+        elm->m_next = NULL;
+        elm->m_parent = this;
+        m_firstChild->m_prev = elm;
+    }
+  }
+  
+  Looping over children would then be
+  
+  for (Element *elm = m_firstChild; elm; elm = elm->m_next) {
+    // ...
+  }
+  
+  ReplaceElement(Element *old, Element *new)
+  {
+    new->m_parent = this;
+    new->m_next = old->m_next;
+    new->m_prev = old->m_prev;
+    new->m_next->m_prev = new;
+    new->m_prev->m_next = new;
+    
+    old->m_parent = NULL;
+    old->m_next = NULL;
+    old->m_prev = NULL;
+  }
+  
+  RemoveElement(Element *elm)
+  {
+    elm->m_next->m_prev = elm->m_prev; // this also works when firstChild is removed
+    elm->m_prev->m_next = elm->m_next; // this also works when last child is removed
+    
+    if (m_firstChild == elm)
+        m_firstChild = elm->m_next;
+    
+    elm->m_parent = NULL;
+    elm->m_next = NULL;
+    elm->m_prev = NULL;
+  }
+  
 
 #=============================================================================
 # Sat Feb 23 21:14:56 EST 2008
