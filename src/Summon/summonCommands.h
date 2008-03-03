@@ -461,7 +461,6 @@ public:
 class AddMenuEntryCommand : public ScriptCommand
 {
 public:
-    AddMenuEntryCommand() : ScriptCommand(true) {}
     virtual Command* Create() { return new AddMenuEntryCommand(); }
     virtual int GetId() { return ADD_MENU_ENTRY_COMMAND; }
 
@@ -485,7 +484,6 @@ public:
 class AddSubmenuCommand : public ScriptCommand
 {
 public:
-    AddSubmenuCommand() : ScriptCommand(true) {}
     virtual Command* Create() { return new AddSubmenuCommand(); }
     virtual int GetId() { return ADD_SUBMENU_COMMAND; }
 
@@ -531,7 +529,6 @@ public:
 class SetMenuEntryCommand : public ScriptCommand
 {
 public:
-    SetMenuEntryCommand() : ScriptCommand(true) {}
     virtual Command* Create() { return new SetMenuEntryCommand(); }
     virtual int GetId() { return SET_MENU_ENTRY_COMMAND; }
 
@@ -555,7 +552,6 @@ public:
 class SetSubmenuCommand : public ScriptCommand
 {
 public:
-    SetSubmenuCommand() : ScriptCommand(true) {}
     virtual Command* Create() { return new SetSubmenuCommand(); }
     virtual int GetId() { return SET_SUBMENU_COMMAND; }
 
@@ -580,7 +576,6 @@ public:
 class AttachMenuCommand : public WindowCommand
 {
 public:
-    AttachMenuCommand() : WindowCommand(true) {}
     virtual Command* Create() { return new AttachMenuCommand(); }
     virtual int GetId() { return ATTACH_MENU_COMMAND; }
 
@@ -603,7 +598,6 @@ public:
 class DetachMenuCommand : public WindowCommand
 {
 public:
-    DetachMenuCommand() : WindowCommand(true) {}
     virtual Command* Create() { return new DetachMenuCommand(); }
     virtual int GetId() { return DETACH_MENU_COMMAND; }
 
