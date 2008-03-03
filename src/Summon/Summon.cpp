@@ -965,8 +965,8 @@ public:
         // window decoration processing
         if (!IsRunning()) {
             if (tries < maxtries && 
-                (width != INIT_WINDOW_SIZE ||
-                 height != INIT_WINDOW_SIZE))
+                (glutGet(GLUT_WINDOW_WIDTH) != INIT_WINDOW_SIZE ||
+                 glutGet(GLUT_WINDOW_HEIGHT) != INIT_WINDOW_SIZE))
             {
                 glutReshapeWindow(INIT_WINDOW_SIZE, INIT_WINDOW_SIZE);
                 glutPositionWindow(INIT_WINDOW_X, INIT_WINDOW_Y);
