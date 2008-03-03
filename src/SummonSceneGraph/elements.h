@@ -78,7 +78,7 @@ void elementsInit();
 
 // element factory and registration
 class Element;
-typedef Factory<ElementId, Element> ElementFactory;
+typedef FactoryArray<ElementId, Element> ElementFactory;
 
 extern ElementFactory g_elementFactory;
 

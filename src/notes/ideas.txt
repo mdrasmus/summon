@@ -48,6 +48,8 @@ I have GIL locks on all glut callbacks.  Every python exposed function has an
 implicit GIL lock and unlock.  Thus I have only one thread in summon code at 
 once.
 
+DONE: I have greatly simplified threading for summon
+
 
 #=============================================================================
 # Sat Feb 23 21:14:56 EST 2008

@@ -805,12 +805,7 @@ private:
             return NULL;
     }
     
-    // Set the user-defined timer command
-    inline void SetTimerCommand(float delay, Command *command)
-    {
-        m_timerDelay = GetTime() + int(delay * 1000);
-        m_timerCommand = command;
-    }
+
     
     
     //==================================================
@@ -1040,7 +1035,15 @@ public:
         PyGILState_Release(m_gil);
     }
     
-private:    
+private:   
+
+    // Set the user-defined timer command
+    inline void SetTimerCommand(float delay, Command *command)
+    {
+        m_timerDelay = GetTime() + int(delay * 1000);
+        m_timerCommand = command;
+    }
+ 
     // execute the user-defined timer function
     inline void SummonTimer()
     {

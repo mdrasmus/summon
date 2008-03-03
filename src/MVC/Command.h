@@ -64,7 +64,7 @@ public:
 
 
 // command factory and registration
-typedef Factory<CommandId, Command> CommandRegistry;
+typedef FactoryArray<CommandId, Command> CommandRegistry;
 
 extern CommandRegistry g_commandRegistry;
 extern Command *g_lastRegisteredCommand;

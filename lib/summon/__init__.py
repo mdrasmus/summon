@@ -178,7 +178,7 @@ class TimerDispatch:
     """
 
     def __init__(self):
-        self.timers = []
+        self.timers = set()
         self.default_interval = .5
         self.timestep = 0
         
@@ -191,7 +191,7 @@ class TimerDispatch:
         if interval == None:
             interval = self.default_interval
         timer = Timer(self, func, interval, repeat, window)
-        self.timers.append(timer)
+        self.timers.add(timer)
         self.start()
         return timer
         
@@ -244,12 +244,13 @@ class TimerDispatch:
         
         # setup next call
         if mindelay < util.INF:
+            mindelay -= get_time() - now
             summon_core.timer_call(max(0, mindelay), self.start)
     
     
     def stop(self):
         """stops the SUMMON timer"""
-        summon_core.timer_call(0, lambda :None)
+        summon_core.timer_call(0, lambda: None)
 
 
 #=============================================================================

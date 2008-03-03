@@ -29,10 +29,58 @@
 #include <map>
 #include <iostream>
 
+
 namespace Summon
 {
 
 using namespace std;
+
+template <class KeyType, class ProductType>
+class FactoryArray
+{
+public:
+    FactoryArray(int maxid=3000) :
+        m_maxid(maxid)
+    {
+        m_products = new ProductType* [3000];
+        
+        for (int i=0; i<maxid; i++)
+            m_products[i] = NULL;
+    }
+    virtual ~FactoryArray() 
+    {
+        delete [] m_products;
+    }
+    
+    void Register(ProductType *product, const KeyType &id) {
+        assert(id < m_maxid);
+        m_products[id] = product;
+    }
+    
+    inline ProductType *Create(KeyType id) {
+        if (id >= m_maxid)
+            return NULL;
+        ProductType *ptr = m_products[id];
+        if (ptr)
+            return ptr->Create();
+        else
+            return NULL;
+    }
+    
+    
+    class Registrator {
+    public:
+        Registrator(FactoryArray &factory, ProductType *product, KeyType id) {
+            factory.Register(product, id);
+        }
+    };
+    
+protected:
+    int m_maxid;
+    ProductType **m_products;
+};
+
+
 
 template <class KeyType, class ProductType>
 class Factory
@@ -47,9 +95,12 @@ public:
     
     inline ProductType *Create(KeyType id) {
         ProductType *ptr = m_products[id];
-        assert(ptr != NULL);
-        return ptr->Create();
+        if (ptr)
+            return ptr->Create();
+        else
+            return NULL;
     }
+    
     
     inline map<KeyType, ProductType*> GetProducts() { 
         return m_products;
