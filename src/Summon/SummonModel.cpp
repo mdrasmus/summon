@@ -314,8 +314,8 @@ void SummonModel::UpdateRecurse(Element *element)
     }
     
     // recurse through children
-    for (Element::Iterator i=element->Begin(); i!=element->End(); i++) {
-        UpdateRecurse(*i);
+    for (Element *elm=element->GetChild(); elm; elm=elm->GetNext()) {
+        UpdateRecurse(elm);
     }
 }
 
@@ -343,8 +343,8 @@ void SummonModel::RemoveHotspots(Element *elm)
         m_hotspotClickSet.Remove((Hotspot*) elm);
     } else {
         // recurse to child elements
-        for (Element::Iterator i=elm->Begin(); i!=elm->End(); i++)
-            RemoveHotspots(*i);
+        for (Element *child=elm->GetChild(); child; child=child->GetNext())
+            RemoveHotspots(child);
     }
 }
 

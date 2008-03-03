@@ -96,16 +96,26 @@ public:
     //===================================
     // Children functions
 
-    // Iterator for children of element
-    typedef list<Element*>::iterator Iterator;
-
     inline int NumChildren()
-    { return m_children.size(); }
+    { 
+        int count = 0;
+        for (Element *elm = m_child; elm; elm = elm->m_next)
+            count++;
+        return count;
+    }
     
-    inline void AddChild(Element* elm)
-    {
-        m_children.push_back(elm); 
-        elm->SetParent(this);        
+    inline void AddChild(Element *elm) {
+        if (!m_child) {
+            m_child = elm;
+            elm->m_prev = elm;
+        } else {
+            Element *last = m_child->m_prev;
+            last->m_next = elm;
+            elm->m_prev = last;
+            elm->m_next = NULL;
+            m_child->m_prev = elm;
+        }
+        elm->m_parent = this;
         elm->IncRef();
     }
     
@@ -114,20 +124,28 @@ public:
     inline void RemoveChild(Element *elm)
     {
         elm->DecRef();
-        m_children.remove(elm);
-        elm->SetParent(NULL);
+        elm->m_next->m_prev = elm->m_prev; // this also works when firstChild is removed
+        elm->m_prev->m_next = elm->m_next; // this also works when last child is removed
+        
+        // if removing first child, find new first child
+        if (m_child == elm)
+            m_child = elm->m_next;
+        
+        // remove old links
+        elm->m_parent = NULL;
+        elm->m_next = NULL;
+        elm->m_prev = NULL;
     }
     
     void ReplaceChild(Element *oldchild, Element *newchild);
     Element *ReplaceChild(Element *oldchild, Scm code);
-
-
-    inline Iterator Begin() { return m_children.begin(); }
-    inline Iterator End() { return m_children.end(); }
-
-        
+    
     
     inline void SetParent(Element *elm) { m_parent = elm; }
+    inline Element *GetChild() { return m_child; }
+    inline Element *GetNext() { return m_next; }
+    inline Element *GetPrev() { return m_prev; }
+        
     inline Element *GetParent() { return m_parent; }
     virtual bool IsDynamic() { return false; }
     
@@ -161,11 +179,14 @@ protected:
 
     ElementId m_id; 
     bool m_visible;
-    Element *m_parent;
     int m_referenced;
     void *m_model;
-    list<Element*> m_children;
     Transform *m_transformParent;
+    
+    Element *m_parent;
+    Element *m_child;
+    Element *m_next;
+    Element *m_prev;
 };
 
 

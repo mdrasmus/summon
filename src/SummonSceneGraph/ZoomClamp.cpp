@@ -262,8 +262,8 @@ void ZoomClamp::FindBounding(float *top, float *bottom,
     GetTransform(&matrix2, camera);
 
     // loop through children of this element
-    for (Element::Iterator i=Begin(); i!=End(); i++) {
-        (*i)->FindBounding(top, bottom, left, right, &matrix2, camera);
+    for (Element *elm=GetChild(); elm; elm=elm->GetNext()) {
+        elm->FindBounding(top, bottom, left, right, &matrix2, camera);
     }
 }
 

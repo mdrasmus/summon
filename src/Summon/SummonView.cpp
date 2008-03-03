@@ -596,8 +596,8 @@ void SummonView::DrawElement(Element *element, const Style &lastStyle, bool crea
     
     // exec element's children
     if (drawChildren) {
-        for (Element::Iterator i=element->Begin(); i!=element->End(); i++) {
-            DrawElement(*i, lastStyle, createTasks);
+        for (Element *elm=element->GetChild(); elm; elm=elm->GetNext()) {
+            DrawElement(elm, lastStyle, createTasks);
         }
     }
     

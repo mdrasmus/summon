@@ -84,21 +84,24 @@ Element *GetElementFromObject(const Scm code)
 
 Element::Element(ElementId id) : 
     m_id(id), 
-    m_visible(true),   
-    m_parent(NULL),    
+    m_visible(true),      
     m_referenced(0),
     m_model(NULL),
-    m_transformParent(NULL)
+    m_transformParent(NULL),
+    m_parent(NULL),
+    m_child(NULL),
+    m_next(NULL),
+    m_prev(NULL)
 {}
     
 
 Element::~Element()
 {
     // delete all child elements
-    for (Iterator i=Begin(); i!=End(); i++) {
-        (*i)->DecRef();
-        if (!(*i)->IsReferenced())
-            delete (*i);
+    for (Element *elm=m_child; elm; elm=elm->m_next) {
+        elm->DecRef();
+        if (!elm->IsReferenced())
+            delete elm;
     }
 }
 
@@ -138,22 +141,28 @@ Element *Element::AddChild(Scm code)
     return elm;
 }
 
-void Element::ReplaceChild(Element *oldchild, Element *newchild) {
-    for (Element::Iterator i=Begin(); i!=End(); i++) {
-        if (*i == oldchild) {
-            m_children.insert(i, newchild);
-            newchild->SetParent(this);
-            newchild->IncRef();
-            m_children.erase(i);
-            oldchild->SetParent(NULL);
-            oldchild->DecRef();
-            return;
-        }
-    }
+void Element::ReplaceChild(Element *oldchild, Element *newchild)
+{
+    newchild->m_parent = this;
+    newchild->m_next = oldchild->m_next;
+    newchild->m_prev = oldchild->m_prev;
     
-    // should not get here, oldchild must be present
-    assert (0);
+    if (newchild->m_next)
+        newchild->m_next->m_prev = newchild;
+    if (oldchild == m_child) {
+        // replace first child
+        m_child = newchild;
+        newchild->m_prev = newchild;
+    } else
+        newchild->m_prev->m_next = newchild;
+    newchild->IncRef();
+    
+    oldchild->m_parent = NULL;
+    oldchild->m_next = NULL;
+    oldchild->m_prev = NULL;
+    oldchild->DecRef();
 }
+
 
 Element *Element::ReplaceChild(Element *oldchild, Scm code) {
     Element *elm = GetElementFromObject(code);
@@ -183,8 +192,8 @@ void Element::FindBounding(float *top, float *bottom,
                            const Camera &camera)
 {
     // loop through children of this element
-    for (Element::Iterator i=Begin(); i!=End(); i++) {
-        (*i)->FindBounding(top, bottom, left, right, matrix, camera);
+    for (Element *elm=m_child; elm; elm=elm->m_next) {
+        elm->FindBounding(top, bottom, left, right, matrix, camera);
     }
 }
 

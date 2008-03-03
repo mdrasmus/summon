@@ -154,9 +154,9 @@ GetElementChildren(PyObject *self, PyObject *args)
     
     PyObject *children = PyTuple_New(len);
     int i = 0;
-    for (Element::Iterator child=elm->Begin(); child!=elm->End(); child++) {
-        PyTuple_SET_ITEM(children, i, PyInt_FromLong((*child)->GetSpecificId()));
-        PyTuple_SET_ITEM(children, i+1, PyInt_FromLong(Element2Id(*child)));
+    for (Element *child=elm->GetChild(); child; child=child->GetNext()) {
+        PyTuple_SET_ITEM(children, i, PyInt_FromLong(child->GetSpecificId()));
+        PyTuple_SET_ITEM(children, i+1, PyInt_FromLong(Element2Id(child)));
         i+=2;
     }
     
