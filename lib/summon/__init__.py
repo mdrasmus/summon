@@ -217,7 +217,7 @@ class TimerDispatch:
         
         # call each timer that has past
         mindelay = util.INF
-        for timer in self.timers:
+        for timer in list(self.timers):
             if timer.is_win_open():
                 # process timer if window is ok (open)
                 
