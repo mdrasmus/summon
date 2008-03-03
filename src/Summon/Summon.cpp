@@ -1295,7 +1295,7 @@ Exec(PyObject *self, PyObject *tup)
 
             // handle return value
             PyObject *ret = Scm2Py(cmd->GetReturn());
-            if (ret)
+            if (ret && !HasError())
                 Py_INCREF(ret);
             else {
                 // set python exception

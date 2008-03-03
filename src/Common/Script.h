@@ -176,6 +176,7 @@ extern PyObject *python_globals;
 void InitPython();
 void DestroyPython();
 void Error(const char *fmt, ...);
+bool HasError();
 const char *GetError();
 void ClearError();
 void SetException();

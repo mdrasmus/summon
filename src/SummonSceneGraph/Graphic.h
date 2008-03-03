@@ -87,17 +87,18 @@ public:
                       const TransformMatrix *matrix,
                       const Camera &camera=g_defaultCamera);
     
+    //===============================================
+    // Byte-code navigation
+    
     inline int NextPrimitive(int ptr)
     {
         if (m_data[ptr] == PRIM_VERTICES) {
-            int len = *((int*) (m_data + ptr + 1));
-            ptr += 1 + sizeof(int) + 2 * sizeof(float) * len;
+            return VerticesEnd(ptr);
         } else if (m_data[ptr] == PRIM_COLOR) {
-            ptr += 5;
+            return ptr + 5;
         } else {
             assert(0);
         }
-        return ptr;
     }
     
     inline char GetTag(int ptr)
@@ -108,12 +109,12 @@ public:
     
     inline int GetVerticesLen(int ptr)
     { return *((int*) (m_data + ptr + 1)); }
+
+    inline int VerticesStart(int ptr)
+    { return ptr + 1 + sizeof(int); }
     
     inline int VerticesEnd(int ptr)
     { return ptr + 1 + sizeof(int) + 2 * sizeof(float) * GetVerticesLen(ptr); }
-    
-    inline int VerticesStart(int ptr)
-    { return ptr + 1 + sizeof(int); }
     
     inline float *GetVertex(int ptr)
     { return (float*) (m_data + ptr); }
@@ -133,49 +134,8 @@ public:
 protected:
     char *m_data;
     int m_datasize;
-    //list<Primitive*> m_primitives;
 };
 
-
-/*
-
-class VerticesPrimitive : public Primitive
-{
-public:
-    VerticesPrimitive() :
-        Primitive(VERTICES_CONSTRUCT), 
-        data(NULL),
-        len(0),
-        dim(2)
-    {}
-    
-    virtual ~VerticesPrimitive() 
-    {
-        if (data)
-            delete [] data;
-    }
-    
-    float *data;
-    int len;
-    int dim;
-};
-
-class ColorPrimitive : public Primitive
-{
-public:
-    ColorPrimitive(float r = 1, float g = 1, float b = 1, float a = 1) :
-        Primitive(COLOR_CONSTRUCT)        
-    {
-        data[0] = r;
-        data[1] = g;
-        data[2] = b;
-        data[3] = a;
-    }
-    
-    float data[4];
-};
-
-*/
 
 }
 

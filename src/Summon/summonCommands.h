@@ -623,7 +623,7 @@ public:
 class ElementCommand : public ScriptCommand
 {
 public:
-    ElementCommand(bool needReturn=false) : ScriptCommand(needReturn) {};
+    ElementCommand(bool needReturn=true) : ScriptCommand(needReturn) {};
     int groupid;
 };
 
@@ -737,7 +737,6 @@ public:
 class GetBoundingCommand2 : public ElementCommand
 {
 public:
-    GetBoundingCommand2() : ElementCommand(true) {}
     virtual Command* Create() { return new GetBoundingCommand2(); }
     virtual int GetId() { return GET_BOUNDING_COMMAND2; }
 
@@ -785,7 +784,7 @@ public:
 class ModelCommand : public ScriptCommand
 {
 public:
-    ModelCommand(bool needReturn=false) : ScriptCommand(needReturn) {}
+    ModelCommand(bool needReturn=true) : ScriptCommand(needReturn) {}
     int modelid;
 };
 
@@ -939,7 +938,6 @@ public:
 class GetRootIdCommand : public ModelCommand
 {
 public:
-    GetRootIdCommand() : ModelCommand(true) {}
     virtual Command* Create() { return new GetRootIdCommand(); }
     virtual int GetId() { return GET_ROOT_ID_COMMAND; }
 
@@ -959,7 +957,6 @@ public:
 class GetBoundingCommand : public ModelCommand
 {
 public:
-    GetBoundingCommand() : ModelCommand(true) {}
     virtual Command* Create() { return new GetBoundingCommand(); }
     virtual int GetId() { return GET_BOUNDING_COMMAND; }
 

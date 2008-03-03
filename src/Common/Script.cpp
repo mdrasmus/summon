@@ -96,6 +96,11 @@ void Error(const char *format, ...)
     va_end(args);
 }
 
+bool HasError()
+{
+    return g_nerrors > 0;
+}
+
 
 const char *GetError()
 {

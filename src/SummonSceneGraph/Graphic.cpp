@@ -87,12 +87,7 @@ bool Graphic::Build(int header, const Scm &code2)
         else if (ScmConsp(child)) {
             int tag = Scm2Int(ScmCar(child));
             
-            if (tag == VERTICES_CONSTRUCT) {
-                Scm code = ScmCdr(child);
-                if (!BuildVertices(m_data, ptr, code))
-                    return false;
-            }
-            else if (tag == COLOR_CONSTRUCT) {
+            if (tag == COLOR_CONSTRUCT) {
                 m_data[ptr++] = PRIM_COLOR;
                 int i=0;
                 
@@ -178,17 +173,7 @@ int Graphic::GetDataSize(Scm code)
         else if (ScmConsp(child)) {
             int tag = Scm2Int(ScmCar(child));
             
-            if (tag == VERTICES_CONSTRUCT) {
-                datasize += 1 + sizeof(int);  // tag (1 byte), len (4 bytes)
-                
-                // determine size of vertices primitive
-                child = ScmCdr(child);                
-                while (ScmConsp(child) && ScmFloatp(ScmCar(child))) {
-                    datasize += sizeof(float);
-                    child = ScmCdr(child);
-                }
-            }
-            else if (tag == COLOR_CONSTRUCT) {
+            if (tag == COLOR_CONSTRUCT) {
                 datasize += 5; // (tag, r, g, b, a)
             } else {
                 Error("Unknown primitive: %d", tag);

@@ -135,10 +135,9 @@ void SummonView::ExecCommand(Command &command)
             } break;
         
         case SET_WINDOW_BOUNDARY_COMMAND: {
-            MakeCurrentWindow();
             SetWindowBoundaryCommand *cmd = (SetWindowBoundaryCommand*) &command;
             SetBoundary(cmd->pos1, cmd->pos2);
-            Redisplay();
+            PostRedisplay();
             } break;
         
         case GET_WINDOW_BOUNDARY_COMMAND: {
@@ -155,11 +154,10 @@ void SummonView::ExecCommand(Command &command)
             } break;
         
         case SET_TRANS_COMMAND: {
-            MakeCurrentWindow();
             SetTransCommand *trans = (SetTransCommand*) &command;
             TranslateTo(trans->x, trans->y);
             CheckBoundary();
-            Redisplay();
+            PostRedisplay();
             } break;
         
         case GET_TRANS_COMMAND: {
@@ -168,11 +166,10 @@ void SummonView::ExecCommand(Command &command)
             } break;
             
         case SET_ZOOM_COMMAND: {
-            MakeCurrentWindow();
             SetZoomCommand *zoom = (SetZoomCommand*) &command;
             ZoomTo(zoom->x, zoom->y);
             CheckBoundary();
-            Redisplay();
+            PostRedisplay();
             } break;
             
         case GET_ZOOM_COMMAND: {
@@ -191,9 +188,8 @@ void SummonView::ExecCommand(Command &command)
             } break;
     
         case SET_BGCOLOR_COMMAND:
-            MakeCurrentWindow();
             SetBgColor(((SetBgColorCommand*)&command)->color);
-            Redisplay();
+            PostRedisplay();
             break;
 
         case GET_BGCOLOR_COMMAND:
@@ -201,13 +197,12 @@ void SummonView::ExecCommand(Command &command)
                 BuildScm("fff", m_bgColor.r, m_bgColor.g, m_bgColor.b));
             break;
         
-        case SET_VISIBLE_COMMAND: {
-            MakeCurrentWindow();        
+        case SET_VISIBLE_COMMAND: {       
             SetVisibleCommand *vis = (SetVisibleCommand*) &command;
             SetVisible(vis->data[0], vis->data[1],
                        vis->data[2], vis->data[3]);
             CheckBoundary();
-            Redisplay();
+            PostRedisplay();
             } break;
         
         case GET_VISIBLE_COMMAND: {
