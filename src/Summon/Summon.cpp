@@ -233,7 +233,8 @@ public:
     // Main command execution function
     virtual void ExecCommand(Command &command) {
         switch (command.GetId()) {
-            case CALL_PROC_COMMAND: {
+            case CALL_PROC_COMMAND:
+            case CALL_THREAD_PROC_COMMAND: {
                 // execute a python function
                 CallProcCommand *cmd = (CallProcCommand*) &command;
                 

@@ -71,8 +71,8 @@ void summonCommandsInit()
     RegisterScriptCommand(DelModelCommand)      g()
     RegisterScriptCommand(GetWindowDecorationCommand) g()
     RegisterScriptCommand(SetWindowCloseCallbackCommand) g()
-    RegisterScriptCommand(ScreenshotWindowCommand) g() gl() 
-    RegisterScriptCommand(TimerCallCommand)     g() gl()
+    RegisterScriptCommand(ScreenshotWindowCommand) g() gl()
+    RegisterScriptCommand(TimerCallCommand)     g()
     RegisterScriptCommand(RedrawCallCommand)    g()
     
     // menu commands
@@ -149,6 +149,7 @@ void summonCommandsInit()
     RegisterScriptCommand(SetWindowOnMoveCommand)   c()
     
     RegisterScriptCommand(CallProcCommand) g()
+    RegisterScriptCommand(CallThreadProcCommand) g() gl()
 
 #   undef e
 #   undef g

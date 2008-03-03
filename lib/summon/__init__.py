@@ -294,6 +294,16 @@ def add_timer(func, interval=None, repeat=True, window=None):
     return _state.timer.add_timer(func, interval, repeat, window=window)
 
 
+def call(func):
+    """Call a function from the SUMMON graphics thread.
+    
+       This will lock SUMMON while the function executes.  Use this function 
+       when you want to execute SUMMON functions very quickly and without 
+       thread switching.
+    """
+    summon_core.call_thread_proc(func)
+
+
 
 #=============================================================================
 # Window and Model

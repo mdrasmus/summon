@@ -136,7 +136,8 @@ enum {
     SET_WINDOW_ON_MOVE_COMMAND,
 
     // misc
-    CALL_PROC_COMMAND,    
+    CALL_PROC_COMMAND,   
+    CALL_THREAD_PROC_COMMAND, 
         
     SUMMON_COMMANDS_END    
 };
@@ -1896,6 +1897,29 @@ public:
     bool defined;
 };
 
+
+class CallThreadProcCommand : public CallProcCommand
+{
+public:
+    CallThreadProcCommand(Scm code=Scm_NONE, Scm args=Scm_EOL) : 
+        CallProcCommand(code, args)
+    {}
+    
+    virtual Command* Create() { 
+        if (!defined) {
+            return new CallThreadProcCommand();
+        } else {
+            return new CallThreadProcCommand(proc, args);
+        }
+    }
+    virtual int GetId() { return CALL_THREAD_PROC_COMMAND; }
+
+    virtual const char *GetName() { return "call_thread_proc"; }
+    virtual const char *GetUsage() { return "proc"; }
+    virtual const char *GetDescription() 
+    { return "executes a procedure that takes no arguments"; }
+        
+};
 
 
 }
