@@ -517,8 +517,14 @@ board = win.add_group(drawBoard(game.board))
 # animate
 
 print "animating"
-while win.is_open():
-    game.evolve()
+
+def animate():
+    global timer, board
     
-    board = win.replace_group(board, drawBoard(game.board))
-    time.sleep(0.05)
+    if not win.is_open():
+        timer.stop()
+    else:
+        game.evolve()
+        board = board.replace_self(drawBoard(game.board))
+
+timer = summon.add_timer(animate, .05)
