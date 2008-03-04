@@ -9,8 +9,9 @@ from summon.core import *
 from summon import shapes
 import summon
 
-
+#=============================================================================
 # parameters (feel free to change these here and WHILE the animation is running!)
+
 rate = 1/60.0
 winsize = 300
 maxballsize = 20
@@ -19,11 +20,12 @@ gravity = [0, -.1]
 bounce = -.9
 
 
-
-
+#=============================================================================
+# code for animation
 
 class Ball:
     """Class for bouncing Ball"""
+    
     def __init__(self, x, y, size, vx, vy):
         self.group = None
         self.x = x
@@ -36,7 +38,7 @@ class Ball:
         self.activate = 0
 
     def move(self):
-        # update position and velocity
+        """update position and velocity"""
         self.x += self.vx
         self.y += self.vy
         self.vx += self.ax
@@ -45,6 +47,23 @@ class Ball:
         self.ay = gravity[1]
         self.activate *= .99        
 
+    def bounce(self, winsize):
+        """calculate bouncing"""
+        if self.x < self.size:
+            self.vx *= bounce
+            self.x = self.size
+        if self.x > winsize - self.size:
+            self.vx *= bounce
+            self.x = winsize - self.size
+            
+        if self.y < self.size:
+            self.vy *= bounce
+            self.y = self.size
+        if self.y > winsize - self.size:
+            self.vy *= bounce
+            self.y = winsize - self.size        
+    
+    
     def draw(self):
         """Method for draw a ball"""
         
@@ -77,37 +96,28 @@ class Ball:
 def draw_frame():
     """Draw one frame of the animation"""
 
-    global last, frames
+    global last, frames, fps_vis
     
     frames += 1
     
-    if frames > 100:
+    # update frames per second display
+    if frames > 20:
         frames = 0
         now = summon.get_time()
-        print "FPS: %f.1" % (100.0/ (now - last))
+        fps_text = "FPS: %.1f" % (20.0/ (now - last))
+        fps_vis = fps_vis.replace_self(
+            group(
+                color(1, 1, 1),
+                text(fps_text, 5, 5, 300, 25, "left", "bottom")))
         last = now
 
     for ball in balls:
         # move ball
         ball.move()
+        ball.bounce(winsize)
 
         # update ball's drawing
         ball.draw()
-        
-        # calculate bouncing
-        if ball.x < ball.size:
-            ball.vx *= bounce
-            ball.x = ball.size
-        if ball.x > winsize - ball.size:
-            ball.vx *= bounce
-            ball.x = winsize - ball.size
-            
-        if ball.y < ball.size:
-            ball.vy *= bounce
-            ball.y = ball.size
-        if ball.y > winsize - ball.size:
-            ball.vy *= bounce
-            ball.y = winsize - ball.size
 
 
 # frame rate information
@@ -131,9 +141,19 @@ for i in range(nballs):
 
 
 
-# draw bounding box
+# create window
 win = summon.Window("15_animation")
+
+# draw bounding box
 win.add_group(group(color(1,1,1), shapes.box(0, 0, winsize, winsize, fill=False)))
+
+# draw frame per second display
+fps_vis = win.screen.add_group(
+    group(
+        color(1, 1, 1),
+        text("FPS: 0", 5, 5, 300, 25, "left", "bottom")))
+
+# center view
 win.home()
 
 
