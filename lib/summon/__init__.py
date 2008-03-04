@@ -127,7 +127,7 @@ class Timer:
         self._enabled = True
 
     def start(self):
-        if not self.enabled:
+        if not self._enabled:
             self._enabled = True
             self._dispatch.add_timer(self)
 
@@ -183,7 +183,7 @@ class TimerDispatch:
         self.timestep = 0
         
     
-    def add_timer(self, func, interval=None, repeat=True, window=None):
+    def new_timer(self, func, interval=None, repeat=True, window=None):
         """
         adds a function of no arguments to the list of functions called by SUMMON
         at regular intervals
@@ -191,9 +191,13 @@ class TimerDispatch:
         if interval == None:
             interval = self.default_interval
         timer = Timer(self, func, interval, repeat, window)
-        self.timers.add(timer)
-        self.start()
+        self.add_timer(timer)
         return timer
+        
+        
+    def add_timer(self, timer):
+        self.timers.add(timer)
+        call(self.start)
         
 
     def remove_timer(self, timer):
@@ -292,7 +296,7 @@ def set_window_decoration(xoffset, yoffset):
 
 def add_timer(func, interval=None, repeat=True, window=None):
     """Returns a new SUMMON timer that will call"""
-    return _state.timer.add_timer(func, interval, repeat, window=window)
+    return _state.timer.new_timer(func, interval, repeat, window=window)
 
 
 def call(func):

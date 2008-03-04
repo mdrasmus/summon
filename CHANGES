@@ -2,12 +2,20 @@ SUMMON Change Log
 -----------------
 
 NEXT RELEASE
+- speed and memory improvements
+  - smaller faster Element data structure
+  - simpler thread management
+  - more reliable timer wait times (frame rates)
+- Mac OS X bug fix for opening initial window
+
+
+2008/02/24 - summon-1.8.6
 - better windows install
 - added direct bitmap screenshot
 - added first version of visualization inspector
 - better behavior of text_clipS inside transforms by implementing them with
   zoom_clampS 
-- support for dragging
+- preliminary support for dragging
 
 
 2008/02/04 - summon-1.8.5
@@ -42,7 +50,7 @@ NEXT RELEASE
 - fixed handling of hotspots in screen model
 - fixed initial window size and position
 - fixed window decoration detection (better multiwindow)
-- add support for fast direct methods on elements
+- added support for fast direct methods on elements
 
 
 2007/9/14 - summon-1.8.2

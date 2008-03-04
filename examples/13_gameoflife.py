@@ -527,4 +527,4 @@ def animate():
         game.evolve()
         board = board.replace_self(drawBoard(game.board))
 
-timer = summon.add_timer(animate, .05)
+timer = summon.add_timer(animate, .2)
