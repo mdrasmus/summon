@@ -35,6 +35,15 @@ class Ball:
         self.size = size
         self.activate = 0
 
+    def move(self):
+        # update position and velocity
+        self.x += self.vx
+        self.y += self.vy
+        self.vx += self.ax
+        self.vy += self.ay
+        self.ax = gravity[0]
+        self.ay = gravity[1]
+        self.activate *= .99        
 
     def draw(self):
         """Method for draw a ball"""
@@ -43,7 +52,7 @@ class Ball:
         
         if self.group == None:
             
-            self.color = group(color(val, self.activate, 1))
+            self.color = group(color(colorval, self.activate, 1))
 
             self.group = win.add_group(
                 translate(self.x, self.y,
@@ -79,19 +88,12 @@ def draw_frame():
         last = now
 
     for ball in balls:
-        # update position and velocity
-        ball.x += ball.vx
-        ball.y += ball.vy
-        ball.vx += ball.ax
-        ball.vy += ball.ay
-        ball.ax = gravity[0]
-        ball.ay = gravity[1]
-        ball.activate *= .99
+        # move ball
+        ball.move()
+
+        # update ball's drawing
+        ball.draw()
         
-
-        # draw new ball
-        drawBall(ball)
-
         # calculate bouncing
         if ball.x < ball.size:
             ball.vx *= bounce
