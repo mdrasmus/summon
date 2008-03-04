@@ -33,11 +33,12 @@ VERSION_INFO = """\
                       visualization prototyping and scripting
                                 Matt Rasmussen
                             (http://mit.edu/rasmus)
-                              Copyright 2005-2007
+                              Copyright 2005-2008
 -----------------------------------------------------------------------------
 """ % VERSION
 
 def version():
+    """Prints the summon version text"""
     print VERSION_INFO
 
 
@@ -83,33 +84,40 @@ class SummonState (object):
         
     
     def add_window(self, win):
+        """adds a window to the master list"""
         self.windows[win.winid] = win
     
     def remove_window(self, win):
+        """removes a window from the master list"""
         if win.winid in self.windows:
             del self.windows[win.winid]
     
     def get_window(self, winid):
+        """gets a window by its ID"""
         if winid in self.windows:
             return self.windows[winid]
         else:
             return None
     
     def add_model(self, model):
+        """adds a model to the master list"""
         self.models[model.id] = model
     
     def remove_model(self, model):
+        """removes a model from the master list"""
         summon_core.del_model(model.id)
         if model.id in self.models:
             del self.models[model.id]
     
     def get_model(self, modelid):
+        """gets a model by its ID number"""
         if modelid in self.models:
             return self.models[modelid]
         else:
             return None
     
     def _on_window_close(self, winid):
+        """master callback for when a window closes"""
         self.windows[winid]._on_close()
 
 
@@ -117,6 +125,13 @@ class SummonState (object):
 # timer interface
 
 class Timer:
+    """SUMMON Timer class
+    
+       This represents a timer that is maintained by the SUMMON module
+       The function summon.add_timer() is the recommended interface for creating
+       new timers.
+    """
+
     def __init__(self, dispatch, func, interval=None, repeat=True, window=None):
         self._dispatch = dispatch
         self._func = func
@@ -127,22 +142,27 @@ class Timer:
         self._enabled = True
 
     def start(self):
+        """starts the timer"""
         if not self._enabled:
             self._enabled = True
             self._dispatch.add_timer(self)
 
     def stop(self):
+        """stops the timer"""
         if self._enabled:
             self._enabled = False
             self._dispatch.remove_timer(self)
         
     def set_interval(self, interval):
+        """set the time interval (seconds) between triggers"""
         self._interval = interval
     
     def get_interval(self):
+        """get the time interval (seconds) between tiggers"""
         return self._interval
     
     def reset(self, now):
+        """resets the timer to wait starting from 'now'"""
         if self._repeat:
             self._deadline = now + self._interval
             return True
@@ -151,21 +171,28 @@ class Timer:
             return False
     
     def get_delay(self, now):
+        """gets the time remaining until trigger"""
         return self._deadline - now
     
     def is_expired(self, now):
+        """retruns True if timer has met its deadline and should be trigger"""
         return self._deadline < now
     
     def set_repeating(self, repeat):
+        """set whether timer is a repeating timer"""
         self._repeat = repeat
     
     def is_repeating(self):
+        """returns True if timer should repeat after triggering"""
         return self._repeat
     
     def call(self):
+        """call the user function bound to the timer"""
         self._func()
     
     def is_win_open(self):
+        """if timer is associated with a window, return True if its window is
+           open"""
         return self._win == None or self._win.is_open()
 
 
@@ -196,6 +223,9 @@ class TimerDispatch:
         
         
     def add_timer(self, timer):
+        """
+        adds an existing timer to the dispatcher
+        """
         self.timers.add(timer)
         call(self.start)
         
@@ -287,20 +317,24 @@ summon_core.set_window_close_callback(_state._on_window_close)
 # window decoration
 _window_decoration = summon_core.get_window_decoration()
 def get_window_decoration():
+    """returns the (width, height) of the window decoration (border)"""
     return _window_decoration
 
 def set_window_decoration(xoffset, yoffset):
+    """overrides the detected window decoration (border) size.  
+       Use this make additional adjustments that could not be automatically
+       detected."""
     global _window_decoration
     _window_decoration = (xoffset, yoffset)
 
 
 def add_timer(func, interval=None, repeat=True, window=None):
-    """Returns a new SUMMON timer that will call"""
+    """returns a new SUMMON timer that will call"""
     return _state.timer.new_timer(func, interval, repeat, window=window)
 
 
 def call(func):
-    """Call a function from the SUMMON graphics thread.
+    """call a function from the SUMMON graphics thread.
     
        This will lock SUMMON while the function executes.  Use this function 
        when you want to execute SUMMON functions very quickly and without 
@@ -341,11 +375,11 @@ class Window (object):
                  position=None, size=(400, 400),
                  world=None, screen=None,
                  winconfig=None):
-        """name       -- title on window
-           position   -- the initial position (x,y) of the window on the desktop
-           size       -- the initial size (width, height) of the window
-           world      -- the world model
-           screen     -- the screen model
+        """name      -- title on window
+           position  -- the initial position (x,y) of the window on the desktop
+           size      -- the initial size (width, height) of the window
+           world     -- the world model
+           screen    -- the screen model
            winconfig -- a function that will be called with the window
                         as its argument.  Any duplicates of the window will
                         also use the same configuration function.
@@ -544,7 +578,7 @@ class Window (object):
         self._on_focus_change()
         self._on_view_change()
         
-        for listener in self.resizeListeners:
+        for listener in list(self.resizeListeners):
             listener(width, height)
     
     def add_resize_listener(self, listener):
@@ -557,7 +591,7 @@ class Window (object):
         """internal callback for SUMMON's use only"""
         x, y = self.get_position()
         
-        for listener in self.moveListeners:
+        for listener in list(self.moveListeners):
             listener(x, y)
     
     def add_move_listener(self, listener):
@@ -796,7 +830,7 @@ class Window (object):
         if self.viewLock: return
         self.viewLock = True
         
-        for listener in self.viewChangeListeners:
+        for listener in list(self.viewChangeListeners):
             listener()
          
         self.viewLock = False
@@ -807,7 +841,7 @@ class Window (object):
         if self.focusLock: return
         self.focusLock = True
     
-        for listener in self.focusChangeListeners:
+        for listener in list(self.focusChangeListeners):
             listener()
         
         self.focusLock = False            
@@ -1009,7 +1043,7 @@ class Window (object):
         return DuplicateWindow(self)
     
     def split(self, direction="left", width=200):
-        """Split a window into two 'tied' windows"""
+        """split a window into two 'tied' windows"""
         
         pos = self.get_position()
         size = self.get_size()
@@ -1059,7 +1093,7 @@ class Window (object):
         
 
 def copy_window_state(winSrc, winDst):
-    """Copies the state of one window to another"""
+    """copies the state of one window to another"""
     
     # get source window, model, and visible
     coords = winSrc.get_visible()
@@ -1080,7 +1114,7 @@ def copy_window_state(winSrc, winDst):
 
 
 class DuplicateWindow (Window):
-    """Creates a duplicate of another window"""
+    """creates a duplicate of another window"""
 
     def __init__(self, win, name=None, position=None, size=None):
         if name == None:
@@ -1100,7 +1134,7 @@ class DuplicateWindow (Window):
 
 
 class OverviewWindow (DuplicateWindow):
-    """Creates an overview of another window"""
+    """creates an overview of another window"""
 
     def __init__(self, win, frame_color=None, frame_fill=(0, 0, 1, .1)):
         DuplicateWindow.__init__(self, win)
@@ -1126,20 +1160,20 @@ class OverviewWindow (DuplicateWindow):
 
     
     def _on_close(self):
-        """Callback for when overwindow is closed"""
+        """callback for when overwindow is closed"""
         self.detach()
         DuplicateWindow._on_close(self)
     
     
     def on_target_close(self):
-        """Callback for when target window closes
+        """callback for when target window closes
            detach self from target.
         """
         self.detach()
     
     
     def detach(self):
-        """Detach from target window"""
+        """detach from target window"""
         
         if self.targetWin:
             if self.targetWin.is_open():
@@ -1149,15 +1183,19 @@ class OverviewWindow (DuplicateWindow):
             self.targetWin = None
     
     def update_frame(self):
-        """Update view frame"""
+        """update view frame"""
     
         x1, y1, x2, y2 = self.targetWin.get_visible()
         t = self.get_trans()
         f = self.get_focus()
         z = self.get_zoom()
+        w, h = self.get_size()
         
         x1, y1 = world2screen([x1, y1], t, z, f)
         x2, y2 = world2screen([x2, y2], t, z, f)
+        
+        my = (y1 + y2) / 2
+        mx = (x1 + x2) / 2
         
         vis = group(color(*self.frame_color),
                     line_strip(x1, y1, 
@@ -1165,11 +1203,16 @@ class OverviewWindow (DuplicateWindow):
                                x2, y2, 
                                x2, y1,
                                x1, y1),
+                    lines(x1, my, 0, my,
+                          x2, my, w, my,
+                          mx, y1, mx, 0,
+                          mx, y2, mx, h),
                     color(*self.frame_fill),
                     quads(x1, y1,
                           x1, y2,
                           x2, y2,
-                          x2, y1))
+                          x2, y1)
+                    )
         
         self.frameVis = self.screen.replace_group(self.frameVis, vis)
         

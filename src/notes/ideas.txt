@@ -22,6 +22,9 @@ Open Ideas
     - fix SVG text_clip
     - add zoom_clamps?
   
+  - text_clip with zoom_clamp seems to suffer from float over/underflow on very
+    large visualizations
+  
   - create concept of styles
     - style
       - color
@@ -34,6 +37,11 @@ Open Ideas
     - style be an element
       - color construct is the only otherthing besides vertices that can 
         appear inside graphics
+    
+        style(color=(1, 0, 0),
+              line_width=2,
+              point_size=1,
+              dash="--- -")
   
   - add button blink to SideBar
   - can I add mouse wheele binding?
@@ -53,7 +61,7 @@ Open Ideas
   once.
 
   DONE: I have greatly simplified threading for summon
-
+  - However, I should ensure that functions are not executed out of order
 
 - ideas on reducing element memory size
 

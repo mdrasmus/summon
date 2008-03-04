@@ -1103,39 +1103,44 @@ public:
             return false;    
 
         // determine which thread we are in
-        // execute command in this thread if we are in the summon/glut thread
-        int curThreadId = PyThread_get_thread_ident();
 
-        if (command->HasAttr(&g_glAttr) && curThreadId != m_threadId) {
+        int curThreadId = PyThread_get_thread_ident();
+    
+        if (curThreadId == m_threadId) {
+            // execute command in this thread if we are in the summon/glut thread
+            ExecCommand(*command);
+        } else {
             // we are the python/non-glut thread, more care is needed
             // commands that manipulate OpenGL must be passed to the 
             // other thread
+        
+            if (command->HasAttr(&g_glAttr)) {
+                // pass command to other thread
+                m_queuedCommands.push_back(command);
 
-            // pass command to other thread
-            m_queuedCommands.push_back(command);
+                if (command->NeedsReturn()) {
+                    m_waiting = true;
 
-            if (command->NeedsReturn()) {
-                m_waiting = true;
+                    // wait for graphics thread to exec command
+                    Py_BEGIN_ALLOW_THREADS
+                    WaitForExec();
+                    Py_END_ALLOW_THREADS
 
-                // wait for graphics thread to exec command
-                Py_BEGIN_ALLOW_THREADS
-                WaitForExec();
-                Py_END_ALLOW_THREADS
+                    m_waiting = false;
 
-                m_waiting = false;
+                    // all commands on queue should be executed
+                    assert(m_queuedCommands.size() == 0);
 
-                // all commands on queue should be executed
-                assert(m_queuedCommands.size() == 0);
-                
-                // command is still owned by caller
-                return false;
+                    // command is still owned by caller
+                    return false;
+                } else {
+                    // command is owned by queued
+                    return true;
+                }
             } else {
-                // command is owned by queued
-                return true;
+                // execute command in this thread
+                ExecCommand(*command);
             }
-        } else {
-            // execute command in this thread
-            ExecCommand(*command);
         }
         
         return false;
