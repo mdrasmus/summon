@@ -53,29 +53,34 @@ class SvgWriter:
         # determine camera transform
         boxWidth  = x2 - x
         boxHeight = y2 - y
-        scalex = width / boxWidth
-        scaley = height / boxHeight            
+        self.scalex = width / boxWidth
+        self.scaley = height / boxHeight            
         
         self.out = outfile
         self.curcolor = [1, 1, 1, 1]
 
         print >>self.out, svgHeader
         print >>self.out, svgTag % (width, height)
+        print >>self.out, "<g style='font-family: curior'>"
         print >>self.out, "<g transform='translate(0, %d)'>" % height
         print >>self.out, "<g transform='scale(1, -1)'>"
         print >>self.out, "<rect x='0' y='0' width='%d' height='%d' fill='%s'/>" % \
                 (width, height, color2string(bgcolor))
         
         # transform camera
-        print >>outfile, "<g transform='scale(%f, %f)'>"  % (scalex, scaley)
+        print >>outfile, "<g transform='scale(%f, %f)'>"  % (self.scalex, self.scaley)
         print >>outfile, "<g transform='translate(%d, %d)'>" % (-x, -y)
-        print >>outfile, "<g stroke-width='%f'>" % (1 / max(scalex, scaley))
-
-
+        print >>outfile, "<g stroke-width='%f'>" % (1 / max(self.scalex, self.scaley))
+    
+        mat = transform.makeTransMatrix((x, y))
+        self.trans.append(transform.multMatrix(mat, self.trans[-1]))
+        mat = transform.makeScaleMatrix((self.scalex, self.scaley))
+        self.trans.append(transform.multMatrix(mat, self.trans[-1]))
+        
         self.printElm(group)
 
         print >>self.out, "</g></g></g>"
-        print >>self.out, "</g></g>"
+        print >>self.out, "</g></g></g>"
         print >>self.out, svgEndTag
 
     def printLine(self, x1, y1, x2, y2, color):
@@ -99,6 +104,7 @@ class SvgWriter:
         kind = c[0]
         msg = c[1]
         x1, y1, x2, y2 = c[2:6]
+        justify = set(c[6:])
         color = self.curcolor
         
         col = color2string(color)        
@@ -106,12 +112,27 @@ class SvgWriter:
         boxheight = y2 - y1
         boxwidth = x2 - x1
         
-        # add justification support
+        
+        # TODO: add full justification support
+        if "center" in justify:
+            xjust = "center"
+        elif "right" in justify:
+            xjust = "right"
+        else:
+            xjust = "left"
+        
+        if "top" in justify:
+            yjust = "top"
+        elif "bottom" in justify:
+            yjust = "bottom"
+        else:
+            yjust = "middle"
+                    
         
         # TODO: add text_scale support
         if isinstance(elm, text_scale) or isinstance(elm, text_clip):
             textheight = 20.0
-            textwidth = textheight * .75 * float(len(msg)) # TODO: approx for now
+            textwidth = textheight * .75 * len(msg) # TODO: approx for now
             #mat = transform.multMatrixVec(self.trans[-1], (1.0, 1.0))
             
             scale = min(boxheight / textheight, boxwidth / textwidth)
@@ -122,10 +143,32 @@ class SvgWriter:
                 <text x='0' y='0' font-size='%s' fill='%s' fill-opacity='%f'>%s</text></g>
             """ % (x1, y1, scale, -scale, textheight,  col, color[3], msg)
         elif isinstance(elm, text):
+        
+            scale = transform.getScaling(self.trans[-1])
+            
+            
+            # TODO: approx for now        
+            textheight = 13.0 / scale[1]
+            textwidth = textheight * .75 * len(msg) / scale[0] 
+            
+            if xjust == "left":
+                tx = x1
+            elif xjust == "right":
+                tx = x2 - textwidth
+            else:
+                tx = (x1 + x2 - textwidth) / 2.0
+            
+            if yjust == "bottom":
+                ty = y1
+            elif yjust == "top":
+                ty = y2 - textheight
+            else:
+                ty = (y1 + y2 - textheight) / 2.0
+            
             print >>self.out, \
             """<g transform='translate(%f,%f) scale(1,-1)'>
                 <text x='0' y='0' font-size='%s' fill='%s' fill-opacity='%f'>%s</text></g>
-            """ % (x1, y1, 10, col, color[3], msg)
+            """ % (tx, ty, textheight, col, color[3], msg)
 
     
     def printGraphic(self, elm):

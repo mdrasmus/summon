@@ -106,3 +106,9 @@ def makeFlipMatrix(vec):
     s = makeScaleMatrix((-1, 1))
     
     return multMatrix(rot2, multMatrix(s, rot))
+
+
+# Returns |M*<1,0> - M*<0,0>|, |M*<0,1> - M*<0,0>|     
+def getScaling(mat):
+    return [sqrt(mat[0][0]*mat[0][0] + mat[1][0]*mat[1][0]),
+            sqrt(mat[0][1]*mat[0][1] + mat[1][1]*mat[1][1])]

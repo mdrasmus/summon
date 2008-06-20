@@ -232,7 +232,7 @@ class SumTree (object):
         vis.append(hotspot("click", nx, bot, px, top, func))
 
         # branch label
-        if node.name in self.branchLabels:
+        if node.name in self.branchLabels and nx != px:
             if self.vertical:
                 d = ["vertical"]
             else:
