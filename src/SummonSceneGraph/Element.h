@@ -127,7 +127,11 @@ public:
         
         if (elm->m_next)
             elm->m_next->m_prev = elm->m_prev;
-        if (m_child != elm)
+        else if (elm != m_child)
+            // removing last child, update last pointer
+            m_child->m_prev = elm->m_prev;
+        
+        if (elm != m_child)
             elm->m_prev->m_next = elm->m_next;
         else
             // if removing first child, find new first child

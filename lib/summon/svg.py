@@ -39,7 +39,8 @@ class SvgWriter:
     
         
     def write(self, outfile, group, visible=(0.0, 0.0, 500.0, 500.0), 
-                    size=(500,500), bgcolor=(0, 0, 0), win=None):
+                    size=(500,500), bgcolor=(0, 0, 0), win=None, 
+                    scale=(1.0,1.0)):
         """print out svg code"""
          
         # get camera properties
@@ -54,7 +55,8 @@ class SvgWriter:
         boxWidth  = x2 - x
         boxHeight = y2 - y
         self.scalex = width / boxWidth
-        self.scaley = height / boxHeight            
+        self.scaley = height / boxHeight
+        self.s = scale   # prescale        
         
         self.out = outfile
         self.curcolor = [1, 1, 1, 1]
@@ -62,15 +64,18 @@ class SvgWriter:
         print >>self.out, svgHeader
         print >>self.out, svgTag % (width, height)
         print >>self.out, "<g style='font-family: curior'>"
-        print >>self.out, "<g transform='translate(0, %d)'>" % height
+        print >>self.out, "<g transform='translate(0, %d)'>" % (height)
         print >>self.out, "<g transform='scale(1, -1)'>"
         print >>self.out, "<rect x='0' y='0' width='%d' height='%d' fill='%s'/>" % \
                 (width, height, color2string(bgcolor))
         
         # transform camera
-        print >>outfile, "<g transform='scale(%f, %f)'>"  % (self.scalex, self.scaley)
-        print >>outfile, "<g transform='translate(%d, %d)'>" % (-x, -y)
-        print >>outfile, "<g stroke-width='%f'>" % (1 / max(self.scalex, self.scaley))
+        print >>outfile, "<g transform='scale(%f, %f)'>" % \
+            (self.scalex / self.s[0], self.scaley / self.s[1])
+        print >>outfile, "<g transform='translate(%d, %d)'>" % \
+            (self.s[0] * -x, self.s[1] * -y)
+        print >>outfile, "<g stroke-width='%f'>" % \
+            (1 / max(self.scalex * self.s[0], self.scaley * self.s[1]))
     
         mat = transform.makeTransMatrix((x, y))
         self.trans.append(transform.multMatrix(mat, self.trans[-1]))
@@ -84,7 +89,8 @@ class SvgWriter:
         print >>self.out, svgEndTag
 
     def printLine(self, x1, y1, x2, y2, color):
-        print >>self.out, "<line x1='%f' y1='%f' x2='%f' y2='%f' " % (x1, y1, x2, y2)
+        print >>self.out, "<line x1='%f' y1='%f' x2='%f' y2='%f' " % \
+            (self.s[0] * x1, self.s[1] * y1, self.s[0] * x2, self.s[1] * y2)
         print >>self.out, "stroke-opacity='%f' " % (color[3])
         print >>self.out, "stroke='%s' />\n" % (color2string(color))
 
@@ -93,7 +99,7 @@ class SvgWriter:
         print >>self.out, "<polygon fill='%s' stroke='%s' opacity='%f' points='" % \
                 (color2string(color), color2string(color), color[3])
         for pt in verts:
-            print >>self.out, "%f,%f " % (pt[0], pt[1])
+            print >>self.out, "%f,%f " % (self.s[0] * pt[0], self.s[1] * pt[1])
         print >>self.out, "' />"
 
     
@@ -104,6 +110,10 @@ class SvgWriter:
         kind = c[0]
         msg = c[1]
         x1, y1, x2, y2 = c[2:6]
+        x1 = self.s[0] * x1
+        x2 = self.s[0] * x2
+        y1 = self.s[1] * y1
+        y2 = self.s[1] * y2
         justify = set(c[6:])
         color = self.curcolor
         
@@ -146,9 +156,8 @@ class SvgWriter:
         
             scale = transform.getScaling(self.trans[-1])
             
-            
             # TODO: approx for now        
-            textheight = 13.0 / scale[1]
+            textheight = 13.0 * self.s[1] / scale[1]
             textwidth = textheight * .75 * len(msg) / scale[0] 
             
             if xjust == "left":
@@ -194,10 +203,12 @@ class SvgWriter:
     
         c = elm.get()
         if isinstance(elm, translate):
-            print >>self.out, "<g transform='translate(%f,%f)'>" % (c[1], c[2])
+            print >>self.out, "<g transform='translate(%f,%f)'>" % \
+                (self.s[0] * c[1], self.s[1] * c[2])
             
         elif isinstance(elm, scale):
-            print >>self.out, "<g transform='scale(%f,%f)'>" % (c[1], c[2])
+            print >>self.out, "<g transform='scale(%f,%f)'>" % \
+                (c[1], c[2])
             
         elif isinstance(elm, rotate):
             print >>self.out, "<g transform='rotate(%f)'>" % c[1]
@@ -276,10 +287,10 @@ class SvgWriter:
 
 
 def writeSvg(outfile, group, visible=(0.0, 0.0, 500.0, 500.0), size=(500, 500), 
-             bgcolor=(0, 0, 0), win=None):
+             bgcolor=(0, 0, 0), win=None, scale=(1.0, 1.0)):
     writer = SvgWriter()
     
-    writer.write(outfile, group, visible, size, bgcolor, win=win)
+    writer.write(outfile, group, visible, size, bgcolor, win=win, scale=scale)
 
 
     
