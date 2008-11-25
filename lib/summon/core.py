@@ -760,11 +760,14 @@ class zoom_clamp (Transform):
         if link:
             low = max(minx, miny)
             high = min(maxx, maxy)
+            if abs(low - high) / (low + high) < 1e-10: low = high
             
-            assert low <= high, Exception("x and y clamp range must intersect if linked")
+            assert low <= high, Exception("x (%f) and y (%f) clamp range must intersect if linked" % (low, high))
             minx = miny = low
             maxx = maxy = high
         else:
+            if abs(minx - maxx) / (minx - maxx) < 1e-10: minx = maxx
+            if abs(miny - maxy) / (miny - maxy) < 1e-10: miny = maxy
             assert minx <= maxx, Exception("minx cannot be greater than maxx")
             assert miny <= maxy, Exception("miny cannot be greater than maxy")
         

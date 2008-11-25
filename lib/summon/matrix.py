@@ -10,6 +10,7 @@
 # python libs
 import random
 import sys
+import itertools
 
 # summon libs
 from summon.core import *
@@ -20,6 +21,7 @@ from summon import multiwindow
 from summon import colors
 from summon import sumtree
 from summon import treelib
+from summon import matrixlib
 
 
 #=============================================================================
@@ -60,17 +62,17 @@ class Matrix (util.Dict):
     def setup(self, nrows=None, ncols=None, nnz=None,
               rowsample=False, colsample=False):
         # set dimensions
-        if nrows != None:
+        if nrows is not None:
             self.nrows = nrows
-        if ncols != None:
+        if ncols is not None:
             self.ncols = ncols
-        if nnz != None:
+        if nnz is not None:
             self.nnz = nnz
 
         # set permutations
-        if self.rperm == None:
+        if self.rperm is None:
             self.rperm = range(self.nrows)
-        if self.cperm == None:
+        if self.cperm is None:
             self.cperm = range(self.ncols)
 
         # set inverse permutations
@@ -78,48 +80,24 @@ class Matrix (util.Dict):
         self.cinv = util.invperm(self.cperm)
     
         # setup row/col sampling
-        if rowsample != False:
+        if rowsample is not False:
             self.rshow = set(random.sample(range(self.nrows), 
                                            int(self.nrows * rowsample)))
         else:
             self.rshow = set(range(self.nrows))
 
-        if colsample != False:
-            self.cshow = random.sample(range(self.ncols), int(self.ncols * colsample))
+        if colsample is not False:
+            self.cshow = random.sample(range(self.ncols),
+                                       int(self.ncols * colsample))
         else:
             self.cshow = set(range(self.ncols))
     
     
-    def from2DList(self, mat, cutoff=-util.INF):
+    def from_dmat(self, mat, cutoff=-util.INF):
         """Initialize matrix from a 2D list"""
-    
-        assert util.equal(* map(len, mat)), "matrix has unequal row sizes"
-    
-        nrows, ncols = len(mat), len(mat[0])
-        self.setup(nrows, ncols, nrows * ncols)
-        
-        self.rows, self.cols, self.vals = [], [], []
-        rows, cols, vals = self.rows, self.cols, self.vals
-        
-        maxval = -util.INF
-        minval = util.INF
-        
-        for i in xrange(nrows):
-            for j in xrange(ncols):
-                v = mat[i][j]
-                
-                if v > cutoff:
-                    rows.append(i)
-                    cols.append(j)
-                    vals.append(v)
 
-                    self[i][j] = v
-
-                    maxval = max(maxval, v)
-                    minval = min(minval, v)
-        
-        self.maxval = maxval
-        self.minval = minval
+        load_dmat(mat, self, minval=cutoff, loadvals=True)
+    from2DList = from_dmat
     
     
     def submatrix(self, rows=None, cols=None):
@@ -140,18 +118,20 @@ class Matrix (util.Dict):
         rows2, cols2, vals2 = self.rows, self.cols, self.vals
         rows3, cols3, vals3 = mat.rows, mat.cols, mat.vals
                 
-        for i in xrange(len(self.rows)):            
+        for i in xrange(len(rows2)):            
             r = rows2[i]
             c = cols2[i]
             v = vals2[i]
             
             if r not in lookuprows or c not in lookupcols:
                 continue
-            
-            rows3.append(lookuprows[r])
-            cols3.append(lookupcols[c])
+
+            r2 = lookuprows[r]
+            c2 = lookupcols[r]
+            rows3.append(r2)
+            cols3.append(c2)
             vals3.append(v)
-            mat[r][c] = v
+            mat[r2][c2] = v
         
         # get subset of permutation        
         ind = [self.rinv[i] for i in rows]
@@ -179,239 +159,145 @@ class Matrix (util.Dict):
 #
 
 
-def openCompRow(filename, mat, loadvals=False, 
-                sample=False, rowsample=False, colsample=False):
-    """reads a compressed row matrix file"""
+def open_matrix(filename, mat, loadvals=True, minval=-util.INF,
+                sample=False, rowsample=False, colsample=False,
+                format="unknown"):
+    """Reads a compressed row matrix file"""
     
-    util.tic("reading '%s'" % filename)
-    infile = file(filename)
+
+    infile = open(filename)
     
-    # read header
-    fields = infile.next().split()
-    if len(fields) == 2:
-        (nrows, nnz) = map(int, fields)
-        ncols = nrows
-    elif len(fields) == 3:
-        (nrows, ncols, nnz) = map(int, fields)
+    # read header, start iterator based on format
+    if format == "rmat":
+        nrows, ncols, nnz, imat = matrixlib.iter_rmat(infile)
+    elif format == "imat":
+        nrows, ncols, nnz, imat = matrixlib.iter_imat(infile)
+    elif format == "dmat":
+        nrows, ncols, nnz, imat = matrixlib.iter_dmat(infile, header=True)
+    elif format == "lmat":
+        nrows, ncols, nnz, imat = process_lmat(infile, mat, filename=filename)
+        filename = None
     else:
-        raise "expected (nrows, nnz) or (nrows, ncols, nnz) in first line"
-    
-    
-    util.log("%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz))
+        raise Exception("unknown matrix format '%s'" % format)
+
+    load_matrix(nrows, ncols, nnz, imat, mat,
+                loadvals=loadvals, minval=minval,
+                sample=sample, rowsample=rowsample, colsample=colsample,
+                filename=filename)
+
+
+def load_matrix(nrows, ncols, nnz, imat, mat,
+                loadvals=False, minval=-util.INF,
+                sample=False, rowsample=False, colsample=False,
+                format="unknown", filename=None):
+    """Load matrix from an index matrix iterator"""
     
     mat.setup(nrows, ncols, nnz, rowsample=rowsample, colsample=colsample)
     rows, cols, vals = (mat.rows, mat.cols, mat.vals)
-    
-    row = 0
-    maxval = -util.INF
-    minval = util.INF
-    nnz = 0
-    for line in infile:
-        fields = line.split()
 
-        if sample != False and random.random() > sample:
-            row += 1
-            continue
-        
-        if row not in mat.rshow:
-            row += 1
-            continue
-        
-        for i in xrange(0, len(fields), 2):
-            col = int(fields[i]) - 1
-            val = float(fields[i+1])
-            
-            if col not in mat.cshow:
+    # clear matrix
+    rows[:] = []
+    cols[:] = []
+    vals[:] = []
+
+    if filename:
+        util.tic("reading '%s'" % filename)
+        util.log("%s: %d nrows, %d ncols, %d non-zeros" %
+                 (filename, nrows, ncols, nnz))
+    
+    try:
+        for i, j, v in imat:
+            # filtering: 1. random sample sample
+            #            2. row/col filtering
+            #            3. value cutoff
+            if (sample and random.random() > sample) or \
+               i not in mat.rshow or j not in mat.cshow or \
+               v < minval:
                 continue
             
-            rows.append(row)
-            cols.append(col)
-            vals.append(val)
-            nnz += 1
-            if val > maxval: maxval = val
-            if val < minval: minval = val
+            rows.append(i)
+            cols.append(j)
+            vals.append(v)
             if loadvals:
-                mat[row][col] = val
-        row += 1
-    util.toc()
-    
-    mat.maxval = maxval
-    mat.minval = minval
-    mat.nnz = nnz
-    
-    return mat
+                mat[i][j] = v
+                
+    except Exception, e:
+        if filename:
+            util.toc()
+        raise e
+        #raise Exception("error on line %d: %s" % (i+2, str(e)))
 
+    mat.nnz = len(vals)
+    mat.maxval = max(vals)
+    mat.minval = min(vals)
 
-def openImat(filename, mat, loadvals=False,
-             sample=False, rowsample=False, colsample=False):
-    """reads a index matrix file"""
+    if filename:
+        util.toc()
     
-    util.tic("reading '%s'" % filename)
-    infile = file(filename)
+
+def load_dmat(dmat, mat,
+              loadvals=False, minval=-util.INF,
+              sample=False, rowsample=False, colsample=False):
+    """Load dense matrix"""
     
-    # read header
-    (nrows, ncols, nnz) = map(int, infile.next().split())
-    print "%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz)        
-    
-    mat.setup(nrows, ncols, nnz, rowsample=rowsample, colsample=colsample)
-    rows, cols, vals = (mat.rows, mat.cols, mat.vals)
-    
-    i = 0
-    maxval = -util.INF
-    minval = util.INF
-    nnz = 0
-    for line in infile:
-        if sample != False and random.random() > sample:
-            continue
+    assert util.equal(* map(len, mat)), "matrix has unequal row sizes"
+
+    nrows, ncols = len(dmat), len(dmat[0])
+    nnz = nrows * ncols
+    imat = matrixlib.dmat2imat(dmat)
+
+    load_matrix(nrows, ncols, nnz, imat, mat,
+                loadvals=loadvals, minval=minval,
+                sample=sample, rowsample=rowsample, colsample=colsample)
         
-        (row, col, val) = line.split()
-        r, c = int(row), int(col)
-        v = float(val)
-        
-        if r not in mat.rshow or c not in mat.cshow:
-            continue
-        
-        rows.append(r)
-        cols.append(c)
-        vals.append(v)
-        nnz += 1
-        if v > maxval: maxval = v
-        if v < minval: minval = v
-        if loadvals:
-            mat[r][c] = v
-            
-    util.toc()
-    
-    mat.maxval = maxval
-    mat.minval = minval
-    mat.nnz = nnz
-    
-    return mat
 
+def process_lmat(infile,  mat, filename=None):
+    """Processes an lmat so that it returns as an imat"""
 
+    if filename:
+        util.tic("reading '%s'" % filename)
 
-def openLabeledMatrix(filename, mat,
-                      sample=False, rowsample=False, colsample=False):
-    """reads a labeled matrix file"""
-    
-    util.tic("reading '%s'" % filename)
-    
-    # read all data
-    nnz = 0
-    maxval = -util.INF
-    minval = util.INF
-    for line in file(filename):
-        tokens = line.split()
-        score = float(tokens[2])
-        mat[tokens[0]][tokens[1]] = score
-        if score > maxval: maxval = score
-        if score < minval: minval = score
-        nnz += 1
-    
-    mat.maxval = maxval
-    mat.minval = minval
+    rows, cols, vals = matrixlib.transpose(list(matrixlib.iter_lmat(infile)))
     
     # determine labels
-    rowlabelset = set()
-    collabelset = set()
-    rowlabels = []
-    collabels = []
+    rowlabels = util.unique(rows)
+    collabels = util.unique(cols)
 
-    for i in mat:
-        if i not in rowlabelset:
-            rowlabels.append(i)
-            rowlabelset.add(i)
-
-        for j in mat[i]:
-            if j not in collabelset:
-                collabels.append(j)
-                collabelset.add(j)
+    nrows = len(rowlabels)
+    ncols = len(collabels)
+    nnz = len(vals)
     
     # determine order
-    if mat.order != None:
-        order = util.readStrings(mat.order)
+    if mat.order is not None:
+        order = util.read_strings(mat.order)
         rowlookup = util.list2lookup(order)
         collookup = util.list2lookup(order)
+
+        rowlabels.sort(key=lambda x: rowlookup[x])
+        collabels.sort(key=lambda x: collookup[x])
     else:
         rowlookup = util.list2lookup(rowlabels)
-        collookup = util.list2lookup(collabels)        
-    
-    rowlabels.sort(key=lambda x: rowlookup[x])
-    collabels.sort(key=lambda x: collookup[x])
+        collookup = util.list2lookup(collabels)            
     
     mat.rowlabels = rowlabels
     mat.collabels = collabels
-    
-    mat.setup(len(rowlabels), len(collabels), nnz, 
-              rowsample=rowsample, colsample=colsample)
-    rows, cols, vals = (mat.rows, mat.cols, mat.vals)
-    
-    # store data
-    for i in mat:
-        for j in mat[i]:
-            rows.append(rowlookup[i])
-            cols.append(collookup[j])
-            vals.append(mat[i][j])
-    
-    util.toc()
-    
-    return mat
-    
 
+    # iterate with an imat, then post process
+    def func():
+        ilmat = itertools.izip(rows, cols, vals)
+        imat = matrixlib.ilmat2imat(ilmat, rowlabels, collabels)
+        for entry in imat:
+            yield entry
 
-def openDense(filename, mat, cutoff=-util.INF,
-              rowsample=False, colsample=False):
-    """reads a dense matrix file"""
-    
-    util.tic("reading '%s'" % filename)
-    infile = file(filename)
-    
-    # read header
-    tokens = map(int, infile.next().split())
-    if len(tokens) == 2:
-        nrows, ncols = tokens
-    elif len(tokens) == 1:
-        nrows = ncols = tokens[0]
-    else:
-        raise Exception("Error on line 1")
-    nnz = nrows * ncols
-    util.log("%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz))
-    
+        # also store entries by label
+        for i, j, v in itertools.izip(mat.rows, mat.cols, mat.vals):
+            mat[rowlabels[i]][collabels[j]] = v
 
-    # setup matrix
-    mat.setup(nrows, ncols, nnz, rowsample=rowsample, colsample=colsample)
-    rows, cols, vals = (mat.rows, mat.cols, mat.vals)
+    if filename:
+        util.toc()
     
-    # read in whole matrix
-    maxval = -util.INF
-    minval = util.INF
-    nnz = 0
-    
-    for r, line in enumerate(infile):
-        # sample rows
-        if r not in mat.rshow:
-            continue
-    
-        entries = map(float, line.split())
-        for c in xrange(len(entries)):
-            if c not in mat.cshow:
-                continue
-        
-            if entries[c] >= cutoff:
-                rows.append(r)
-                cols.append(c)
-                vals.append(entries[c])
-                nnz += 1
-                if entries[c] > maxval: maxval = entries[c]
-                if entries[c] < minval: minval = entries[c]
-                mat[r][c] = entries[c]
-    
-    mat.maxval = maxval
-    mat.minval = minval
-    mat.nnz = nnz
-        
-    util.toc()
-    return mat
+    return nrows, ncols, nnz, func()
+
 
 
 
@@ -437,8 +323,10 @@ class MatrixMenu (summon.SummonMenu):
         self.viewer = viewer
         
         self.summatrix_menu = summon.Menu()
-        self.summatrix_menu.add_entry("toggle labels (l)", viewer.toggleLabelWindows)
-        self.summatrix_menu.add_entry("toggle trees (t)", viewer.toggleTreeWindows)
+        self.summatrix_menu.add_entry("toggle labels (l)",
+                                      viewer.toggleLabelWindows)
+        self.summatrix_menu.add_entry("toggle trees (t)",
+                                      viewer.toggleTreeWindows)
         self.insert_submenu(0, "Summatrix", self.summatrix_menu)
         
         
@@ -963,3 +851,116 @@ class DenseMatrixViewer (MatrixViewer):
         self.mat.setup()
         
         
+
+#=============================================================================
+# OLD CODE
+
+'''
+def openCompRow(filename, mat, loadvals=False, 
+                sample=False, rowsample=False, colsample=False):
+    """reads a compressed row matrix file"""
+    
+    util.tic("reading '%s'" % filename)
+    infile = file(filename)    
+    
+    fields = infile.next().split()
+    if len(fields) == 2:
+        (nrows, nnz) = map(int, fields)
+        ncols = nrows
+    elif len(fields) == 3:
+        (nrows, ncols, nnz) = map(int, fields)
+    else:
+        raise "expected (nrows, nnz) or (nrows, ncols, nnz) in first line"
+    
+    
+    util.log("%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz))
+    
+    mat.setup(nrows, ncols, nnz, rowsample=rowsample, colsample=colsample)
+    rows, cols, vals = (mat.rows, mat.cols, mat.vals)
+    
+    row = 0
+    maxval = -util.INF
+    minval = util.INF
+    nnz = 0
+    for line in infile:
+        fields = line.split()
+
+        if sample != False and random.random() > sample:
+            row += 1
+            continue
+        
+        if row not in mat.rshow:
+            row += 1
+            continue
+        
+        for i in xrange(0, len(fields), 2):
+            col = int(fields[i]) - 1
+            val = float(fields[i+1])
+            
+            if col not in mat.cshow:
+                continue
+            
+            rows.append(row)
+            cols.append(col)
+            vals.append(val)
+            nnz += 1
+            if val > maxval: maxval = val
+            if val < minval: minval = val
+            if loadvals:
+                mat[row][col] = val
+        row += 1
+    util.toc()
+    
+    mat.maxval = maxval
+    mat.minval = minval
+    mat.nnz = nnz
+    
+    return mat
+
+def openImat(filename, mat, loadvals=False,
+             sample=False, rowsample=False, colsample=False):
+    """reads a index matrix file"""
+    
+    util.tic("reading '%s'" % filename)
+    infile = file(filename)
+    
+    # read header
+    (nrows, ncols, nnz) = map(int, infile.next().split())
+    print "%s: %d nrows, %d ncols, %d non-zeros" % (filename, nrows, ncols, nnz)        
+    
+    mat.setup(nrows, ncols, nnz, rowsample=rowsample, colsample=colsample)
+    rows, cols, vals = (mat.rows, mat.cols, mat.vals)
+    
+    i = 0
+    maxval = -util.INF
+    minval = util.INF
+    nnz = 0
+    for line in infile:
+        if sample != False and random.random() > sample:
+            continue
+        
+        (row, col, val) = line.split()
+        r, c = int(row), int(col)
+        v = float(val)
+        
+        if r not in mat.rshow or c not in mat.cshow:
+            continue
+        
+        rows.append(r)
+        cols.append(c)
+        vals.append(v)
+        nnz += 1
+        if v > maxval: maxval = v
+        if v < minval: minval = v
+        if loadvals:
+            mat[r][c] = v
+            
+    util.toc()
+    
+    mat.maxval = maxval
+    mat.minval = minval
+    mat.nnz = nnz
+    
+    return mat
+
+'''

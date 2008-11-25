@@ -22,9 +22,9 @@ import sys
 # summon libs
 import summon
 from summon.core import *
-from summon import shapes, util, treelib
 from summon import matrix
 from summon import sumtree
+from summon import shapes, util, treelib
 
 
 def parseColor(colorstr):
@@ -141,9 +141,9 @@ options = [
          "parser": float,
          "single": True,
          "help": "if specified, only loads values greater than 'cutoff'"}],             
-    ["", "loadvals", "loadvals", "",
+    ["", "noloadvals", "noloadvals", "",
         {"single": True,
-         "help": "load all non-zeros into memory for easy interactive display"}]
+         "help": "save memory by not loading non-zeros for interactive display"}]
 ]
 
 
@@ -156,142 +156,166 @@ conf = util.parseOptions(sys.argv, options, resthelp="<python script>")
 #
 
 print "SUMMATRIX (SUMMON Matrix Visualizer)"
-print "Matt Rasmussen 2005-2007"
+print "Matt Rasmussen 2005-2008"
 print
 
+
+# globals
+# for each access in iteractive interpreter
 mat = matrix.Matrix()
-
-# read permutations
-if "rperm" in conf:
-    mat.rperm = util.readInts(conf["rperm"])
-if "cperm" in conf:
-    mat.cperm = util.readInts(conf["cperm"])
-if "rcperm" in conf:
-    mat.rperm = util.readInts(conf["rcperm"])        
-    mat.cperm = util.readInts(conf["rcperm"])
-
-# read color
-if conf["color"] == "posneg":
-    mat.colormap = summon.PosNegColorMap()
-elif conf["color"] == "rainbow":
-    mat.colormap = summon.RainbowColorMap()
-elif conf["color"] == "solid":
-    mat.colormap = summon.SolidColorMap()
-else:
-    mat.colormap = summon.readColorMap(conf["color"])
-
-
-if "order" in conf:
-    mat.order = conf["order"]
-
-
-# read matrix
-matfile = "summatrix"
-if "comprow" in conf:
-    matrix.openCompRow(conf["comprow"], mat, 
-                loadvals=conf.get("loadvals", False),
-                sample=conf.get("sample", False),
-                rowsample=conf.get("rsample", False),
-                colsample=conf.get("csample", False),
-                )
-    matfile = conf["comprow"]
-    
-elif "imat" in conf:
-    matrix.openImat(conf["imat"], mat, 
-             loadvals=conf.get("loadvals", False),
-             sample=conf.get("sample", False),
-             rowsample=conf.get("rsample", False),
-             colsample=conf.get("csample", False))
-    matfile = conf["imat"]
-    
-elif "lmat" in conf:
-    if "order" in conf:
-        matrix.openLabeledMatrix(conf["lmat"], mat,
-                          rowsample=conf.get("rsample", False),
-                          colsample=conf.get("csample", False))
-    else:
-        matrix.openLabeledMatrix(conf["lmat"], mat,
-                          rowsample=conf.get("rsample", False),
-                          colsample=conf.get("csample", False))
-    matfile = conf["lmat"]
-    
-elif "dense" in conf:
-    matrix.openDense(conf["dense"], mat, 
-              cutoff=conf["cutoff"],
-              rowsample=conf.get("rsample", False),
-              colsample=conf.get("csample", False))
-    matfile = conf["dense"]
-    
-else:
-    raise Exception("no matrix specified")
-
-
-# read labels
-if "rowlabels" in conf:
-    mat.rowlabels = util.readStrings(conf["rowlabels"])
-if "collabels" in conf:
-    mat.collabels = util.readStrings(conf["collabels"])
-if "rowcollabels" in conf:
-    mat.rowlabels = util.readStrings(conf["rowcollabels"])
-    mat.collabels = mat.rowlabels
-
-
-# read partitions
-if "rpart" in conf:
-    mat.rpart = util.readStrings(conf["rpart"])
-if "cpart" in conf:
-    mat.cpart = util.readStrings(conf["cpart"])
-if "rcpart" in conf:
-    mat.rpart = util.readStrings(conf["rcpart"])
-    mat.cpart = mat.rpart 
-
-# setup default permutation from cluster ids
-if mat.rpart and not mat.rperm:
-    mat.rperm = range(len(mat.rpart))
-    mat.rperm.sort(key=lambda x: mat.rpart[x])
-    mat.rinv = util.invPerm(mat.rperm)
-if mat.cpart and not mat.cperm:
-    mat.cperm = range(len(mat.cpart))
-    mat.cperm.sort(key=lambda x: mat.cpart[x])
-    mat.cinv = util.invPerm(mat.cperm)
-
-# modify permutations if row/col sampling is choosen
-if len(mat.rshow) < mat.nrows or len(mat.cshow) < mat.ncols:
-    mat = mat.submatrix(util.sort(mat.rshow), util.sort(mat.cshow))
-
-
-# read trees
 rtree = None
 ctree = None
-if "rptree" in conf:
-    rtree = treelib.Tree()
-    rtree.readParentTree(conf["rptree"], labels=mat.rowlabels)
-if "cptree" in conf:
-    ctree = treelib.Tree()
-    ctree.readParentTree(conf["cptree"], labels=mat.collabels)
-if "rtree" in conf:
-    rtree = treelib.Tree()
-    rtree.readNewick(conf["rtree"])
-if "ctree" in conf:
-    ctree = treelib.Tree()
-    ctree.readNewick(conf["ctree"])
 
-if rtree:
-    leaves = rtree.leafNames()
-    if mat.rowlabels == None:
-        mat.rperm = map(int, leaves)
+
+def part2perm(part):
+    """Convert a partition to a simple permutation"""
+    perm = range(len(part))
+    perm.sort(key=lambda x: part[x])
+    return perm
+
+
+def read_perm(conf, mat):
+    # read permutations
+    if "rperm" in conf:
+        mat.rperm = util.read_ints(conf["rperm"])
+    if "cperm" in conf:
+        mat.cperm = util.read_ints(conf["cperm"])
+    if "rcperm" in conf:
+        mat.rperm = util.read_ints(conf["rcperm"])        
+        mat.cperm = util.read_ints(conf["rcperm"])
+
+    # needed for lmat
+    if "order" in conf:
+        mat.order = conf["order"]
+
+
+def read_part(conf, mat):
+    # read partitions
+    if "rpart" in conf:
+        mat.rpart = util.read_strings(conf["rpart"])
+    if "cpart" in conf:
+        mat.cpart = util.read_strings(conf["cpart"])
+    if "rcpart" in conf:
+        mat.rpart = util.read_strings(conf["rcpart"])
+        mat.cpart = mat.rpart 
+
+    # setup default permutation from cluster ids
+    if mat.rpart and not mat.rperm:
+        mat.rperm = part2perm(mat.rpart)
+        mat.rinv = util.invperm(mat.rperm)
+    if mat.cpart and not mat.cperm:
+        mat.cperm = part2perm(mat.cpart)
+        mat.cinv = util.invperm(mat.cperm)
+
+
+def read_labels(conf, mat):    
+    # read labels
+    if "rowlabels" in conf:
+        mat.rowlabels = util.read_strings(conf["rowlabels"])
+    if "collabels" in conf:
+        mat.collabels = util.read_strings(conf["collabels"])
+    if "rowcollabels" in conf:
+        mat.rowlabels = util.read_strings(conf["rowcollabels"])
+        mat.collabels = mat.rowlabels
+
+def read_colormap(conf, mat):
+    # read colormap
+    if conf["color"] == "posneg":
+        mat.colormap = summon.PosNegColorMap()
+    elif conf["color"] == "rainbow":
+        mat.colormap = summon.RainbowColorMap()
+    elif conf["color"] == "solid":
+        mat.colormap = summon.SolidColorMap()
     else:
-        lookup = util.list2lookup(mat.rowlabels)
-        mat.rperm = util.mget(lookup, leaves)
-    mat.rinv = util.invPerm(mat.rperm)
-if ctree:
-    leaves = ctree.leafNames()
-    if mat.collabels == None:
-        mat.cperm = map(int, leaves)
-    else:
-        lookup = util.list2lookup(mat.collabels)
-        mat.cperm = util.mget(lookup, leaves)
-    mat.cinv = util.invPerm(mat.cperm)
+        mat.colormap = summon.readColorMap(conf["color"])
+
+
+def read_matrix(conf, mat):
+
+    # read matrix
+    matfile = None
+    if "comprow" not in conf and \
+       "imat" not in conf and \
+       "dense" not in conf and \
+       "lmat" not in conf:
+        raise Exception("no matrix specified")
+
+    if "comprow" in conf:
+        matfile = conf["comprow"]
+        format = "rmat"
+    elif "imat" in conf:
+        matfile = conf["imat"]
+        format = "imat"
+    elif "lmat" in conf:
+        matfile = conf["lmat"]
+        format = "lmat"
+    elif "dense" in conf:
+        matfile = conf["dense"]
+        format = "dmat"
+    matrix.open_matrix(matfile, mat, 
+                       loadvals=not conf.get("noloadvals", False),
+                       sample=conf.get("sample", False),
+                       rowsample=conf.get("rsample", False),
+                       colsample=conf.get("csample", False),
+                       format=format)
+
+    # TODO: should this be pushed into lib?
+    # modify permutations if row/col sampling is choosen
+    if len(mat.rshow) < mat.nrows or len(mat.cshow) < mat.ncols:
+        mat = mat.submatrix(util.sort(mat.rshow), util.sort(mat.cshow))
+
+    return matfile
+
+def read_trees(conf, mat):
+    # read trees
+    global rtree
+    global ctree
+
+    if "rptree" in conf:
+        rtree = treelib.Tree()
+        rtree.readParentTree(conf["rptree"], labels=mat.rowlabels)
+    if "cptree" in conf:
+        ctree = treelib.Tree()
+        ctree.readParentTree(conf["cptree"], labels=mat.collabels)
+    if "rtree" in conf:
+        rtree = treelib.Tree()
+        rtree.readNewick(conf["rtree"])
+    if "ctree" in conf:
+        ctree = treelib.Tree()
+        ctree.readNewick(conf["ctree"])
+
+    if rtree:
+        leaves = rtree.leafNames()
+        if mat.rowlabels == None:
+            mat.rperm = map(int, leaves)
+        else:
+            lookup = util.list2lookup(mat.rowlabels)
+            mat.rperm = util.mget(lookup, leaves)
+        mat.rinv = util.invPerm(mat.rperm)
+        
+    if ctree:
+        leaves = ctree.leafNames()
+        if mat.collabels == None:
+            mat.cperm = map(int, leaves)
+        else:
+            lookup = util.list2lookup(mat.collabels)
+            mat.cperm = util.mget(lookup, leaves)
+        mat.cinv = util.invPerm(mat.cperm)
+
+read_perm(conf, mat)
+read_part(conf, mat)
+read_labels(conf, mat)
+read_colormap(conf, mat)
+matfile = read_matrix(conf, mat)
+read_trees(conf, mat)
+
+
+# TODO: remove?
+# execute python scripts
+for script in conf["REST"]:
+    print "executing", script
+    execfile(script)
+
 
 
 # determine label settings
@@ -307,28 +331,33 @@ elif conf["showlabels"] == "none":
 else:
     raise Exception("unknown showlabels setting '%s'" % conf["showlabels"])
 
-# execute python scripts
-for script in conf["REST"]:
-    print "executing", script
-    execfile(script)
-
 
 # create matrix viewer and display it
 viewer = matrix.MatrixViewer(mat, bgcolor=conf["bgcolor"], 
-                            drawzeros=conf["drawzeros"], 
-                            style=conf["style"],
-                            showLabels=showLabels,
-                            showLabelWindows=showLabelWindows,
-                            winsize=conf["winsize"],
-                            title=matfile,
-                            rtree=rtree,
-                            ctree=ctree,
-                            useTreeLens=(conf["treelens"], conf["treelens"]))
+                             drawzeros=conf["drawzeros"], 
+                             style=conf["style"],
+                             showLabels=showLabels,
+                             showLabelWindows=showLabelWindows,
+                             winsize=conf["winsize"],
+                             title=matfile,
+                             rtree=rtree,
+                             ctree=ctree,
+                             useTreeLens=(conf["treelens"], conf["treelens"]))
 util.tic("drawing matrix")
 viewer.show()
 util.toc()
 
-#if rtree:
-#    layout = treelib.layoutTreeHierarchical(rtree, 1, -1)
-#    treevis = sumtree.SumTree(rtree, name="row tree", xscale=0, layout=layout)
-#    treevis.show()
+
+#=============================================================================
+# display globals
+
+print
+print "variables available:"
+print "  mat    = matrix"
+print "  viewer = matrix viewer"
+
+if rtree:
+    print "  rtree  = row tree"
+if ctree:
+    print "  ctree  = col tree"
+print
