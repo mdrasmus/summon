@@ -561,6 +561,10 @@ class text_clip (custom_group, text):
                 'left' 'center' 'right' 
                 'bottom' 'middle' 'top'
         """    
+
+        if len(txt) == 0:
+            custom_group.__init__(self)
+            return
         
         # ensure points are ordered correctly
         if x1 > x2:

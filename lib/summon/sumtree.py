@@ -15,6 +15,9 @@ from summon import util
 import summon
 
 
+# TODO: customize scale color
+# TODO: customize bgcolor, auto choose branch color based on bgcolor
+# TODO: switch to python naming scheme word_and_word
 
 
 #=============================================================================

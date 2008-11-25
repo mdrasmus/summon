@@ -91,7 +91,7 @@ def readTree(conf):
 #=============================================================================
 # title
 print "SUMTREE (SUMMON Tree Visualizer)"
-print "Matt Rasmussen 2005-2007"
+print "Matt Rasmussen 2005-2008"
 print
 
 # read

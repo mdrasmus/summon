@@ -68,7 +68,7 @@ if pyparsing:
         # recursive rules
         subtree = Forward()
         subtreelist = Forward()
-
+        
         subtree << \
             Group(
                 (
@@ -464,11 +464,15 @@ class Tree:
                         node.data["boot"] = float(boot)
                     except ValueError:
                         # treat as node name
-                        node.name = boot.strip()
+                        name = boot.strip()
+                        if name and not node.isLeaf():
+                            node.name = name
         else:
+            data = data.strip()
+            
             # treat as name
-            if not node.isLeaf():
-                node.name = data.strip()
+            if data and not node.isLeaf():
+                node.name = data
     
     
     def writeData(self, node):
