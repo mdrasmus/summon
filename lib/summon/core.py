@@ -225,8 +225,8 @@ class Element:
         summon_core.show_group2(self.ptr, vis)
     
     def get_visible(self):
-        """NOT implemented yet"""
-        pass
+        raise Exception("NOT implemented yet")
+        
     
     def get_bounding(self):
         """Gets the bounding box of an element and all of its children"""

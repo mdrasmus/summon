@@ -16,7 +16,7 @@ import os
 import StringIO
 
 # rasmus libs
-import util
+from rasmus import util
 
 # newick parsing support
 try:
@@ -98,6 +98,11 @@ if pyparsing:
 
 
 class TreeNode:
+    """A class for nodes in a rooted Tree
+    
+    Contains fields for branch length 'dist' and custom data 'data'
+    """
+
     def __init__(self, name):
         self.name = name
         self.children = []
@@ -112,7 +117,7 @@ class TreeNode:
     
     
     def copy(self, parent=None, copyChildren=True):
-        """ Returns a copy of a TreeNode and all of its children"""
+        """Returns a copy of a TreeNode and all of its children"""
         
         node = TreeNode(self.name)
         node.name = self.name
@@ -127,60 +132,86 @@ class TreeNode:
         return node
         
     def isLeaf(self):
+        """Returns True if the node is a leaf (no children)"""
         return len(self.children) == 0
     
     def recurse(self, func, *args):
+        """Applies a function 'func' to the children of a node"""
         for child in self.children:
             func(child, *args)
     
     def leaves(self):
+        """Returns the leaves beneath the node in traversal order"""
         leaves = []
 
         def walk(node):
             if node.isLeaf():
                 leaves.append(node)
-            node.recurse(walk)
+            for child in node.children:
+                walk(child)
         walk(self)
           
         return leaves
     
     def leafNames(self):
-        return map(lambda x: x.name, self.leaves())
+        """Returns the leaf names beneath the node in traversal order"""
+        return [x.name for x in self.leaves()]
     
     def writeData(self, out):
+        """Writes the data of the node to the file stream 'out'"""
         out.write(str(self.dist))        
 
 
 # class for managing branch data
 class BranchData:
+    """A class for managing branch specific data for a Tree
+    
+    By default, this class implements bootstrap data for TreeNode's.  
+    
+    To incorporate new kinds of branch data, do the following.  Subclass this
+    class (say, MyBranchData).  Create Tree's with
+    Tree(branchData=MyBranchData()).  This will ensure your new branch data
+    manager is used for manipulations to the tree.  Any tree's copied from the
+    tree (via tree.copy()) will also use the same branch manager.
+    """
+
     def __init__(self):
         pass
 
     def getBranchData(self, node):
+        """Returns branch specific data from a node"""
         if "boot" in node.data:
             return {"boot": node.data["boot"]}
         else:
             return {}
     
     def setBranchData(self, node, data):
+        """Set the branch specific data from 'data' to node.data"""
         if "boot" in data:
             node.data["boot"] = data["boot"]
     
     def splitBranchData(self, node):
+        """Split a branch's data into two copies"""
         if "boot" in node.data:
             return {"boot": node.data["boot"]}, {"boot": node.data["boot"]}
         else:
             return {}, {}
     
     def mergeBranchData(self, data1, data2):
+        """Merges the branch data from two neighboring branches into one"""
         if "boot" in data1 and "boot" in data2:
-            assert data1["boot"] == data2["boot"]
+            assert data1["boot"] == data2["boot"], (data1, data2)
             return {"boot": data1["boot"]}
+        else:
+            return {}
     
     
 
 class Tree:
-    """Basic rooted tree"""
+    """Basic rooted tree
+    
+    Well suited for phylogenetic trees
+    """
 
     def __init__(self, nextname = 1, branchData=BranchData()):
         self.nodes = {}
@@ -386,30 +417,37 @@ class Tree:
                     if key in node.data:
                         del node.data[key]
     
-    #====================================
+    
+    #======================================================================
     # branch data functions
-    # forward branch data calles to branch data manager
+    # forward branch data calles to branch data manager        
     
     def getBranchData(self, node):
+        """Returns branch specific data from a node"""
         return self.branchData.getBranchData(node)
     
     def setBranchData(self, node, data):
+        """Set the branch specific data from 'data' to node.data"""
         return self.branchData.setBranchData(node, data)
     
     def splitBranchData(self, node):
+        """Split a branch's data into two copies"""
         return self.branchData.splitBranchData(node)
     
     def mergeBranchData(self, data1, data2):
+        """Merges the branch data from two neighboring branches into one"""    
         return self.branchData.mergeBranchData(data1, data2)
     
     
     #=======================================================================
     # input and output
     #
-    def write(self, out = sys.stdout, writeData=None, oneline=False):
+    
+    def write(self, out = sys.stdout, writeData=None, oneline=False,
+              rootData=False):
         """Write the tree in newick notation"""
         self.writeNewick(util.openStream(out, "w"), writeData=writeData, 
-                         oneline=oneline)        
+                         oneline=oneline, rootData=rootData)
     
     def readData(self, node, data):
         """Default data reader: reads optional bootstrap and branch length"""
@@ -424,8 +462,13 @@ class Tree:
                 else:
                     try:
                         node.data["boot"] = float(boot)
-                    except ValueError: pass
-    
+                    except ValueError:
+                        # treat as node name
+                        node.name = boot.strip()
+        else:
+            # treat as name
+            if not node.isLeaf():
+                node.name = data.strip()
     
     
     def writeData(self, node):
@@ -439,18 +482,28 @@ class Tree:
                 string += "%d" % node.data["boot"]
             else:
                 string += "%f" % node.data["boot"]
+        else:
+            # see if internal node names exist
+            if not node.isLeaf() and isinstance(node.name, str):
+                string += node.name
+
         string += ":%f" % node.dist
         return string
     
     
-    def writeNewick(self, out = sys.stdout, writeData=None, oneline=False):
+    def writeNewick(self, out = sys.stdout, writeData=None, oneline=False,
+                    rootData=False):
         """Write the tree in newick notation"""
         self.writeNewickNode(self.root, util.openStream(out, "w"), 
-                             writeData=writeData, oneline=oneline)
+                             writeData=writeData, oneline=oneline,
+                             rootData=rootData)
    
     
     def writeNewickNode(self, node, out = sys.stdout, 
-                              depth = 0, writeData=None, oneline=False):
+                        depth=0, writeData=None, oneline=False,
+                        rootData=False):
+        """Write the node in newick format to the out file stream"""
+        
         # default data writer
         if writeData == None:
             writeData = self.writeData
@@ -483,6 +536,8 @@ class Tree:
 
         # don't print data for root node
         if depth == 0:
+            if rootData:
+                out.write(writeData(node))
             if oneline:
                 out.write(";")
             else:
@@ -492,6 +547,11 @@ class Tree:
     
     
     def readNewick(self, filename, readData=None):
+        """Reads newick tree format from a file stream
+        
+        You can specify a specialized node data reader with 'readData'
+        """
+    
         # use simple parsing if pyparsing is not available
         if pyparsing == None:
             return self.readBigNewick(filename)
@@ -543,6 +603,8 @@ class Tree:
     
     
     def readBigNewick(self, filename):
+        """Reads a big newick file with a custom parser"""
+    
         infile = file(filename)    
         closure = {"opens": 0}
 
@@ -613,16 +675,17 @@ class Tree:
     
 
     def readParentTree(self, treeFile, labelFile=None, labels=None):
+        """Reads a parent array from a file"""
+    
         if labelFile:
             labels = util.readStrings(labelFile)
         elif labels == None:
-            nitems = (len(file(treeFile).readlines()) + 1)/ 2
+            nitems = (len(open(treeFile).readlines()) + 1)/ 2
             labels = map(str, range(nitems))
         
         self.makeRoot()
 
-        i = 0
-        for line in file(treeFile):
+        for i, line in enumerate(open(treeFile)):
             parentid = int(line.split(" ")[0])
             
             # determine current child
@@ -648,7 +711,12 @@ class Tree:
                     self.addChild(parent, child)
                 except:
                     print i, parentid
-            i += 1
+
+        # remove unused internal nodes
+        labelset = set(labels)
+        for child in list(self.root.children):
+            if child.isLeaf() and child.name not in labelset:
+                self.remove(child)
         
         # remove redunant root
         if len(self.root.children) == 1:
@@ -657,7 +725,8 @@ class Tree:
             self.root.parent = None
     
     
-    def writeParentTree(self, treeFile, labels):        
+    def writeParentTree(self, treeFile, labels):
+        """Writes tree to the  parent array format"""
         ids = {}
         
         # assign ids to leaves
@@ -683,6 +752,7 @@ class Tree:
     
     
     def getOnelineNewick(self):
+        """Get a presentation of the tree in a oneline string newick format"""
         stream = StringIO.StringIO()
         self.write(stream, oneline=True)
         return stream.getvalue()
@@ -820,6 +890,7 @@ def findDist(tree, name1, name2):
         
 
 def countDescendents(node, sizes=None):
+    """Returns a dict with number of leaves beneath each node"""
     if sizes == None:
         sizes = {}
     
@@ -835,6 +906,7 @@ def countDescendents(node, sizes=None):
 
 
 def descendents(node, lst=None):
+    """Return a list of all the descendents benath a node"""
     if lst == None:
         lst = []
     for child in node.children:
@@ -884,7 +956,7 @@ def maxDisjointSubtrees(tree, subroots):
     """
     
     marks = {}
-
+    
     # mark the path from each subroot to the root
     for subroot in subroots:
         ptr = subroot
@@ -991,23 +1063,176 @@ def removeSingleChildren(tree):
     return map(lambda x: x.name, removed)
 
 
-def removeExposedInternalNodes(tree):
+def removeExposedInternalNodes(tree, leaves=None):
     """
-    Remove all leaves that were internal nodes (e.g. node.name is an int)
+    Remove all leaves that were originally internal nodes
+    
+    leaves -- a list of original leaves that should stay
+    
+    if leaves is not specified, only leaves with strings as names will be kept
     """
     
+    if leaves != None:
+        stay = set(leaves)
+    else:
+        # use the fact that the leaf name is a string to determine
+        # wether to keep it
+        stay = set()
+        for leaf in tree.leaves():
+            if isinstance(leaf.name, str):
+                stay.add(leaf)
+    
+    # post order traverse tree
     def walk(node):
+        # keep a list of children to visit, since they may remove themselves
         children = copy.copy(node.children)
         for child in children:
             walk(child)
 
-        if len(node.children) == 0 and \
-           isinstance(node.name, int):
+        if node.isLeaf() and node not in stay:
             tree.remove(node)
     walk(tree.root)
     
 
+def subtreeByLeafNames(tree, leafNames, newCopy=False):
+    """Returns a subtree with only the leaves specified"""
+    
+    if newCopy:
+        tree = tree.copy()
+    
+    remove_set = set(tree.leafNames()) - set(leafNames)
+    for sp in remove_set:
+    	tree.remove(tree.nodes[sp])
+    removeExposedInternalNodes(tree)
+    removeSingleChildren(tree)
+    
+    return tree
 
+
+#=============================================================================
+# parent tables
+
+def tree2parentTable(tree, leafNames=None):
+    """Converts tree to a parent table
+    
+    parent table is a standard format of the Compbio Lab as of 02/01/2007.
+    It is a list of triples (node_name, parent_name, dist)
+    
+    * If the node is a leaf node_name is the leaf name (a string)
+    * If the node is internal node_name is an int representing which row
+      (0-based) the node is in the table.
+    
+    * parent_name indicates the parent of the node.  If the parent is root, a 
+      -1 is used as the parent_name.
+    
+    * dist is the distance between the node and its parent.
+    
+    Arguments:
+    leafNames -- specifies that a tree with only a subset of the leaves 
+                 should be used
+    
+    NOTE: root is not given a row, because root does not have a distance
+    the nodeid of the root is -1
+    """
+    
+    if leafNames != None:
+        tree = subtreeByLeafNames(tree, leafNames, newCopy=True)
+    else:
+        leafNames = tree.leafNames()
+
+    # assign a numbering to the leaves as specified
+    nodeid = 0
+    nodeids = {}
+    nodes = []
+    for leaf in leafNames:
+        nodeids[tree.nodes[leaf]] = leaf
+        nodes.append(tree.nodes[leaf])
+        nodeid += 1
+    
+    # assign a numbering to the internal nodes
+    for node in tree:
+        if node.isLeaf():
+            continue
+        if node == tree.root:
+            nodeids[node] = -1
+        else:
+            nodeids[node] = nodeid
+            nodeid += 1
+            nodes.append(node)
+
+    # make parent table
+    parentTable = []
+    for node in nodes:
+        parentTable.append([nodeids[node], nodeids[node.parent], node.dist])
+    
+    return parentTable
+    
+
+def parentTable2tree(parentTable):
+    """Converts a parent table to a Tree
+    
+    See tree2parentTable for details
+    """
+
+    # TODO: allow named internal nodes
+    
+    tree = Tree()
+    
+    # create nodes
+    maxint = 0
+    for name, parent_name, dist in parentTable:
+        node = TreeNode(name)
+        node.dist = dist
+        tree.add(node)
+        
+        if isinstance(name, int):
+            maxint = max(name, maxint)
+    
+    # make a root node
+    tree.nextname = maxint + 1
+    tree.makeRoot()
+
+    # link up parents
+    for name, parent_name, dist in parentTable:
+        if parent_name == -1:
+            parent = tree.root
+        else:
+            parent = tree.nodes[parent_name]
+        tree.addChild(parent, tree.nodes[name])
+    
+    return tree
+    
+
+def writeParentTable(parentTable, out=sys.stdout):
+    """Writes a parent table to out
+    
+    out can be a filename or file stream
+    """
+    
+    out = util.openStream(out, "w")
+    
+    for name, parent, dist in parentTable:
+        print >>out, "%s\t%d\t%f" % (str(name), parent, dist)
+
+def readParentTable(filename):
+    """Reads a parent table from the file 'filename'
+    
+    filename can also be an open file stream
+    """
+    
+    infile = util.openStream(filename)    
+    parentTable = []
+    
+    for line in infile:
+        name, parent, dist = line.split("\t")
+        
+        if name.is_digit():
+            name = int(name)
+        parentTable.append([name, int(parent), float(dist)])
+    
+    return parentTable
+        
+    
 
 #=============================================================================
 # Rerooting functions
@@ -1115,6 +1340,46 @@ def reroot(tree, newroot, onBranch=True, newCopy=True):
     tree.root = newRoot
     
     return tree
+
+
+def makePtree(tree):
+    """Make parent tree array from tree"""
+    
+    nodes = []
+    nodelookup = {}
+    ptree = []
+    
+    def walk(node):
+        for child in node.children:
+            walk(child)
+        nodes.append(node)
+    walk(tree.root)
+    
+    def leafsort(a, b):
+        if a.isLeaf():
+            if b.isLeaf():
+                return 0
+            else:
+                return -1
+        else:
+            if b.isLeaf():
+                return 1
+            else:
+                return 0
+    
+    # bring leaves to front
+    nodes.sort(cmp=leafsort)
+    nodelookup = util.list2lookup(nodes)
+    
+    for node in nodes:
+        if node == tree.root:
+            ptree.append(-1)
+        else:
+            ptree.append(nodelookup[node.parent])
+    
+    assert nodes[-1] == tree.root
+    
+    return ptree, nodes, nodelookup
 
 
 #=============================================================================
@@ -1466,3 +1731,12 @@ def drawTreeNameLens(tree, *args, **kargs):
         labels[node.name] += "%f" % node.dist
     
     drawTree(tree, labels, *args, **kargs)
+
+
+if __name__ == "__main__":
+    from StringIO import StringIO
+    
+    infile = StringIO("((a:1,b:2)x:3,(c:4,d:5)y:6)r;")
+    tree = readTree(infile)
+    tree.write(rootData=True)
+    

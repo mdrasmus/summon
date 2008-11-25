@@ -327,6 +327,8 @@ class MatrixMenu (summon.SummonMenu):
                                       viewer.toggleLabelWindows)
         self.summatrix_menu.add_entry("toggle trees (t)",
                                       viewer.toggleTreeWindows)
+        self.summatrix_menu.add_entry("toggle partitions (p)",
+                                      viewer.togglePartitions)
         self.insert_submenu(0, "Summatrix", self.summatrix_menu)
         
         
@@ -350,6 +352,8 @@ class MatrixViewer (object):
         self.style = style
         self.winsize = winsize[:]
         self.title = title
+        self.part_lines = None
+        self.part_lines_visible = True
         self.firstOpen = True
         if onClick != None:
             self.onClick = onClick
@@ -399,6 +403,7 @@ class MatrixViewer (object):
         
         self.win.set_binding(input_key("l"), self.toggleLabelWindows)
         self.win.set_binding(input_key("t"), self.toggleTreeWindows)
+        self.win.set_binding(input_key("p"), self.togglePartitions)
         self.drawMatrix(self.mat, mouseClick=self._clickCallback)
         self.win.home()
         
@@ -489,7 +494,18 @@ class MatrixViewer (object):
         
         if self.showTreeWindows:
             self.openTreeWindows()
-    
+
+
+    def togglePartitions(self, enabled=None):
+        """toggles the drawing of partition lines"""
+        
+        if self.part_lines:
+            if enabled is None:
+                enabled = not self.part_lines_visible
+            
+            self.part_lines.set_visible(enabled)
+            self.part_lines_visible = enabled
+            
     
     def toggleLabelWindows(self):
         """rotates through (no labels, inline, and panels)"""
@@ -646,7 +662,7 @@ class MatrixViewer (object):
                                        winsize=(treesize, h),
                                        winpos=(x-treesize-deco[0], y))
                 left.show()
-                left.win.set_bgcolor(*self.win.get_bgcolor())
+                #left.win.set_bgcolor(*self.win.get_bgcolor())
                 left.win.set_visible(boundary1, 0, boundary2, 1)
                 
                 if not self.useTreeLens[0]:
@@ -676,7 +692,7 @@ class MatrixViewer (object):
                                       winsize=(w, treesize),
                                       winpos=(x, y-treesize-deco[1]))
                 top.show()
-                top.win.set_bgcolor(*self.win.get_bgcolor())
+                #top.win.set_bgcolor(*self.win.get_bgcolor())
                 top.win.set_visible(0, -boundary1, 1, -boundary2)
                 
                 if not self.useTreeLens[1]:
@@ -718,7 +734,9 @@ class MatrixViewer (object):
                     vis.append(lines(i-.5, .5, i-.5, -mat.nrows+.5))
                     part = mat.cpart[mat.cperm[i]]
 
-        self.win.add_group(group(* vis))
+        self.part_lines = group(* vis)
+
+        self.win.add_group(self.part_lines)
 
 
     

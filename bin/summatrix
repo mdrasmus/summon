@@ -257,6 +257,7 @@ def read_matrix(conf, mat):
                        sample=conf.get("sample", False),
                        rowsample=conf.get("rsample", False),
                        colsample=conf.get("csample", False),
+                       minval=conf["cutoff"],
                        format=format)
 
     # TODO: should this be pushed into lib?
