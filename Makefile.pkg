@@ -3,7 +3,7 @@ include Makefile
 
 #=============================================================================
 # packaging 
-VERSION=1.8.6
+VERSION=1.8.7
 PYTHON_VERSION=2.4
 PACKAGE=summon-$(VERSION).tar.gz
 RPM=summon-$(VERSION)-1.i386.rpm
