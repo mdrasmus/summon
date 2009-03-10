@@ -33,6 +33,8 @@ typedef unsigned char ElementId;
 
 // constructs
 enum {    
+    NULL_ELEMENT,
+
     // structure
     GROUP_CONSTRUCT,
     CUSTOM_GROUP_CONSTRUCT,

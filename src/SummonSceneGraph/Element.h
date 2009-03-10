@@ -72,7 +72,7 @@ class Transform;
 class Element
 {
 public:
-    Element(ElementId id = -1);
+    Element(ElementId id = NULL_ELEMENT);
     virtual ~Element();
     
     inline int GetId() { return m_id; }
@@ -198,16 +198,16 @@ protected:
 
 
 // Convert an Element id (used in python) to an Element pointer
-inline Element *Id2Element(size_t id)
+inline Element *Id2Element(long id)
 {
     return (Element*) id;
 }
 
 
 // Convert an Element pointer to an Element id (used in python)
-inline size_t Element2Id(Element *elm)
+inline long Element2Id(Element *elm)
 {
-    return (size_t) elm;
+    return (long) elm;
 }
 
 
