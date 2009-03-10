@@ -294,7 +294,19 @@ inline int Scm2Int(const Scm &num)
         return (int) PyLong_AsLong(Scm2Py(num));
 }
 
+inline long Scm2Long(const Scm &num)
+{
+    if (num.IsInt())
+        return (long) PyInt_AS_LONG(Scm2Py(num));
+    else
+        return (long) PyLong_AsLong(Scm2Py(num));
+}
+
+
 inline Scm Int2Scm(int num)
+{ return Py2ScmTake(PyInt_FromLong((long) num)); }
+
+inline Scm Long2Scm(long num)
 { return Py2ScmTake(PyInt_FromLong((long) num)); }
 
 
