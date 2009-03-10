@@ -198,16 +198,16 @@ protected:
 
 
 // Convert an Element id (used in python) to an Element pointer
-inline Element *Id2Element(int id)
+inline Element *Id2Element(size_t id)
 {
     return (Element*) id;
 }
 
 
 // Convert an Element pointer to an Element id (used in python)
-inline int Element2Id(Element *elm)
+inline size_t Element2Id(Element *elm)
 {
-    return (int) elm;
+    return (size_t) elm;
 }
 
 
