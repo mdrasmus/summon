@@ -141,6 +141,7 @@ bool ParseScm(Scm lst, const char *fmt, ...)
     
     bool status = true;
     int *d;
+    long *l;
     float *f;
     string *str;
     Scm *proc;
@@ -174,6 +175,16 @@ bool ParseScm(Scm lst, const char *fmt, ...)
                 
                 d = va_arg(ap, int *);
                 *d = Scm2Int(arg);
+                break;
+            case 'l':
+                if (!ScmIntp(arg)) {
+                    Error("expected integer for argument %d", i);
+                    status = false;
+                    break;
+                }
+                
+                l = va_arg(ap, long *);
+                *l = Scm2Long(arg);
                 break;
             case 'f':
                 if (!ScmFloatp(arg)) {
@@ -232,6 +243,7 @@ Scm BuildScm(const char *fmt, ...)
     
     // argument pointers
     int d;
+    long l;
     float f;
     char *str;
     Scm *proc;
@@ -248,6 +260,12 @@ Scm BuildScm(const char *fmt, ...)
             case 'd': {
                 d = va_arg(ap, int);
                 PyObject *py = PyInt_FromLong((long) d);
+                assert(py != NULL);
+                PyTuple_SET_ITEM(tup, i, py);
+                } break;
+            case 'l': {
+                l = va_arg(ap, long);
+                PyObject *py = PyInt_FromLong(l);
                 assert(py != NULL);
                 PyTuple_SET_ITEM(tup, i, py);
                 } break;

@@ -101,7 +101,7 @@ void SummonModel::ExecCommand(Command &command)
 
         case GET_ROOT_ID_COMMAND:
             ((GetRootIdCommand*) &command)->SetReturn(
-                Int2Scm(Element2Id(GetRoot())));
+                Long2Scm(Element2Id(GetRoot())));
             break;
         
         case GET_BOUNDING_COMMAND: {

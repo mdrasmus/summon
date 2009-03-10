@@ -625,7 +625,7 @@ class ElementCommand : public ScriptCommand
 {
 public:
     ElementCommand(bool needReturn=true) : ScriptCommand(needReturn) {};
-    int groupid;
+    long groupid;
 };
 
 
@@ -642,7 +642,7 @@ public:
     
     virtual bool Setup(const Scm &lst)
     {
-        return ParseScm(lst, "dc", &groupid, &code);
+        return ParseScm(lst, "lc", &groupid, &code);
     }
     
     Scm code;
@@ -666,7 +666,7 @@ public:
     
         // parse groupid
         if (ScmIsList(lst2) && ScmIsInt(lst2.GetScm(0))) {
-            groupid = Scm2Int(lst2.GetScm(0));
+            groupid = Scm2Long(lst2.GetScm(0));
             lst2.Pop();
         } else {
             return false;
@@ -676,7 +676,7 @@ public:
         for (int i=0; i<lst2.Size(); i++) {
             Scm elmid = lst2.GetScm(i);
             if (ScmIsInt(elmid)) {
-                groupids.push_back(Scm2Int(elmid));
+                groupids.push_back(Scm2Long(elmid));
             } else {
                 Error("Can only remove with group id");
                 return false;
@@ -686,7 +686,7 @@ public:
         return true;
     }
     
-    vector<int> groupids;
+    vector<long> groupids;
 };
 
 
@@ -703,7 +703,7 @@ public:
     
     virtual bool Setup(const Scm &lst)
     {
-        if (ParseScm(lst, "dd", &groupid, &oldgroupid)) {
+        if (ParseScm(lst, "ll", &groupid, &oldgroupid)) {
             code = ScmCddr(lst);
             return true;
         } else {
@@ -711,7 +711,7 @@ public:
         }
     }
     
-    int oldgroupid;
+    long oldgroupid;
     Scm code;
 };
 
@@ -729,7 +729,7 @@ public:
     
     virtual bool Setup(const Scm &lst)
     {
-        return ParseScm(lst, "db", &groupid, &visible);
+        return ParseScm(lst, "lb", &groupid, &visible);
     }
     
     bool visible;
@@ -748,7 +748,7 @@ public:
     
     virtual bool Setup(const Scm &lst)
     {
-        return ParseScm(lst, "d", &groupid);
+        return ParseScm(lst, "l", &groupid);
     }
 };
 
@@ -766,7 +766,7 @@ public:
     
     virtual bool Setup(const Scm &lst)
     {
-        if (!ParseScm(lst, "d", &groupid))
+        if (!ParseScm(lst, "l", &groupid))
             return false;
         code = ScmCdr(lst);
         return true;
@@ -822,10 +822,10 @@ public:
     
     virtual bool Setup(const Scm &lst)
     {
-        return ParseScm(lst, "ddc", &modelid, &groupid, &code);
+        return ParseScm(lst, "dlc", &modelid, &groupid, &code);
     }
     
-    int groupid;
+    long groupid;
     Scm code;
 };
 
@@ -857,7 +857,7 @@ public:
         for (int i=0; i<lst2.Size(); i++) {
             Scm elmid = lst2.GetScm(i);
             if (ScmIsInt(elmid)) {
-                groupids.push_back(Scm2Int(elmid));
+                groupids.push_back(Scm2Long(elmid));
             } else {
                 Error("Can only remove with group id");
                 return false;
@@ -867,7 +867,7 @@ public:
         return true;
     }
     
-    vector<int> groupids;
+    vector<long> groupids;
 };
 
 
@@ -884,7 +884,7 @@ public:
     
     virtual bool Setup(const Scm &lst)
     {
-        if (ParseScm(lst, "dd", &modelid, &groupid)) {
+        if (ParseScm(lst, "dl", &modelid, &groupid)) {
             code = ScmCddr(lst);
             return true;
         } else {
@@ -892,7 +892,7 @@ public:
         }
     }
     
-    int groupid;
+    long groupid;
     Scm code;
 };
 
@@ -928,10 +928,10 @@ public:
     
     virtual bool Setup(const Scm &lst)
     {
-        return ParseScm(lst, "ddb", &modelid, &groupid, &visible);
+        return ParseScm(lst, "dlb", &modelid, &groupid, &visible);
     }
     
-    int groupid;
+    long groupid;
     bool visible;
 };
 
@@ -968,10 +968,10 @@ public:
     
     virtual bool Setup(const Scm &lst)
     {
-        return ParseScm(lst, "dd", &modelid, &groupid);
+        return ParseScm(lst, "dl", &modelid, &groupid);
     }
     
-    int groupid;
+    long groupid;
 };
 
 
