@@ -33,8 +33,6 @@ typedef unsigned char ElementId;
 
 // constructs
 enum {    
-    NULL_ELEMENT,
-
     // structure
     GROUP_CONSTRUCT,
     CUSTOM_GROUP_CONSTRUCT,
@@ -74,6 +72,8 @@ enum {
     INPUT_CLICK_CONSTRUCT,
     INPUT_MOTION_CONSTRUCT,
 
+
+    NULL_ELEMENT
 };
 
 void elementsInit();
