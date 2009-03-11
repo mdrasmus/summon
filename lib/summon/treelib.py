@@ -16,7 +16,7 @@ import os
 import StringIO
 
 # rasmus libs
-from rasmus import util
+from summon import util
 
 # newick parsing support
 try:
