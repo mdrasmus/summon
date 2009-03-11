@@ -5,6 +5,7 @@ include LICENSE
 include INSTALL
 include README
 include Makefile
+include Makefile.in
 include Makefile.cygwin
 include Makefile.mingw
 include make-wininst.bat
