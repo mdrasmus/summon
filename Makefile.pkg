@@ -1,37 +1,58 @@
 
-include Makefile
-
-#=============================================================================
-# packaging 
-VERSION=1.8.7
-PYTHON_VERSION=2.4
-PACKAGE=summon-$(VERSION).tar.gz
-RPM=summon-$(VERSION)-1.i386.rpm
-ZIP=summon-$(VERSION).zip
-WININST=summon-$(VERSION).win32-py$(PYTHON_VERSION).exe
-WWWDIR=/scratch-sm/www/pub/summon
-WWWHOST=rasmus@compbio.mit.edu
-
-# python package
-pkg:: dist/$(PACKAGE)
 
 
-dist/$(PACKAGE):
+
+# versions
+VERSION = 1.8.7
+PYTHON_VERSION = 2.5
+
+
+# packages
+TAR = summon-$(VERSION).tar.gz
+RPM = summon-$(VERSION)-1.i386.rpm
+ZIP = summon-$(VERSION).zip
+WININST = summon-$(VERSION).win32-py$(PYTHON_VERSION).exe
+
+# upload variables
+WWW_DIR = /scratch-sm/www/pub/summon
+WWW_HOST = rasmus@compbio.mit.edu
+
+UPLOAD = dist/$(TAR) dist/$(ZIP) dist/$(RPM) dist/$(WININST)
+
+# package targets
+pkg:: $(UPLOAD)
+
+dist/$(TAR):
 	rm -f MANIFEST
 	python setup.py sdist
-    python setup.py sdist --format=zip
+
+dist/$(ZIP):
+	python setup.py sdist --format=zip
+
+dist/$(RPM):
 	python setup.py bdist --format=rpm
 
+wininstall: dist/$(WININST)
 
-# publish package to website
-pub: dist/$(PACKAGE)
-	scp dist/$(PACKAGE) $(WWWHOST):$(WWWDIR)
-	scp dist/$(RPM) $(WWWHOST):$(WWWDIR)
-	scp dist/$(ZIP) $(WWWHOST):$(WWWDIR)
-	if [ -f dist/$(WININST) ]; then scp dist/$(WININST) $(WWWHOST):$(WWWDIR); fi
-	ssh $(WWWHOST) chmod o+r $(WWWDIR)/$(PACKAGE)
-	ssh $(WWWHOST) chmod o+r $(WWWDIR)/$(RPM)
-	if [ -f dist/$(WININST) ]; then ssh $(WWWHOST) chmod o+r $(WWWDIR)/$(WININST); fi
-	ssh $(WWWHOST) tar zxvf $(WWWDIR)/$(PACKAGE) -C $(WWWDIR)
-	ssh $(WWWHOST) chmod -R o+rx $(WWWDIR)/summon-$(VERSION)
+dist/$(WININST):
+	wine start make-wininst.bat
+	
+
+
+# publish packages to website
+pub:: $(UPLOAD)
+	scp $(UPLOAD) $(WWW_HOST):$(WWW_DIR)
+	ssh $(WWW_HOST) "chmod o+r $(WWW_DIR)/$(TAR)
+	     	         chmod o+r $(WWW_DIR)/$(RPM)
+	                 chmod o+r $(WWW_DIR)/$(WININST); fi
+	                 tar zxvf $(WWW_DIR)/$(TAR) -C $(WWW_DIR)
+	                 chmod -R o+rx $(WWW_DIR)/summon-$(VERSION)"
+
+
+pypi:
+	python setup.py register
+
+
+clean:
+	 $(TAR) $(RPM) $(ZIP) $(WININST)
 

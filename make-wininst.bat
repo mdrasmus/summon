@@ -6,7 +6,7 @@ rem basic windows path
 set PATH=%SystemRoot%\system32;%SystemRoot%;%SystemRoot%\System32\Wbem
 
 rem set this to your python path
-set PATH=%PATH%;C:\Python24
+set PATH=%PATH%;C:\Python25
 
 rem set this to your MinGW path
 set PATH=%PATH%;C:\MinGW\bin
