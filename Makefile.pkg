@@ -42,12 +42,12 @@ dist/$(WININST):
 # publish packages to website
 pub:: $(UPLOAD)
 	scp $(UPLOAD) $(WWW_HOST):$(WWW_DIR)
-	ssh $(WWW_HOST) "chmod o+r $(WWW_DIR)/$(TAR)
-	     	         chmod o+r $(WWW_DIR)/$(RPM)
-	                 chmod o+r $(WWW_DIR)/$(WININST); fi
-	                 tar zxvf $(WWW_DIR)/$(TAR) -C $(WWW_DIR)
-	                 chmod -R o+rx $(WWW_DIR)/summon-$(VERSION)
-			"
+	ssh $(WWW_HOST) "chmod o+r $(WWW_DIR)/$(TAR); \
+	     	         chmod o+r $(WWW_DIR)/$(RPM); \
+	                 chmod o+r $(WWW_DIR)/$(WININST); \
+	                 tar zxvf $(WWW_DIR)/$(TAR) -C $(WWW_DIR); \
+	                 chmod -R o+rx $(WWW_DIR)/summon-$(VERSION)"
+
 
 
 pypi:
@@ -55,5 +55,5 @@ pypi:
 
 
 clean:
-	 $(TAR) $(RPM) $(ZIP) $(WININST)
+	 rm -rf $(UPLOAD)
 
