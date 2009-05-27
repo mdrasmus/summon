@@ -36,7 +36,7 @@ wininstall: dist/$(WININST)
 
 dist/$(WININST):
 	wine start make-wininst.bat
-	
+
 
 
 # publish packages to website
@@ -46,7 +46,8 @@ pub:: $(UPLOAD)
 	     	         chmod o+r $(WWW_DIR)/$(RPM)
 	                 chmod o+r $(WWW_DIR)/$(WININST); fi
 	                 tar zxvf $(WWW_DIR)/$(TAR) -C $(WWW_DIR)
-	                 chmod -R o+rx $(WWW_DIR)/summon-$(VERSION)"
+	                 chmod -R o+rx $(WWW_DIR)/summon-$(VERSION)
+			"
 
 
 pypi:

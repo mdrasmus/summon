@@ -25,6 +25,7 @@ from summon.core import *
 from summon import matrix
 from summon import sumtree
 from summon import shapes, util, treelib
+import summon.options
 
 
 def parseColor(colorstr):
@@ -147,7 +148,7 @@ options = [
 ]
 
 
-conf = util.parseOptions(sys.argv, options, resthelp="<python script>")
+conf = summon.options.parseOptions(sys.argv, options, resthelp="<python script>")
 
 
 
