@@ -7,6 +7,7 @@
 
 
 # python libs
+import optparse
 import sys
 
 # summon libs
@@ -14,51 +15,50 @@ from summon.core import *
 from summon import sumtree
 from summon import util
 from summon import treelib
-import summon.options
 
 
 # command line options
-options = [
- "Data options",
- ["p:", "ptree=", "ptree", "<ptree file>",
-    {"single": True,
-     "help": "load a tree in parent tree format"}],
- ["l:", "labels=", "labels", "<leaf labels file>",
-    {"single": True,
-     "help": "give leaf labels for parent tree format"}],
- ["n:", "newick=", "newick", "<newick file>",
-    {"single": True,
-     "help": "load a tree in newick format"}],
-     
- "Display options",
- ["c:", "colormap=", "colormap", "<tree color map>",
-    {"single": True,
-     "help": "specify how to color branches of a tree"}],
- ["t:", "usedist=", "usedist", "<distance factor>",
-    {"single": True,
-     "default": 1.0,
-     "parser": float,
-     "help": "use distance information in tree (newick only)"}],
- ["L", "noshowlabels", "noshowlabels", "",
-    {"single": True,
-     "help": "disable leaf labels"}],
- ["", "layout=", "layout", "default|hierarchical",
-    {"single": True,
-     "default": "default",
-     "help": "specifies how to layout the tree for drawing"}],
- ["V", "vertical", "vertical", "",
-    {"single": True,
-     "help": "display tree vertically"}],
- ["w:", "winsize=", "winsize", "<window width>x<window height>",
-    {"single": True,
-     "help": "set initial window size"}],
-    
-]
+o = optparse.OptionParser()
+
+
+g = optparse.OptionGroup(o, "Data options")
+o.add_option_group(g)
+
+g.add_option("-p", "--ptree", dest="ptree", metavar="<ptree file>",
+             help="load a tree in parent tree format")
+g.add_option("-l", "--labels", dest="labels", metavar="<leaf labels file>",
+             help="give leaf labels for parent tree format")
+g.add_option("-n", "--newick", dest="newick", metavar="<newick file>",
+             help="load a tree in newick format")
+
+g = optparse.OptionGroup(o, "Display options")
+o.add_option_group(g)
+
+g.add_option("-c", "--colormap", dest="colormap", metavar="<tree color map>",
+             help="specify how to color branches of a tree")
+g.add_option("-t", "--usedist", dest="usedist", metavar="<distance factor>",
+             default=1.0,
+             type="float",
+             help="use distance information in tree (newick only)")
+g.add_option("-L", "--noshowlabels", dest="noshowlabels",
+             action="store_true",
+             default=False,
+             help="disable leaf labels")
+g.add_option("", "--layout", dest="layout", metavar="default|hierarchical",
+             default="default",
+             help="specifies how to layout the tree for drawing")
+g.add_option("-V", "--vertical", dest="vertical",
+             action="store_true",
+             default=False,
+             help="display tree vertically")
+g.add_option("-w", "--winsize", dest="winsize",
+             metavar="<window width>x<window height>",
+             help="set initial window size")
 
 
 
 # parse args
-conf = summon.options.parseOptions(sys.argv, options)
+conf, args = o.parse_args()
 
 
 #======================================================================
@@ -72,18 +72,16 @@ def readTree(conf):
 
     tree = treelib.Tree()
 
-    if "ptree" in conf:
-        tree.readParentTree(conf["ptree"], conf["labels"])
+    if conf.ptree:
+        tree.readParentTree(conf.ptree, conf.labels)
         print "%s: %d nodes, %d leaves\n" % \
-          (conf["ptree"], len(tree.nodes), len(tree.leaves()))
+          (conf.ptree, len(tree.nodes), len(tree.leaves()))
         
         
-    elif "newick" in conf:
-        tree.readNewick(conf["newick"])
+    elif conf.newick:
+        tree.readNewick(conf.newick)
         print "%s: %d nodes, %d leaves\n" % \
-          (conf["newick"], len(tree.nodes), len(tree.leaves()))
-
-    
+          (conf.newick, len(tree.nodes), len(tree.leaves()))
 
     util.toc()    
     return tree
@@ -99,39 +97,39 @@ print
 tree = readTree(conf)
 
 # display tree
-if "newick" in conf:
-    filename = conf["newick"]
-elif "ptree" in conf:
-    filename = conf["ptree"]
-    conf["usedist"] = 0
+if conf.newick:
+    filename = conf.newick
+elif conf.ptree:
+    filename = conf.ptree
+    conf.usedist = 0
 
-if "colormap" in conf:
-    colormap = treelib.readTreeColorMap(conf["colormap"])
+if conf.colormap:
+    colormap = treelib.readTreeColorMap(conf.colormap)
 else:
     colormap = None
 
-if "winsize" in conf:
-    winsize = map(int, conf["winsize"].split("x"))
+if conf.winsize:
+    winsize = map(int, conf.winsize.split("x"))
 else:
     winsize = (400, 400)
 
 minlen = -util.INF
-if conf["usedist"] == 0.0:
+if conf.usedist == 0.0:
     minlen = 1.0
-    conf["usedist"] = 1.0
+    conf.usedist = 1.0
 
-if conf["layout"] == "default":
-    layout = treelib.layoutTree(tree, conf["usedist"], -1.0, 
+if conf.layout == "default":
+    layout = treelib.layoutTree(tree, conf.usedist, -1.0, 
                                 minlen=minlen)
-elif conf["layout"] == "hierarchical":
-    layout = treelib.layoutTreeHierarchical(tree, conf["usedist"], -1.0)
+elif conf.layout == "hierarchical":
+    layout = treelib.layoutTreeHierarchical(tree, conf.usedist, -1.0)
 else:
     raise Exception("unknown tree layout")
 
 
-vis = sumtree.SumTree(tree, name=filename, xscale=conf["usedist"], 
-                      showLabels=not conf["noshowlabels"],
-                      vertical=conf["vertical"],
+vis = sumtree.SumTree(tree, name=filename, xscale=conf.usedist, 
+                      showLabels=not conf.noshowlabels,
+                      vertical=conf.vertical,
                       colormap=colormap,
                       winsize=winsize,
                       layout=layout)

@@ -225,7 +225,6 @@ def load_matrix(nrows, ncols, nnz, imat, mat,
         if filename:
             util.toc()
         raise e
-        #raise Exception("error on line %d: %s" % (i+2, str(e)))
 
     mat.nnz = len(vals)
     mat.maxval = max(vals)
