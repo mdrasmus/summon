@@ -86,21 +86,23 @@ def blur(x, col):
                        color(1, 1, 1, 0), x, 600, x, 0))
 
 
+def draw_summon_logo():
+    return group(
+        blur(1200, color(0, .2, .5, .8)),
+        rotate(180, blur(0, color(0, 0, .5, .5))),
+
+        color(0, 0, 0), 
+        draw_summon(),
+    
+        color(0, 0, 0),
+        text_clip("visualization prototyping and scripting", 
+                  -1600, -450, 1600, -900, 0, 20, 
+                  "top", "center"))
+
 # draw logo
 win = summon.Window("18_summon", size=(800,400))
 win.set_bgcolor(1, 1, 1)
-
-win.add_group(group(
-    blur(1200, color(0, .2, .5, .8)),
-    rotate(180, blur(0, color(0, 0, .5, .5))),
-
-    color(0, 0, 0), 
-    draw_summon(),
-    
-    color(0, 0, 0),
-    text_clip("visualization prototyping and scripting", 
-              -1600, -450, 1600, -900, 0, 20, 
-              "top", "center")))
+win.add_group(draw_summon_logo())
 
 win.home()
 

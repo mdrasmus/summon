@@ -6,7 +6,16 @@
 #   python setup.py install
 #
 
+import os
 from distutils.core import setup, Extension
+
+
+if not os.path.exists("mac"):
+    os.mkdir("mac")
+if not os.path.exists("mac/GL"):
+    os.symlink("/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers",
+               "mac/GL")
+
 
 SUMMON_VERSION = '1.8.7'
 
@@ -114,15 +123,22 @@ setup(
                           "src/Summon",
                           "src/SummonSceneGraph",
                           
-                          "/sw/include",
-                          "/usr/X11R6/include"],
-            libraries=["glut", "GL", "SDL"],
-            library_dirs=["/sw/lib",
-                          "/usr/X11R6/lib"],
+                          "mac",
+                          "/usr/local/include"],
+                          #"/usr/X11R6/include"],
+            libraries=["SDL", "GLUT"],
+            library_dirs=["/usr/local/lib",
+                          "mac"],
             define_macros=[("NOGLUTEXT", "1")],
 
-            undef_macros=["NDEBUG"])]
+            undef_macros=["NDEBUG"],
+
+            extra_link_args=["-framework OpenGL -framework Cocoa"],
+
+)],
+
             # don't use -DNDEBUG (it breaks summon at runtime)
+
     )
 
 
