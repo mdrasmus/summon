@@ -770,8 +770,10 @@ class zoom_clamp (Transform):
             minx = miny = low
             maxx = maxy = high
         else:
-            if abs(minx - maxx) / (minx - maxx) < 1e-10: minx = maxx
-            if abs(miny - maxy) / (miny - maxy) < 1e-10: miny = maxy
+            if minx != maxx and abs(minx - maxx) / (minx - maxx) < 1e-10:
+                minx = maxx
+            if miny != maxy and abs(miny - maxy) / (miny - maxy) < 1e-10:
+                miny = maxy
             assert minx <= maxx, Exception("minx cannot be greater than maxx")
             assert miny <= maxy, Exception("miny cannot be greater than maxy")
         

@@ -31,16 +31,6 @@ from itertools import imap, izip
 # Note: I had trouble using 1e1000 directly, because bytecode had trouble
 # representing infinity (possibly)
 INF = float("1e1000") 
-
-
-def GLOBALS():
-    """Maintains a global set of variables"""
-
-    # install globals root if needed
-    if not "RASMUS_GLOBALS" in globals():
-        globals()["RASMUS_GLOBALS"] = {}
-    return globals()["RASMUS_GLOBALS"]
-
    
 
 
@@ -172,6 +162,16 @@ class PushIter (object):
     def push(self, item):
         """Push a new item onto the front of the iteration stream"""
         self._queue.append(item)
+
+    def peek(self, default=None):
+        try:
+            next = self.next()
+        except StopIteration:
+            return default
+
+        self.push(next)
+        return next
+        
        
 
 def exceptDefault(func, val, exc=Exception):
@@ -468,7 +468,7 @@ def frange(start, end, step):
 #=============================================================================
 # simple matrix functions
 
-def makeMatrix(nrows, ncols, val = 0):
+def make_matrix(nrows, ncols, val = 0):
     mat = []
     for i in xrange(nrows):
         row = []
@@ -476,6 +476,7 @@ def makeMatrix(nrows, ncols, val = 0):
         for j in xrange(ncols):
             row.append(copy.copy(val))
     return mat
+makeMatrix = make_matrix
 
 
 def transpose(mat):
@@ -499,6 +500,12 @@ def transpose(mat):
     
 
 def submatrix(mat, rows=None, cols=None):
+    """
+    Returns a submatrix of 'mat' with only the rows and columns specified
+
+    Rows and columns will appear in the order as indicated in 'rows' and 'cols'
+    """
+    
     if rows == None:
         rows = xrange(len(mat))
     if cols == None:
@@ -811,20 +818,29 @@ def clampfunc(low, high):
     return lambda x: clamp(x, low, high)
 
 
-def compose(* funcs):
+
+def compose2(f, g):
+    """
+    Compose two functions into one
+
+    compose2(f, g)(x) <==> f(g(x))
+    """
+    return lambda *args, **kargs: f(g(*args, **kargs))
+    
+
+def compose(*funcs):
     """Composes two or more functions into one function
     
        example:
-       compose(f,g)(x) <==> f(g(x))
+       compose(f,g,h,i)(x) <==> f(g(h(i(x))))
     """
-    
-    def compose2(f, g):
-        return lambda x: f(g(x))
-    
-    f = funcs[-1]
-    for i in xrange(len(funcs)-2, -1, -1):
-        f = compose2(funcs[i], f)
+
+    funcs = reversed(funcs)
+    f = funcs.next()
+    for g in funcs:
+        f = compose2(g, f)
     return f
+
 
 def overlap(a, b, x, y, inc=True):
     """
@@ -1261,8 +1277,8 @@ def str2bool(val):
 
 
 
-def printDict(dic, key=lambda x: x, val=lambda x: x,
-              num=None, cmp=cmp,
+def print_dict(dic, key=lambda x: x, val=lambda x: x,
+              num=None, cmp=cmp, order=None, reverse=False,
               spacing=4, out=sys.stdout,
               format=defaultFormat, 
               justify=defaultJustify):
@@ -1273,11 +1289,15 @@ def printDict(dic, key=lambda x: x, val=lambda x: x,
     
     dic = mapdict(dic, key=key, val=val)
     items = dic.items()
-    items.sort(cmp)
+
+    if order is not None:
+        items.sort(key=order, reverse=reverse)
+    else:
+        items.sort(cmp, reverse=reverse)
     
     printcols(items[:num], spacing=spacing, out=out, format=format, 
               justify=justify)
-
+printDict = print_dict
 
 
 #=============================================================================
@@ -1298,7 +1318,7 @@ class SafeReadIter:
         else:
             return line
 
-def readWord(infile, delims = [" ", "\t", "\n"]):
+def read_word(infile, delims = [" ", "\t", "\n"]):
     word = ""
     
     while True:
@@ -1314,31 +1334,32 @@ def readWord(infile, delims = [" ", "\t", "\n"]):
         if char == "" or char in delims:
             return word
         word += char
+readWord = read_word
 
-
-def readUntil(stream, chars):
+def read_until(stream, chars):
     token = ""
     while True:
         char = stream.read(1)
         if char in chars or char == "":
             return token, char
         token += char
+readUntil = read_until
 
-
-def readWhile(stream, chars):
+def read_while(stream, chars):
     token = ""
     while True:
         char = stream.read(1)
         if char not in chars or char == "":
             return token, char
         token += char
+readWhile = read_while
 
-
-def skipComments(infile):
+def skip_comments(infile):
     for line in infile:
         if line.startswith("#") or line.startswith("\n"):
             continue
         yield line
+skipComments = skip_comments
 
 
 class IndentStream:
@@ -1385,15 +1406,13 @@ class IndentStream:
 #=============================================================================
 # file/directory functions
 #
-def listFiles(path, ext=""):
+def list_files(path, ext=""):
     """Returns a list of files in 'path' ending with 'ext'"""
     
-    if path[-1] != "/":
-        path += "/"
     files = filter(lambda x: x.endswith(ext), os.listdir(path))
     files.sort()
-    files = map(lambda x: path + x, files)
-    return files
+    return [os.path.join(path, x) for x in files]
+listFiles = list_files
 
 
 def tempfile(path, prefix, ext):
@@ -1474,6 +1493,26 @@ def sortrank(lst, cmp=cmp, key=None, reverse=False):
     ind.sort(compare2, reverse=reverse)
     return ind
 sortInd = sortrank
+
+
+def sort_many(lst, *others, **args):
+    """Sort several lists based on the sorting of 'lst'"""
+
+    args.setdefault("reverse", False)
+
+    if "key" in args:    
+        ind = sortrank(lst, key=args["key"], reverse=args["reverse"])
+    elif "cmp" in args:
+        ind = sortrank(lst, cmp=args["cmp"], reverse=args["reverse"])
+    else:
+        ind = sortrank(lst, reverse=args["reverse"])
+    
+    lsts = [mget(lst, ind)]
+    
+    for other in others:
+        lsts.append(mget(other, ind))
+    
+    return lsts
 
     
 def sort_together(compare, lst, *others):
@@ -1669,19 +1708,21 @@ def print_hist(array, ndivs=20, low=None, width=None,
               cols=75, spacing=2, out=sys.stdout):
     data = list(hist(array, ndivs, low=low, width=width))
     
-    # find max bar                                                              
-    maxwidths = map(max, map2(compose(len, str), data))                         
-    maxbar = cols- sum(maxwidths) - 2 * spacing                               
-                                                                                
-    # make bars                                                                 
-    bars = []                                                                   
-    maxcount = max(data[1])                                                     
-    for count in data[1]:                                                       
-        bars.append("*" * int(count * maxbar / float(maxcount)))                
-    data.append(bars)                                                           
-                                                                                
-    printcols(zip(* data), spacing=spacing, out=out)   
+    # find max bar
+    maxwidths = map(max, map2(compose(len, str), data))
+    maxbar = cols- sum(maxwidths) - 2 * spacing
+    
+    # make bars
+    bars = []
+    maxcount = max(data[1])
+    for count in data[1]:
+        bars.append("*" * int(count * maxbar / float(maxcount)))
+    data.append(bars)
+    
+    printcols(zip(* data), spacing=spacing, out=out)
 printHist = print_hist
+
+
 
 
 # import common functions from other files, 
@@ -1690,22 +1731,36 @@ printHist = print_hist
 try:
     from rasmus.timer import *
 except ImportError:
-    pass
+    try:
+        from timer import *
+    except ImportError:
+        pass
 
 try:
     from rasmus.vector import *
 except ImportError:
-    pass
+    try:
+        from vector import *
+    except ImportError:
+        pass
+
 
 try:
     from rasmus.options import *
 except ImportError:
-    pass
+    try:
+        from options import *
+    except ImportError:
+        pass
+
     
 try:
     from rasmus.plotting import *
-except ImportError:
-    pass
+except Exception, e:
+    try:
+        from plotting import *
+    except ImportError:
+        pass
 
 
 

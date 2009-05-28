@@ -16,6 +16,7 @@
 
 
 # python libs
+import optparse
 import random
 import sys
 
@@ -27,6 +28,118 @@ from summon import sumtree
 from summon import shapes, util, treelib
 
 
+
+
+# command line options
+o = optparse.OptionParser()
+
+g = optparse.OptionGroup(o, "Matrix input formats")
+o.add_option_group(g)
+g.add_option("-r", "--rmat", dest="comprow",
+             metavar="<compressed row matrix file>",
+             help="load a compressed row matrix file (*.mat)")
+g.add_option("-i", "--imat", dest="imat", metavar="<index matrix file>",
+             help="load a index matrix file (*.imat)")
+g.add_option("-l", "--lmat", dest="lmat",
+             metavar="<labeled sparse matrix file>",
+             help="load a labeled matrix file (*.lmat)")
+g.add_option("-d", "--dense", dest="dense", metavar="<dense matrix file>",
+             help="load a dense matrix file (*.mat)")
+
+
+g = optparse.OptionGroup(o, "Labels")
+o.add_option_group(g)
+g.add_option("", "--rlab", dest="rowlabels", metavar="<row labels>")
+g.add_option("", "--clab", dest="collabels", metavar="<col labels>")
+g.add_option("", "--rclab", dest="rowcollabels", metavar="<row & col labels>")
+
+
+g = optparse.OptionGroup(o, "Permutation")
+o.add_option_group(g)
+g.add_option("-R", "--rperm", dest="rperm", metavar="<row permutation>")
+g.add_option("-C", "--cperm", dest="cperm", metavar="<col permutation>")
+g.add_option("-B", "--rcperm", dest="rcperm",
+             metavar="<row & col permutation>")
+g.add_option("-o", "--order", dest="order", metavar="<label order>",
+             help="only used with label matrix")
+    
+
+
+g = optparse.OptionGroup(o, "Clustering")
+o.add_option_group(g)
+g.add_option("", "--rpart", dest="rpart", metavar="<row partition ids>")
+g.add_option("", "--cpart", dest="cpart", metavar="<col partition ids>")
+g.add_option("", "--rcpart", dest="rcpart",
+             metavar="<row & col partition ids>")
+
+
+g = optparse.OptionGroup(o, "Trees")
+o.add_option_group(g)
+g.add_option("", "--rptree", dest="rptree", metavar="<row parent tree file>")
+g.add_option("", "--cptree", dest="cptree", metavar="<column parent tree file>")
+g.add_option("", "--rtree", dest="rtree", metavar="<row tree newick file>")
+g.add_option("", "--ctree", dest="ctree", metavar="<column tree newick file>")
+g.add_option("", "--treelens", dest="treelens",
+             action="store_true",
+             default=False,
+             help="use branch lengths in tree files")
+
+
+g = optparse.OptionGroup(o, "Display")
+o.add_option_group(g)
+g.add_option("-L", "--showlabels", dest="showlabels",
+             metavar="(inline,panels,none)",
+             default="inline")
+g.add_option("-c", "--color", dest="color",
+             metavar="(solid|posneg|rainbow|filename)",
+             default="rainbow",
+             help="specify a colormap using a predefined map or "
+                  "a custom map from a file")
+g.add_option("", "--bgcolor", dest="bgcolor", metavar="r,g,b",
+             default="0,0,0",
+             help="specify the background color (default: black)\n"
+                  "    Each value is between 0 and 1.")
+g.add_option("", "--drawzeros", dest="drawzeros",
+             action="store_true",
+             default=False,
+             help="flag for whether to explicitly draw zeros with the colormap")
+g.add_option("", "--style", dest="style", metavar="(points|quads)",
+             default="points",
+             help="draw non-zeros using points (default) or quadrilaterals")
+g.add_option("", "--winsize", dest="winsize", metavar="<width>x<height>",
+             default="400x400",
+             help="specify initial window size (default: 400x400)")
+
+
+g = optparse.OptionGroup(o, "Sampling")
+o.add_option_group(g)
+g.add_option("-s", "--sample", dest="sample", metavar="<sample fraction>",
+             type="float",
+             help="choose a random subset of non-zeros to display (only for sparse matrices)")
+g.add_option("", "--rsample", dest="rsample", metavar="<sample fraction>",
+             type="float",
+             default=False,
+             help="choose a random subset of rows to display")
+g.add_option("", "--csample", dest="csample", metavar="<sample fraction>",
+             type="float",
+             default=False,
+             help="choose a random subset of columns to display")
+
+
+g = optparse.OptionGroup(o, "Miscellaneous")
+o.add_option_group(g)
+g.add_option("", "--cutoff", dest="cutoff", metavar="<value>",
+             default=-util.INF,
+             type="float",
+             help="if specified, only loads values greater than 'cutoff'")
+g.add_option("", "--noloadvals", dest="noloadvals",
+             action="store_true",
+             default=False,
+             help="save memory by not loading non-zeros for interactive display")
+
+
+
+
 def parseColor(colorstr):
     """Parse <r>,<g>,<b> into a list of three floats"""
     return map(float, colorstr.split(','))
@@ -36,118 +149,12 @@ def parseSize(sizestr):
     return map(int, sizestr.split('x'))
 
 
-# command line options
-options = [
-    "Matrix input formats",
-    ["r:", "rmat=", "comprow", "<compressed row matrix file>",
-        {"single": True,
-         "help": "load a compressed row matrix file (*.mat)"}],
-    ["i:", "imat=", "imat", "<index matrix file>",
-        {"single": True,
-         "help": "load a index matrix file (*.imat)"}],
-    ["l:", "lmat=", "lmat", "<labeled sparse matrix file>",
-        {"single": True,
-         "help": "load a labeled matrix file (*.lmat)"}],
-    ["d:", "dense=", "dense", "<dense matrix file>",
-        {"single": True,
-         "help": "load a dense matrix file (*.mat)"}],
-    
-    "Labels",
-    ["", "rlab=", "rowlabels", "<row labels>",
-        {"single": True}],
-    ["", "clab=", "collabels", "<col labels>", 
-        {"single": True}],    
-    ["", "rclab=", "rowcollabels", "<row & col labels>", 
-        {"single": True}],
-    
-    "Permutation",
-    ["R:", "rperm=", "rperm", "<row permutation>",
-        {"single": True}],
-    ["C:", "cperm=", "cperm", "<col permutation>",
-        {"single": True}],
-    ["B:", "rcperm=", "rcperm", "<row & col permutation>",
-        {"single": True}],
-    
-    ["o:", "order=", "order", "<label order>",
-        {"single": True,
-         "help": "only used with label matrix"}],
-    
-    "Clustering",
-    ["", "rpart=", "rpart", "<row partition ids>",
-        {"single": True}],
-    ["", "cpart=", "cpart", "<col partition ids>",
-        {"single": True}],
-    ["", "rcpart=", "rcpart", "<row & col partition ids>",
-        {"single": True}],
 
-    "Trees",
-    ["", "rptree=", "rptree", "<row parent tree file>",
-        {"single": True}],
-    ["", "cptree=", "cptree", "<column parent tree file>",
-        {"single": True}],
-    ["", "rtree=", "rtree", "<row tree newick file>",
-        {"single": True}],
-    ["", "ctree=", "ctree", "<column tree newick file>",
-        {"single": True}],
-    ["", "treelens", "treelens", "",
-        {"single": True,
-         "help": "use branch lengths in tree files"}],         
-    
-    "Display",
-    ["L:", "showlabels=", "showlabels", "(inline,panels,none)",
-        {"single": True,
-         "default": "inline"}],
-    ["c:", "color=", "color", "(solid|posneg|rainbow|filename)",
-        {"single": True,
-         "default": "rainbow",
-         "help": "specify a colormap using a predefined map or " +
-                 "a custom map from a file"}],
-    ["", "bgcolor=", "bgcolor", "r,g,b",
-        {"single": True,
-         "parser": parseColor,
-         "default": (0,0,0),
-         "help": "specify the background color (default: black)\n"+
-                 "    Each value is between 0 and 1."}],
-    ["", "drawzeros", "drawzeros", "",
-        {"single": True,
-         "help": "a bool whether to explicitly draw zeros with the colormap"}],
-    ["", "style=", "style", "(points|quads)",
-        {"single": True,
-         "default": "points",
-         "help": "draw non-zeros using points (default) or quadrilaterals"}],
-    ["", "winsize=", "winsize", "<width>x<height>",
-        {"single": True,
-         "default": (400, 400),
-         "parser": parseSize,
-         "help": "specify initial window size (default: 400x400)"}],
-    
-    "Sampling",
-    ["s:", "sample=", "sample", "<sample fraction>",
-        {"single": True,
-         "parser": float,
-         "help": "choose a random subset of non-zeros to display (only for sparse matrices)"}],
-    ["", "rsample=", "rsample", "<sample fraction>",
-        {"single": True,
-         "parser": float,
-         "help": "choose a random subset of rows to display"}],
-    ["", "csample=", "csample", "<sample fraction>",
-        {"single": True,
-         "parser": float,
-         "help": "choose a random subset of columns to display"}],
-    
-    "Miscellaneous",
-    ["", "cutoff=", "cutoff", "<value>",
-        {"default": -util.INF,
-         "parser": float,
-         "single": True,
-         "help": "if specified, only loads values greater than 'cutoff'"}],             
-    ["", "noloadvals", "noloadvals", "",
-        {"single": True,
-         "help": "save memory by not loading non-zeros for interactive display"}]
-]
+# parse options
+conf, args = o.parse_args()
+conf.bgcolor = parseColor(conf.bgcolor)
+conf.winsize = parseSize(conf.winsize)
 
-
-conf = util.parseOptions(sys.argv, options, resthelp="<python script>")
 
 
 
@@ -156,7 +163,7 @@ conf = util.parseOptions(sys.argv, options, resthelp="<python script>")
 #
 
 print "SUMMATRIX (SUMMON Matrix Visualizer)"
-print "Matt Rasmussen 2005-2008"
+print "Matt Rasmussen 2005-2009"
 print
 
 
@@ -176,27 +183,27 @@ def part2perm(part):
 
 def read_perm(conf, mat):
     # read permutations
-    if "rperm" in conf:
-        mat.rperm = util.read_ints(conf["rperm"])
-    if "cperm" in conf:
-        mat.cperm = util.read_ints(conf["cperm"])
-    if "rcperm" in conf:
-        mat.rperm = util.read_ints(conf["rcperm"])        
-        mat.cperm = util.read_ints(conf["rcperm"])
+    if conf.rperm:
+        mat.rperm = util.read_ints(conf.rperm)
+    if conf.cperm:
+        mat.cperm = util.read_ints(conf.cperm)
+    if conf.rcperm:
+        mat.rperm = util.read_ints(conf.rcperm)
+        mat.cperm = util.read_ints(conf.rcperm)
 
     # needed for lmat
-    if "order" in conf:
-        mat.order = conf["order"]
+    if conf.order:
+        mat.order = conf.order
 
 
 def read_part(conf, mat):
     # read partitions
-    if "rpart" in conf:
-        mat.rpart = util.read_strings(conf["rpart"])
-    if "cpart" in conf:
-        mat.cpart = util.read_strings(conf["cpart"])
-    if "rcpart" in conf:
-        mat.rpart = util.read_strings(conf["rcpart"])
+    if conf.rpart:
+        mat.rpart = util.read_strings(conf.rpart)
+    if conf.cpart:
+        mat.cpart = util.read_strings(conf.cpart)
+    if conf.rcpart:
+        mat.rpart = util.read_strings(conf.rcpart)
         mat.cpart = mat.rpart 
 
     # setup default permutation from cluster ids
@@ -210,54 +217,50 @@ def read_part(conf, mat):
 
 def read_labels(conf, mat):    
     # read labels
-    if "rowlabels" in conf:
-        mat.rowlabels = util.read_strings(conf["rowlabels"])
-    if "collabels" in conf:
-        mat.collabels = util.read_strings(conf["collabels"])
-    if "rowcollabels" in conf:
-        mat.rowlabels = util.read_strings(conf["rowcollabels"])
+    if conf.rowlabels:
+        mat.rowlabels = util.read_strings(conf.rowlabels)
+    if conf.collabels:
+        mat.collabels = util.read_strings(conf.collabels)
+    if conf.rowcollabels:
+        mat.rowlabels = util.read_strings(conf.rowcollabels)
         mat.collabels = mat.rowlabels
 
 def read_colormap(conf, mat):
     # read colormap
-    if conf["color"] == "posneg":
+    if conf.color == "posneg":
         mat.colormap = summon.PosNegColorMap()
-    elif conf["color"] == "rainbow":
+    elif conf.color == "rainbow":
         mat.colormap = summon.RainbowColorMap()
-    elif conf["color"] == "solid":
+    elif conf.color == "solid":
         mat.colormap = summon.SolidColorMap()
     else:
-        mat.colormap = summon.readColorMap(conf["color"])
+        mat.colormap = summon.readColorMap(conf.color)
 
 
 def read_matrix(conf, mat):
 
     # read matrix
-    matfile = None
-    if "comprow" not in conf and \
-       "imat" not in conf and \
-       "dense" not in conf and \
-       "lmat" not in conf:
-        raise Exception("no matrix specified")
-
-    if "comprow" in conf:
-        matfile = conf["comprow"]
+    if conf.comprow:
+        matfile = conf.comprow
         format = "rmat"
-    elif "imat" in conf:
-        matfile = conf["imat"]
+    elif conf.imat:
+        matfile = conf.imat
         format = "imat"
-    elif "lmat" in conf:
-        matfile = conf["lmat"]
+    elif conf.lmat:
+        matfile = conf.lmat
         format = "lmat"
-    elif "dense" in conf:
-        matfile = conf["dense"]
+    elif conf.dense:
+        matfile = conf.dense
         format = "dmat"
+    else:
+        raise Exception("no matrix specified")
+        
     matrix.open_matrix(matfile, mat, 
-                       loadvals=not conf.get("noloadvals", False),
-                       sample=conf.get("sample", False),
-                       rowsample=conf.get("rsample", False),
-                       colsample=conf.get("csample", False),
-                       minval=conf["cutoff"],
+                       loadvals=not conf.noloadvals,
+                       sample=conf.sample,
+                       rowsample=conf.rsample,
+                       colsample=conf.csample,
+                       minval=conf.cutoff,
                        format=format)
 
     # TODO: should this be pushed into lib?
@@ -267,23 +270,24 @@ def read_matrix(conf, mat):
 
     return matfile
 
+
 def read_trees(conf, mat):
     # read trees
     global rtree
     global ctree
 
-    if "rptree" in conf:
+    if conf.rptree:
         rtree = treelib.Tree()
-        rtree.readParentTree(conf["rptree"], labels=mat.rowlabels)
-    if "cptree" in conf:
+        rtree.readParentTree(conf.rptree, labels=mat.rowlabels)
+    if conf.cptree:
         ctree = treelib.Tree()
-        ctree.readParentTree(conf["cptree"], labels=mat.collabels)
-    if "rtree" in conf:
+        ctree.readParentTree(conf.cptree, labels=mat.collabels)
+    if conf.rtree:
         rtree = treelib.Tree()
-        rtree.readNewick(conf["rtree"])
-    if "ctree" in conf:
+        rtree.readNewick(conf.rtree)
+    if conf.ctree:
         ctree = treelib.Tree()
-        ctree.readNewick(conf["ctree"])
+        ctree.readNewick(conf.ctree)
 
     if rtree:
         leaves = rtree.leafNames()
@@ -313,37 +317,37 @@ read_trees(conf, mat)
 
 # TODO: remove?
 # execute python scripts
-for script in conf["REST"]:
+for script in args:
     print "executing", script
     execfile(script)
 
 
 
 # determine label settings
-if conf["showlabels"] == "inline":
+if conf.showlabels == "inline":
     showLabels = True
     showLabelWindows = False
-elif conf["showlabels"] == "panels":
+elif conf.showlabels == "panels":
     showLabels = True
     showLabelWindows = True
-elif conf["showlabels"] == "none":
+elif conf.showlabels == "none":
     showLabels = False
     showLabelWindows = False
 else:
-    raise Exception("unknown showlabels setting '%s'" % conf["showlabels"])
+    raise Exception("unknown showlabels setting '%s'" % conf.showlabels)
 
 
 # create matrix viewer and display it
-viewer = matrix.MatrixViewer(mat, bgcolor=conf["bgcolor"], 
-                             drawzeros=conf["drawzeros"], 
-                             style=conf["style"],
+viewer = matrix.MatrixViewer(mat, bgcolor=conf.bgcolor, 
+                             drawzeros=conf.drawzeros, 
+                             style=conf.style,
                              showLabels=showLabels,
                              showLabelWindows=showLabelWindows,
-                             winsize=conf["winsize"],
+                             winsize=conf.winsize,
                              title=matfile,
                              rtree=rtree,
                              ctree=ctree,
-                             useTreeLens=(conf["treelens"], conf["treelens"]))
+                             useTreeLens=(conf.treelens, conf.treelens))
 util.tic("drawing matrix")
 viewer.show()
 util.toc()
