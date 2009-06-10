@@ -185,3 +185,17 @@ Next, you must add the summon source directory to your python path using
 NOTE: this assumes you use the bash shell.  Add these lines to your ~/.bashrc 
 startup file
 
+
+=== 4.3 MAC OS X MAKE
+To compile SUMMON for Mac OS X using Make do the following:
+
+
+   make -f Makefile.macosx
+
+You will need freeglut (native Mac OS X GLUT will not work with SUMMON) and
+SDL already installed.  SUMMON assumes they are installed in /usr/local/.
+
+
+
+
+

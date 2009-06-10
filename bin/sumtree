@@ -73,13 +73,13 @@ def readTree(conf):
     tree = treelib.Tree()
 
     if conf.ptree:
-        tree.readParentTree(conf.ptree, conf.labels)
+        tree.read_parent_tree(conf.ptree, conf.labels)
         print "%s: %d nodes, %d leaves\n" % \
           (conf.ptree, len(tree.nodes), len(tree.leaves()))
         
         
     elif conf.newick:
-        tree.readNewick(conf.newick)
+        tree.read_newick(conf.newick)
         print "%s: %d nodes, %d leaves\n" % \
           (conf.newick, len(tree.nodes), len(tree.leaves()))
 
@@ -104,7 +104,7 @@ elif conf.ptree:
     conf.usedist = 0
 
 if conf.colormap:
-    colormap = treelib.readTreeColorMap(conf.colormap)
+    colormap = treelib.read_tree_color_map(conf.colormap)
 else:
     colormap = None
 
