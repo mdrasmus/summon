@@ -278,16 +278,16 @@ def read_trees(conf, mat):
 
     if conf.rptree:
         rtree = treelib.Tree()
-        rtree.readParentTree(conf.rptree, labels=mat.rowlabels)
+        rtree.read_parent_tree(conf.rptree, labels=mat.rowlabels)
     if conf.cptree:
         ctree = treelib.Tree()
-        ctree.readParentTree(conf.cptree, labels=mat.collabels)
+        ctree.read_parent_tree(conf.cptree, labels=mat.collabels)
     if conf.rtree:
         rtree = treelib.Tree()
-        rtree.readNewick(conf.rtree)
+        rtree.read_newick(conf.rtree)
     if conf.ctree:
         ctree = treelib.Tree()
-        ctree.readNewick(conf.ctree)
+        ctree.read_newick(conf.ctree)
 
     if rtree:
         leaves = rtree.leafNames()
