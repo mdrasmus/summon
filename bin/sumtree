@@ -67,7 +67,7 @@ conf, args = o.parse_args()
 
 
 
-def readTree(conf):
+def read_tree(conf):
     util.tic("reading input")
 
     tree = treelib.Tree()
@@ -94,7 +94,7 @@ print "Matt Rasmussen 2005-2008"
 print
 
 # read
-tree = readTree(conf)
+tree = read_tree(conf)
 
 # display tree
 if conf.newick:

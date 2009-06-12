@@ -290,22 +290,22 @@ def read_trees(conf, mat):
         ctree.read_newick(conf.ctree)
 
     if rtree:
-        leaves = rtree.leafNames()
+        leaves = rtree.leaf_names()
         if mat.rowlabels == None:
             mat.rperm = map(int, leaves)
         else:
             lookup = util.list2lookup(mat.rowlabels)
             mat.rperm = util.mget(lookup, leaves)
-        mat.rinv = util.invPerm(mat.rperm)
+        mat.rinv = util.invperm(mat.rperm)
         
     if ctree:
-        leaves = ctree.leafNames()
+        leaves = ctree.leaf_names()
         if mat.collabels == None:
             mat.cperm = map(int, leaves)
         else:
             lookup = util.list2lookup(mat.collabels)
             mat.cperm = util.mget(lookup, leaves)
-        mat.cinv = util.invPerm(mat.cperm)
+        mat.cinv = util.invperm(mat.cperm)
 
 read_perm(conf, mat)
 read_part(conf, mat)
