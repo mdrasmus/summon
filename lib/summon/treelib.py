@@ -16,12 +16,12 @@ import os
 import StringIO
 
 # rasmus libs
-from rasmus import util
-
+try:
+    from rasmus import util
+except ImportError:
+    import util
 
 # ply parsing support
-from rasmus import treelib_parser
-    
 try:
     from rasmus import treelib_parser
 except ImportError:
