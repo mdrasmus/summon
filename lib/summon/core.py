@@ -561,10 +561,6 @@ class text_clip (custom_group, text):
                 'left' 'center' 'right' 
                 'bottom' 'middle' 'top'
         """    
-
-        if len(txt) == 0:
-            custom_group.__init__(self)
-            return
         
         # ensure points are ordered correctly
         if x1 > x2:
@@ -577,6 +573,10 @@ class text_clip (custom_group, text):
         self.coords = (x1, y1, x2, y2)
         self.height_clamp = (minheight, maxheight)
         self.justified = justified
+
+        if len(txt) == 0:
+            custom_group.__init__(self)
+            return
         
         # calculate text dimensions
         textw = float(summon_core.get_text_width(0, txt))

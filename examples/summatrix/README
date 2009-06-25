@@ -1,0 +1,14 @@
+SUMMATRIX Example usage
+
+These examples introduce the basic features of SUMMATRIX.
+
+You can either run the shell scripts from the command line as
+
+    ./view_human_mouse.sh
+
+Or use python and the interactive flag
+
+    python -i view_human_mouse.py
+
+Or open the *.py files with the IDLE program supplied with the default 
+Python install.

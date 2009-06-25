@@ -174,13 +174,6 @@ rtree = None
 ctree = None
 
 
-def part2perm(part):
-    """Convert a partition to a simple permutation"""
-    perm = range(len(part))
-    perm.sort(key=lambda x: part[x])
-    return perm
-
-
 def read_perm(conf, mat):
     # read permutations
     if conf.rperm:
@@ -208,10 +201,10 @@ def read_part(conf, mat):
 
     # setup default permutation from cluster ids
     if mat.rpart and not mat.rperm:
-        mat.rperm = part2perm(mat.rpart)
+        mat.rperm = matrix.part2perm(mat.rpart)
         mat.rinv = util.invperm(mat.rperm)
     if mat.cpart and not mat.cperm:
-        mat.cperm = part2perm(mat.cpart)
+        mat.cperm = matrix.part2perm(mat.cpart)
         mat.cinv = util.invperm(mat.cperm)
 
 
@@ -289,23 +282,6 @@ def read_trees(conf, mat):
         ctree = treelib.Tree()
         ctree.read_newick(conf.ctree)
 
-    if rtree:
-        leaves = rtree.leaf_names()
-        if mat.rowlabels == None:
-            mat.rperm = map(int, leaves)
-        else:
-            lookup = util.list2lookup(mat.rowlabels)
-            mat.rperm = util.mget(lookup, leaves)
-        mat.rinv = util.invperm(mat.rperm)
-        
-    if ctree:
-        leaves = ctree.leaf_names()
-        if mat.collabels == None:
-            mat.cperm = map(int, leaves)
-        else:
-            lookup = util.list2lookup(mat.collabels)
-            mat.cperm = util.mget(lookup, leaves)
-        mat.cinv = util.invperm(mat.cperm)
 
 read_perm(conf, mat)
 read_part(conf, mat)

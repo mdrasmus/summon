@@ -24,6 +24,24 @@ from summon import treelib
 from summon import matrixlib
 
 
+def part2perm(part):
+    """Convert a partition to a simple permutation"""
+    perm = range(len(part))
+    perm.sort(key=lambda x: part[x])
+    return perm
+
+
+def set_perm_from_part(mat, rows=True, cols=True):
+    
+    # setup default permutation from cluster ids
+    if rows and mat.rpart:
+        mat.rperm = part2perm(mat.rpart)
+        mat.rinv = util.invperm(mat.rperm)
+    if cols and mat.cpart:
+        mat.cperm = part2perm(mat.cpart)
+        mat.cinv = util.invperm(mat.cperm)
+
+
 #=============================================================================
 # Data Structures
 #
@@ -371,8 +389,28 @@ class MatrixViewer (object):
         self.rtree = rtree
         self.ctree = ctree
         self.useTreeLens = useTreeLens
-        
-        
+
+        # setup perm based on trees
+        if self.rtree:
+            leaves = self.rtree.leaf_names()
+            if self.mat.rowlabels == None:
+                self.mat.rperm = map(int, leaves)
+            else:
+                lookup = util.list2lookup(self.mat.rowlabels)
+                self.mat.rperm = util.mget(lookup, leaves)
+
+        if self.ctree:
+            leaves = self.ctree.leaf_names()
+            if self.mat.collabels == None:
+                self.mat.cperm = map(int, leaves)
+            else:
+                lookup = util.list2lookup(self.mat.collabels)
+                self.mat.cperm = util.mget(lookup, leaves)
+
+            
+        # set inverse permutations
+        self.mat.rinv = util.invperm(self.mat.rperm)
+        self.mat.cinv = util.invperm(self.mat.cperm)
     
     
     def setMatrix(self, mat):

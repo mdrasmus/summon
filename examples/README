@@ -12,6 +12,7 @@ Or with python and the interactive flag
 
     python -i 01_basics.py
 
+Or within the IDLE program supplied with the default Python install.
 
 The directories summatrix and sumtree contain examples specifically for the
 summatrix and sumtree scripts (located in summon/bin/).  The advance directory

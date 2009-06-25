@@ -137,7 +137,9 @@ class SvgWriter:
             yjust = "bottom"
         else:
             yjust = "middle"
-                    
+
+        if len(msg) == 0:
+            return
         
         # TODO: add text_scale support
         if isinstance(elm, text_scale) or isinstance(elm, text_clip):
@@ -146,12 +148,29 @@ class SvgWriter:
             #mat = transform.multMatrixVec(self.trans[-1], (1.0, 1.0))
             
             scale = min(boxheight / textheight, boxwidth / textwidth)
+            textwidth *= scale
+            textheight *= scale
+
+            if xjust == "left":
+                tx = x1
+            elif xjust == "right":
+                tx = x2 - textwidth
+            else:
+                tx = (x1 + x2 - textwidth) / 2.0
             
+            if yjust == "bottom":
+                ty = y1
+            elif yjust == "top":
+                ty = y2 - textheight
+            else:
+                ty = (y1 + y2 - textheight) / 2.0
+
+            # scale(%f,%f)'>  scale, -scale,
             
             print >>self.out, \
-            """<g transform='translate(%f,%f) scale(%f,%f)'>
+            """<g transform='translate(%f,%f) scale(1,-1)'>
                 <text x='0' y='0' font-size='%s' fill='%s' fill-opacity='%f'>%s</text></g>
-            """ % (x1, y1, scale, -scale, textheight,  col, color[3], msg)
+            """ % (tx, ty, textheight,  col, color[3], msg)
         elif isinstance(elm, text):
         
             scale = transform.getScaling(self.trans[-1])
