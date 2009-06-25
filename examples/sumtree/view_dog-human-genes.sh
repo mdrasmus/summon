@@ -14,4 +14,4 @@ sumtree \
     --noshowlabels \
     --winsize 700x400 \
     -t 0 \
-    -c ensembl.colormap $*
+    -c dog-human.colormap $*

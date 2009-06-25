@@ -37,6 +37,10 @@ class SumTreeMenu (summon.SummonMenu):
         self.insert_submenu(0, "Sumtree", self.sumtree_menu)
         
 
+def nodelabel(node):
+    return node.name
+
+
 class SumTree (object):
     """SUMMON Tree Visualizer"""
 
@@ -51,7 +55,8 @@ class SumTree (object):
                        winsize=(400, 400),
                        winpos=None,
                        colormap=None,
-                       layout=None):
+                       layout=None,
+                       nodelabel=nodelabel):
         self.tree = tree   
         
         self.win = None
@@ -72,6 +77,7 @@ class SumTree (object):
         self.colormap = colormap
         self.layout = layout
         self.autozoom = autozoom
+        self.nodelabel = nodelabel
         
         self._setupTree()
         
@@ -243,7 +249,7 @@ class SumTree (object):
             h = top - ny
             
             label = group(color(0,0,1),
-                          text_clip(self.branchLabels[node.name], 
+                          text_clip(self.branchLabels[self.nodelabel(node)], 
                                     nx, ny+h*.1, px, top, 
                                     5, 8,
                                     "center", "bottom", *d))
@@ -254,15 +260,16 @@ class SumTree (object):
             vis.append(label)
 
         # leaf label
-        if node.isLeaf() and type(node.name) == str:
+        name = self.nodelabel(node)
+        if node.isLeaf() and type(name) == str:
             if self.vertical:
                 label = group(color(0,0,0),
-                              text_clip(node.name, nx, top, 
+                              text_clip(name, nx, top, 
                                         nx*10000, bot, 5, 12,
                                         "left", "middle", "vertical"))
             else:
                 label = group(color(0,0,0),
-                              text_clip(node.name, nx, top, 
+                              text_clip(name, nx, top, 
                                         nx*10000, bot, 5, 12,
                                         "left", "middle"))
         
