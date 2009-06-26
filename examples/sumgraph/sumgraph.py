@@ -1,4 +1,4 @@
-#!/usr/bin/env python-i
+
 
 import summon
 from summon import colors, shapes, util
@@ -11,30 +11,6 @@ try:
 except:
     raise Exception("This script requires pydot to be installed")
 
-
-
-def lerp(x0, x1, t):
-    return x0 * (1-t) + x1 * t
-
-def bezier(x0, x1, x2, x3, t):
-    x00 = lerp(x0, x1, t)
-    x01 = lerp(x1, x2, t)
-    x02 = lerp(x2, x3, t)
-    x10 = lerp(x00, x01, t)
-    x11 = lerp(x01, x02, t)
-    x20 = lerp(x10, x11, t)
-    return x20
-
-
-def bezier_curve(control_pts, ndivs=20):
-    pts = []
-    c = control_pts
-    
-    for i in xrange(0, len(c)-6, 6):
-        for t in util.frange(0.0, 1.0 + 1.0/ndivs, 1.0/ndivs):
-            pts.append(bezier(c[i],   c[i+2], c[i+4], c[i+6], t))
-            pts.append(bezier(c[i+1], c[i+3], c[i+5], c[i+7], t))
-    return pts
 
 
 def draw_node(node):
@@ -92,7 +68,7 @@ def draw_edge(graph, edge):
         else:
             control_pts.extend(map(float, v.split(",")))
     
-    curve = bezier_curve(control_pts, ndivs=20)
+    curve = shapes.bezier_curve(control_pts, ndivs=20)
     
     target = graph.get_node('"' + edge.get_destination() + '"')
     target_pos = map(float, target.get_pos().split(","))
@@ -148,15 +124,3 @@ def draw_graph(graph):
     
     return vis
 
-
-
-infile = "graph2.dot"
-#infile = "undirected_layout.dot"
-
-graph = pydot.graph_from_dot_file(infile)
-
-
-win = summon.Window("graph")
-win.set_bgcolor(1,1,1)
-win.add_group(draw_graph(graph))
-win.home()

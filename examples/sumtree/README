@@ -1,14 +1,15 @@
-SUMMATRIX Example Usage
+SUMTREE Example Usage
 
-These examples introduce the basic features of SUMMATRIX.
+These examples introduce the basic features of SUMTREE.
 
 You can either run the shell scripts from the command line as
 
-    ./view_human_mouse.sh
+    ./view_mammal.sh
 
 Or use python and the interactive flag
 
-    python -i view_human_mouse.py
+    python -i view_mammals.py
 
 Or open the *.py files with the IDLE program supplied with the default 
 Python install.
+

@@ -1519,8 +1519,7 @@ class Region (object):
         return True
 
 class RegionFunction (Region):
-    """This class defines a region in a general way that can be used 
-       with hotspots"""
+    """Defines a hotspot region using a callback function"""
     def __init__(self, x1, y1, x2, y2, func):
         Region.__init__(self, x1, y1, x2, y2)
         self.func = func
@@ -1530,8 +1529,7 @@ class RegionFunction (Region):
 
 
 class RegionPolygon (Region):
-    """This class defines a region in a general way that can be used 
-       with hotspots"""
+    """Defines a hotspot region using a polygon"""
     def __init__(self, pts):
         self.x = []
         self.y = []
@@ -1547,8 +1545,7 @@ class RegionPolygon (Region):
         return vector.in_polygon2(self.pts, (px, py))
 
 class RegionCircle (Region):
-    """This class defines a region in a general way that can be used 
-       with hotspots"""
+    """Defines a hotspot region using a circle"""
     def __init__(self, x, y, radius):        
         Region.__init__(self, x-radius, y-radius, x+radius, y+radius)
         self.x = x
@@ -1660,14 +1657,7 @@ def tempfile(ext, prefix="summon"):
         i += 1
     
     return filename
-    
-    #import warnings
-    #warnings.filterwarnings("ignore", ".*", RuntimeWarning)    
-    #filename = os.tempnam(".", "_") + ext
-    #warnings.filterwarnings("default", ".*", RuntimeWarning)        
-    #filename = filename.replace("./", "./" + prefix)
-    
-    return filename
+
 
 #=============================================================================
 # additonal modules imported here
