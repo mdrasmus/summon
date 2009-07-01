@@ -1,11 +1,13 @@
 
+# python imports
+import re
 
+# summon imports
 import summon
 from summon import colors, shapes, util
 from summon.core import *
 
-import re
-
+# third party imports
 try:
     import pydot
 except:
