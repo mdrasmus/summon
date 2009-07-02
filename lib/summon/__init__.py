@@ -25,7 +25,7 @@ import summon.svg
 import summon_config
 
 
-VERSION = "1.8.7"
+VERSION = "1.8.8"
 
 VERSION_INFO = """\
 -----------------------------------------------------------------------------
