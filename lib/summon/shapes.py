@@ -280,7 +280,7 @@ class message_bubble (custom_group):
         self.remove_self()
 
 
-class draggable(custom_group):
+class draggable (custom_group):
     """A draggable drawing element"""
     
     def __init__(self, region, element, callback=None):   
