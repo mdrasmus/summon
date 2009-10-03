@@ -191,6 +191,17 @@ class Element:
         """Append a drawing element to the children of this element"""
         summon_core.append_group(self.ptr, element)
         return element
+
+    def extend(self, elements):
+        """Append multiple elements to the children of this element"""
+        for elm in elements:
+            summon_core.append_group(self.ptr, elm)
+
+    def clear(self):
+        """Remove all drawing elements under group"""
+        children = summon_core.get_element_children(self.ptr)
+        ptrs = [children[i] for i in xrange(1, len(children), 2)]            
+        summon_core.remove_group2(self.ptr, *ptrs)
     
     def remove(self, *elements):
         """Remove drawing elements from the children of this element"""

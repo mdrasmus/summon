@@ -1475,8 +1475,8 @@ class SummonMenu (Menu):
 class VisObject (object):
     """Base class of dynamic visualization objects"""
     
-    def __init__(self):
-        self.win = None
+    def __init__(self, win=None):
+        self.win = win
         self.__timer = None
     
     def __del__(self):

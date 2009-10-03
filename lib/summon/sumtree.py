@@ -13,6 +13,7 @@ from summon import shapes
 from summon import treelib
 from summon import util
 import summon
+from summon import multiscale, quadtree
 
 
 # TODO: customize scale color
@@ -78,6 +79,9 @@ class SumTree (object):
         self.layout = layout
         self.autozoom = autozoom
         self.nodelabel = nodelabel
+
+        self._label_viewer = LabelViewer(nodelabel=nodelabel,
+                                         vertical=vertical)
         
         self._setupTree()
         
@@ -133,6 +137,12 @@ class SumTree (object):
             self.win.clear_groups()
             newwin = False
         self.win.set_bgcolor(1,1,1)
+
+        
+        # draw labels
+        self._label_viewer.set_window(self.win)
+        self._label_viewer.set_tree(self.tree, self.layout)
+        self._label_viewer.enable_updating(True, .5)
         
         
         # draw tree
@@ -141,14 +151,18 @@ class SumTree (object):
             self.win.add_group(group(
                 color(0,0,0),
                 rotate(-90, 
-                    self.drawTree(self.tree.root))))
+                       self.drawTree(self.tree.root),
+                       self._label_viewer.get_group())))
                 
         else:        
             # draw horizontal tree
             self.win.add_group(group(
                     color(0,0,0),
-                        self.drawTree(self.tree.root)))
+                    self.drawTree(self.tree.root),
+                    self._label_viewer.get_group()))
 
+
+        
         
         # draw branch length legend
         if not self.vertical and self.xscale != 0:
@@ -163,8 +177,8 @@ class SumTree (object):
                 
                 y = min(node.y for node in self.tree) - 2
                 self.win.add_group(self.drawScale(0, y, length, self.xscale))
-        
 
+        
         # put tree into view
         if newwin:
             w, h = self.win.get_size()
@@ -259,9 +273,10 @@ class SumTree (object):
             self.labels.append(label)
             vis.append(label)
 
+        '''
         # leaf label
         name = self.nodelabel(node)
-        if node.isLeaf() and type(name) == str:
+        if node.is_leaf() and type(name) == str:
             if self.vertical:
                 label = group(color(0,0,0),
                               text_clip(name, nx, top, 
@@ -277,7 +292,7 @@ class SumTree (object):
                 label.set_visible(False)
             self.labels.append(label)
             vis.append(label)
-
+        '''
         
         return group(*vis)
         
@@ -292,8 +307,11 @@ class SumTree (object):
     
     def enableLabels(self, visible=True):
         self.showLabels = visible
-        for label in self.labels:
-            self.win.show_group(label, visible)
+
+        self._label_viewer.get_group().set_visible(visible)
+        
+        #for label in self.labels:
+        #    self.win.show_group(label, visible)
     
     
     def nodeClick(self, node):
@@ -302,7 +320,7 @@ class SumTree (object):
     
     
     def printNode(self, node):
-        if node.isLeaf():
+        if node.is_leaf():
             print node.name
         else:
             for child in node.children:
@@ -352,11 +370,11 @@ class SumTree (object):
         self.win.insert_group(self.markGroup, group(* vis))
     
     
-    def flag(self, names, flagColor = color(1,0,0)):
+    def flag(self, names, flagColor=(1,0,0)):
         if self.markGroup == None:
             self.markGroup = self.win.add_group(group())
         
-        vis = [flagColor]
+        vis = [color(*flagColor)]
         found = 0
         
         far = self.tree.root.x
@@ -382,4 +400,114 @@ class SumTree (object):
             self.win.remove_group(self.markGroup)
             self.markGroup = None
     
+
+
+class LabelViewer (summon.VisObject):
+
+    def __init__(self, nodelabel=nodelabel, vertical=False):
+        summon.VisObject.__init__(self)
+        self.multiscale = multiscale.Multiscale()
+        self.quadtree = None
+        self.tree = None
+        self.layout = None
+
+        self.nodelabel = nodelabel
+        self.vertical = vertical
+        self.group = group()
+
+    
+    def set_window(self, win):
+        summon.VisObject.set_window(self, win)
+        self.multiscale.init(win)
+
+    def get_group(self):
+        return self.group
+
+    def set_tree(self, tree, layout):
+        self.tree = tree
+        self.layout = layout
+
+        # init quad tree
+        # find boundary
+        x1 = util.INF
+        x2 = -util.INF
+        y1 = util.INF
+        y2 = -util.INF
+
+        for node in tree:
+            x, y = layout[node]
+            x1 = min(x1, x)
+            x2 = max(x2, x)
+            y1 = min(y1, y)
+            y2 = max(y2, y)
+
+        cx = (x1 + x2) / 2.0
+        cy = (y1 + y2) / 2.0
+        size = max(x2 - x1, y2 - y1) / 2.0
+        
+        self.quadtree = quadtree.QuadTree(cx, cy, size)
+
+        # populate quadtree
+        for node in tree:
+            x, y = layout[node]
+            self.quadtree.insert(node, quadtree.Rect(x, y, x, y))
+        
+        
+
+    def update(self):
+        view = self.win.get_visible()
+
+        if self.vertical:
+            xres = 4
+            yres = .5
+        else:
+            xres = .5
+            yres = 4
+
+        # if the view is different and atleast close enough
+        if self.multiscale.atleast(xres, yres, view=view) and \
+           not self.multiscale.same_view(view):
+            self.draw_labels()
+
+
+
+    def draw_labels(self):
+
+        self.group.clear()
+
+        # get visible nodes
+        v = self.win.get_visible()
+        if self.vertical:
+            v = (-v[1], v[0], -v[3], v[2])
+        nodes = self.quadtree.query(quadtree.Rect(*v))
+        
+        for node in nodes:
+            # only handle leaves with names
+            name = self.nodelabel(node)
+            if not node.is_leaf() or  not isinstance(name, basestring):
+                continue
+
+            # layout text
+            nx, ny = self.layout[node]
+            
+            if len(node.children) > 0:
+                bot = self.layout[node.children[-1]][1]
+                top = self.layout[node.children[0]][1]
+            else:
+                bot = ny -.5
+                top = ny + .5
+
+            # draw text
+            if self.vertical:
+                label = group(color(0,0,0),
+                              text_clip(name, nx, top, 
+                                        nx*10000, bot, 5, 12,
+                                        "left", "middle", "vertical"))
+            else:
+                label = group(color(0,0,0),
+                              text_clip(name, nx, top, 
+                                        nx*10000, bot, 5, 12,
+                                        "left", "middle"))
+
+            self.group.append(label)
 
