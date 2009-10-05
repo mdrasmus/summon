@@ -992,8 +992,12 @@ public:
         
         // do nothing if python is not initialized        
         if (!Py_IsInitialized() && IsRunning())
-            return;
-        
+            return;        
+
+        if (!IsRunning()) {
+            ConfirmStop();
+        }
+
         // get python GIL
         m_gil = PyGILState_Ensure();
         
@@ -1004,6 +1008,8 @@ public:
         if (ExecWaitingCommands())
             delay = 0;
         
+        
+
         // process user-defined timer function
         SummonTimer();
         
@@ -1018,7 +1024,7 @@ public:
             else
                 delayTime = 100;
         }
-        
+
         // set the next timer
         if (IsRunning())
             glutTimerFunc(delayTime, Summon::Timer, 0);
@@ -1266,8 +1272,9 @@ SummonShutdown(PyObject *self, PyObject *tup)
         g_summon->Stop();
         
         // wait for timer to stop
-        while (!g_summon->IsStopped())
+        while (!g_summon->IsStopped()) {
             SDL_Delay(10);
+        }
     }
     Py_RETURN_NONE;
 }
