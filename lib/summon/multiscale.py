@@ -20,6 +20,7 @@ class Multiscale (object):
         
     
     def init(self, win, view=None):
+        """Initialize to window"""
         self.win = win
         
         if view == None:
@@ -37,12 +38,22 @@ class Multiscale (object):
         self.worldy1 -= marginy
         self.worldy2 += marginy
 
+
+    def get_view(self):
+        """Return the coordinates of the current world view (include margin)"""
+        return (self.worldx1, self.worldy1, self.worldx2, self.worldy2)
     
     def reset(self):
         self.reseted = True
                 
     
     def same_view(self, view=None):
+        """
+        Return True is view is considered the 'same' as previously
+
+        Only a larger scroll or zoom will change same_view() to False.
+        """
+        
         if self.reseted:
             self.reseted = False
             return False
@@ -76,7 +87,9 @@ class Multiscale (object):
         return True
 
 
-    def atleast(self, xminres, yminres, view=None, size=None):       
+    def atleast(self, xminres, yminres, view=None, size=None):
+        """Returns True if the resolution is atleast the given value"""
+        
         if view == None:
             view = self.win.get_visible()
         if size == None:
