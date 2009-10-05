@@ -25,7 +25,7 @@ import summon.svg
 import summon_config
 
 
-VERSION = "1.8.8"
+VERSION = "1.8.9"
 
 VERSION_INFO = """\
 -----------------------------------------------------------------------------
@@ -33,7 +33,7 @@ VERSION_INFO = """\
                       visualization prototyping and scripting
                                 Matt Rasmussen
                             (http://mit.edu/rasmus)
-                              Copyright 2005-2008
+                              Copyright 2005-2009
 -----------------------------------------------------------------------------
 """ % VERSION
 

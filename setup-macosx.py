@@ -17,7 +17,7 @@ if not os.path.exists("mac/GL"):
                "mac/GL")
 
 
-SUMMON_VERSION = '1.8.8'
+SUMMON_VERSION = '1.8.9'
 
 setup(
     name='summon',
