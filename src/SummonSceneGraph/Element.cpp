@@ -99,6 +99,8 @@ Element::~Element()
 {
     // delete all child elements
     for (Element *elm=m_child; elm; elm=elm->m_next) {
+        // clear parent pointer
+        elm->m_parent = NULL;
         elm->DecRef();
         if (!elm->IsReferenced())
             delete elm;

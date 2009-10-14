@@ -202,6 +202,7 @@ class Element:
         children = summon_core.get_element_children(self.ptr)
         ptrs = [children[i] for i in xrange(1, len(children), 2)]            
         summon_core.remove_group2(self.ptr, *ptrs)
+
     
     def remove(self, *elements):
         """Remove drawing elements from the children of this element"""

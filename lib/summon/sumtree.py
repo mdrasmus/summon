@@ -104,7 +104,7 @@ class SumTree (object):
         """Private function for configuring a new tree"""
         
         # setup layout
-        if self.layout == None:
+        if self.layout is None:
             if self.xscale > 0:
                 self.layout = treelib.layoutTree(self.tree, self.xscale, -1.0)
             else:
@@ -119,7 +119,9 @@ class SumTree (object):
         
         # setup colors
         self.setColors(self.tree)
-    
+
+        # setup labels
+        self._label_viewer.set_tree(self.tree, self.layout)
     
     
     def show(self):
@@ -142,9 +144,7 @@ class SumTree (object):
         
         # draw labels
         self._label_viewer.set_window(self.win)
-        self._label_viewer.set_tree(self.tree, self.layout)
         self._label_viewer.enable_updating(True, .5)
-        
         
         # draw tree
         if self.vertical:
@@ -153,14 +153,14 @@ class SumTree (object):
                 color(0,0,0),
                 rotate(-90, 
                        self.drawTree(self.tree.root),
-                       self._label_viewer.get_group())))
+                       self._label_viewer.get_group(True))))
                 
         else:        
             # draw horizontal tree
             self.win.add_group(group(
                     color(0,0,0),
                     self.drawTree(self.tree.root),
-                    self._label_viewer.get_group()))
+                    self._label_viewer.get_group(True)))
 
 
         
@@ -403,11 +403,19 @@ class LabelViewer (summon.VisObject):
     def set_window(self, win):
         summon.VisObject.set_window(self, win)
         self.multiscale.init(win)
+        self.multiscale.reset()
 
-    def get_group(self):
+    def get_group(self, unparent=False):
+
+        if unparent and self.group.get_parent():
+            self.group.remove_self()
+        
         return self.group
 
     def set_tree(self, tree, layout):
+
+        self.multiscale.reset()
+        
         self.tree = tree
         self.layout = layout
 
