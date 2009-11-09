@@ -1,0 +1,6 @@
+This is folder contains the beginnings of a SUMMON-based graph viewer.  The
+main graph code is in sumgraph.py.  To view the examples run the scripts
+named view_*.py.
+
+Someday this may become a full graph visualization program.
+

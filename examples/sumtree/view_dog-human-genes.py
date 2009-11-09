@@ -4,9 +4,10 @@
 
 print """
 NOTE: use Ctrl+right drag and Shift+right drag to zoom the 
-      x- and y-axis independently"
+      x- and y-axis independently
 """
 
+# import necessary libraries
 from summon import sumtree, util, treelib
 
 # read tree in parent tree format

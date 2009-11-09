@@ -172,6 +172,32 @@ def arrow_head(headx, heady, tailx, taily, size=10):
                    headx - vecx + vecy, heady - vecy - vecx)
 
 
+
+def lerp(x0, x1, t):
+    return x0 * (1-t) + x1 * t
+
+def bezier(x0, x1, x2, x3, t):
+    x00 = lerp(x0, x1, t)
+    x01 = lerp(x1, x2, t)
+    x02 = lerp(x2, x3, t)
+    x10 = lerp(x00, x01, t)
+    x11 = lerp(x01, x02, t)
+    x20 = lerp(x10, x11, t)
+    return x20
+
+
+def bezier_curve(control_pts, ndivs=20):
+    pts = []
+    c = control_pts
+    
+    for i in xrange(0, len(c)-6, 6):
+        for t in util.frange(0.0, 1.0 + 1.0/ndivs, 1.0/ndivs):
+            pts.append(bezier(c[i],   c[i+2], c[i+4], c[i+6], t))
+            pts.append(bezier(c[i+1], c[i+3], c[i+5], c[i+7], t))
+    return pts
+
+
+
 class message_bubble (custom_group):
     """A message bubble that is invariant to zooming"""
 
@@ -254,7 +280,7 @@ class message_bubble (custom_group):
         self.remove_self()
 
 
-class draggable(custom_group):
+class draggable (custom_group):
     """A draggable drawing element"""
     
     def __init__(self, region, element, callback=None):   

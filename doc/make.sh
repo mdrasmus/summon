@@ -7,6 +7,7 @@ PYDOC=pydoc2.4
  
 $PYDOC -w summon
 $PYDOC -w summon.matrix
+$PYDOC -w summon.matrixlib
 $PYDOC -w summon.sumtree
 $PYDOC -w summon.util
 $PYDOC -w summon.options

@@ -2,7 +2,7 @@
 # SUMMON - Linux Makefile
 #
 
-SUMMON_VERSION = 1.8.7
+SUMMON_VERSION = 1.8.8
 
 # install prefix (can overload on command line)
 prefix = /usr
