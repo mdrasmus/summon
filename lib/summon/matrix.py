@@ -207,7 +207,7 @@ def open_matrix(filename, mat, loadvals=True, minval=-util.INF,
 def load_matrix(nrows, ncols, nnz, imat, mat,
                 loadvals=False, minval=-util.INF,
                 sample=False, rowsample=False, colsample=False,
-                format="unknown", filename=None):
+                filename=None):
     """Load matrix from an index matrix iterator"""
     
     mat.setup(nrows, ncols, nnz, rowsample=rowsample, colsample=colsample)
