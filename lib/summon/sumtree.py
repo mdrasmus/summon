@@ -476,12 +476,12 @@ class LabelViewer (summon.VisObject):
         for node in nodes:
             # only handle leaves with names
             name = self.nodelabel(node)
-            if not node.is_leaf() or  not isinstance(name, basestring):
+            if not node.is_leaf() or not isinstance(name, basestring):
                 continue
-
+            
             # layout text
             nx, ny = self.layout[node]
-            
+
             if len(node.children) > 0:
                 bot = self.layout[node.children[-1]][1]
                 top = self.layout[node.children[0]][1]
