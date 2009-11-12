@@ -867,7 +867,7 @@ public:
 private:    
     inline void ConfirmStop()
     {
-        assert(m_state == SUMMON_STATE_STOPPING);
+        //assert(m_state == SUMMON_STATE_STOPPING);
         m_state = SUMMON_STATE_STOPPED;        
     }
     

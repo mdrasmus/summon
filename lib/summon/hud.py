@@ -13,37 +13,39 @@ from summon.core import *
 
 
 class MenuItem (object):
-    def __init__(self, name, func, buttonColor=color(.9, .9, .9), 
-                 buttonHighlight=color(1,1,1),
-                 textColor=color(0, 0, 0), height=15, width=50,
+    def __init__(self, name, func, button_color=(.9, .9, .9), 
+                 button_highlight=(1,1,1),
+                 text_color=(0, 0, 0), height=15, width=50,
                  model=None):
         self.name = name
         self.func = func
-        self.buttonColor = buttonColor
-        self.buttonHighlight = buttonHighlight
-        self.textColor = textColor
+        self.button_color = button_color
+        self.button_highlight = button_highlight
+        self.text_color = text_color
         self.height = height
         self.width = width
         self.model = model
         
         self.drawGroup = None
     
-    def setModel(self, model):
+    def set_model(self, model):
         self.model = model
+    setModel = set_model
     
-    def onClick(self):
+    def on_click(self):
         #if self.model != None:
         #    self.model.show_group(self.drawGroup, False)
         self.func()
+    onClick = on_click
         
         
     def draw(self):
-        self.drawGroup = group(self.buttonColor,
+        self.drawGroup = group(color(*self.button_color),
                      shapes.box(0, 0, self.width, self.height),
-                     self.buttonHighlight,
+                     color(*self.button_highlight),
                      lines(0, self.height-1, self.width-1, self.height-1,
                            self.width, 0, self.width-1, self.height-1),
-                     self.textColor,
+                     color(*self.text_color),
                      text(self.name, 0, 2, self.width, self.height+20, 
                           "bottom", "center"),
                      hotspot("click", 0, 0, self.width, self.height,
@@ -53,11 +55,11 @@ class MenuItem (object):
         
 
 class SideBar (object):
-    def __init__(self, win, width=100, baseColor=color(.7, .7, .7),
+    def __init__(self, win, width=100, base_color=(.7, .7, .7),
                  showkey=input_key(" ")):
         self.win = win
         self.width = width
-        self.baseColor = baseColor
+        self.base_color = base_color
         self.items = []
         
         self.xmargin = 2
@@ -66,21 +68,20 @@ class SideBar (object):
         self.shown = False
         
         self.shadowSize = (-4, 4)
-        self.shadowColor = color(0, 0, 0, .5)
+        self.shadow_color = (0, 0, 0, .5)
         
         # install callbacks
-        win.add_resize_listener(self.onResize)
-        win.set_binding(showkey, self.toggleMenu)
+        win.add_resize_listener(self.on_resize)
+        win.set_binding(showkey, self.toggle_menu)
     
     
     def delete(self):
-        self.win.remove_resize_listener(self.onResize)
+        self.win.remove_resize_listener(self.on_resize)
         
     
-    def addItem(self, item):
+    def add_item(self, item):
         self.items.append(item)
         item.width = self.width - 2 * self.xmargin
-    
     
     def show(self):
         self.shown = True
@@ -98,7 +99,7 @@ class SideBar (object):
             self.gid = None
     
     
-    def toggleMenu(self):
+    def toggle_menu(self):
         self.shown = not self.shown
         
         if self.shown:
@@ -106,15 +107,14 @@ class SideBar (object):
         else:
             self.hide()
     
-    
     def draw(self, winwidth, winheight):
-        height = self.getHeight()
+        height = self.get_height()
         
-        vis = [self.shadowColor, 
+        vis = [color(*self.shadow_color), 
                shapes.box(winwidth, winheight,
                           winwidth-self.width-self.shadowSize[0], 
                           winheight-height-self.shadowSize[1]),
-               self.baseColor, 
+               color(*self.base_color), 
                shapes.box(winwidth, winheight,
                           winwidth-self.width, winheight-height)]
         
@@ -122,21 +122,21 @@ class SideBar (object):
         y = winheight - self.ymargin
         for item in self.items:
             y -= item.height     
-            item.setModel(self.win.screen)
+            item.set_model(self.win.screen)
             vis.append(translate(x, y, item.draw()))
             y -= self.ymargin
         
         return group(*vis)
     
     
-    def getHeight(self):
+    def get_height(self):
         height = self.ymargin
         for item in self.items:
             height += item.height + self.ymargin
         return height
     
     
-    def onResize(self, width, height):
+    def on_resize(self, width, height):
         if self.shown:
             self.gid = self.win.screen.replace_group(self.gid, 
                                                      self.draw(width, height))

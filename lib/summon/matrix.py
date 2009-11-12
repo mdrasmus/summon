@@ -341,11 +341,11 @@ class MatrixMenu (summon.SummonMenu):
         
         self.summatrix_menu = summon.Menu()
         self.summatrix_menu.add_entry("toggle labels (l)",
-                                      viewer.toggleLabelWindows)
+                                      viewer.toggle_label_windows)
         self.summatrix_menu.add_entry("toggle trees (t)",
-                                      viewer.toggleTreeWindows)
+                                      viewer.toggle_tree_windows)
         self.summatrix_menu.add_entry("toggle partitions (p)",
-                                      viewer.togglePartitions)
+                                      viewer.toggle_partitions)
         self.insert_submenu(0, "Summatrix", self.summatrix_menu)
         
         
@@ -355,13 +355,13 @@ class MatrixMenu (summon.SummonMenu):
 class MatrixViewer (object):
     """Base class for Matrix Visualizations"""
     
-    def __init__(self, mat=None, onClick=None, 
+    def __init__(self, mat=None, on_click=None, 
                  bgcolor=(0,0,0), drawzeros=False, style="points",
-                 showLabels=False, showLabelWindows=False,
+                 show_labels=False, show_label_windows=False,
                  winsize=(400,400), title="summatrix",
                  rtree=None, ctree=None,
-                 useTreeLens=(False, False),
-                 showTreeWindows=None):
+                 use_tree_lens=(False, False),
+                 show_tree_windows=None):
         self.win = None
         self.mat = mat
         self.bgcolor = bgcolor
@@ -371,24 +371,24 @@ class MatrixViewer (object):
         self.title = title
         self.part_lines = None
         self.part_lines_visible = True
-        self.firstOpen = True
-        if onClick != None:
-            self.onClick = onClick
+        self.first_open = True
+        if on_click != None:
+            self.on_click = on_click
 
         # labels
-        self.showLabels = showLabels
-        self.showLabelWindows = showLabelWindows        
-        self.labelWindows = [None, None]
+        self.show_labels = show_labels
+        self.show_label_windows = show_label_windows        
+        self.label_windows = [None, None]
 
         # trees
-        if showTreeWindows != False and (rtree != None or ctree != None):
-            self.showTreeWindows = True
+        if show_tree_windows != False and (rtree != None or ctree != None):
+            self.show_tree_windows = True
         else:
-            self.showTreeWindows = False
+            self.show_tree_windows = False
         self.treeWindows = [None, None]
         self.rtree = rtree
         self.ctree = ctree
-        self.useTreeLens = useTreeLens
+        self.use_tree_lens = use_tree_lens
 
         # setup perm based on trees
         if self.rtree:
@@ -413,7 +413,7 @@ class MatrixViewer (object):
         self.mat.cinv = util.invperm(self.mat.cperm)
     
     
-    def setMatrix(self, mat):
+    def set_matrix(self, mat):
         self.mat = mat
         
         
@@ -438,10 +438,10 @@ class MatrixViewer (object):
         self.win.set_antialias(False)
         self.win.set_bgcolor(* self.bgcolor)
         
-        self.win.set_binding(input_key("l"), self.toggleLabelWindows)
-        self.win.set_binding(input_key("t"), self.toggleTreeWindows)
-        self.win.set_binding(input_key("p"), self.togglePartitions)
-        self.drawMatrix(self.mat, mouseClick=self._clickCallback)
+        self.win.set_binding(input_key("l"), self.toggle_label_windows)
+        self.win.set_binding(input_key("t"), self.toggle_tree_windows)
+        self.win.set_binding(input_key("p"), self.toggle_partitions)
+        self.draw_matrix(self.mat, mouse_click=self._click_callback)
         self.win.home()
         
         self.menu = MatrixMenu(self)
@@ -449,12 +449,12 @@ class MatrixViewer (object):
         
     
     def redraw(self):
-        self.firstOpen = False
+        self.first_open = False
         self.win.clear_groups()
-        self.drawMatrix(self.mat, mouseClick=self._clickCallback)
+        self.draw_matrix(self.mat, mouse_click=self._click_callback)
     
     
-    def drawMatrix(self, mat, mouseClick=None):
+    def draw_matrix(self, mat, mouse_click=None):
         
         win = self.win
         
@@ -515,25 +515,25 @@ class MatrixViewer (object):
             vis = []
         win.add_group(group(*vis2))
         
-        if mouseClick != None:
+        if mouse_click != None:
             win.add_group(group(hotspot('click', -.5, .5, 
                                         mat.ncols-.5, -mat.nrows+.5, 
-                                        mouseClick)))
+                                        mouse_click)))
 
         # draw extra
-        self.drawBorder(mat.nrows, mat.ncols)
-        self.drawPartitions(mat)
+        self.draw_border(mat.nrows, mat.ncols)
+        self.draw_partitions(mat)
         
-        if self.showLabels:
-            if self.showLabelWindows:
-                self.openLabelWindows()
-            self.drawLabels()
+        if self.show_labels:
+            if self.show_label_windows:
+                self.open_label_windows()
+            self.draw_labels()
         
-        if self.showTreeWindows:
-            self.openTreeWindows()
+        if self.show_tree_windows:
+            self.open_tree_windows()
 
 
-    def togglePartitions(self, enabled=None):
+    def toggle_partitions(self, enabled=None):
         """toggles the drawing of partition lines"""
         
         if self.part_lines:
@@ -544,48 +544,48 @@ class MatrixViewer (object):
             self.part_lines_visible = enabled
             
     
-    def toggleLabelWindows(self):
+    def toggle_label_windows(self):
         """rotates through (no labels, inline, and panels)"""
         
-        if self.showLabelWindows:
-            self.showLabels = False
+        if self.show_label_windows:
+            self.show_labels = False
             show = False
         else:
-            if not self.showLabels:
-                self.showLabels = True
+            if not self.show_labels:
+                self.show_labels = True
                 show = False
             else:
                 show = True
             
-        self.setLabelWindows(show)
+        self.set_label_windows(show)
     
-    def setLabelWindows(self, show=True):
+    def set_label_windows(self, show=True):
         """sets whether label windows are visible"""
         
-        self.showLabelWindows = show
+        self.show_label_windows = show
         
         if show:
-            self.showLabels = True
+            self.show_labels = True
         else:
-            self.closeLabelWindows()
+            self.close_label_windows()
         
         self.redraw()
     
     
-    def closeLabelWindows(self):
+    def close_label_windows(self):
         """close down label windows"""
         
-        if self.labelWindows[0]:
-            self.rowEnsemble.remove_window(self.labelWindows[0])
-            self.labelWindows[0].close()
-        if self.labelWindows[1]:
-            self.colEnsemble.remove_window(self.labelWindows[1])
-            self.labelWindows[1].close()
+        if self.label_windows[0]:
+            self.rowEnsemble.remove_window(self.label_windows[0])
+            self.label_windows[0].close()
+        if self.label_windows[1]:
+            self.colEnsemble.remove_window(self.label_windows[1])
+            self.label_windows[1].close()
 
-        self.labelWindows = [None, None]
+        self.label_windows = [None, None]
     
     
-    def openLabelWindows(self):
+    def open_label_windows(self):
         """startup label windows"""
 
         x, y = self.win.get_position()
@@ -597,9 +597,9 @@ class MatrixViewer (object):
 
         # open row labels
         if self.mat.rowlabels:
-            if self.labelWindows[0] != None and \
-               self.labelWindows[0].is_open():
-                left = self.labelWindows[0]
+            if self.label_windows[0] != None and \
+               self.label_windows[0].is_open():
+                left = self.label_windows[0]
             else:
                 maxLabelWidth = max(map(len, self.mat.rowlabels))        
                 left = summon.Window(" ", 
@@ -619,9 +619,9 @@ class MatrixViewer (object):
         
         # open col labels
         if self.mat.collabels:
-            if self.labelWindows[1] != None and \
-               self.labelWindows[1].is_open():
-                top = self.labelWindows[1]
+            if self.label_windows[1] != None and \
+               self.label_windows[1].is_open():
+                top = self.label_windows[1]
             else:
                 maxLabelHeight = max(map(len, self.mat.collabels))
                 top = summon.Window(" ", 
@@ -639,26 +639,26 @@ class MatrixViewer (object):
         else:
             top = None
         
-        self.labelWindows = [left, top]
+        self.label_windows = [left, top]
     
     
-    def toggleTreeWindows(self):
+    def toggle_tree_windows(self):
         """toggle tree windows"""
         
-        self.setTreeWindows(not self.showTreeWindows)
+        self.set_tree_windows(not self.show_tree_windows)
     
-    def setTreeWindows(self, show=True):
+    def set_tree_windows(self, show=True):
         """sets whether tree windows are visible"""
         
-        self.showTreeWindows = show
+        self.show_tree_windows = show
         
         if not show:
-            self.closeTreeWindows()
+            self.close_tree_windows()
         
         self.redraw()
     
     
-    def closeTreeWindows(self):
+    def close_tree_windows(self):
         """close down tree windows"""
         
         if self.treeWindows[0]:
@@ -671,7 +671,7 @@ class MatrixViewer (object):
         self.treeWindows = [None, None]
     
     
-    def openTreeWindows(self):
+    def open_tree_windows(self):
         """startup tree windows"""
 
         x, y = self.win.get_position()
@@ -686,7 +686,7 @@ class MatrixViewer (object):
                self.treeWindows[0].win.is_open():
                 left = self.treeWindows[0]
             else:
-                if self.useTreeLens[0]:
+                if self.use_tree_lens[0]:
                     layout = treelib.layoutTree(self.rtree, 1, -1)
                 else:
                     layout = treelib.layoutTreeHierarchical(self.rtree, 1, -1)
@@ -694,7 +694,7 @@ class MatrixViewer (object):
                 boundary1 = min(c[0] for c in layout.itervalues()) - 1.0
                 boundary2 = max(c[0] for c in layout.itervalues())
                 left = sumtree.SumTree(self.rtree, name="row tree", 
-                                       showLabels=False,
+                                       show_labels=False,
                                        xscale=0, layout=layout,
                                        winsize=(treesize, h),
                                        winpos=(x-treesize-deco[0], y))
@@ -702,7 +702,7 @@ class MatrixViewer (object):
                 #left.win.set_bgcolor(*self.win.get_bgcolor())
                 left.win.set_visible(boundary1, 0, boundary2, 1)
                 
-                if not self.useTreeLens[0]:
+                if not self.use_tree_lens[0]:
                     left.win.set_boundary(boundary1, -util.INF, boundary2, util.INF)
                 
                 self.rowEnsemble.add_window(left.win, 0, coordy=offset)
@@ -715,7 +715,7 @@ class MatrixViewer (object):
                self.treeWindows[1].win.is_open():
                 top = self.treeWindows[1]
             else:
-                if self.useTreeLens[1]:
+                if self.use_tree_lens[1]:
                     layout = treelib.layoutTree(self.ctree, 1, 1)
                 else:
                     layout = treelib.layoutTreeHierarchical(self.ctree, 1, 1)
@@ -723,7 +723,7 @@ class MatrixViewer (object):
                 boundary1 = min(c[0] for c in layout.itervalues()) - 1.0
                 boundary2 = max(c[0] for c in layout.itervalues()) 
                 top = sumtree.SumTree(self.ctree, "col tree", 
-                                      showLabels=False,
+                                      show_labels=False,
                                       xscale=0, layout=layout,
                                       vertical=True,
                                       winsize=(w, treesize),
@@ -732,7 +732,7 @@ class MatrixViewer (object):
                 #top.win.set_bgcolor(*self.win.get_bgcolor())
                 top.win.set_visible(0, -boundary1, 1, -boundary2)
                 
-                if not self.useTreeLens[1]:
+                if not self.use_tree_lens[1]:
                     top.win.set_boundary(-util.INF, -boundary1, util.INF, -boundary2)
                 
                 self.colEnsemble.add_window(top.win, 0, coordx=offset)
@@ -742,7 +742,7 @@ class MatrixViewer (object):
         self.treeWindows = [left, top]
         
 
-    def drawBorder(self, nrows, ncols):
+    def draw_border(self, nrows, ncols):
         """draws the matrix boarder"""
     
         # draw boundary 
@@ -750,7 +750,7 @@ class MatrixViewer (object):
                            shapes.box(-.5,.5,ncols-.5, -nrows+.5, fill=False)))
 
     
-    def drawPartitions(self, mat):
+    def draw_partitions(self, mat):
         """draws cluster partitions"""
     
         vis = [color(* getDrawColor(self.bgcolor))]
@@ -777,7 +777,7 @@ class MatrixViewer (object):
 
 
     
-    def drawLabels(self):  
+    def draw_labels(self):  
         """draws matrix labels"""
           
         mat = self.mat
@@ -795,7 +795,7 @@ class MatrixViewer (object):
         minTextSize = 4
         
         # determine which window to draw labels in
-        rowwin, colwin = self.labelWindows
+        rowwin, colwin = self.label_windows
         if rowwin == None:
             rowwin = self.win
         if colwin == None:
@@ -833,7 +833,7 @@ class MatrixViewer (object):
 
 
     
-    def _clickCallback(self):
+    def _click_callback(self):
         """internal callback for mouse clicks"""
         
         x, y = self.win.get_mouse_pos('world')
@@ -852,10 +852,10 @@ class MatrixViewer (object):
         else:
             col = x
         
-        self.onClick(row, col, y, x, self.mat[y][x])
+        self.on_click(row, col, y, x, self.mat[y][x])
     
     
-    def onClick(self, row, col, i, j, val):
+    def on_click(self, row, col, i, j, val):
         """default callback for mouse clicks"""
         
         print row, col, "mat[%d][%d] = %f" % (i, j, self.mat[i][j])
@@ -872,7 +872,7 @@ class DenseMatrixViewer (MatrixViewer):
                  style="quads", **options):
         
         mat = Matrix()
-        mat.from2DList(data, cutoff=cutoff)
+        mat.from_dmat(data, cutoff=cutoff)
         mat.rowlabels = rlabels
         mat.collabels = clabels
         mat.rperm = rperm
@@ -886,13 +886,13 @@ class DenseMatrixViewer (MatrixViewer):
         MatrixViewer.__init__(self, mat, style=style, **options)
     
     
-    def setDenseMatrix(self, data, colormap=None,
+    def set_dense_matrix(self, data, colormap=None,
                        rlabels=None, clabels=None, cutoff=-util.INF,
                        rperm=None, cperm=None, rpart=None, cpart=None):
         """sets a new dense matrix to visualize"""
         
         self.mat = Matrix()
-        self.mat.from2DList(data, cutoff=cutoff)
+        self.mat.from_dmat(data, cutoff=cutoff)
         self.mat.rowlabels = rlabels
         self.mat.collabels = clabels
         self.mat.rperm = rperm
@@ -904,7 +904,7 @@ class DenseMatrixViewer (MatrixViewer):
             self.mat.colormap = colormap
         
         self.mat.setup()
-        
+    setDenseMatrix = set_dense_matrix
         
 
 #=============================================================================

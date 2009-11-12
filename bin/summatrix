@@ -227,7 +227,7 @@ def read_colormap(conf, mat):
     elif conf.color == "solid":
         mat.colormap = summon.SolidColorMap()
     else:
-        mat.colormap = summon.readColorMap(conf.color)
+        mat.colormap = summon.read_color_map(conf.color)
 
 
 def read_matrix(conf, mat):
@@ -317,13 +317,13 @@ else:
 viewer = matrix.MatrixViewer(mat, bgcolor=conf.bgcolor, 
                              drawzeros=conf.drawzeros, 
                              style=conf.style,
-                             showLabels=showLabels,
-                             showLabelWindows=showLabelWindows,
+                             show_labels=showLabels,
+                             show_label_windows=showLabelWindows,
                              winsize=conf.winsize,
                              title=matfile,
                              rtree=rtree,
                              ctree=ctree,
-                             useTreeLens=(conf.treelens, conf.treelens))
+                             use_tree_lens=(conf.treelens, conf.treelens))
 util.tic("drawing matrix")
 viewer.show()
 util.toc()

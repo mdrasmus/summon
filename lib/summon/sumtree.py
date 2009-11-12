@@ -46,7 +46,7 @@ class SumTree (object):
     """SUMMON Tree Visualizer"""
 
     def __init__(self, tree, name="SUMTREE",
-                       showLabels=True, 
+                       show_labels=True, 
                        xscale=1.0,
                        showBranchLabels=True,
                        showBoot=True,
@@ -68,7 +68,7 @@ class SumTree (object):
         self.mark_group = None
         self.labels = []
         self.showBoot = showBoot
-        self.showLabels = showLabels
+        self.show_labels = show_labels
         self.showBranchLabels = showBranchLabels
         self.branchLabels = copy.copy(branchLabels)
         self.xscale = float(xscale)
@@ -97,7 +97,6 @@ class SumTree (object):
             self.branchLabels = {}
         
         self._setup_tree()
-    setTree = set_tree
         
         
     def _setup_tree(self):
@@ -198,7 +197,7 @@ class SumTree (object):
     def toggle_labels(self):
         """toggle the visibility of leaf names"""
         
-        self.enable_labels(not self.showLabels)
+        self.enable_labels(not self.show_labels)
     toggleLabels = toggle_labels
     
     
@@ -291,7 +290,7 @@ class SumTree (object):
    
     
     def enable_labels(self, visible=True):
-        self.showLabels = visible
+        self.show_labels = visible
         self._label_viewer.get_group().set_visible(visible)
     enableLabels = enable_labels
     

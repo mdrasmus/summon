@@ -81,7 +81,7 @@ class ColorMap:
             return newcolor
     
     
-    def getInt(self, value):
+    def get_int(self, value):
         return [int(x*255) for x in self.get(value)]
 
 
@@ -118,7 +118,7 @@ class SolidColorMap:
         return [1, 1, 1]
 
 
-def readColorMap(filename):
+def read_color_map(filename):
     mat = []
 
     for line in file(filename):
@@ -130,4 +130,4 @@ def readColorMap(filename):
     except:
         print "error reading colormap, using default"
         return RainbowColorMap()
-        
+

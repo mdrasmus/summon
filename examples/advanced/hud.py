@@ -14,12 +14,12 @@ def func(name):
     print name
 
 bar = hud.SideBar(win, width=200)
-bar.addItem(hud.MenuItem("My Func1", lambda: func(1)))
-bar.addItem(hud.MenuItem("My Func2", lambda: func(2)))
-bar.addItem(hud.MenuItem("My Func3", lambda: func(3), 
-                         buttonColor=color(.7, .9,.7)))
-bar.addItem(hud.MenuItem("My Func4", lambda: func(4), 
-                         buttonColor=color(.9, .7,.7)))
+bar.add_item(hud.MenuItem("My Func1", lambda: func(1)))
+bar.add_item(hud.MenuItem("My Func2", lambda: func(2)))
+bar.add_item(hud.MenuItem("My Func3", lambda: func(3), 
+                          button_color=(.7, .9,.7)))
+bar.add_item(hud.MenuItem("My Func4", lambda: func(4), 
+                          button_color=(.9, .7,.7)))
 bar.show()
 
 

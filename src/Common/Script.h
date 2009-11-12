@@ -313,17 +313,17 @@ inline Scm Long2Scm(long num)
 inline bool ScmFloatp(const Scm &scm)
 { return scm.IsFloat() || scm.IsInt(); }
 
-inline float Scm2Float(const Scm &scm)
+inline double Scm2Float(const Scm &scm)
 {
     if (scm.IsInt())
-        return (float) PyInt_AS_LONG(Scm2Py(scm));
+        return (double) PyInt_AS_LONG(Scm2Py(scm));
     else if (scm.IsLong())
-        return (float) PyLong_AsLongLong(Scm2Py(scm));
+        return (double) PyLong_AsLongLong(Scm2Py(scm));
     else        
-        return (float) PyFloat_AS_DOUBLE(Scm2Py(scm));
+        return (double) PyFloat_AS_DOUBLE(Scm2Py(scm));
 }
 
-inline Scm Float2Scm(float val)
+inline Scm Float2Scm(double val)
 { return Py2ScmTake(PyFloat_FromDouble(val)); }
 
 
