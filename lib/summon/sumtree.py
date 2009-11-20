@@ -253,7 +253,7 @@ class SumTree (object):
         # hotspot
         def func():
             self.selnode = node
-            self.nodeClick(node)
+            self.node_click(node)
         vis.append(hotspot("click", nx, bot, px, top, func))
 
         # TODO: move to label viewer
@@ -298,7 +298,6 @@ class SumTree (object):
     def node_click(self, node):
         print "-" * 20
         self.print_node(node)
-    nodeClick = node_click
     
     def print_node(self, node):
         if node.is_leaf():
