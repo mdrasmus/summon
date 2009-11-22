@@ -61,16 +61,16 @@ public:
     virtual void ExecCommand(Command &command);
 
     // manipulation
-    void SetVisible(float x, float y, float x2, float y2);   
-    void TranslateBy(float x, float y);
-    void TranslateTo(float x, float y);
-    void ZoomBy(float x, float y);
-    void ZoomTo(float x, float y);
-    void SetFocus(float x, float y);
+    void SetVisible(double x, double y, double x2, double y2);   
+    void TranslateBy(double x, double y);
+    void TranslateTo(double x, double y);
+    void ZoomBy(double x, double y);
+    void ZoomTo(double x, double y);
+    void SetFocus(double x, double y);
 
     // accessors    
-    inline Vertex2f GetTranslate() { return m_trans; }
-    inline Vertex2f GetZoom() { return m_zoom; }
+    inline Vertex2d GetTranslate() { return m_trans; }
+    inline Vertex2d GetZoom() { return m_zoom; }
     
     // coordinate system conversions
     inline Vertex2i WindowToScreen(int x, int y)
@@ -79,20 +79,20 @@ public:
     }
 
     
-    inline Vertex2f ScreenToWorld(int x, int y)
+    inline Vertex2d ScreenToWorld(int x, int y)
     {
-        return Vertex2f((x - m_trans.x - m_focus.x) / m_zoom.x + m_focus.x,
+        return Vertex2d((x - m_trans.x - m_focus.x) / m_zoom.x + m_focus.x,
                         (y - m_trans.y - m_focus.y) / m_zoom.y + m_focus.y);
     }
 
-    inline Vertex2i WorldToScreen(float x, float y)
+    inline Vertex2i WorldToScreen(double x, double y)
     {
         return Vertex2i(int(m_trans.x + m_focus.x + m_zoom.x * (x - m_focus.x)),
                         int(m_trans.y + m_focus.y + m_zoom.y * (y - m_focus.y)));
     }
 
-    inline Vertex2f WindowToWorld(int x, int y) {
-        return Vertex2f((x - m_trans.x - m_focus.x) / m_zoom.x + m_focus.x,
+    inline Vertex2d WindowToWorld(int x, int y) {
+        return Vertex2d((x - m_trans.x - m_focus.x) / m_zoom.x + m_focus.x,
                         (m_windowSize.y - y - m_trans.y - m_focus.y) / m_zoom.y + m_focus.y);
     }
 
@@ -106,9 +106,9 @@ protected:
     virtual void DrawScreen();
     virtual void TransformWorld();
 
-    Vertex2f m_trans;
-    Vertex2f m_zoom;
-    Vertex2f m_focus;
+    Vertex2d m_trans;
+    Vertex2d m_zoom;
+    Vertex2d m_focus;
 };
 
 

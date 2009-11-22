@@ -125,6 +125,7 @@ inline float Vertex2Angle(const Vertex2<T> &v)
 
 
 // define popular Vertex types
+typedef Vertex2<double> Vertex2d;
 typedef Vertex2<float> Vertex2f;
 typedef Vertex2<int> Vertex2i;
 

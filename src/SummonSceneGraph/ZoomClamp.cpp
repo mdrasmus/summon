@@ -125,7 +125,7 @@ Vertex2f ZoomClamp::ComputeEffectiveZoom(const TransformMatrix *parent,
 
         float zoom[3] = { cameraZoom.x, cameraZoom.y, 1.0 };
         MakeScaleMatrix(zoom, tmp.mat);
-        MultRotateMatrix(tmp.mat, 180.0 / M_PI * prerotate, tmp2.mat);
+        MultRotateMatrix<float>(tmp.mat, 180.0 / M_PI * prerotate, tmp2.mat);
         tmp2.GetScaling(&cameraZoom2.x, &cameraZoom2.y);
     } else {
         cameraZoom2 = cameraZoom;
@@ -223,7 +223,7 @@ const TransformMatrix *ZoomClamp::GetTransform(TransformMatrix *matrix,
         float zoom2[3] = { 1.0 / camera.zoom.x, 1.0 / camera.zoom.y, 1.0 };
         MakeTransMatrix(trans, tmp.mat);        
         MultScaleMatrix(tmp.mat, zoom2, tmp2.mat);
-        MultRotateMatrix(tmp2.mat, 180.0 / M_PI * diffAngle, tmp.mat);
+        MultRotateMatrix<float>(tmp2.mat, 180.0 / M_PI * diffAngle, tmp.mat);
         
         // compensate for origin, if needed
         if (m_origin.x != 0.0 || m_origin.y != 0.0) {            

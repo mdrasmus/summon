@@ -107,7 +107,9 @@ class Bubble (Actor):
         
         # air resistance
         if util.vmag(self.vel) > 1:
-            self.force = util.vadd(self.force, util.vmuls(self.vel, -.2))
+            vmag = util.vmag(self.vel)
+            vdir = util.vdivs(self.vel, -.9 * vmag)
+            self.force = util.vadd(self.force, vdir)
         
         self.integrate_force()
         

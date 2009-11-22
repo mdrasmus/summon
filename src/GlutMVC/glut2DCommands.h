@@ -85,7 +85,7 @@ public:
         return -1;
     }
     
-    Vertex2f trans;
+    Vertex2d trans;
 };
 
 
@@ -100,7 +100,7 @@ public:
     virtual void Setup(Input &input) 
     {
         if (input.GetId() == MOUSE_MOTION_INPUT) {
-            float num = (float) ((MouseMotionInput*)(&input))->vel.y;
+            double num = (double) ((MouseMotionInput*)(&input))->vel.y;
             
             // clamp zoom
             if (num > MAX_ZOOM)  num = MAX_ZOOM;
@@ -127,7 +127,7 @@ public:
     
     enum { MAX_ZOOM = 20 };
     
-    Vertex2f zoom;
+    Vertex2d zoom;
 };
 
 
@@ -142,7 +142,7 @@ public:
     virtual void Setup(Input &input) 
     {
         if (input.GetId() == MOUSE_MOTION_INPUT) {
-            float num = (float) ((MouseMotionInput*)(&input))->vel.y;
+            double num = (double) ((MouseMotionInput*)(&input))->vel.y;
             
             // clamp zoom
             if (num > MAX_ZOOM)  num = MAX_ZOOM;
@@ -171,7 +171,7 @@ public:
     
     enum { MAX_ZOOM = 20 };
     
-    Vertex2f zoom;    
+    Vertex2d zoom;    
 };
 
 class ZoomYCommand : public StringCommand
@@ -185,7 +185,7 @@ public:
     virtual void Setup(Input &input) 
     {
         if (input.GetId() == MOUSE_MOTION_INPUT) {
-            float num = (float) ((MouseMotionInput*)(&input))->vel.y;
+            double num = (double) ((MouseMotionInput*)(&input))->vel.y;
             
             // clamp zoom
             if (num > MAX_ZOOM)  num = MAX_ZOOM;
@@ -215,7 +215,7 @@ public:
     
     enum { MAX_ZOOM = 20 };
     
-    Vertex2f zoom;    
+    Vertex2d zoom;    
 };
 
 

@@ -119,16 +119,16 @@ if conf.usedist == 0.0:
     conf.usedist = 1.0
 
 if conf.layout == "default":
-    layout = treelib.layoutTree(tree, conf.usedist, -1.0, 
-                                minlen=minlen)
+    layout = treelib.layout_tree(tree, conf.usedist, -1.0, 
+                                 minlen=minlen)
 elif conf.layout == "hierarchical":
-    layout = treelib.layoutTreeHierarchical(tree, conf.usedist, -1.0)
+    layout = treelib.layout_tree_hierarchical(tree, conf.usedist, -1.0)
 else:
     raise Exception("unknown tree layout")
 
 
 vis = sumtree.SumTree(tree, name=filename, xscale=conf.usedist, 
-                      showLabels=not conf.noshowlabels,
+                      show_labels=not conf.noshowlabels,
                       vertical=conf.vertical,
                       colormap=colormap,
                       winsize=winsize,
@@ -143,8 +143,8 @@ util.toc()
 def find(name):
     return vis.find(name)
 
-def mark(boxColor = color(1,0,0), **options):
-    return vis.mark(boxColor, **options)
+def mark(boxcolor=(1,0,0), **options):
+    return vis.mark(boxcolor, **options)
 
 def clear_marks():
-    vis.clearMarks()
+    vis.clear_marks()

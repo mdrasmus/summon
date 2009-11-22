@@ -67,7 +67,7 @@ class SideBar (object):
         self.gid = None
         self.shown = False
         
-        self.shadowSize = (-4, 4)
+        self.shadow_size = (-4, 4)
         self.shadow_color = (0, 0, 0, .5)
         
         # install callbacks
@@ -112,8 +112,8 @@ class SideBar (object):
         
         vis = [color(*self.shadow_color), 
                shapes.box(winwidth, winheight,
-                          winwidth-self.width-self.shadowSize[0], 
-                          winheight-height-self.shadowSize[1]),
+                          winwidth-self.width-self.shadow_size[0], 
+                          winheight-height-self.shadow_size[1]),
                color(*self.base_color), 
                shapes.box(winwidth, winheight,
                           winwidth-self.width, winheight-height)]

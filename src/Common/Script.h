@@ -71,8 +71,9 @@ public:
     
     ~Scm()
     {
-        if (py != NULL)
+        if (py != NULL) {
             Py_DECREF(py);
+        }
     }
         
     inline int Size() const
@@ -123,8 +124,9 @@ public:
     inline Scm operator= (const Scm &other)
     {
         // decref old python object
-        if (py != NULL)
+        if (py != NULL) {
             Py_DECREF(py);
+        }
         
         py = other.py;
         start = other.start;

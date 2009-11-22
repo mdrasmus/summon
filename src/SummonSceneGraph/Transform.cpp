@@ -71,7 +71,7 @@ void Transform::Set(int kind, float param1, float param2)
             vec[0] = param1;
             vec[1] = param2;
             vec[2] = 0;
-            MakeRotateMatrix(180, vec, m_matrix.mat);            
+            MakeRotateMatrix<float>(180, vec, m_matrix.mat);            
             break;
         
         default:

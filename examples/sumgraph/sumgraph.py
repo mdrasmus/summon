@@ -32,6 +32,9 @@ def draw_node(node):
         size = map(float, size)
     node_radius = 37
     label_radius = 30
+    fill_color = colors.blue
+    text_color = colors.white
+    nsides = 20
 
     # get node name
     name = node.get_name()    
@@ -40,16 +43,22 @@ def draw_node(node):
     return translate(
             x, y,
             zoom_clamp(
-                colors.blue,
+
+                # node fill
+                fill_color,
                 scale(size[0], size[1], 
-                      shapes.regular_polygon(0, 0, 20, node_radius)),
+                      shapes.regular_polygon(0, 0, nsides, node_radius)),
+
+                # text label
                 zoom_clamp(
-                    colors.white,                         
+                    text_color,                         
                     text_scale(name, -label_radius*size[0], -label_radius*size[-1], 
                                label_radius*size[0], label_radius*size[1], 
                                "center", "middle"),
                     minx=.5, miny=.5, maxx=1, maxy=1, 
                     link=True, clip=True, link_type="smaller"),
+
+                
                 minx=.1, maxx=1, miny=.1, maxy=1, 
                 link=True, clip=True, link_type="smaller"))
 
@@ -77,9 +86,11 @@ def draw_edge(graph, edge):
     
     source = graph.get_node('"' + edge.get_source() + '"')
     source_pos = map(float, source.get_pos().split(","))
+
+    edge_color = colors.black
     
     if arrow_head[0] == "start":
-        return group(colors.black,
+        return group(edge_color,
                      lines(source_pos[0], source_pos[1], 
                            control_pts[0], control_pts[1]),
                      line_strip(*curve),
@@ -89,7 +100,7 @@ def draw_edge(graph, edge):
                                   control_pts[0], control_pts[1],
                                   head_size=7))
     elif arrow_head[0] == "end":
-        return group(colors.black, 
+        return group(edge_color, 
                      lines(source_pos[0], source_pos[1], 
                            control_pts[0], control_pts[1]),
                      line_strip(*curve),
@@ -105,7 +116,7 @@ def draw_edge(graph, edge):
                          maxx=1, maxy=1, minx=.1, miny=.1, 
                          clip=True, link=True, link_type="smaller"))
     else:
-        return group(colors.black, 
+        return group(edge_color, 
                      lines(source_pos[0], source_pos[1], 
                            control_pts[0], control_pts[1]),
                      line_strip(*curve),
