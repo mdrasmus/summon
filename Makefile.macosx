@@ -20,10 +20,26 @@ PYTHON_INCLUDE = $(prefix)/include/python$(PYTHON_VERSION)
 MODULE = summon_core.so
 
 # options for compiling and linking
-LDFLAGS := $(LDFLAGS) -lglut -lSDL -lutil -lpython$(PYTHON_VERSION) -pthread -L/usr/local/lib -bundle -framework OpenGL -framework Cocoa
+LDFLAGS := $(LDFLAGS) -L../../mac/lib \
+         ../../mac/lib/libSDL.a \
+	-lSystem.B -l gcc_s.1 \
+	-I/usr/local/include \
+	-L/usr/local/lib \
+	-lglut \
+	-L/usr/X11/lib -l GL \
+         -l GLU -l X11 \
+	-lutil -lpython$(PYTHON_VERSION) -pthread  -bundle \
+	-framework OpenGL -framework Cocoa -framework IOKit \
+	-framework AudioUnit -framework Carbon -framework QuickTime
 
+
+# -L/usr/local/lib
 #-L../../mac -bundle -lglut -lGL
-CFLAGS := $(CFLAGS) -I$(PYTHON_INCLUDE) -fno-strict-aliasing -I/usr/local/include -I/usr/local/include -I../../mac -DNOGLUTEXT=1
+
+CFLAGS := $(CFLAGS) -I$(PYTHON_INCLUDE) -fno-strict-aliasing  -I../../mac/include -DNOGLUTEXT=1 
+#-I/usr/local/include
+
+
 
 # programs
 CC = g++
