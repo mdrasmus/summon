@@ -10,11 +10,11 @@ import os
 from distutils.core import setup, Extension
 
 
-if not os.path.exists("mac"):
-    os.mkdir("mac")
-if not os.path.exists("mac/GL"):
+if not os.path.exists("mac/include"): os.makedirs("mac/include")
+if not os.path.exists("mac/lib"): os.makedirs("mac/lib")
+if not os.path.exists("mac/include/GL"):
     os.symlink("/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers",
-               "mac/GL")
+               "mac/include/GL")
 
 
 SUMMON_VERSION = '1.8.9'
@@ -102,7 +102,7 @@ setup(
              "src/MVC/Input.cpp",
              "src/MVC/Model.cpp",
              "src/MVC/StringCommand.cpp",
-			 "src/SummonSceneGraph/summon_scene_graph.cpp",
+	     "src/SummonSceneGraph/summon_scene_graph.cpp",
              "src/SummonSceneGraph/elements.cpp",
              "src/SummonSceneGraph/Element.cpp",
              "src/SummonSceneGraph/Graphic.cpp",
@@ -111,7 +111,7 @@ setup(
              "src/SummonSceneGraph/Transform.cpp",
              "src/SummonSceneGraph/TransformMatrix.cpp",
              "src/SummonSceneGraph/ZoomClamp.cpp",
-			 "src/Summon/ScriptCommand.cpp",
+	     "src/Summon/ScriptCommand.cpp",
              "src/Summon/Summon.cpp",             
              "src/Summon/summonCommands.cpp",
              "src/Summon/SummonController.cpp",
@@ -123,12 +123,15 @@ setup(
                           "src/Summon",
                           "src/SummonSceneGraph",
                           
-                          "mac",
-                          "/usr/local/include"],
+                          #"mac",
+                          "mac/include",
+"/Developer/SDKs/MacOSX10.5.sdk/usr/X11/lib"],
+                          #"/usr/local/include"],
                           #"/usr/X11R6/include"],
-            libraries=["SDL", "GLUT"],
-            library_dirs=["/usr/local/lib",
-                          "mac"],
+            libraries=["SDL", "glut"],
+            library_dirs=["mac/lib", "/Developer/SDKs/MacOSX10.5.sdk/usr/X11/lib",
+                          #"mac"
+                          ],
             define_macros=[("NOGLUTEXT", "1")],
 
             undef_macros=["NDEBUG"],
