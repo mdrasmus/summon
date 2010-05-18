@@ -1,5 +1,5 @@
 #!/usr/bin/env python-i
-# a very large hierarchical clustering of all human and dog genes
+# a very large taxonomy from NCBI
 #
 
 print """
@@ -16,6 +16,7 @@ import zipfile
 from summon import sumtree, util, treelib
 
 # read tree in parent tree format
+# perform unzipping on the fly.
 util.tic("read tree")
 tree = treelib.parse_newick(zipfile.ZipFile("ncbi-taxonomy.zip").read(
     "ncbi-taxonomy.tre"))
@@ -28,5 +29,7 @@ vis = sumtree.SumTree(tree, name="NCBI taxonomy tree", xscale=0,
 vis.show()
 util.toc()
 
+# flag some species in the tree
 vis.flag(["Homo_sapiens"], (1, 0, 0))
 vis.flag(["Mus_musculus"], (0, 0, 1))
+

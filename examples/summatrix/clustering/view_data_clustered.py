@@ -37,9 +37,9 @@ mat.cpart = util.read_strings("data.cpart")
 
 
 # create and show matrix viewer
-viewer = matrix.MatrixViewer(mat, title="unclustered data",
-                             showLabels=True,
-                             showLabelWindows=True,
+viewer = matrix.MatrixViewer(mat, title="clustered data",
+                             show_labels=True,
+                             show_label_windows=True,
                              bgcolor=(1,1,1),
                              style="quads",
                              winsize=(400, 600))

@@ -122,15 +122,14 @@ setup(
                           "src/Common",
                           "src/Summon",
                           "src/SummonSceneGraph",
-                          
-                          #"mac",
+
                           "mac/include",
-"/Developer/SDKs/MacOSX10.5.sdk/usr/X11/lib"],
+                          "/Developer/SDKs/MacOSX10.5.sdk/usr/X11/lib"],
                           #"/usr/local/include"],
                           #"/usr/X11R6/include"],
             libraries=["SDL", "glut"],
-            library_dirs=["mac/lib", "/Developer/SDKs/MacOSX10.5.sdk/usr/X11/lib",
-                          #"mac"
+            library_dirs=["mac/lib", 
+                          "/Developer/SDKs/MacOSX10.5.sdk/usr/X11/lib",
                           ],
             define_macros=[("NOGLUTEXT", "1")],
 

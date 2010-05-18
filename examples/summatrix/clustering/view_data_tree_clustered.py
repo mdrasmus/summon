@@ -33,11 +33,11 @@ ctree.read_parent_tree("data.col.ptree", labels=mat.collabels)
 
 
 # create and show matrix viewer
-viewer = matrix.MatrixViewer(mat, title="unclustered data",
+viewer = matrix.MatrixViewer(mat, title="tree clustered data",
                              rtree=rtree,
                              ctree=ctree,
-                             showLabels=True,
-                             showLabelWindows=True,
+                             show_labels=True,
+                             show_label_windows=True,
                              bgcolor=(1,1,1),
                              style="quads",
                              winsize=(400, 600))

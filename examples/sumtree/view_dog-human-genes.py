@@ -32,7 +32,7 @@ def nodelabel(node):
 # draw tree
 util.tic("draw tree")
 vis = sumtree.SumTree(tree, name="dog and human gene tree", xscale=0, 
-                      showLabels=False,
+                      show_labels=False,
                       vertical=True,
                       colormap=colormap,
                       nodelabel=nodelabel,

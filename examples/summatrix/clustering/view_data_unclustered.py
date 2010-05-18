@@ -22,7 +22,7 @@ mat.collabels = util.read_strings("data.clabels")
 
 # create and show matrix viewer
 viewer = matrix.MatrixViewer(mat, title="unclustered data",
-                             showLabels=True,
+                             show_labels=True,
                              bgcolor=(1,1,1),
                              style="quads",
                              winsize=(400, 600))
