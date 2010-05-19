@@ -140,11 +140,11 @@ g.add_option("", "--noloadvals", dest="noloadvals",
 
 
 
-def parseColor(colorstr):
+def parse_color(colorstr):
     """Parse <r>,<g>,<b> into a list of three floats"""
     return map(float, colorstr.split(','))
 
-def parseSize(sizestr):
+def parse_size(sizestr):
     """Parse <width>x<hieght> into a list of two ints"""
     return map(int, sizestr.split('x'))
 
@@ -152,8 +152,8 @@ def parseSize(sizestr):
 
 # parse options
 conf, args = o.parse_args()
-conf.bgcolor = parseColor(conf.bgcolor)
-conf.winsize = parseSize(conf.winsize)
+conf.bgcolor = parse_color(conf.bgcolor)
+conf.winsize = parse_size(conf.winsize)
 
 
 
@@ -291,24 +291,16 @@ matfile = read_matrix(conf, mat)
 read_trees(conf, mat)
 
 
-# TODO: remove?
-# execute python scripts
-for script in args:
-    print "executing", script
-    execfile(script)
-
-
-
 # determine label settings
 if conf.showlabels == "inline":
-    showLabels = True
-    showLabelWindows = False
+    show_labels = True
+    show_label_windows = False
 elif conf.showlabels == "panels":
-    showLabels = True
-    showLabelWindows = True
+    show_labels = True
+    show_label_windows = True
 elif conf.showlabels == "none":
-    showLabels = False
-    showLabelWindows = False
+    show_labels = False
+    show_label_windows = False
 else:
     raise Exception("unknown showlabels setting '%s'" % conf.showlabels)
 
@@ -317,8 +309,8 @@ else:
 viewer = matrix.MatrixViewer(mat, bgcolor=conf.bgcolor, 
                              drawzeros=conf.drawzeros, 
                              style=conf.style,
-                             show_labels=showLabels,
-                             show_label_windows=showLabelWindows,
+                             show_labels=show_labels,
+                             show_label_windows=show_label_windows,
                              winsize=conf.winsize,
                              title=matfile,
                              rtree=rtree,
@@ -342,3 +334,9 @@ if rtree:
 if ctree:
     print "  ctree  = col tree"
 print
+
+#=============================================================================
+# execute any python files given on the command line
+for pyfile in args:
+    execfile(pyfile)
+

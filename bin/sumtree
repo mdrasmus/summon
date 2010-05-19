@@ -127,14 +127,14 @@ else:
     raise Exception("unknown tree layout")
 
 
-vis = sumtree.SumTree(tree, name=filename, xscale=conf.usedist, 
-                      show_labels=not conf.noshowlabels,
-                      vertical=conf.vertical,
-                      colormap=colormap,
-                      winsize=winsize,
-                      layout=layout)
+viewer = sumtree.SumTree(tree, name=filename, xscale=conf.usedist, 
+                         show_labels=not conf.noshowlabels,
+                         vertical=conf.vertical,
+                         colormap=colormap,
+                         winsize=winsize,
+                         layout=layout)
 util.tic("drawing tree")
-vis.show()
+viewer.show()
 util.toc()
 
 
@@ -148,3 +148,19 @@ def mark(boxcolor=(1,0,0), **options):
 
 def clear_marks():
     vis.clear_marks()
+
+
+#=============================================================================
+# display globals
+
+print
+print "variables available:"
+print "  tree    = tree object"
+print "  viewer = tree viewer"
+
+
+#=============================================================================
+# execute any python files given on the command line
+for pyfile in args:
+    execfile(pyfile)
+
