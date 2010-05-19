@@ -385,7 +385,7 @@ class MatrixViewer (object):
             self.show_tree_windows = True
         else:
             self.show_tree_windows = False
-        self.treeWindows = [None, None]
+        self.tree_windows = [None, None]
         self.rtree = rtree
         self.ctree = ctree
         self.use_tree_lens = use_tree_lens
@@ -422,19 +422,21 @@ class MatrixViewer (object):
         
         if self.win == None:
             self.win = summon.Window(self.title, size=self.winsize)
-            self.rowEnsemble = multiwindow.WindowEnsemble([self.win], 
+            self.row_ensemble = multiwindow.WindowEnsemble([self.win], 
                                    stacky=True, sameh=True,
                                    tiey=True, piny=True,
                                    master=self.win,
                                    coordsy=[0.0])
 
-            self.colEnsemble = multiwindow.WindowEnsemble([self.win], 
+            self.col_ensemble = multiwindow.WindowEnsemble([self.win], 
                                    stackx=True, samew=True,
                                    tiex=True, pinx=True,
                                    master=self.win,
                                    coordsx=[0.0])
         else:
-            self.win.clear_groups()
+            #self.win.clear_groups()
+            self.clear()
+            
         self.win.set_antialias(False)
         self.win.set_bgcolor(* self.bgcolor)
         
@@ -446,11 +448,27 @@ class MatrixViewer (object):
         
         self.menu = MatrixMenu(self)
         self.win.set_menu(self.menu)
-        
+
+
+    def clear(self):
+        """Clear graphics in all associated windows"""
+
+        if self.win:
+            self.win.clear_groups()
+
+        for win in self.label_windows:
+            if win:
+                win.clear_groups()
+
+        for win in self.tree_windows:
+            if win:
+                win.win.clear_groups()
+                
     
     def redraw(self):
         self.first_open = False
-        self.win.clear_groups()
+        #self.win.clear_groups()
+        self.clear()
         self.draw_matrix(self.mat, mouse_click=self._click_callback)
     
     
@@ -576,10 +594,10 @@ class MatrixViewer (object):
         """close down label windows"""
         
         if self.label_windows[0]:
-            self.rowEnsemble.remove_window(self.label_windows[0])
+            self.row_ensemble.remove_window(self.label_windows[0])
             self.label_windows[0].close()
         if self.label_windows[1]:
-            self.colEnsemble.remove_window(self.label_windows[1])
+            self.col_ensemble.remove_window(self.label_windows[1])
             self.label_windows[1].close()
 
         self.label_windows = [None, None]
@@ -609,11 +627,11 @@ class MatrixViewer (object):
                 left.set_visible(leftcoord, 0, leftcoord-maxLabelWidth, 1)
                 left.set_boundary(leftcoord, -util.INF, leftcoord-maxLabelWidth, util.INF)
 
-                if self.treeWindows[0] == None:
+                if self.tree_windows[0] == None:
                     index = 0
                 else:
                     index = 1
-                self.rowEnsemble.add_window(left, index)
+                self.row_ensemble.add_window(left, index)
         else:
             left = None
         
@@ -631,11 +649,11 @@ class MatrixViewer (object):
                 top.set_visible(0, topcoord, 1, topcoord+maxLabelHeight) 
                 top.set_boundary(-util.INF, topcoord, util.INF, topcoord+maxLabelHeight)
 
-                if self.treeWindows[1] == None:
+                if self.tree_windows[1] == None:
                     index = 0
                 else:
                     index = 1
-                self.colEnsemble.add_window(top, index)
+                self.col_ensemble.add_window(top, index)
         else:
             top = None
         
@@ -661,14 +679,14 @@ class MatrixViewer (object):
     def close_tree_windows(self):
         """close down tree windows"""
         
-        if self.treeWindows[0]:
-            self.rowEnsemble.remove_window(self.treeWindows[0].win)
-            self.treeWindows[0].win.close()
-        if self.treeWindows[1]:
-            self.colEnsemble.remove_window(self.treeWindows[1].win)
-            self.treeWindows[1].win.close()
+        if self.tree_windows[0]:
+            self.row_ensemble.remove_window(self.tree_windows[0].win)
+            self.tree_windows[0].win.close()
+        if self.tree_windows[1]:
+            self.col_ensemble.remove_window(self.tree_windows[1].win)
+            self.tree_windows[1].win.close()
         
-        self.treeWindows = [None, None]
+        self.tree_windows = [None, None]
     
     
     def open_tree_windows(self):
@@ -682,14 +700,15 @@ class MatrixViewer (object):
 
         # open row tree
         if self.rtree:
-            if self.treeWindows[0] != None and \
-               self.treeWindows[0].win.is_open():
-                left = self.treeWindows[0]
+            if self.tree_windows[0] != None and \
+               self.tree_windows[0].win.is_open():
+                left = self.tree_windows[0]
+                left.show()
             else:
                 if self.use_tree_lens[0]:
-                    layout = treelib.layoutTree(self.rtree, 1, -1)
+                    layout = treelib.layout_tree(self.rtree, 1, -1)
                 else:
-                    layout = treelib.layoutTreeHierarchical(self.rtree, 1, -1)
+                    layout = treelib.layout_tree_hierarchical(self.rtree, 1, -1)
                 offset = max(c[1] for c in layout.itervalues())
                 boundary1 = min(c[0] for c in layout.itervalues()) - 1.0
                 boundary2 = max(c[0] for c in layout.itervalues())
@@ -705,20 +724,21 @@ class MatrixViewer (object):
                 if not self.use_tree_lens[0]:
                     left.win.set_boundary(boundary1, -util.INF, boundary2, util.INF)
                 
-                self.rowEnsemble.add_window(left.win, 0, coordy=offset)
+                self.row_ensemble.add_window(left.win, 0, coordy=offset)
         else:
             left = None
         
         # open col tree
         if self.ctree:
-            if self.treeWindows[1] != None and \
-               self.treeWindows[1].win.is_open():
-                top = self.treeWindows[1]
+            if self.tree_windows[1] != None and \
+               self.tree_windows[1].win.is_open():
+                top = self.tree_windows[1]
+                top.show()
             else:
                 if self.use_tree_lens[1]:
-                    layout = treelib.layoutTree(self.ctree, 1, 1)
+                    layout = treelib.layout_tree(self.ctree, 1, 1)
                 else:
-                    layout = treelib.layoutTreeHierarchical(self.ctree, 1, 1)
+                    layout = treelib.layout_tree_hierarchical(self.ctree, 1, 1)
                 offset = min(c[1] for c in layout.itervalues())
                 boundary1 = min(c[0] for c in layout.itervalues()) - 1.0
                 boundary2 = max(c[0] for c in layout.itervalues()) 
@@ -735,11 +755,11 @@ class MatrixViewer (object):
                 if not self.use_tree_lens[1]:
                     top.win.set_boundary(-util.INF, -boundary1, util.INF, -boundary2)
                 
-                self.colEnsemble.add_window(top.win, 0, coordx=offset)
+                self.col_ensemble.add_window(top.win, 0, coordx=offset)
         else:
             top = None
         
-        self.treeWindows = [left, top]
+        self.tree_windows = [left, top]
         
 
     def draw_border(self, nrows, ncols):
