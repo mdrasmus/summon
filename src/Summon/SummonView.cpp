@@ -779,11 +779,18 @@ void SummonView::DrawTextElement(TextElement *elm)
         const unsigned char *chr = text;
         glPushMatrix();
         glTranslatef(pos.x, pos.y, 0);
+
+        // NOTE: freeglut 2.6.0 uses points. Therefore, set point size 1 
+        float pointsize;
+        glGetFloatv(GL_POINT_SIZE, &pointsize);
+        glPointSize(1.0);
         glScalef(textHeight/fontSize, textHeight/fontSize, textHeight/fontSize);
         for (; *chr; chr++)
             glutStrokeCharacter((void*) font, *chr);
+
+        // restore GL state
         glPopMatrix();
-        
+        glPointSize(pointsize);
     }
 }
 
