@@ -780,7 +780,8 @@ void SummonView::DrawTextElement(TextElement *elm)
         glPushMatrix();
         glTranslatef(pos.x, pos.y, 0);
 
-        // NOTE: freeglut 2.6.0 uses points. Therefore, set point size 1 
+        // NOTE: freeglut 2.6.0 uses points in its text. 
+        // Therefore, we must set point size 1 and restore it afterwards.
         float pointsize;
         glGetFloatv(GL_POINT_SIZE, &pointsize);
         glPointSize(1.0);
