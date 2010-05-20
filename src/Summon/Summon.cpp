@@ -678,15 +678,13 @@ public:
         
         SDL_LockSurface(surface);
         Uint32 *pdata = (Uint32 *) surface->pixels;
-
+        
         // copy into SDL surface
-        for (int y = surface->h - 1, y2 = 0; 
-             y >= 0 && y2 < winsize.y; 
-             --y, ++y2)
+        for (int y = 0; y < winsize.y; y++)
         {
-            for (int x = surface->w - 1; x >= 0; --x) {
-                int p = (y2 * winsize.x + x) * 3;
-                pdata[y * winsize.x + x] = 
+            for (int x = 0; x < winsize.x; x++) {
+                int p = (y * winsize.x + x) * 3;
+                pdata[(winsize.y - 1 - y) * winsize.x + x] = 
                     SDL_MapRGBA(surface->format,
                                 pixels[p + 0], pixels[p + 1], 
                                 pixels[p + 2], 255);
