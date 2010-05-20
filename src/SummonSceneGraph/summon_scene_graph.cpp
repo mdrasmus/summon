@@ -34,6 +34,11 @@ using namespace Summon;
 
 #define MODULE_NAME "summon_scene_graph"
 
+
+//#include "HashTable.h"
+//HashTable<Element*, int, HashPointer> pointers;
+
+
 //=============================================================================
 // python visible prototypes
 extern "C" {
@@ -103,6 +108,8 @@ MakeElement(PyObject *self, PyObject *args)
     elm->IncRef();
     
     //printf("new: %p\n", elm);
+
+    //pointers[elm] = 1;
     
     // return element address
     PyObject *addr = PyInt_FromLong(Element2Id(elm));
@@ -121,7 +128,7 @@ DeleteElement(PyObject *self, PyObject *args)
     
     // if there are no more references then delete element
     if (!elm->IsReferenced()) { // && elm->GetParent() == NULL) {
-        //printf("delete: %p\n", elm);
+        //printf("delete: %p %d\n", elm, pointers.HasKey(elm));
         delete elm;
     }
     

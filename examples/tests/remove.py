@@ -1,3 +1,4 @@
+#!/usr/bin/env python-i
 
 import summon
 from summon.core import *
@@ -25,4 +26,15 @@ for i in range(100):
         g.remove_self()
 
 h.append(g)
+
+
+#=============================================================================
+# test replace
+
+h.clear()
+g = group(group(lines(0,0,100,100)))
+h.append(g)
+
+h.replace(g, group(lines(100, 0, 0, 100)))
+del g
 

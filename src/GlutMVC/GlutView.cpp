@@ -37,6 +37,7 @@ GlutView::GlutView(int width, int height, const char *name,
                    int left, int top) :
    m_windowSize(width, height),
    m_windowPos(left, top),   
+   m_windowPosLastKnown(-100000, -100000),
    m_windowOffset(0, 0),
    m_opened(true)
 {
