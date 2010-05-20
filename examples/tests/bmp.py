@@ -42,7 +42,7 @@ vis = group(colors.red,
 
 win = summon.Window("bmp", size=(403, 400))
 win.add_group(vis)
-time.sleep(1)
+time.sleep(4)
 
 
 win.screenshot("out.bmp")

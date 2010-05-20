@@ -643,9 +643,14 @@ public:
         Vertex2i winsize = window->GetView()->GetWindowSize();
         
         // allocate pixel data
-        GLubyte *pixels = new GLubyte[winsize.x * winsize.y * 3];
+        int align;
+        glGetIntegerv(GL_PACK_ALIGNMENT, &align);
+        int rowsize = int(ceil(winsize.x * 3.0 / align) * align);
+
         
         // read gl screen
+        const int srcpixelsize = 3;
+        GLubyte *pixels = new GLubyte[winsize.x * winsize.y * srcpixelsize];
         window->GetView()->CopyPixels(pixels);
 
         // create SDL surface
@@ -683,7 +688,7 @@ public:
         for (int y = 0; y < winsize.y; y++)
         {
             for (int x = 0; x < winsize.x; x++) {
-                int p = (y * winsize.x + x) * 3;
+                int p = y * rowsize + x * srcpixelsize;
                 pdata[(winsize.y - 1 - y) * winsize.x + x] = 
                     SDL_MapRGBA(surface->format,
                                 pixels[p + 0], pixels[p + 1], 
