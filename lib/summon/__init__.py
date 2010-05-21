@@ -33,7 +33,7 @@ VERSION_INFO = """\
                       visualization prototyping and scripting
                                 Matt Rasmussen
                             (http://mit.edu/rasmus)
-                              Copyright 2005-2009
+                              Copyright 2005-2010
 -----------------------------------------------------------------------------
 """ % VERSION
 

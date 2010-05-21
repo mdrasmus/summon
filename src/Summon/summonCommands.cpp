@@ -86,7 +86,7 @@ void summonCommandsInit()
     RegisterScriptCommand(AttachMenuCommand)      v() gl()
     RegisterScriptCommand(DetachMenuCommand)      v() gl()
 
-    
+    // element commands
     RegisterScriptCommand(AppendGroupCommand)   e() g()
     RegisterScriptCommand(RemoveGroupCommand2)  e() g()
     RegisterScriptCommand(ReplaceGroupCommand2) e() g()

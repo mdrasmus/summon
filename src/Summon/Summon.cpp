@@ -643,14 +643,15 @@ public:
         Vertex2i winsize = window->GetView()->GetWindowSize();
         
         // allocate pixel data
-        int align;
+        int align; // bytes per pixel
+        static const int srcpixelsize = 3;
         glGetIntegerv(GL_PACK_ALIGNMENT, &align);
-        int rowsize = int(ceil(winsize.x * 3.0 / align) * align);
-
+        //glPixelStorei
+        int rowsize = int(ceil(float(winsize.x * srcpixelsize) / align)*align);
+        
         
         // read gl screen
-        const int srcpixelsize = 3;
-        GLubyte *pixels = new GLubyte[winsize.x * winsize.y * srcpixelsize];
+        GLubyte *pixels = new GLubyte[rowsize * winsize.y];
         window->GetView()->CopyPixels(pixels);
 
         // create SDL surface
@@ -668,8 +669,6 @@ public:
 #       endif
         
         static const int bpp = 32;
-        //SDL_Surface *s = SDL_SetVideoMode(winsize.x, winsize.y, bpp, 
-        //    SDL_SWSURFACE);
         SDL_Surface *surface = SDL_CreateRGBSurface(SDL_SWSURFACE, 
             winsize.x, winsize.y, 
             bpp, rmask, gmask, bmask, amask);
@@ -681,22 +680,24 @@ public:
             return false;
         }
         
+        
         SDL_LockSurface(surface);
-        Uint32 *pdata = (Uint32 *) surface->pixels;
+        char *dest = (char *) surface->pixels;        
+        int bytespp = surface->format->BytesPerPixel;
         
         // copy into SDL surface
-        for (int y = 0; y < winsize.y; y++)
-        {
-            for (int x = 0; x < winsize.x; x++) {
-                int p = y * rowsize + x * srcpixelsize;
-                pdata[(winsize.y - 1 - y) * winsize.x + x] = 
-                    SDL_MapRGBA(surface->format,
-                                pixels[p + 0], pixels[p + 1], 
-                                pixels[p + 2], 255);
+        for (int y=0; y<surface->h; y++) {
+            for (int x=0; x<surface->w; x++) {
+                int a = y * rowsize + x * srcpixelsize;
+                int b = (surface->h - 1 - y) * surface->pitch + x * bytespp;
+                *((Uint32*) (dest + b)) = 
+                    SDL_MapRGBA(surface->format, pixels[a + 0], pixels[a + 1], 
+                                pixels[a + 2], 255);
             }
         }
 
         SDL_UnlockSurface(surface);
+        
 
         // save the surface
         if (SDL_SaveBMP(surface, filename.c_str()) != 0) {
