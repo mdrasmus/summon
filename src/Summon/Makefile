@@ -4,7 +4,8 @@ OBJS = ScriptCommand.o \
        summonCommands.o \
        SummonController.o \
        SummonModel.o \
-       SummonView.o
+       SummonView.o \
+       screenshot.o
 
 all:: $(MODULE)
 
