@@ -75,6 +75,7 @@ _INF = float("1e1000")
 #=============================================================================
 # Element classes
 
+
 class Element:
     """This is the abstract base class of all graphical elements in SUMMON.
        Graphical elements are organized as follows:
@@ -113,7 +114,7 @@ class Element:
            is used by _make_ref().
         """
         self.elementid = elementid
-        
+
         if "ref" in options:
             # create a reference to an existing element
             self.ptr = options["ref"]
@@ -202,7 +203,6 @@ class Element:
         children = summon_core.get_element_children(self.ptr)
         ptrs = [children[i] for i in xrange(1, len(children), 2)]            
         summon_core.remove_group2(self.ptr, *ptrs)
-
     
     def remove(self, *elements):
         """Remove drawing elements from the children of this element"""
@@ -225,7 +225,7 @@ class Element:
     def replace_self(self, newelm):
         """Replace the element with a new element"""
         elementid, parent = summon_core.get_element_parent(self.ptr)
-        
+
         if parent == 0:
             raise Exception("element has no parent, cannot replace")
         else:

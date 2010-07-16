@@ -41,7 +41,7 @@ Element *GetElementFromObject(PyObject *obj)
         long addr = PyLong_AsLong(ptr);
         Py_DECREF(ptr);
         
-        return (Element*) addr;
+        return Id2Element(addr); //(Element*) addr;
     } else {
         // python code
         // NOTE: I think the only element that uses this code is a color

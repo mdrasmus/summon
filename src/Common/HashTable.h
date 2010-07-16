@@ -74,7 +74,7 @@ struct HashPointer {
         //if (sizeof(void*) == 8)
         return ((unsigned long long) p) ^ (((unsigned long long) p) >> 32);
             //else
-            //return (unsigned int) p;
+        //return (unsigned int) p;
     }
 };
 

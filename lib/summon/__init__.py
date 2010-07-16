@@ -1255,7 +1255,7 @@ class Model (object):
         return summon_core.remove_group(self.id, *ids)
     
     def replace_group(self, oldGroup, newGroup):
-        """replaces the group 'oldGroup' with a new group 'newGroup'"""    
+        """replaces the group 'oldGroup' with a new group 'newGroup'"""
         summon_core.replace_group(self.id, oldGroup.ptr, newGroup)
         return newGroup
     
