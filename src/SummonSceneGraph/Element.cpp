@@ -154,6 +154,11 @@ void Element::ReplaceChild(Element *oldchild, Element *newchild)
     if (oldchild == m_child) {
         // replace first child
         m_child = newchild;
+
+        // TODO: this might be a bug, I think the following code is needed
+        //if (oldchild->prev == oldchild)
+        //    // replace single child
+        //    newchild->m_prev = newchild;
         newchild->m_prev = newchild;
     } else
         newchild->m_prev->m_next = newchild;
