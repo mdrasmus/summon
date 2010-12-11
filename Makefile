@@ -7,8 +7,8 @@ SUMMON_VERSION = 1.8.8
 # install prefix (can overload on command line)
 prefix = /usr
 
-# python version (can be 2.4 or 2.5)
-PYTHON_VERSION = 2.5
+# python version (can be 2.4 or greater)
+PYTHON_VERSION = 2.6
 
 # python install location
 PYTHON_PREFIX = $(prefix)/lib/python$(PYTHON_VERSION)/site-packages/

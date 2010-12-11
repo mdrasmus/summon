@@ -66,14 +66,12 @@ bool Graphic::Build(int header, const Scm &code2)
     if (m_data)
         delete [] m_data;
     m_data = new char [m_datasize];
-    int ptr = 0;
     
     
     // populate data array
     // loop through code
-    for (Scm children = code;
-         ScmConsp(children);)
-    {
+    int ptr = 0;
+    for (Scm children=code; ScmConsp(children);) {
         // get code for child
         Scm child = ScmCar(children);
         
@@ -88,6 +86,7 @@ bool Graphic::Build(int header, const Scm &code2)
             int tag = Scm2Int(ScmCar(child));
             
             if (tag == COLOR_CONSTRUCT) {
+                // parse color construct
                 m_data[ptr++] = PRIM_COLOR;
                 int i=0;
                 
@@ -103,11 +102,13 @@ bool Graphic::Build(int header, const Scm &code2)
                     m_data[ptr++] = 255;
                 }
             } else {
+                // unknown construct
                 return false;
             }
             
             children = ScmCdr(children);
         } else {
+            // unknown object in data
             return false;
         }
     }

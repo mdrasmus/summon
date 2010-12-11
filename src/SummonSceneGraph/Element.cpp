@@ -155,11 +155,9 @@ void Element::ReplaceChild(Element *oldchild, Element *newchild)
         // replace first child
         m_child = newchild;
 
-        // TODO: this might be a bug, I think the following code is needed
-        //if (oldchild->prev == oldchild)
-        //    // replace single child
-        //    newchild->m_prev = newchild;
-        newchild->m_prev = newchild;
+        // special case, replace single child
+        if (oldchild->m_prev == oldchild)
+            newchild->m_prev = newchild;
     } else
         newchild->m_prev->m_next = newchild;
     newchild->IncRef();

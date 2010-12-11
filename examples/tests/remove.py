@@ -31,10 +31,19 @@ h.append(g)
 #=============================================================================
 # test replace
 
+print "replace"
+
 h.clear()
 g = group(group(lines(0,0,100,100)))
 h.append(g)
+h.append(lines(1,1,1,1))
 
 h.replace(g, group(lines(100, 0, 0, 100)))
+print list(h)
+
+h.append(lines(2,2,2,2))
+print list(h)
+assert len(list(h)) == 3
+
 del g
 
