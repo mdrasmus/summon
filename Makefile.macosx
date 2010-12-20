@@ -20,12 +20,14 @@ PYTHON_INCLUDE = $(prefix)/include/python$(PYTHON_VERSION)
 MODULE = summon_core.so
 
 # options for compiling and linking
-LDFLAGS := $(LDFLAGS) -L../../mac/lib \
-         ../../mac/lib/libSDL.a \
+LDFLAGS := $(LDFLAGS) \
 	-lSystem.B -l gcc_s.1 \
 	-I/usr/local/include \
 	-L/usr/local/lib \
+	-L/opt/local/lib \
+	-L/sw/lib \
 	-lglut \
+	-lSDL \
 	-L/usr/X11/lib -l GL \
          -l GLU -l X11 \
 	-lutil -lpython$(PYTHON_VERSION) -pthread  -bundle \
@@ -62,8 +64,11 @@ SRCPREFIX=.
 include Makefile.in
 
 # top-level rules
-lib/$(MODULE): src/Summon/$(MODULE)	
+lib/$(MODULE): mac src/Summon/$(MODULE)	
 	$(CP) src/Summon/$(MODULE) lib
+
+mac:
+	python make_mac.py
 
 
 clean: cleanall
