@@ -2,7 +2,7 @@
     SUMMON
     visualization prototyping and scripting
 
-    Copyright Matt Rasmussen 2005-2008
+    Copyright Matt Rasmussen 2005-2010
 
     SUMMON is a python extension module that provides rapid prototyping of 2D
     visualizations. By heavily relying on the python scripting language, SUMMON
@@ -14,9 +14,11 @@
 
 """
 
+# python imports
 import os, sys
 from time import time as get_time
 
+# summon imports
 import summon_core
 from summon.core import *
 from summon import util, vector, select, core, multiwindow
