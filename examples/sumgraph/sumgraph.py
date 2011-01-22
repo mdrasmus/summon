@@ -65,12 +65,15 @@ def draw_node(node):
 
 def draw_edge(graph, edge):
     pos = edge.get_pos()
+
+    if len(pos) >= 2 and pos[0] == '"' and pos[-1] == '"':
+        pos = pos[1:-1]
     
     # split into vertices
     vertices = re.split(" ", pos)
     control_pts = []
     arrow_head = (None, None)
-    
+
     for v in vertices:
         if v[0] == "e":
             arrow_head = ("end", map(float, v[2:].split(",")))
@@ -81,7 +84,11 @@ def draw_edge(graph, edge):
     
     curve = shapes.bezier_curve(control_pts, ndivs=20)
     
-    target = graph.get_node('"' + edge.get_destination() + '"')
+    #target = graph.get_node('"' + edge.get_destination() + '"')
+    target = graph.get_node(edge.get_destination())
+
+    print vertices, target
+
     target_pos = map(float, target.get_pos().split(","))
     
     source = graph.get_node('"' + edge.get_source() + '"')

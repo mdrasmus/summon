@@ -41,7 +41,7 @@ Element *GetElementFromObject(PyObject *obj)
         long addr = PyLong_AsLong(ptr);
         Py_DECREF(ptr);
         
-        return (Element*) addr;
+        return Id2Element(addr); //(Element*) addr;
     } else {
         // python code
         // NOTE: I think the only element that uses this code is a color
@@ -154,7 +154,10 @@ void Element::ReplaceChild(Element *oldchild, Element *newchild)
     if (oldchild == m_child) {
         // replace first child
         m_child = newchild;
-        newchild->m_prev = newchild;
+
+        // special case, replace single child
+        if (oldchild->m_prev == oldchild)
+            newchild->m_prev = newchild;
     } else
         newchild->m_prev->m_next = newchild;
     newchild->IncRef();

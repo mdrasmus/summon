@@ -8,13 +8,8 @@
 
 import os
 from distutils.core import setup, Extension
+import make_mac
 
-
-if not os.path.exists("mac/include"): os.makedirs("mac/include")
-if not os.path.exists("mac/lib"): os.makedirs("mac/lib")
-if not os.path.exists("mac/include/GL"):
-    os.symlink("/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers",
-               "mac/include/GL")
 
 
 SUMMON_VERSION = '1.8.9'
@@ -129,10 +124,10 @@ setup(
                           #"/usr/local/include"],
                           #"/usr/X11R6/include"],
             libraries=["SDL", "glut"],
-            library_dirs=["mac/lib", 
-                          "/Developer/SDKs/MacOSX10.6.sdk/usr/X11/lib",
+            library_dirs=["/Developer/SDKs/MacOSX10.6.sdk/usr/X11/lib",
                           "/Developer/SDKs/MacOSX10.5.sdk/usr/X11/lib",
-                          ],
+                          "/opt/local/lib",
+                          "/sw/lib"],
             define_macros=[("NOGLUTEXT", "1")],
 
             undef_macros=["NDEBUG"],
