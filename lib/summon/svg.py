@@ -63,7 +63,7 @@ class SvgWriter:
 
         print >>self.out, svgHeader
         print >>self.out, svgTag % (width, height)
-        print >>self.out, "<g style='font-family: curior'>"
+        print >>self.out, "<g style='font-family: courier'>"
         print >>self.out, "<g transform='translate(0, %d)'>" % (height)
         print >>self.out, "<g transform='scale(1, -1)'>"
         print >>self.out, "<rect x='0' y='0' width='%d' height='%d' fill='%s'/>" % \

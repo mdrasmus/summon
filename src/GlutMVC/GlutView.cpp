@@ -113,7 +113,7 @@ void GlutView::Reshape(int width, int height)
          iter != m_listeners.end(); iter++) {
         (*iter)->ViewResize(this);
     }
-    MakeCurrentWindow();    
+    MakeCurrentWindow();
 }
 
 
