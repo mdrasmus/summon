@@ -14,10 +14,11 @@ ZIP = summon-$(VERSION).zip
 WININST = summon-$(VERSION).win32-py$(PYTHON_VERSION).exe
 
 # upload variables
-WWW_DIR = /scratch-sm/www/pub/summon
-WWW_HOST = rasmus@compbio.mit.edu
+WWW_DIR = public_html/summon/download
+WWW_HOST = rasmus@hypatia.csail.mit.edu
 
-UPLOAD = dist/$(TAR) dist/$(ZIP) dist/$(RPM) dist/$(WININST)
+UPLOAD = dist/$(TAR) dist/$(ZIP) dist/$(RPM) 
+#dist/$(WININST)
 
 # package targets
 pkg:: $(UPLOAD)

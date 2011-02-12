@@ -62,7 +62,7 @@ public:
         m_cached(false),
         m_dynamicTransformParent(NULL)
     {}
-    Transform(int kind=-1, float param1 = 0.0, float param2 = 0.0);
+    Transform(int kind=-1, double param1=0.0, double param2=0.0);
     
     virtual int GetSpecificId()
     { return m_kind; }
@@ -71,8 +71,8 @@ public:
     { return new Transform(); }
     
     inline int GetKind() { return m_kind; }
-    inline float GetParam1() { return m_param1; }    
-    inline float GetParam2() { return m_param2; }    
+    inline double GetParam1() { return m_param1; }
+    inline double GetParam2() { return m_param2; }
     inline float *GetMatrix() { return m_matrix.mat; }
     inline void SetMatrix(float *mat)
     {
@@ -108,11 +108,11 @@ public:
 protected:
     
 
-    void Set(int kind, float param1, float param2=0.0);
+    void Set(int kind, double param1, double param2=0.0);
 
     int m_kind;
-    float m_param1;
-    float m_param2;
+    double m_param1;
+    double m_param2;
     bool m_cached;
     TransformMatrix m_matrix;
     TransformMatrix m_matrixCache;

@@ -207,8 +207,8 @@ void SummonView::ExecCommand(Command &command)
         
         case GET_VISIBLE_COMMAND: {
             Vertex2i size = GetWindowSize();
-            Vertex2f pos1 = ScreenToWorld(0,0);
-            Vertex2f pos2 = ScreenToWorld(size.x, size.y);
+            Vertex2d pos1 = ScreenToWorld(0,0);
+            Vertex2d pos2 = ScreenToWorld(size.x, size.y);
             
             ((GetVisibleCommand*) &command)->SetReturn(
                 BuildScm("ffff", pos1.x, pos1.y, pos2.x, pos2.y));
@@ -276,7 +276,7 @@ void SummonView::ExecCommand(Command &command)
             
         case FOCUS_SCRIPT_COMMAND: {
             FocusScriptCommand* cmd = (FocusScriptCommand*) &command;
-            Vertex2f focus = WindowToWorld(cmd->focus.x, cmd->focus.y);
+            Vertex2d focus = WindowToWorld(cmd->focus.x, cmd->focus.y);
             SetFocus(focus.x, focus.y);
             } break;
         
@@ -404,7 +404,7 @@ void SummonView::DrawWorld()
     }
     
     // set point size to max of zooms
-    Vertex2f zoom = GetZoom();
+    Vertex2d zoom = GetZoom();
     float pointsize;
     if (zoom.y > zoom.x)
         pointsize = zoom.y;
@@ -486,7 +486,8 @@ void SummonView::DrawCrosshair()
 }
 
 
-void SummonView::DrawElement(Element *element, const Style &lastStyle, bool createTasks)
+void SummonView::DrawElement(Element *element, const Style &lastStyle, 
+                             bool createTasks)
 {
     //bool stylePushed = false;
     //Style newStyle;
@@ -569,8 +570,12 @@ void SummonView::DrawElement(Element *element, const Style &lastStyle, bool crea
                     case SCALE_CONSTRUCT:
                         glScalef(trans->GetParam1(), trans->GetParam2(), 0);
                         break;
-                    case FLIP_CONSTRUCT:
-                        glRotatef(180, trans->GetParam1(), trans->GetParam2(), 0);
+                    case FLIP_CONSTRUCT: {
+                        double angle = acos(trans->GetParam1()) / M_PI * 180;
+                        glRotated(-angle, 0, 0, 1);
+                        glScaled(1.0, -1.0, 0.0);
+                        glRotated(angle, 0, 0, 1);
+                        }
                         break;
                 }
             }
@@ -680,9 +685,9 @@ void SummonView::DrawGraphic(Graphic *graphic)
 
 
 
-bool SummonView::WithinView(const Vertex2f &pos1, const Vertex2f &pos2)
+bool SummonView::WithinView(const Vertex2d &pos1, const Vertex2d &pos2)
 {
-    Vertex2i size = GetWindowSize();    
+    Vertex2i size = GetWindowSize();
     Vertex2i spos1 = WorldToScreen(pos1.x, pos1.y);
     Vertex2i spos2 = WorldToScreen(pos2.x, pos2.y);
     
@@ -759,33 +764,33 @@ void SummonView::DrawTextElement(TextElement *elm)
         // TODO: make text size a property of TextElement
         // and move this code to TextElement such that it executes only once.
         static const void *font = GLUT_STROKE_MONO_ROMAN;
-        static const float fontSize = getTextHeight(font);
-        float textWidth  = getTextWidth(font, text);
-        float textHeight = fontSize;
+        static const double fontSize = getTextHeight(font);
+        double textWidth  = getTextWidth(font, text);
+        double textHeight = fontSize;
         
-        float boxWidth   = pos2.x - pos1.x;
-        float boxHeight  = pos2.y - pos1.y;
+        double boxWidth   = pos2.x - pos1.x;
+        double boxHeight  = pos2.y - pos1.y;
 
-        float xscale = boxWidth / textWidth;
-        float yscale = boxHeight / textHeight;
-        float tscale = min(xscale, yscale);
+        double xscale = boxWidth / textWidth;
+        double yscale = boxHeight / textHeight;
+        double tscale = min(xscale, yscale);
 
         textWidth *= tscale;
         textHeight *= tscale;
 
-        Vertex2f pos = JustifyBox(elm->justified, pos1, pos2, 
+        Vertex2d pos = JustifyBox(elm->justified, pos1, pos2, 
                                   textWidth, textHeight, boxWidth, boxHeight);
         
         const unsigned char *chr = text;
         glPushMatrix();
-        glTranslatef(pos.x, pos.y, 0);
+        glTranslated(pos.x, pos.y, 0);
 
         // NOTE: freeglut 2.6.0 uses points in its text. 
         // Therefore, we must set point size 1 and restore it afterwards.
         float pointsize;
         glGetFloatv(GL_POINT_SIZE, &pointsize);
         glPointSize(1.0);
-        glScalef(textHeight/fontSize, textHeight/fontSize, textHeight/fontSize);
+        glScaled(textHeight/fontSize, textHeight/fontSize, textHeight/fontSize);
         for (; *chr; chr++)
             glutStrokeCharacter((void*) font, *chr);
 
@@ -821,7 +826,7 @@ void SummonView::CopyPixels(void *pixels)
 }
 
 
-void SummonView::SetBoundary(const Vertex2f &pos1, const Vertex2f &pos2)
+void SummonView::SetBoundary(const Vertex2d &pos1, const Vertex2d &pos2)
 {
     m_boundary1 = pos1;
     m_boundary2 = pos2;
@@ -840,13 +845,13 @@ void SummonView::CheckBoundary(bool useZoomx, bool useZoomy)
 {
     // find visible
     Vertex2i winsize = GetWindowSize();
-    Vertex2f vis1 = ScreenToWorld(0, 0);
-    Vertex2f vis2 = ScreenToWorld(winsize.x, winsize.y);
+    Vertex2d vis1 = ScreenToWorld(0, 0);
+    Vertex2d vis2 = ScreenToWorld(winsize.x, winsize.y);
     
     // adjust zoom
-    const Vertex2f boundarySize = m_boundary2 - m_boundary1;    
-    Vertex2f visSize = vis2 - vis1;
-    Vertex2f oldvisSize = visSize;
+    const Vertex2d boundarySize = m_boundary2 - m_boundary1;    
+    Vertex2d visSize = vis2 - vis1;
+    Vertex2d oldvisSize = visSize;
     float zoomx = 1.0, zoomy = 1.0;
     
     // check width
@@ -885,7 +890,7 @@ void SummonView::CheckBoundary(bool useZoomx, bool useZoomy)
     vis2 = ScreenToWorld(winsize.x, winsize.y);
     
     // adjust translate
-    Vertex2f trans(0, 0);
+    Vertex2d trans(0, 0);
     
     if (vis1.x < m_boundary1.x) {
         trans.x = m_boundary1.x - vis1.x;

@@ -1,5 +1,5 @@
 SUMMON - visualization protyping python module
-Copyright 2005-2010 Matt Rasmussen 
+Copyright 2005-2011 Matt Rasmussen 
 
 
 To install SUMMON, do the following:
@@ -24,6 +24,7 @@ specific instructions:
 
 
 === 1.1 LINUX (Debian)
+
 On Debian Linux the following apt-get command should install the third-party
 packages:
 
@@ -33,9 +34,14 @@ Other Linux distributions should have the same packages under similar names
 
 
 === 1.2 MAC OS X
-Using fink to install third party packages:
+
+On Mac OS X, you can use fink to install third party packages:
 
     /sw/bin/fink install sdl glut
+
+Or if you MacPorts, you can use this command
+
+    port install glut libsdl-devel
     
 
 === 1.3 WINDOWS (XP, Vista) NATIVE

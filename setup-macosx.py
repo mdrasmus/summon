@@ -9,10 +9,7 @@
 import os
 from distutils.core import setup, Extension
 import make_mac
-
-
-
-SUMMON_VERSION = '1.8.9'
+from version import SUMMON_VERSION
 
 setup(
     name='summon',
@@ -51,7 +48,8 @@ setup(
     author='Matt Rasmussen',
     author_email='rasmus@mit.edu',
     url='http://people.csail.mit.edu/rasmus/summon/',
-    download_url='http://compbio.mit.edu/pub/summon/summon-%s.tar.gz' % SUMMON_VERSION,
+    download_url='http://people.csail.mit.edu/rasmus/summon/download/summon-%s.tar.gz' % SUMMON_VERSION,
+
     
     classifiers=[
           'Development Status :: 5 - Production/Stable',

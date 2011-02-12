@@ -28,7 +28,7 @@
 namespace Summon {
 
 
-Transform::Transform(int kind, float param1, float param2) :
+Transform::Transform(int kind, double param1, double param2) :
     Element(TRANSFORM_CONSTRUCT),
     m_cached(false),
     m_dynamicTransformParent(NULL)
@@ -37,7 +37,7 @@ Transform::Transform(int kind, float param1, float param2) :
 }
 
 
-void Transform::Set(int kind, float param1, float param2)
+void Transform::Set(int kind, double param1, double param2)
 {
     m_kind = kind;
     m_param1 = param1;
@@ -57,7 +57,7 @@ void Transform::Set(int kind, float param1, float param2)
             break;
             
         case ROTATE_CONSTRUCT:
-            MakeRotateMatrix(param1, m_matrix.mat);            
+            MakeRotateMatrix((float) param1, m_matrix.mat);
             break;
         
         case SCALE_CONSTRUCT:
@@ -67,12 +67,13 @@ void Transform::Set(int kind, float param1, float param2)
             MakeScaleMatrix(vec, m_matrix.mat);
             break;
         
-        case FLIP_CONSTRUCT:
-            vec[0] = param1;
-            vec[1] = param2;
+        case FLIP_CONSTRUCT: {
+            double mag = sqrt(param1*param1 + param2*param2);
+            vec[0] = param1 / mag;
+            vec[1] = param2 / mag;
             vec[2] = 0;
             MakeRotateMatrix<float>(180, vec, m_matrix.mat);            
-            break;
+            } break;
         
         default:
             Error("Unknown transform");
