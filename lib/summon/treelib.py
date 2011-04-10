@@ -33,7 +33,7 @@ except ImportError:
 
 
 
-
+# TODO: I should generalize this
 # allow tree reading extra recursion levels
 sys.setrecursionlimit(4000)
 
@@ -81,7 +81,6 @@ class TreeNode:
     def is_leaf(self):
         """Returns True if the node is a leaf (no children)"""
         return len(self.children) == 0
-    isLeaf = is_leaf
     
     def recurse(self, func, *args):
         """Applies a function 'func' to the children of a node"""
@@ -104,15 +103,19 @@ class TreeNode:
     def leaf_names(self):
         """Returns the leaf names beneath the node in traversal order"""
         return [x.name for x in self.leaves()]
-    leafNames = leaf_names
     
     def write_data(self, out):
         """Writes the data of the node to the file stream 'out'"""
         out.write(str(self.dist))
     writeData = write_data
 
+    def __repr__(self):
+        """Returns a representation of the node"""
 
-# class for managing branch data
+        return "<node %s>" % self.name
+
+
+
 class BranchData (object):
     """A class for managing branch specific data for a Tree
     
@@ -180,7 +183,7 @@ class Tree:
         return self.nodes.itervalues()
 
 
-    def preorder(self, node=None):
+    def preorder(self, node=None, is_leaf=lambda x: x.is_leaf()):
         """Iterate through nodes in pre-order traversal"""
         
         if node is None:
@@ -192,11 +195,12 @@ class Tree:
             node = queue.pop()
             yield node
 
-            for child in reversed(node.children):
-                queue.append(child)
+            if not is_leaf(node):
+                for child in reversed(node.children):
+                    queue.append(child)
 
                 
-    def postorder(self, node=None):
+    def postorder(self, node=None, is_leaf=lambda x: x.is_leaf()):
         """Iterate through nodes in post-order traversal"""
         
         if node is None:
@@ -207,11 +211,41 @@ class Tree:
         while len(stack) > 0:
             node, i = stack[-1]
 
-            if i < len(node.children):
+            if i < len(node.children) and not is_leaf(node):
                 stack.append([node.children[i], 0])
                 stack[-2][1] += 1
             else:
                 yield node
+                stack.pop()
+
+
+    def inorder(self, node=None, is_leaf=lambda x: x.is_leaf()):
+        """Iterate through nodes with in-order traversal"""
+
+        if node is None:
+            node = self.root
+
+        stack = [[node, 0]]
+        
+        while len(stack) > 0:
+            node, i = stack[-1]
+
+            if node.is_leaf():
+                yield node
+                stack.pop()
+
+            elif i < len(node.children) and not is_leaf(node):
+                assert len(node.children) == 2
+
+                if i == 1:
+                    # left has been visited
+                    # yield current node then visit right
+                    yield node
+                
+                # recurse into children
+                stack.append([node.children[i], 0])
+                stack[-2][1] += 1
+            else:
                 stack.pop()
     
   
@@ -334,7 +368,8 @@ class Tree:
                 self.nodes[name2] = tree2.nodes[name]
                 self.nodes[name2].name = name2
             else:
-                if type(name) == int:
+                # make sure I do not issue a name that matches this one
+                if isinstance(name, int):
                     if name >= self.nextname:
                         self.nextname = name + 1
                 self.nodes[name] = tree2.nodes[name]
@@ -454,8 +489,8 @@ class Tree:
     def write(self, out = sys.stdout, writeData=None, oneline=False,
               rootData=False):
         """Write the tree in newick notation"""
-        self.writeNewick(util.open_stream(out, "w"), writeData=writeData, 
-                         oneline=oneline, rootData=rootData)
+        self.write_newick(util.open_stream(out, "w"), writeData=writeData, 
+                          oneline=oneline, rootData=rootData)
     
     def read_data(self, node, data):
         """Default data reader: reads optional bootstrap and branch length"""
@@ -473,7 +508,7 @@ class Tree:
                     except ValueError:
                         # treat as node name
                         name = boot.strip()
-                        if name and not node.is_leaf():
+                        if name and isinstance(node.name, int): #not node.is_leaf():
                             node.name = name
         else:
             data = data.strip()
@@ -521,7 +556,7 @@ class Tree:
         
         # default data writer
         if writeData == None:
-            writeData = self.writeData
+            writeData = self.write_data
         
         if not oneline:
             out.write(" " * depth)
@@ -621,6 +656,7 @@ class Tree:
             return node
 
         self.root = walk(expr)
+        self.nodes[self.root.name] = self.root
 
         # test for boot strap presence
         for node in self.nodes.itervalues():
@@ -634,7 +670,7 @@ class Tree:
     def read_big_newick(self, filename):
         """Reads a big newick file with a custom parser"""
     
-        infile = file(filename)    
+        infile = util.open_stream(filename) #file(filename)    
         closure = {"opens": 0}
         names = set()
 
@@ -709,16 +745,19 @@ class Tree:
 
     def read_parent_tree(self, treeFile, labelFile=None, labels=None):
         """Reads a parent array from a file"""
+
+        lines = util.open_stream(treeFile).readlines()
     
         if labelFile:
             labels = util.read_strings(labelFile)
-        elif labels == None:
-            nitems = (len(open(treeFile).readlines()) + 1)/ 2
+            
+        elif labels is None:
+            nitems = (len(lines) + 1)/ 2
             labels = map(str, range(nitems))
         
         self.make_root()
 
-        for i, line in enumerate(open(treeFile)):
+        for i, line in enumerate(lines):
             parentid = int(line.split(" ")[0])
             
             # determine current child
@@ -758,9 +797,12 @@ class Tree:
             self.root.parent = None
     
     
-    def write_parent_tree(self, treeFile, labels):
-        """Writes tree to the  parent array format"""
+    def write_parent_tree(self, treeFile, labels=None):
+        """Writes tree to the parent array format"""
         ids = {}
+
+        if labels is None:
+            labels = self.leaf_names()
         
         # assign ids to leaves
         for leafname in labels:
@@ -784,10 +826,10 @@ class Tree:
         util.write_list(treeFile, ptree)
     
     
-    def get_one_line_newick(self):
+    def get_one_line_newick(self, root_data=False):
         """Get a presentation of the tree in a oneline string newick format"""
         stream = StringIO.StringIO()
-        self.write(stream, oneline=True)
+        self.write(stream, oneline=True, rootData=root_data)
         return stream.getvalue()
     getOnelineNewick = get_one_line_newick
     
@@ -837,15 +879,14 @@ parseNewick = parse_newick
 # Misc. functions for manipulating trees
 #
 
-
 def assert_tree(tree):
     """Assert that the tree is internally consistent"""
     
-    visited = {}
+    visited = set()
     def walk(node):
         assert node.name in tree.nodes
         assert node.name not in visited
-        visited[node.name] = 1
+        visited.add(node.name)
         if node.parent:
             assert node in node.parent.children
         for child in node.children:
@@ -855,7 +896,6 @@ def assert_tree(tree):
     
     assert tree.root.parent == None
     assert len(tree.nodes) == len(visited), "%d %d" % (len(tree.nodes), len(visited))
-assertTree = assert_tree
 
 
 
@@ -1057,7 +1097,7 @@ def graph2tree(mat, root, closedset=None):
     return tree
 
 
-def remove_single_children(tree):
+def remove_single_children(tree, simplify_root=True):
     """
     Remove all nodes from the tree that have exactly one child
     
@@ -1069,15 +1109,6 @@ def remove_single_children(tree):
     removed = [node
                for node in tree
                if len(node.children) == 1 and node.parent]
-            
-
-    """
-    def walk(node):
-        if len(node.children) == 1 and node.parent:
-            removed.append(node)
-        node.recurse(walk)
-    walk(tree.root)
-    """
     
     # actually remove children
     for node in removed:
@@ -1095,7 +1126,7 @@ def remove_single_children(tree):
         del tree.nodes[node.name]
 
     # remove singleton from root
-    if len(tree.root.children) == 1:
+    if simplify_root and len(tree.root.children) == 1:
         oldroot = tree.root
         tree.root = tree.root.children[0]
         oldroot.children = []
@@ -1104,7 +1135,7 @@ def remove_single_children(tree):
         tree.root.dist += oldroot.dist
     
     return removed
-removeSingleChildren = remove_single_children
+
 
 
 def remove_exposed_internal_nodes(tree, leaves=None):
@@ -1123,41 +1154,91 @@ def remove_exposed_internal_nodes(tree, leaves=None):
         # wether to keep it
         stay = set()
         for leaf in tree.leaves():
-            if isinstance(leaf.name, str):
+            if isinstance(leaf.name, basestring):
                 stay.add(leaf)
     
     # post order traverse tree
     def walk(node):
         # keep a list of children to visit, since they may remove themselves
-        children = copy.copy(node.children)
-        for child in children:
+        for child in list(node.children):
             walk(child)
 
         if node.is_leaf() and node not in stay:
             tree.remove(node)
     walk(tree.root)
-removeExposedInternalNodes = remove_exposed_internal_nodes
 
 
-def subtree_by_leaf_names(tree, leaf_names, newCopy=False):
+def subtree_by_leaves(tree, leaves=None, keep_single=False):
+    """
+    Remove any leaf not in leaves set
+    
+    leaves -- a list of leaves that should stay    
+    """
+    
+    stay = set(leaves)    
+    
+    # post order traverse tree
+    def walk(node):
+        # keep a list of children to visit, since they may remove themselves
+        for child in list(node.children):
+            walk(child)
+
+        if node.is_leaf() and node not in stay:
+            tree.remove(node)
+    walk(tree.root)
+
+    if not keep_single:
+        remove_single_children(tree)
+
+    return tree
+
+
+def subtree_by_leaf_names(tree, leaf_names, keep_single=False, newCopy=False):
     """Returns a subtree with only the leaves specified"""
     
     if newCopy:
         tree = tree.copy()
     
     remove_set = set(tree.leaf_names()) - set(leaf_names)
-    for sp in remove_set:
-    	tree.remove(tree.nodes[sp])
-    remove_exposed_internal_nodes(tree)
-    remove_single_children(tree)
-    
-    return tree
-subtreeByLeafNames = subtree_by_leaf_names
+    #for sp in remove_set:
+    #    tree.remove(tree.nodes[sp])
+    return subtree_by_leaves(tree, [tree.nodes[x] for x in leaf_names],
+                             keep_single=keep_single)
+    #if not keep_single:
+    #    remove_single_children(tree)
+    #return tree
 
 
-def reorder_tree(tree, tree2):
+
+def reorder_tree(tree, tree2, root=True):
     """Reorders the branches of tree to match tree2"""
 
+    if root:
+        # reroot tree to match tree2
+        root_branches = [set(n.leaf_names()) for n in tree2.root.children]
+
+        def walk(node):
+            if node.is_leaf():
+                leaves = set([node.name])
+            else:
+                leaves = set()
+                for child in node.children:
+                    l = walk(child)
+                    if l is None:
+                        return None
+                    leaves = leaves.union(l)
+
+            if leaves in root_branches:
+                # root found, terminate search
+                reroot(tree, node.name, newCopy=False)
+                return None
+
+            return leaves
+        walk(tree.root)
+
+    
+
+    # reorder tree to match tree2
     leaf_lookup = util.list2lookup(tree2.leaf_names())
 
     def mean(lst):
@@ -1173,7 +1254,7 @@ def reorder_tree(tree, tree2):
                 leaf_sets.append(walk(child))
 
             scores = [mean(util.mget(leaf_lookup, l)) for l in leaf_sets]
-            rank = util.sortrank(scores)
+            rank = util.sortindex(scores)
             node.children = util.mget(node.children, rank)
 
             # return union
@@ -1183,6 +1264,104 @@ def reorder_tree(tree, tree2):
             return ret
 
     walk(tree.root)
+
+
+def set_tree_topology(tree, tree2):
+    """
+    Changes the topology of tree to match tree2
+
+    trees must have nodes with the same names
+    """
+
+    nodes = tree.nodes
+    nodes2 = tree2.nodes
+    
+    for node in tree:
+        node2 = nodes2[node.name]
+
+        # set parent
+        if node2.parent:
+            node.parent = nodes[node2.parent.name]
+        else:
+            node.parent = None
+        
+        # set children
+        if node.is_leaf():
+            assert node2.is_leaf()
+        else:
+            # copy child structure
+            node.children[:] = [nodes[n.name] for n in node2.children]
+
+    tree.root = nodes[tree2.root.name]
+
+    #assert_tree(tree2)
+    #assert_tree(tree)
+
+
+#=============================================================================
+# timestamps
+
+
+def get_tree_timestamps(tree, root=None, leaves=None, times=None):
+    """
+    Use the branch lengths of a tree to set timestamps for each node
+    Assumes ultrametric tree.
+
+    Leaves have time 0
+    """
+
+    if root is None:
+        root = tree.root
+
+    esp = .001
+    if times is None:
+        times = {}
+
+    def walk(node):
+        if node.is_leaf() or (leaves and node in leaves):
+            t = times.get(node, 0.0)
+        else:
+            t2 = None
+            for child in node.children:
+                t = walk(child)
+
+                # ensure branch lengths are ultrametrix
+                if t2:                    
+                    assert abs(t - t2)/t < esp, (node.name, t, t2)
+                t2 = t
+
+        times[node] = t
+        return t + node.dist
+    walk(root)
+    
+    return times
+
+
+def check_timestamps(tree, times):    
+    for node in tree:
+        if node.parent:
+            if times[node.parent] - times[node] < 0.0 or \
+               abs(((times[node.parent] - times[node]) -
+                    node.dist)/node.dist) > .001:
+                draw_tree_names(tree, maxlen=7, minlen=7)
+                util.printcols([(a.name, b) for a, b in times.items()])
+                print
+                print node.name, node.dist, times[node.parent] - times[node]
+                raise Exception("negative time span")
+
+
+def set_dists_from_timestamps(tree, times):
+    """
+    Sets the branch lengths of a tree using a timestamp dict
+    """
+
+    for node in tree:
+        if node.parent:
+            node.dist = times[node.parent] - times[node]
+        else:
+            node.dist = 0.0
+
+
 
 
 #=============================================================================
@@ -1553,6 +1732,8 @@ def midpoint_root(tree):
     
     assert 0 # shouldn't get here
 
+#=============================================================================
+# conversion to other formats
 
 def make_ptree(tree):
     """Make parent tree array from tree"""
@@ -1963,14 +2144,37 @@ if __name__ == "__main__":
     tree = read_tree(infile)
     tree.write(rootData=True)
 
-    
-    infile = StringIO("((a:1,b:2)60:3,(c:4,d:5)y:6)rra;")
+
+    # reorder test1
+    infile = StringIO("((a:1,b:2)x:3,(c:4,d:5)y:6)rra;")
     tree = read_tree(infile)
     print tree.nodes['b'].parent.data
-
 
     infile = StringIO("((d:1,c:2)x:3,(b:4,a:5)y:6)r;")
     tree2 = read_tree(infile)
 
+    draw_tree_names(tree, maxlen=5)
     reorder_tree(tree, tree2)
-    draw_tree(tree, maxlen=5)
+    draw_tree_names(tree, maxlen=5)
+
+
+    # reorder test2
+    infile = StringIO("((a:1,b:2)x:3,(c:4,d:5)y:6)rra;")
+    tree = read_tree(infile)
+    print tree.nodes['b'].parent.data
+
+    infile = StringIO("(a:0.5,(b:2,(d:5,c:4)y:9)x:0.5);")
+    tree2 = read_tree(infile)
+
+    draw_tree_names(tree, maxlen=5)
+    reorder_tree(tree, tree2)
+    draw_tree_names(tree, maxlen=5)
+
+    infile = StringIO("((a:1,b:2)x:3,(c:4,d:5)y:6)rra;")
+    tree = read_tree(infile)
+    for node in tree.inorder():
+        print node.name
+
+
+
+

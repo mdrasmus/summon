@@ -405,6 +405,8 @@ class LabelViewer (summon.VisObject):
         self.group = group()
         self.text_color = text_color
 
+        self.total_width = 0
+
     
     def set_window(self, win):
         summon.VisObject.set_window(self, win)
@@ -443,6 +445,7 @@ class LabelViewer (summon.VisObject):
         cy = (y1 + y2) / 2.0
         size = max(x2 - x1, y2 - y1) / 2.0
         self.quadtree = quadtree.QuadTree(cx, cy, size)
+        self.total_width = size * 2.0
 
         # populate quadtree
         for node in tree:
@@ -456,9 +459,9 @@ class LabelViewer (summon.VisObject):
 
         if self.vertical:
             xres = 2
-            yres = .5
+            yres = 0
         else:
-            xres = .5
+            xres = 0
             yres = 2
 
         # if the view is different and atleast close enough
@@ -467,18 +470,21 @@ class LabelViewer (summon.VisObject):
             self.draw_labels()
 
 
-
     def draw_labels(self):
         
         # clear existing labels
         self.group.clear()
 
         # get visible nodes
-        v = self.multiscale.get_view()
+        v = self.win.get_visible()
         if self.vertical:
             v = (-v[1], v[0], -v[3], v[2])
+        # add buffer around view
+        w = (v[2] - v[0]) / 2.0
+        h = (v[3] - v[1]) / 2.0
+        v = (v[0] - w, v[1] - h, v[2] + w, v[3] + h)
         nodes = self.quadtree.query(v)
-        
+
         for node in nodes:
             # only handle leaves with names
             name = self.nodelabel(node)
@@ -515,10 +521,10 @@ class LabelViewer (summon.VisObject):
         if vertical:
             return group(color(*col),
                          text_clip(name, x, top, 
-                                   x*10000, bottom, 4, 12,
+                                   x+self.total_width*10, bottom, 4, 12,
                                    "left", "middle", "vertical"))
         else:
             return group(color(*col),
                          text_clip(name, x, top, 
-                                   x*10000, bottom, 4, 12,
+                                   x+self.total_width*10, bottom, 4, 12,
                                    "left", "middle"))

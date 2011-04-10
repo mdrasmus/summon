@@ -56,6 +56,7 @@ class Multiscale (object):
         
         if self.reseted:
             self.reseted = False
+            self.init(self.win, view=view)
             return False
     
         if view == None:

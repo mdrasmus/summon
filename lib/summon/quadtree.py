@@ -32,7 +32,7 @@ class QuadTree:
     
     def insert(self, item, rect):
         rect = normalize_rect(rect)
-
+        
         if len(self.children) == 0:
             node = QuadNode(item, rect)
             self.nodes.append(node)
@@ -54,12 +54,12 @@ class QuadTree:
             if rect[0] <= self.center[0]:
                 if rect[1] <= self.center[1]:
                     self.children[0].insert(item, rect)
-                if rect[3] > self.center[1]:
+                else: #if rect[3] > self.center[1]:
                     self.children[1].insert(item, rect)
-            if rect[2] > self.center[0]:
+            else: #if rect[2] > self.center[0]:
                 if rect[1] <= self.center[1]:
                     self.children[2].insert(item, rect)
-                if rect[3] > self.center[1]:
+                else: #if rect[3] > self.center[1]:
                     self.children[3].insert(item, rect)
 
                    
@@ -88,6 +88,7 @@ class QuadTree:
         if results is None:
             rect = normalize_rect(rect)
             results = set()
+        
 
         # search children
         if len(self.children) > 0:
@@ -107,7 +108,7 @@ class QuadTree:
             if (node.rect[2] > rect[0] and node.rect[0] <= rect[2] and 
                 node.rect[3] > rect[1] and node.rect[1] <= rect[3]):
                 results.add(node.item)
-                    
+
         return results
 
                     
