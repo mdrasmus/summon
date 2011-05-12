@@ -765,7 +765,7 @@ class Window (object):
                 zoomx2 = winw / worldw
                 zoomy2 = zoomx2 / zoomratio
                 
-                worldh2 = winh / zoomh2
+                worldh2 = winh / zoomy2
                 offset = [0.0, - (worldh2 - worldh) / 2.0]
             
             summon_core.set_focus(self.winid, x1 + offset[0], y1 + offset[1])
