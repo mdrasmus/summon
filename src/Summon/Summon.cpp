@@ -1115,7 +1115,7 @@ private:
     
     
     // thread management
-    bool m_waiting;
+    volatile bool m_waiting;
     int m_threadId;
     SDL_cond *m_cond;    
     SDL_mutex *m_condlock;    
