@@ -12,6 +12,7 @@ include make-wininst.bat
 include setup-macosx.py
 include setup-windows.py
 include make_mac.py
+include version.py
 recursive-include examples *.* README*
 recursive-include src *.cpp *.h Makefile*
 recursive-include windows *
