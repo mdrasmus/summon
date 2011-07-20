@@ -33,6 +33,12 @@ namespace Summon
 {
 
 
+/*
+  Each input type (KEYBOARD_INPUT, SPECIAL_KEY_INPUT, MOUSE_MOTION_INPUT,
+  MOUSE_CLICK_INPUT, etc) has its own HashTable mapping input hashids 
+  to command lists.
+ */
+
 
 class Binding {
 public:

@@ -41,15 +41,18 @@ Binding::~Binding()
 
 void Binding::AddBinding(Input *input, Command *command)
 {
+    // get unique id for this input (unique within input type)
     int hash = input->GetHash();
 
-    // increase vector if necessary
+    // increase m_bindings vector if necessary
     while ((unsigned int) input->GetId() >= m_bindings.size()) {
         m_bindings.push_back(new BindType(TABLE_SIZE, (CommandList*) NULL));
     }
     
-    // add command list if one does not exist for this input
+    // get list of commands bound to this input
     CommandList *cmdList = m_bindings[input->GetId()]->Get(hash);
+
+    // add command list if one does not exist for this input
     if (!cmdList) {
         cmdList = new CommandList();
         m_bindings[input->GetId()]->Insert(hash, cmdList);
@@ -58,7 +61,7 @@ void Binding::AddBinding(Input *input, Command *command)
         m_lists.push_back(cmdList);
     }
         
-    // get command list and append new command
+    // append new command
     cmdList->push_back(command);
     
     // take ownership of pointers
@@ -69,6 +72,7 @@ void Binding::AddBinding(Input *input, Command *command)
 
 void Binding::ClearBinding(Input &input)
 {
+    // get unique id for this input
     int hash = input.GetHash();
     
     if (input.GetId() >= 0 && (unsigned int) input.GetId() < m_bindings.size()) {
