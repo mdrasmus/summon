@@ -60,6 +60,9 @@ GlutView::GlutView(int width, int height, const char *name,
     
     // create glut window and register it
     m_window = glutCreateWindow(name);
+    // TODO: error handle m_window == 0
+
+    //printf("win %d\n", m_window);
     if ((unsigned int) m_window >= g_windows.size()) {
         g_windows.resize(m_window+1);
     }
