@@ -704,9 +704,9 @@ class Window (object):
         """sets the maximum region viewable"""
         return summon_core.set_window_boundary(self.winid, x1, y1, x2, y2)
     
-    def home(self):
+    def home(self, mode="one2one"):
         """centers the view such that all graphical elements are visible"""
-        box = self.world.get_bounding()
+        box = self.world.get_bounding() + (mode,)
         
         if box[0] > -util.INF and \
            box[1] > -util.INF and \
