@@ -17,7 +17,7 @@ for i in range(100):
 '''
 
 wins = []
-for i in xrange(20):
+for i in xrange(1):
     wins.append(summon.Window("%d" % i))
 
 time.sleep(2)
@@ -27,3 +27,6 @@ for win in wins:
 
 
 gc.collect()
+
+print list(summon.get_windows())
+print summon.get_summon_state().models

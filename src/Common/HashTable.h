@@ -64,9 +64,9 @@ char        8       8     8      8
 short       16      16    16     16
 int         32      32    32     64
 long        32      64    32     64
-long long 	64      64    64     64
+long long   64      64    64     64
 size_t 	    32      64    64     64
-pointer 	32      64    64     64
+pointer     32      64    64     64
 */
 
 struct HashPointer {

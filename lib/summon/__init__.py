@@ -94,6 +94,11 @@ class SummonState (object):
         """removes a window from the master list"""
         if win.winid in self.windows:
             del self.windows[win.winid]
+        
+        # cleanup unused models
+        for model in (win.world, win.screen):
+            if model and not self.is_model_used(model):
+                self.remove_model(model)
     
     def get_window(self, winid):
         """gets a window by its ID"""
@@ -122,6 +127,13 @@ class SummonState (object):
     def _on_window_close(self, winid):
         """master callback for when a window closes"""
         self.windows[winid]._on_close()
+
+    def is_model_used(self, model):
+        
+        for window in self.windows.values():
+            if window.world == model or window.screen == model:
+                return True
+        return False
 
 
 #=============================================================================
@@ -515,10 +527,6 @@ class Window (object):
         if not self.opened:
             return
 
-        if self.menu:
-            self.menu.delete()
-            self.menu = None
-        
         # immediately record locally that window is closed
         self.opened = False
         try:
@@ -535,6 +543,10 @@ class Window (object):
         
         self.opened = False
         
+        if self.menu:
+            self.menu.delete()
+            self.menu = None
+
         # let the global summon state know, that this window is closed
         _state.remove_window(self)
         
@@ -1240,7 +1252,6 @@ class Model (object):
             assert self.id != None
             _state.add_model(self)
     
-    # TODO: determine how to delete models
     
     def clear_groups(self):
         """clears all graphical elements from the model"""

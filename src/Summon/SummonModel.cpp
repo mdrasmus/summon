@@ -45,6 +45,15 @@ SummonModel::SummonModel(int id, ModelKind kind) :
 }
 
 
+SummonModel::~SummonModel()
+{
+    // remove old root
+    if (m_root) {
+        m_root->DecRef();
+        CleanupElement(m_root);
+    }
+}
+
 void SummonModel::ExecCommand(Command &command)
 {
     switch (command.GetId()) {
@@ -278,7 +287,7 @@ void SummonModel::CleanupElement(Element *elm)
 {
     // remove any hotspots underneath this group
     RemoveHotspots(elm);
-    elm->SetModel(NULL);    
+    elm->SetModel(NULL);
     
     // delete only if it is not referenced by python
     if (!elm->IsReferenced())

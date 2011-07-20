@@ -45,6 +45,7 @@ class SummonModel : public Model
 {
 public:
     SummonModel(int id, ModelKind kind=MODEL_WORLD);
+    virtual ~SummonModel();
 
     inline int GetId() { return m_id; }
     void SetKind(ModelKind kind) { m_kind = kind; }    
