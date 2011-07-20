@@ -56,10 +56,13 @@ public:
             delete m_inputs[i];
         for (unsigned int i=0; i<m_cmds.size(); i++)
             delete m_cmds[i];
+        for (unsigned int i=0; i<m_lists.size(); i++)
+            delete m_lists[i];
         
         m_bindings.clear();            
         m_inputs.clear();
         m_cmds.clear();
+        m_lists.clear();
     }
    
 protected:
