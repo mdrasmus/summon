@@ -163,6 +163,68 @@ static void Timer(int value);
 
 
 
+class Menu 
+{
+public:
+    Menu(int menuid = 0)
+        : menuid(menuid)
+    {
+    }
+
+    ~Menu()
+    {
+        if (menuid != 0)
+            glutDestroyMenu(menuid);
+    }
+
+    int create(void (*func)(int))
+    {
+        menuid = glutCreateMenu(func);
+        return menuid;
+    }
+
+    void addEntry(const char *text, int value)
+    {
+        glutSetMenu(menuid);
+        glutAddMenuEntry(text, value);
+        items.push_back(value);
+    }
+
+    void addSubMenu(const char *text, int submenuid)
+    {
+        glutSetMenu(menuid);
+        glutAddSubMenu(text, submenuid);
+        items.push_back(-1);
+    }
+                
+    void removeItem(int index)
+    {
+        glutSetMenu(menuid);
+        glutRemoveMenuItem(index);
+        fflush(stdout);
+        items.erase(items.begin() + index - 1);
+        // NOTE: items automatically slide down just like glut's behavior
+    }
+
+    void setEntry(int index, const char *text, int value)
+    {
+        glutSetMenu(menuid);
+        glutChangeToMenuEntry(index, text, value);
+        items[index] = value;
+    }
+
+    void setSubMenu(int index, const char *text, int submenuid)
+    {
+        glutSetMenu(menuid);
+        glutChangeToSubMenu(index, text, submenuid);
+    }
+
+
+    int menuid;
+    vector<int> items; // callback ids for each item
+};
+
+
 class SummonModule : public CommandExecutor, public GlutViewListener
 {
 public:
@@ -394,22 +456,27 @@ public:
             
             case NEW_MENU_COMMAND: {
                 // create a new menu
-                int menuid = glutCreateMenu(Summon::MenuCallback);
-                ((DelMenuCommand*) &command)->SetReturn(Int2Scm(menuid));
+                Menu *menu = new Menu();
+                int menuid = menu->create(Summon::MenuCallback);
+                m_menus[menuid] = menu;
+                ((NewMenuCommand*) &command)->SetReturn(Int2Scm(menuid));
                 
                 } break;
                 
             case DEL_MENU_COMMAND: {
                 // delete a menu
-                glutDestroyMenu(((DelMenuCommand*) &command)->menuid);
+                int menuid = ((DelMenuCommand*) &command)->menuid;
+                Menu *menu = m_menus[menuid];
+                delete menu;
+                m_menus.erase(menuid);
                 } break;
             
             case ADD_MENU_ENTRY_COMMAND: {
                 // add an entry to a menu
                 AddMenuEntryCommand *cmd = (AddMenuEntryCommand*) &command;
-                
-                glutSetMenu(cmd->menuid);
-                glutAddMenuEntry(cmd->text.c_str(), m_nextMenuItem);
+
+                m_menus[cmd->menuid]->addEntry(cmd->text.c_str(), 
+                                               m_nextMenuItem);
                 m_menuItems[m_nextMenuItem] = cmd->func;
                 m_nextMenuItem++;
                 
@@ -417,26 +484,25 @@ public:
                 
             case ADD_SUBMENU_COMMAND: {
                 AddSubmenuCommand *cmd = (AddSubmenuCommand*) &command;
-                
-                glutSetMenu(cmd->menuid);
-                glutAddSubMenu(cmd->text.c_str(), cmd->submenuid);
-                
+                m_menus[cmd->menuid]->addSubMenu(cmd->text.c_str(), 
+                                                 cmd->submenuid);
                 } break;
             
             case REMOVE_MENU_ITEM_COMMAND: {
                 RemoveMenuItemCommand *cmd = (RemoveMenuItemCommand*) &command;
-            
-                glutSetMenu(cmd->menuid);
-                glutRemoveMenuItem(cmd->index);
-                m_menuItems.erase(cmd->index);
                 
+                Menu *menu = m_menus[cmd->menuid];
+                int value = menu->items[cmd->index];
+                if (value >= 0)
+                    m_menuItems.erase(value);
+                menu->removeItem(cmd->index);
                 } break;
             
             case SET_MENU_ENTRY_COMMAND: {
                 SetMenuEntryCommand *cmd = (SetMenuEntryCommand*) &command;
-                
-                glutSetMenu(cmd->menuid);
-                glutChangeToMenuEntry(cmd->index, cmd->text.c_str(), m_nextMenuItem);
+                Menu *menu = m_menus[cmd->menuid];
+                m_menuItems.erase(menu->items[cmd->index]);
+                menu->setEntry(cmd->index, cmd->text.c_str(), m_nextMenuItem);
                 m_menuItems[m_nextMenuItem] = cmd->func;
                 m_nextMenuItem++;
                 } break;
@@ -444,9 +510,8 @@ public:
             
             case SET_SUBMENU_COMMAND: {
                 SetSubmenuCommand *cmd = (SetSubmenuCommand*) &command;
-                
-                glutSetMenu(cmd->menuid);
-                glutChangeToSubMenu(cmd->index, cmd->text.c_str(), cmd->submenuid);
+                Menu *menu = m_menus[cmd->menuid];
+                menu->setSubMenu(cmd->index, cmd->text.c_str(), cmd->submenuid);
                 } break;
             
             
@@ -1110,6 +1175,7 @@ private:
     Scm m_windowCloseCallback;
 
     // menus
+    map<int, Menu*> m_menus;
     int m_nextMenuItem;
     map<int, Scm> m_menuItems;
     

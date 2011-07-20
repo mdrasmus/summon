@@ -422,6 +422,7 @@ class Window (object):
         self.moveListeners = set()
         self.viewLock = False
         self.focusLock = False
+        
         summon_core.set_window_on_resize(self.winid, self._on_resize)
         summon_core.set_window_on_move(self.winid, self._on_move)     
         
@@ -437,12 +438,13 @@ class Window (object):
         self.menuButton = 1  # middle mouse button
 
         # selection
-        self.select = select.Select(self, lambda x,y:None)        
-        
+        self.select = select.Select(self, lambda x,y:None)                
+
         # load default configuration
         self.winconfig = winconfig
         self.load_config(winconfig)
         
+
 
     
     def set_world_model(self, model):
@@ -512,6 +514,10 @@ class Window (object):
         
         if not self.opened:
             return
+
+        if self.menu:
+            self.menu.delete()
+            self.menu = None
         
         # immediately record locally that window is closed
         self.opened = False
@@ -1304,18 +1310,20 @@ class Menu (object):
 
     def __init__(self):
         self.menuid = summon_core.new_menu()
+        #print "menu", self.menuid
         self.items = []
     
     # NOTE: I tried the __del__ function, but had trouble with destroyMenu on
     # python exit.
     
     def delete(self):
-        """delete all the resources of the menu"""
-        
+        """delete all the resources of the menu"""        
+
         # delete all items first
         self.clear()
         
         # delete menu
+        #print "delete", self.menuid
         summon_core.del_menu(self.menuid)
                     
 
@@ -1422,9 +1430,14 @@ class Menu (object):
     def clear(self):
         """clears all menu items"""
         
-        for i, item in enumerate(self.items):
-            if not isinstance(item[1], Menu):
-                summon_core.remove_menu_item(self.menuid, i+1)
+        # clear backwards
+        for i in xrange(len(self.items)-1, -1, -1):
+            #print "py remove", self.menuid, i, len(self.items)
+            item = self.items[i]
+            summon_core.remove_menu_item(self.menuid, i+1)
+            if item.kind == "submenu":
+                item.action.delete()
+        self.items[:] = []
     
 
 
@@ -1438,13 +1451,16 @@ class SummonMenu (Menu):
         self.window_menu = Menu()
         self.window_menu.add_entry("duplicate   (ctrl+d)", win.duplicate)        
         self.window_menu.add_entry("overview   (ctrl+o)", lambda: OverviewWindow(win))
+
         self.window_menu.split_menu = Menu()
         self.window_menu.split_menu.add_entry("left", lambda: win.split("left"))
         self.window_menu.split_menu.add_entry("right", lambda: win.split("right"))
         self.window_menu.split_menu.add_entry("top", lambda: win.split("top"))
         self.window_menu.split_menu.add_entry("bottom", lambda: win.split("bottom"))
         self.window_menu.add_submenu("Split", self.window_menu.split_menu)
+
         self.add_submenu("Window", self.window_menu)
+
 
         # zoom
         self.zoom_menu = Menu()
@@ -1462,6 +1478,7 @@ class SummonMenu (Menu):
 
         from summon import inspector
 
+
         # misc
         self.misc = Menu()
         self.misc.add_entry("toggle crosshair  (ctrl+x)", win.toggle_crosshair)
@@ -1470,6 +1487,7 @@ class SummonMenu (Menu):
         self.add_submenu("Misc", self.misc)
 
         self.add_entry("close   (q)", win.close)
+
 
 
 #=============================================================================
