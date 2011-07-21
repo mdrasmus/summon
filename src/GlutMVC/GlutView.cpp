@@ -170,15 +170,17 @@ void GlutView::UpdatePosition()
 
 void GlutView::GlutDisplay()
 {
+    int winid = glutGetWindow();
     PyGILState_STATE gstate = PyGILState_Ensure();
-    g_windows[glutGetWindow()]->Display();
+    g_windows[winid]->Display();
     PyGILState_Release(gstate);
 }
 
 void GlutView::GlutReshape(int width, int height)
 {
+    int winid = glutGetWindow();
     PyGILState_STATE gstate = PyGILState_Ensure();
-    g_windows[glutGetWindow()]->Reshape(width, height);
+    g_windows[winid]->Reshape(width, height);
     PyGILState_Release(gstate);
 }
 

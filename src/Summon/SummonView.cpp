@@ -90,6 +90,7 @@ SummonView::~SummonView()
 
 void SummonView::ExecCommand(Command &command)
 {
+    // TODO: this might be too restrictive
     // don't execute anything without a model
     if (!m_worldModel) {
         return;
