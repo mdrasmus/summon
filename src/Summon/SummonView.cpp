@@ -314,6 +314,7 @@ void SummonView::ExecCommand(Command &command)
                     Error("unknown menu button '%d'", cmd->button);
             }
             
+            MakeCurrentWindow();
             if (button != -1)
                 AttachMenu(cmd->menuid, button);
             
@@ -332,6 +333,7 @@ void SummonView::ExecCommand(Command &command)
                     Error("unknown menu button '%d'", cmd->button);
             }
             
+            MakeCurrentWindow();
             if (button != -1)
                 DetachMenu(cmd->menuid, button);
             
