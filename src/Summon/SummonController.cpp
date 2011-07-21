@@ -49,7 +49,8 @@ SummonController::SummonController(CommandExecutor *global, SummonView *view,
 
 
 SummonController::~SummonController()
-{}
+{
+}
 
 
 

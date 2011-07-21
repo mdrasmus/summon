@@ -73,6 +73,9 @@ extern Command *g_lastRegisteredCommand;
 class CommandAttr
 {
 public:
+    virtual ~CommandAttr()
+    {}
+
     inline bool Has(CommandId cmdId) {
         return m_set.find(cmdId) != m_set.end();
     }

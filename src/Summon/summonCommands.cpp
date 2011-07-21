@@ -55,11 +55,11 @@ void summonCommandsInit()
 #   define gl() AddAttr(g_glAttr)
 
     // add glAttr to glut commands
-    g_glAttr.Add(new TranslateCommand());
-    g_glAttr.Add(new ZoomCommand());
-    g_glAttr.Add(new ZoomXCommand());
-    g_glAttr.Add(new ZoomYCommand());
-    g_glAttr.Add(new FocusCommand());
+    TranslateCommand tc; g_glAttr.Add(&tc);
+    ZoomCommand zc; g_glAttr.Add(&zc);
+    ZoomXCommand zxc; g_glAttr.Add(&zxc);
+    ZoomYCommand zyc; g_glAttr.Add(&zyc);
+    FocusCommand fc; g_glAttr.Add(&fc);
     
     // global commands
     RegisterScriptCommand(GetWindowsCommand)    g()

@@ -50,7 +50,7 @@ def version():
 
 def start_summon_thread():
     "Starts the main SUMMON thread"
-
+    
     # start summon thread
     _summon_thread = threading.Thread(target=summon_core.summon_main_loop)
     _summon_thread.setDaemon(True)

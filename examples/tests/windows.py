@@ -6,27 +6,17 @@ import gc
 import summon
 from summon.core import *
 
-'''
-win = summon.Window()
-for i in range(100):
-    menu = summon.Menu()
-    for i in range(10):
-        menu.add_entry("a", lambda x: None)
-        menu.add_submenu("b", summon.Menu())
-    menu.delete()
-'''
+
+
 
 wins = []
-for i in xrange(1):
+for i in xrange(5):
     wins.append(summon.Window("%d" % i))
 
-time.sleep(2)
+time.sleep(10)
 
 for win in wins:
     win.close()
 
+time.sleep(2)
 
-gc.collect()
-
-print list(summon.get_windows())
-print summon.get_summon_state().models

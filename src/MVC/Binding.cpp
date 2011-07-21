@@ -30,7 +30,8 @@ namespace Summon
 {
 
 Binding::Binding()
-{}
+{
+}
 
 Binding::~Binding()
 {

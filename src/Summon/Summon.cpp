@@ -50,6 +50,7 @@
 #include "SummonWindow.h"
 #include "summon_scene_graph.h"
 #include "screenshot.h"
+#include "Menu.h"
 
 
 // constants
@@ -163,67 +164,6 @@ static void Timer(int value);
 
 
 
-class Menu 
-{
-public:
-    Menu(int menuid = 0)
-        : menuid(menuid)
-    {
-    }
-
-    ~Menu()
-    {
-        if (menuid != 0)
-            glutDestroyMenu(menuid);
-    }
-
-    int create(void (*func)(int))
-    {
-        menuid = glutCreateMenu(func);
-        return menuid;
-    }
-
-    void addEntry(const char *text, int value)
-    {
-        glutSetMenu(menuid);
-        glutAddMenuEntry(text, value);
-        items.push_back(value);
-    }
-
-    void addSubMenu(const char *text, int submenuid)
-    {
-        glutSetMenu(menuid);
-        glutAddSubMenu(text, submenuid);
-        items.push_back(-1);
-    }
-                
-    void removeItem(int index)
-    {
-        glutSetMenu(menuid);
-        glutRemoveMenuItem(index);
-        fflush(stdout);
-        items.erase(items.begin() + index - 1);
-        // NOTE: items automatically slide down just like glut's behavior
-    }
-
-    void setEntry(int index, const char *text, int value)
-    {
-        glutSetMenu(menuid);
-        glutChangeToMenuEntry(index, text, value);
-        items[index] = value;
-    }
-
-    void setSubMenu(int index, const char *text, int submenuid)
-    {
-        glutSetMenu(menuid);
-        glutChangeToSubMenu(index, text, submenuid);
-    }
-
-
-    int menuid;
-    vector<int> items; // callback ids for each item
-};
-
 
 class SummonModule : public CommandExecutor, public GlutViewListener
 {
@@ -243,8 +183,7 @@ public:
         m_timerCommand(NULL),
         m_timerDelay(0)
 
-    {
-    }
+    {}
     
     virtual ~SummonModule()
     {
@@ -460,13 +399,17 @@ public:
                 int menuid = menu->create(Summon::MenuCallback);
                 m_menus[menuid] = menu;
                 ((NewMenuCommand*) &command)->SetReturn(Int2Scm(menuid));
-                
                 } break;
                 
             case DEL_MENU_COMMAND: {
                 // delete a menu
                 int menuid = ((DelMenuCommand*) &command)->menuid;
                 Menu *menu = m_menus[menuid];
+                for (unsigned int i=0; i<menu->items.size(); i++) {
+                    int value = menu->items[i];
+                    if (value >= 0)
+                        m_menuItems.erase(value);
+                }
                 delete menu;
                 m_menus.erase(menuid);
                 } break;
@@ -474,12 +417,10 @@ public:
             case ADD_MENU_ENTRY_COMMAND: {
                 // add an entry to a menu
                 AddMenuEntryCommand *cmd = (AddMenuEntryCommand*) &command;
-
                 m_menus[cmd->menuid]->addEntry(cmd->text.c_str(), 
                                                m_nextMenuItem);
                 m_menuItems[m_nextMenuItem] = cmd->func;
                 m_nextMenuItem++;
-                
                 } break;
                 
             case ADD_SUBMENU_COMMAND: {
@@ -492,7 +433,7 @@ public:
                 RemoveMenuItemCommand *cmd = (RemoveMenuItemCommand*) &command;
                 
                 Menu *menu = m_menus[cmd->menuid];
-                int value = menu->items[cmd->index];
+                int value = menu->items[cmd->index-1];
                 if (value >= 0)
                     m_menuItems.erase(value);
                 menu->removeItem(cmd->index);
@@ -876,8 +817,9 @@ public:
     {
         // init glut
         int argc = 1;
-        char **argv = new char* [1];
-        argv[0] = (char*) "summon"; // avoid compiler warning (GLUT's fault)
+        char* argv0 = "summon";
+        char **argv = &argv0; //new char* [1];
+        //argv[0] = (char*) "summon"; // avoid compiler warning (GLUT's fault)
         glutInit(&argc, argv);
 
         // create hidden window
@@ -928,7 +870,7 @@ public:
         
         // if SUMMON is already initialized, then do not do any more 
         // window decoration processing
-        if (!IsRunning()) {
+        if (m_state == SUMMON_STATE_UNINITIALIZED) {
             if (tries < maxtries && 
                 (glutGet(GLUT_WINDOW_WIDTH) != INIT_WINDOW_SIZE ||
                  glutGet(GLUT_WINDOW_HEIGHT) != INIT_WINDOW_SIZE))
