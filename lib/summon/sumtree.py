@@ -100,20 +100,24 @@ class SumTree (object):
         
         
     def _setup_tree(self):
-        """Private function for configuring a new tree"""
+        """configure a new tree"""
         
         # setup layout
         if self.layout is None:
             if self.xscale > 0:
                 self.layout = treelib.layout_tree(self.tree, self.xscale, -1.0)
             else:
-                self.layout = treelib.layout_tree(self.tree, 1.0, -1.0, minlen=1.0)
+                self.layout = treelib.layout_tree(
+                    self.tree, 1.0, -1.0, minlen=1.0)
         
+
+        # setup branch labels
         if self.show_boot:
             for node in self.tree:
                 if node.data.get("boot", 0) > 0:
-                    self.branch_labels[node.name] = "%.2f" % node.data["boot"] + \
-                        self.branch_labels.get(node.name, "")
+                    self.branch_labels[node.name] = (
+                        "%.2f" % node.data["boot"] + 
+                        self.branch_labels.get(node.name, ""))
                 
         
         # setup colors
@@ -122,60 +126,51 @@ class SumTree (object):
         # setup labels
         self._label_viewer.set_tree(self.tree, self.layout)
     
+
+    def _new_window(self):
+        """Create a new window"""
+        self.win = summon.Window(self.name, size=self.winsize,
+                                 position=self.winpos)
+        self.win.set_binding(input_key("l"), self.toggle_labels)
+        self.menu = SumTreeMenu(self)
+        self.win.set_menu(self.menu)
+        
     
     def show(self):
         """Shows visualization window"""
+
+        # TODO: customize color
         
         # create window if needed
         if self.win == None:
-            self.win = summon.Window(self.name, size=self.winsize,
-                                     position=self.winpos)
+            self._new_window()
             newwin = True
-            
-            self.win.set_binding(input_key("l"), self.toggle_labels)
-            self.menu = SumTreeMenu(self)
-            self.win.set_menu(self.menu)
         else:
             self.win.clear_groups()
             newwin = False
-        self.win.set_bgcolor(1,1,1)
 
-        # TODO: customize color
+        # set background
+        self.win.set_bgcolor(1,1,1)
         
         # draw labels
         self._label_viewer.set_window(self.win)
         self._label_viewer.enable_updating(True, .5)
         
         # draw tree
+        tree_labels = group(
+            color(0,0,0),
+            self.draw_tree(self.tree.root),
+            self._label_viewer.get_group(True))
         if self.vertical:
             # draw vertical tree
-            self.win.add_group(group(
-                color(0,0,0),
-                rotate(-90, 
-                       self.draw_tree(self.tree.root),
-                       self._label_viewer.get_group(True))))
-                
+            self.win.add_group(rotate(-90, tree_labels))
         else:        
             # draw horizontal tree
-            self.win.add_group(group(
-                    color(0,0,0),
-                    self.draw_tree(self.tree.root),
-                    self._label_viewer.get_group(True)))
-        
+            self.win.add_group(tree_labels)
         
         # draw branch length legend
         if not self.vertical and self.xscale != 0:
-            maxwidth = max(node.x for node in self.tree.nodes.itervalues())
-            
-            # if tree has no lengths, do not draw legend
-            if maxwidth > 0:            
-                # automatically choose a scale
-                length = maxwidth / self.xscale
-                order = math.floor(math.log10(length))
-                length = 10 ** order
-                
-                y = min(node.y for node in self.tree) - 2
-                self.win.add_group(self.draw_scale(0, y, length, self.xscale))
+            self.win.add_group(self.draw_scale())
 
         
         # put tree into view
@@ -186,10 +181,10 @@ class SumTree (object):
             vh = y2 - y1            
             
             if self.autozoom:
-                self.win.set_visible(x1-.1*vw, y1-.1*vh, x2+.1*vw, y2+.4*vh,
+                self.win.set_visible(x1-.1*vw, y1-.1*vh, x2+.1*vw, y2+.2*vh,
                                      "exact")
             else:
-                self.win.set_visible(x1-.1*vw, y1-.1*vh, x2+.1*vw, y2+.4*vh,
+                self.win.set_visible(x1-.1*vw, y1-.1*vh, x2+.1*vw, y2+.2*vh,
                                      "one2one")
     
     
@@ -277,18 +272,39 @@ class SumTree (object):
         return group(*vis)
         
     
-    def draw_scale(self, x, y, length, xscale):
-        return group(color(0, 0, 1), lines(x, y, x + xscale*length, y),
-                     text_clip("%.2f" % length, x + xscale*length, y-2, 
-                                          x+10*xscale*length, y+2,
-                                          3, 12,
-                                "left", "middle"))
+    def draw_scale(self, x=0, y=None, length=None, xscale=None, 
+                   col=(0,0,1)):
+
+        maxwidth = (max(self.layout[node][0] for node in self.tree) - 
+                    min(self.layout[node][0] for node in self.tree))
+        
+        if maxwidth == 0:
+            return group()
+
+        if y is None:
+            legend_offset = 2
+            y = min(self.layout[node][1] for node in self.tree) - legend_offset
+
+        if xscale is None:
+            xscale = self.xscale
+
+        if length is None:
+            # automatically choose a scale
+            length = maxwidth / xscale
+            order = math.floor(math.log10(length))
+            length = 10 ** order
+
+        return translate(x, y, color(*col), 
+                         lines(0, 0, xscale*length, 0),
+                         text_clip("%.2f" % length, 
+                                   xscale*length, -2, 
+                                   10*xscale*length, 2,
+                                   3, 12, "left", "middle"))
    
     
     def enable_labels(self, visible=True):
         self.show_labels = visible
         self._label_viewer.get_group().set_visible(visible)
-    enableLabels = enable_labels
     
     
     def node_click(self, node):
@@ -528,3 +544,42 @@ class LabelViewer (summon.VisObject):
                          text_clip(name, x, top, 
                                    x+self.total_width*10, bottom, 4, 12,
                                    "left", "middle"))
+
+
+#=============================================================================
+# low-level reusable drawing functions
+
+
+
+
+def draw_tree(tree, layout, vertical=False):
+    """
+    Draw a tree using a layout
+    """
+
+    vis = group()
+    bends = {}
+
+    for node in tree.postorder():
+        # get node coordinates
+        nx, ny = layout[node]
+        px, py = layout[node.parent] if node.parent else (nx, ny)
+
+        # determine bend point
+        if vertical:
+            bends[node] = (px, ny)
+        else:
+            bends[node] = (nx, py)
+        
+        # draw branch
+        vis.append(lines(nx, ny, bends[node][0], bends[node][1]))
+
+        # draw cross bar
+        if len(node.children) > 0:
+            a = bends[node.children[-1]]
+            b = bends[node.children[0]]
+            vis.append(lines(a[0], a[1], b[0], b[1]))
+
+    return vis
+
+ 

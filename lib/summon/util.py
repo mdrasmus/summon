@@ -133,6 +133,7 @@ class Dict (dict):
 
 
 class Percent (float):
+    """Representation of a percentage"""
     digits = 1
     
     def __str__(self):
@@ -173,13 +174,6 @@ class PushIter (object):
         return next
         
        
-
-def exceptDefault(func, val, exc=Exception):
-    """Specify a default value for when an exception occurs"""
-    try:
-        return func()
-    except exc:
-        return val
 
 
 #=============================================================================
@@ -310,8 +304,8 @@ def list2lookup(lst):
     """
     
     lookup = {}
-    for i in xrange(len(lst)):
-        lookup[lst[i]] = i
+    for i, elm in enumerate(lst):
+        lookup[elm] = i
     return lookup
 
 
@@ -447,11 +441,12 @@ def icumsum(vals):
 
 
 def frange(start, end, step):
-    """Generates a range of floats 
+    """
+    Generates a range of floats 
     
-       start -- begining of range
-       end   -- end of range
-       step  -- step size
+    start -- begining of range
+    end   -- end of range
+    step  -- step size
     """
     
     i = 0
@@ -462,6 +457,11 @@ def frange(start, end, step):
         val = start + i * step
 
 
+def ilen(iterator):
+    """
+    Returns the size of an iterator
+    """
+    return sum(1 for i in iterator)
 
 
 
@@ -671,6 +671,61 @@ def islands(lst):
         counts.setdefault(last, []).append((start, i+1))
     
     return counts
+
+
+
+def binsearch(lst, val, compare=cmp, order=1):
+    """Performs binary search for val in lst using compare
+    
+       if val in lst:
+          Returns (i, i) where lst[i] == val
+       if val not in lst  
+          Returns index i,j where
+            lst[i] < val < lst[j]
+        
+       runs in O(log n)
+    """
+
+    #TODO: make a funtion based linear search
+    
+    assert order == 1 or order == -1
+    
+    low = 0
+    top = len(lst) - 1
+    
+    if len(lst) == 0:
+        return None, None
+    
+    if compare(lst[-1], val) * order == -1:
+        return (top, None)
+    
+    if compare(lst[0], val) * order == 1:
+        return (None, low)
+    
+    while top - low > 1:
+        ptr = (top + low) // 2
+        
+        comp = compare(lst[ptr], val) * order
+        
+        if comp == 0:
+            # have we found val exactly?
+            return ptr, ptr
+        elif comp == -1:
+            # is val above ptr?
+            low = ptr
+        else:
+            top = ptr
+            
+    
+    # check top and low for exact hits
+    if compare(lst[low], val) == 0:
+        return low, low
+    elif compare(lst[top], val) == 0:
+        return top, top
+    else:
+        return low, top
+
+
 
 
 
@@ -951,7 +1006,7 @@ def read_strings(filename):
        filename may also be a stream
     """
     infile = open_stream(filename)
-    vec = [line.rstrip() for line in infile]
+    vec = [line.rstrip("\n") for line in infile]
     return vec
 readStrings = read_strings
 
@@ -980,7 +1035,6 @@ def write_list(filename, lst):
     out = open_stream(filename, "w")
     for i in lst:
         print >>out, i
-writeList = write_list
 writeVector = write_list
 
 
@@ -1060,7 +1114,7 @@ def open_stream(filename, mode = "r"):
     # cannot handle other types for filename
     else:
         raise Exception("unknown filename type '%s'" % type(filename))
-openStream = open_stream
+
 
 
 #=============================================================================
@@ -1070,7 +1124,7 @@ openStream = open_stream
 class DelimReader:
     """Reads delimited files"""
 
-    def __init__(self, filename, delim=None):
+    def __init__(self, filename, delim="\t"):
         """Constructor for DelimReader
             
            arguments:
@@ -1086,11 +1140,7 @@ class DelimReader:
     
     def next(self):
         line = self.infile.next()
-        fields = self.split(line)
-        return fields
-
-    def split(self, line):
-        return line.rstrip().split(self.delim)
+        return line.rstrip("\n").split(self.delim)
 
 
 def read_delim(filename, delim=None):
@@ -1117,7 +1167,7 @@ def default_justify(val):
         return "right"
     else:
         return "left"
-defaultJustify = default_justify
+
 
 def default_format(val):
     if isinstance(val, int) and \
@@ -1132,10 +1182,10 @@ def default_format(val):
             return "%.4f" % val
     else:
         return str(val)
-defaultFormat = default_format
 
-def printcols(data, width=None, spacing=1, format=defaultFormat, 
-              justify=defaultJustify, out=sys.stdout,
+
+def printcols(data, width=None, spacing=1, format=default_format, 
+              justify=default_justify, out=sys.stdout,
               colwidth=INF, overflow="!"):
     """Prints a list or matrix in aligned columns
         
@@ -1280,8 +1330,8 @@ def str2bool(val):
 def print_dict(dic, key=lambda x: x, val=lambda x: x,
               num=None, cmp=cmp, order=None, reverse=False,
               spacing=4, out=sys.stdout,
-              format=defaultFormat, 
-              justify=defaultJustify):
+              format=default_format, 
+              justify=default_justify):
     """Print s a dictionary in two columns"""
     
     if num == None:
@@ -1334,7 +1384,6 @@ def read_word(infile, delims = [" ", "\t", "\n"]):
         if char == "" or char in delims:
             return word
         word += char
-readWord = read_word
 
 def read_until(stream, chars):
     token = ""
@@ -1343,7 +1392,6 @@ def read_until(stream, chars):
         if char in chars or char == "":
             return token, char
         token += char
-readUntil = read_until
 
 def read_while(stream, chars):
     token = ""
@@ -1352,14 +1400,13 @@ def read_while(stream, chars):
         if char not in chars or char == "":
             return token, char
         token += char
-readWhile = read_while
 
 def skip_comments(infile):
     for line in infile:
         if line.startswith("#") or line.startswith("\n"):
             continue
         yield line
-skipComments = skip_comments
+
 
 
 class IndentStream:
@@ -1453,7 +1500,7 @@ def deldir(path):
     # remove directories
     for i in xrange(len(dirs)):
         # AFS work around
-        afsFiles = listFiles(dirs[-i])
+        afsFiles = list_files(dirs[-i])
         for f in afsFiles:
             os.remove(f)
         
@@ -1473,7 +1520,16 @@ def replace_ext(filename, oldext, newext):
         return filename[:-len(oldext)] + newext
     else:
         raise Exception("file '%s' does not have extension '%s'" % (filename, oldext))
-replaceExt = replace_ext
+
+
+def makedirs(filename):
+    """
+    Makes a path of directories.
+    Does not fail if filename already exists
+    """
+
+    if not os.path.isdir(filename):
+        os.makedirs(filename)
 
 
 #=============================================================================
@@ -1481,19 +1537,23 @@ replaceExt = replace_ext
 #
 
 
-def sortrank(lst, cmp=cmp, key=None, reverse=False):
-    """Returns the ranks of items in lst"""
+def sortindex(lst, cmp=cmp, key=None, reverse=False):
+    """Returns the sorted indices of items in lst"""
     ind = range(len(lst))
     
     if key is None:
-        compare2 = lambda a, b: cmp(lst[a], lst[b])
+        compare = lambda a, b: cmp(lst[a], lst[b])
     else:
-        compare2 = lambda a, b: cmp(key(lst[a]), key(lst[b]))
+        compare = lambda a, b: cmp(key(lst[a]), key(lst[b]))
     
-    ind.sort(compare2, reverse=reverse)
+    ind.sort(compare, reverse=reverse)
     return ind
-sortInd = sortrank
 
+
+def sortranks(lst, cmp=cmp, key=None, reverse=False):
+    """Returns the ranks of items in lst"""
+    return invperm(sortindex(lst, cmp, key, reverse))
+    
 
 def sort_many(lst, *others, **args):
     """Sort several lists based on the sorting of 'lst'"""
@@ -1501,11 +1561,11 @@ def sort_many(lst, *others, **args):
     args.setdefault("reverse", False)
 
     if "key" in args:    
-        ind = sortrank(lst, key=args["key"], reverse=args["reverse"])
+        ind = sortindex(lst, key=args["key"], reverse=args["reverse"])
     elif "cmp" in args:
-        ind = sortrank(lst, cmp=args["cmp"], reverse=args["reverse"])
+        ind = sortindex(lst, cmp=args["cmp"], reverse=args["reverse"])
     else:
-        ind = sortrank(lst, reverse=args["reverse"])
+        ind = sortindex(lst, reverse=args["reverse"])
     
     lsts = [mget(lst, ind)]
     
@@ -1514,18 +1574,6 @@ def sort_many(lst, *others, **args):
     
     return lsts
 
-    
-def sort_together(compare, lst, *others):
-    """Sort several lists based on the sorting of 'lst'"""
-
-    ind = sortrank(lst, compare)
-    lsts = [mget(lst, ind)]
-    
-    for other in others:
-        lsts.append(mget(other, ind))
-    
-    return lsts
-sortTogether = sort_together
 
 def invperm(perm):
     """Returns the inverse of a permutation 'perm'"""
@@ -1533,7 +1581,6 @@ def invperm(perm):
     for i in range(len(perm)):
         inv[perm[i]] = i
     return inv
-invPerm = invperm    
 
    
 
@@ -1541,10 +1588,10 @@ invPerm = invperm
 # histograms, distributions
 #
 
-def oneNorm(vals):
+def one_norm(vals):
     """Normalize values so that they sum to 1"""
     s = float(sum(vals))
-    return map(lambda x: x/s, vals)
+    return [x/s for x in vals]
 
 
 def bucketSize(array, ndivs=None, low=None, width=None):

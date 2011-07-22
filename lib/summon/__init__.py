@@ -427,13 +427,13 @@ class Window (object):
         self.__splits = set()
         
         # listeners
-        self.viewChangeListeners = set()
-        self.focusChangeListeners = set()
-        self.closeListeners = set()
-        self.resizeListeners = set()
-        self.moveListeners = set()
-        self.viewLock = False
-        self.focusLock = False
+        self._view_change_listeners = set()
+        self._focus_change_listeners = set()
+        self._close_listeners = set()
+        self._resize_listeners = set()
+        self._move_listeners = set()
+        self._view_lock = False
+        self._focus_lock = False
         
         summon_core.set_window_on_resize(self.winid, self._on_resize)
         summon_core.set_window_on_move(self.winid, self._on_move)     
@@ -551,14 +551,14 @@ class Window (object):
         _state.remove_window(self)
         
         # let all listeners know this window is closed
-        for listener in list(self.closeListeners):
+        for listener in list(self._close_listeners):
             listener()
     
     def add_close_listener(self, listener):
-        self.closeListeners.add(listener)
+        self._close_listeners.add(listener)
     
     def remove_close_listener(self, listener):
-        self.closeListeners.remove(listener)
+        self._close_listeners.remove(listener)
     
     
     def set_name(self, name):
@@ -599,27 +599,27 @@ class Window (object):
         self._on_focus_change()
         self._on_view_change()
         
-        for listener in list(self.resizeListeners):
+        for listener in list(self._resize_listeners):
             listener(width, height)
     
     def add_resize_listener(self, listener):
-        self.resizeListeners.add(listener)
+        self._resize_listeners.add(listener)
     
     def remove_resize_listener(self, listener):
-        self.resizeListeners.remove(listener)
+        self._resize_listeners.remove(listener)
     
     def _on_move(self):
         """internal callback for SUMMON's use only"""
         x, y = self.get_position()
         
-        for listener in list(self.moveListeners):
+        for listener in list(self._move_listeners):
             listener(x, y)
     
     def add_move_listener(self, listener):
-        self.moveListeners.add(listener)
+        self._move_listeners.add(listener)
     
     def remove_move_listener(self, listener):
-        self.moveListeners.remove(listener)
+        self._move_listeners.remove(listener)
     
     def raise_window(self, raised=True):
         """raise or lower a window above others"""
@@ -629,14 +629,24 @@ class Window (object):
     #==================================================================
     # view
 
-    def focus(self, x, y):
-        """set the zoom focus on window position 'x, 'y'"""
+    def focus(self, x=None, y=None):
+        """set the zoom focus on window position 'x', 'y'"""
+
+        if x is None:
+            # use center of window as default
+            w, h = self.get_size()
+            x = w / 2
+            y = h / 2
+
         ret = summon_core.focus(self.winid, int(x), int(y))
         self._on_focus_change() # notify focus has changed
         return ret
     
-    def zoom(self, x, y):
+    def zoom(self, x, y=None):
         """zoom the x- and y-axis by the factors 'x' and 'y'"""
+
+        if y is None:
+            y = x
         ret = summon_core.zoom(self.winid, x, y)    
         self._on_view_change() # notify view has changed
         return ret
@@ -834,38 +844,38 @@ class Window (object):
     # view listeners
     
     def add_view_change_listener(self, listener):
-        self.viewChangeListeners.add(listener)
+        self._view_change_listeners.add(listener)
     
     def remove_view_change_listener(self, listener):
-        self.viewChangeListeners.remove(listener)
+        self._view_change_listeners.remove(listener)
     
     def add_focus_change_listener(self, listener):
-        self.focusChangeListeners.add(listener)
+        self._focus_change_listeners.add(listener)
     
     def remove_focus_change_listener(self, listener):
-        self.focusChangeListeners.remove(listener)
+        self._focus_change_listeners.remove(listener)
 
     def _on_view_change(self):
         """a callback for when view changes"""
         
-        if self.viewLock: return
-        self.viewLock = True
+        if self._view_lock: return
+        self._view_lock = True
         
-        for listener in list(self.viewChangeListeners):
+        for listener in list(self._view_change_listeners):
             listener()
          
-        self.viewLock = False
+        self._view_lock = False
     
     def _on_focus_change(self):
         """a callback for when zoom focus changes"""
         
-        if self.focusLock: return
-        self.focusLock = True
+        if self._focus_lock: return
+        self._focus_lock = True
     
-        for listener in list(self.focusChangeListeners):
+        for listener in list(self._focus_change_listeners):
             listener()
         
-        self.focusLock = False            
+        self._focus_lock = False            
     
     #====================================================================
     # misc
