@@ -91,6 +91,8 @@ class RainbowColorMap:
         self.max = maxv
         self.min = minv
         self.range = maxv - minv
+        if self.range == 0.0:
+            self.range = 1.0
     
     def get(self, val):
         x = (float(val) - self.min) / self.range

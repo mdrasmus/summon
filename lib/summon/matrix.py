@@ -115,7 +115,7 @@ class Matrix (util.Dict):
         """Initialize matrix from a 2D list"""
 
         load_dmat(mat, self, minval=cutoff, loadvals=True)
-    from2DList = from_dmat
+
     
     
     def submatrix(self, rows=None, cols=None):
@@ -487,6 +487,8 @@ class MatrixViewer (object):
         mat.colormap.max = mat.maxval
         mat.colormap.min = mat.minval
         mat.colormap.range = mat.maxval - mat.minval
+        if mat.colormap.range == 0.0:
+            mat.colormap.range = 1.0
         
         
         getcolor = mat.colormap.get
@@ -924,7 +926,41 @@ class DenseMatrixViewer (MatrixViewer):
             self.mat.colormap = colormap
         
         self.mat.setup()
-    setDenseMatrix = set_dense_matrix
+
+
+
+def show_dmat(dmat, **options):
+    """Show a dense matrix"""
+    viewer = DenseMatrixViewer(dmat, **options)
+    viewer.show()
+    return viewer
+
+
+def show_imat(imat, rlabels=None, clabels=None, rperm=None, cperm=None,
+              rpart=None, cpart=None, colormap=None, **options):
+    """Show an index matrix"""
+
+    mat = Matrix()
+    nrows = max(i[0] for i in imat) + 1
+    ncols = max(i[1] for i in imat) + 1
+    nnz = len(imat)
+
+    mat.rowlabels = rlabels
+    mat.collabels = clabels
+    mat.rperm = rperm
+    mat.cperm = cperm
+    mat.rpart = rpart
+    mat.cpart = cpart
+    mat.colormap = colormap
+
+    load_matrix(nrows, ncols, nnz, imat, mat)
+    
+    mat.setup()
+    
+    viewer = MatrixViewer(mat, **options)
+    viewer.show()
+    return viewer
+    
         
 
 #=============================================================================
