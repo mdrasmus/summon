@@ -128,8 +128,7 @@ void SummonController::ExecCommand(Command &command)
                 Error("Unknown coordinate system '%s'", cmd->kind.c_str());
             }
             
-            cmd->SetReturn(ScmCons(Float2Scm(pos2.x),
-                             ScmCons(Float2Scm(pos2.y), Scm_EOL)));
+            cmd->SetReturn(BuildScm("ff", pos2.x, pos2.y));
             } break;
         
                 
