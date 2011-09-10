@@ -536,12 +536,12 @@ class LabelViewer (summon.VisObject):
 
         if vertical:
             return group(color(*col),
-                         text_clip(name, x, top, 
+                         text_clip(str(name), x, top, 
                                    x+self.total_width*10, bottom, 4, 12,
                                    "left", "middle", "vertical"))
         else:
             return group(color(*col),
-                         text_clip(name, x, top, 
+                         text_clip(str(name), x, top, 
                                    x+self.total_width*10, bottom, 4, 12,
                                    "left", "middle"))
 
@@ -560,6 +560,11 @@ def draw_tree(tree, layout, vertical=False):
     vis = group()
     bends = {}
 
+    if vertical:
+        dim = 0
+    else:
+        dim = 1
+
     for node in tree.postorder():
         # get node coordinates
         nx, ny = layout[node]
@@ -567,17 +572,23 @@ def draw_tree(tree, layout, vertical=False):
 
         # determine bend point
         if vertical:
-            bends[node] = (px, ny)
-        else:
             bends[node] = (nx, py)
+        else:
+            bends[node] = (px, ny)
+            
         
         # draw branch
         vis.append(lines(nx, ny, bends[node][0], bends[node][1]))
 
         # draw cross bar
         if len(node.children) > 0:
-            a = bends[node.children[-1]]
-            b = bends[node.children[0]]
+            a = min((bends[child] for child in node.children),
+                    key=lambda i: i[dim])
+            b = max((bends[child] for child in node.children),
+                    key=lambda i: i[dim])
+
+            #a = bends[node.children[-1]]
+            #b = bends[node.children[0]]
             vis.append(lines(a[0], a[1], b[0], b[1]))
 
     return vis

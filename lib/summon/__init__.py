@@ -337,7 +337,7 @@ def get_window_decoration():
 
 def set_window_decoration(xoffset, yoffset):
     """overrides the detected window decoration (border) size.  
-       Use this make additional adjustments that could not be automatically
+       Use this to make additional adjustments that could not be automatically
        detected."""
     global _window_decoration
     _window_decoration = (xoffset, yoffset)
@@ -971,7 +971,7 @@ class Window (object):
         """clear all input bindings for the window"""
         return summon_core.clear_all_bindings(self.winid)
 
-    def get_mouse_pos(self, coord):
+    def get_mouse_pos(self, coord="world"):
         """gets the current mouse position within the window
         
            coords -- either 'world', 'screen', or 'window'.
