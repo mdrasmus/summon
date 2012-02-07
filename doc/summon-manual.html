@@ -1,0 +1,913 @@
+<!doctype html> 
+<html>
+<head>
+  <title>SUMMON documentation</title>
+  <link type="text/css" rel="stylesheet" href="manual.css">
+</head>
+
+<body>
+
+<!-- ====================================================================== -->
+<div class="titlepage">
+
+<h1>SUMMON Manual</h1>
+
+<b>Author:</b> Matt Rasmussen (<a href="http://mattrasmus.com">mattrasmus.com</a>, <a href="mailto:rasmus@alum.mit.edu">rasmus@alum.mit.edu</a>, <a href="mailto:matt.rasmus@gmail.com">matt.rasmus@gmail.com</a>)<br>
+<b>Software website:</b> <a href="http://mattrasmus.com/summon">http://mattrasmus.com/summon</a>
+
+<br><br>
+
+<hr>
+
+<br><br>
+
+</div>
+
+
+<!-- ====================================================================== -->
+<a name="sec-intro"></a>
+<h2>Introduction</h2>
+
+
+<h3>What is SUMMON</h3>
+
+<p>
+SUMMON is a python extension module that provides rapid prototyping of 2D
+visualizations.  By heavily relying on the python scripting language, SUMMON
+allows the user to rapidly prototype a custom visualization for their data, 
+without the overhead of a designing a graphical user interface or recompiling 
+native code.  By simplifying the task of designing a visualization, users can 
+spend more time on understanding their data. 
+</p>
+
+<p>
+SUMMON was designed with several philosophies.  First, recompilation should
+be avoided in order to speed up the development process.  Second, design of
+graphical user interfaces should also be minimized.  Designing a good interface
+takes planning and time to layout buttons, scrollbars, and dialog boxes.  Yet a 
+poor interface is very painful to work with. Even when one has a good interface,
+rarely can it be automated for batch mode.  Instead, SUMMON relies on the python
+terminal for most interaction.  This allows the users direct access to  the
+underlining code, which is more expressive, and can be automated through
+scripting.  
+</p>
+
+<p>
+Lastly, SUMMON is designed to be fast.  Libraries already exist for
+accessing OpenGL in python.  However, python is relatively slow for real-time
+interaction with large visualizations (trees with 100,000 leaves, matrices with
+a million non-zeros, etc.).  Therefore, all real-time interaction is handled
+with compiled native C++ code.  Python is only executed in the construction 
+and occasional interaction with the visualization.  This arrangement provides 
+the best of both worlds.
+</p>
+
+
+<h3>Features</h3>
+
+<p>
+Listed below is a short summary of the features offered in this version of
+SUMMON.
+</p>
+
+<ul>
+  <li>Python module extension</li>
+  <li>Fast OpenGL graphics</li>
+  <li>Drawing arbitrary points, lines, polygons, text with python scripting</li>
+  <li>Binding inputs (keyboard, mouse, hotspots) to any python function</li>
+  <li>Separate threads for python and graphics (allows use of python prompt
+    and responsive graphic at the same time)</li>
+  <li>Transparently handles graphics event loop, scrolling, zooming, text
+    layout (auto-clipping, scaling, alignment), detecting clicks, allowing
+    you to focus on viewing your data</li>
+  <li>SVG output (also GIF/PNG/JPG/etc with ImageMagick)</li>
+  <li>cross-platform (windows, linux)</li>
+</ul>
+
+
+<!-- ====================================================================== -->
+<a name="sec-installing"></a>
+<h2>Installing SUMMON</h2>
+
+<p>
+The latest version of SUMMON can be obtained from 
+<a href="http://mattrasmus.com/summon">http://mattrasmus.com/summon</a>.
+Download the *.tar.gz archive and unzip it with the command:
+</p>
+
+<div class="code">
+tar zxvf summon-X.Y.Z.tar.gz
+</div>
+
+<p>where <tt>X.Y.Z</tt> is the version of SUMMON you are installing.
+Before running or compiling SUMMON, the following libraries are required:
+</p>
+<ul>
+  <li>python 2.4 (or greater)</li>
+  <li>GL</li>   
+  <li>GLUT</li>
+  <li>SDL (for threading)</li>
+</ul>
+
+
+<h3>Compiling SUMMON</h3>
+
+<p>
+It is recommend to install SUMMON using the standard distutils
+(<a href="http://docs.python.org/inst/inst.html">http://docs.python.org/inst/inst.html</a>).
+For example, in the
+<tt>summon-X.Y.Z</tt> directory run:
+</p>
+
+<div class="code">
+python setup.py install
+</div>
+
+<p>
+To install SUMMON in another location other than in <tt>/usr</tt> use:
+</p>
+
+<div class="code">
+python setup.py install --prefix=&lt;another directory prefix&gt;
+</div>
+
+<p>
+For more information and other install options see 
+<tt>summon-X.Y.Z/INSTALL</tt>.
+</p>
+
+<h3>Configuring SUMMON</h3>
+
+<p>
+SUMMON expects to find a configuration file
+called <tt>summon_config.py</tt> somewhere in the python path.
+Distutils installs a default module located in your python path.  To
+customize SUMMON with your own key bindings and behavior, you can
+write your own <tt>summon_config.py</tt> file.  Just be sure it
+appears in your python path somewhere <em>before</em> SUMMON default
+configuration file.  Alternatively, you can create a configuration
+file <tt>.summon_config</tt> in your home directory.  The configuration
+file is nothing more than a python script that calls the SUMMON
+function <tt>set_binding</tt> in order to initialize the default
+keyboard and mouse bindings.
+</p>
+
+
+<!-- ====================================================================== -->
+<a name="sec-installing"></a>
+<a name="sec-using"></a>
+<h2>Using SUMMON</h2>
+
+<p>
+SUMMON can be used as stand-alone program and as a module in a larger
+python program.  The stand-alone version is installed
+in <tt>PREFIX/bin/summon</tt> and is called from the command line as
+follows:
+</p>
+
+<div class="code">
+usage: summon [python script]
+</div>
+
+<p>
+On execution, SUMMON opens an OpenGL window and evaluates any script that it is
+given in the python engine. After evaluation, the SUMMON prompt should appear
+which provides direct access to the python engine.  Users should be familiar
+with the python language in order to use SUMMON.
+</p>
+
+<p>
+The SUMMON prompt acts exactly like the python prompt except for the OpenGL
+window and the appearance of several automatically imported modules such as 
+<tt>summon</tt>.  All of the commands needed to interact with the visualization
+are within the <tt>summon</tt>  module.  
+</p>
+
+<p>
+To learn how to use SUMMON, example scripts have been provided in the 
+<tt>summon/examples/</tt> directory.  Examples of full fledged
+visualizations, SUMMATRIX and SUMTREE, are also given in
+the <tt>summon/bin/</tt> directory.  Their example input files are
+given in <tt>summon/examples/summatrix/</tt> and
+<tt>summon/examples/sumtree/</tt>, respectively.
+</p>
+
+
+<h3>Example script</h3>
+
+<p>
+For an introduction to the basic API of SUMMON, let us walk through
+the code of the first example.  This example is included in the
+downloaded source code under the <tt>summon/examples</tt> directory.  To
+begin, change into the <tt>summon/examples/</tt> directory and open up
+<tt>01_basics.py</tt> in a text editor.  Also execute the example with
+following command.
+</p>
+
+<div class="code">
+python -i 01_basics.py
+</div>
+
+<p>
+The following visualization should immediately appear in your
+OpenGL window.  
+</p>
+
+
+<a name="fig-01_basics"></a>
+<div class="figure">
+<img src="figures/01_basics.png">
+<div class="figcaption">
+  <span class="figtitle">Figure:</span>
+  Screenshot of SUMMON running the script <tt>examples/01_basics.py</tt>
+</div>
+</div>
+
+
+<p>
+Below are a full list of available mouse and key-bindings.
+</p>
+
+<a name="fig-bindings"></a>
+<div class="figure">
+
+<table style="text-align: left">
+<tr>
+    <td><b>Scroll and zoom</b></td>
+</tr><tr>
+    <td>left mouse button</td><td>activate/click</td>
+</tr><tr>
+    <td>left mouse button drag</td><td>scroll</td>
+</tr><tr>
+    <td>right mouse button</td><td>zoom (down: zoom-out, up: zoom-in)</td>
+</tr><tr>
+    <td>&nbsp;</td>
+
+</tr><tr>
+    <td><b>More ways to scroll and zoom</b></td>
+</tr><tr>    
+    <td>Ctrl + right mouse button</td>
+    <td>zoom x-axis (down: zoom-out, up: zoom-in)</td>
+</tr><tr>
+    <td>Shift + right mouse button</td>
+    <td>zoom y-axis (down: zoom-out, up: zoom-in)</td>
+</tr><tr>
+    <td>arrow keys</td><td>scroll</td>
+</tr><tr>
+    <td>Shift + arrow keys</td><td>scroll faster</td>
+</tr><tr>
+    <td>Ctrl + up key</td><td>zoom in</td>
+</tr><tr>
+    <td>Ctrl + down key</td><td>zoom out</td>
+</tr><tr>
+    <td>Shift + up key</td><td>zoom in (y-axis only)</td>
+</tr><tr>
+    <td>Shift + down key</td><td>zoom out (y-axis only)</td>
+</tr><tr>
+    <td>Shift + right key</td><td>zoom in (x-axis only)</td>
+</tr><tr>
+    <td>Shift + left key</td><td>zoom out (x-axis only)</td>
+</tr><tr>
+    <td>&nbsp;</td>
+    
+</tr><tr>
+    <td><b>Miscellaneous</b></td>
+</tr><tr>
+    <td>middle click</td>
+    <td>display pop-up menu</td>
+</tr><tr>
+    <td>h</td><td>home (zoom to make all graphics visible)</td>
+</tr><tr>
+    <td>Ctrl + h</td><td>zoom 1:1 (restore zoom to 1:1 for x- and y-axis)</td>
+</tr><tr>
+    <td>Ctrl + l</td><td>toggle anti-aliasing</td>
+</tr><tr>
+    <td>Ctrl + d</td><td>duplicate window</td>
+</tr><tr>
+    <td>Ctrl + p</td><td>output SVG of the current view</td>
+</tr><tr>
+    <td>Ctrl + Shift + p</td><td>output PNG of the current view</td>
+</tr><tr>
+    <td>Ctrl + x</td><td>show/hide crosshair</td>
+</tr><tr>
+    <td>q</td><td>close window</td>
+</tr>
+</table>
+<div class="figcaption">
+  <span class="figtitle">Figure:</span>
+  Default mouse and key-bindings for any SUMMON window
+</div>
+</div>
+
+
+<p>
+In your text editor, the example <tt>01_basics.py</tt> should contain
+python code similar to that shown below.  The first two lines of the
+script import the SUMMON module <tt>summon</tt> and all of the basic
+SUMMON functions (<tt>group</tt>, <tt>lines</tt>, <tt>color</tt>, etc)
+from the <tt>summon.core</tt> module into the current environment.  A
+new SUMMON graphics window is created using the <tt>summon.Window</tt>
+object.
+</p>
+
+
+<a name="fig-01_basics_code"></a>
+<div class="figure">
+<div class="code">
+<pre>
+#!/usr/bin/env python-i
+# SUMMON examples
+# 01_basics.py - basic commands
+
+# make summon commands available
+from summon.core import *
+import summon
+
+# syntax of used summon functions
+# add_group( &lt;group&gt; )   = adds a group of graphics to the screen
+# group( &lt;elements&gt; )    = creates a group from several graphical elements
+# lines( x1, y1, x2, y2, ... )  = an element that draws one or more lines
+# quads( x1, y1, ..., x4, y4, ... )  = an element that draws one or more quadrilaterals
+# color( &lt;red&gt;, &lt;green&gt;, &lt;blue&gt;, [alpha] ) = a primitive that specifies a color
+
+
+# create a new window
+win = summon.Window("01_basics")
+
+# add a line from (0,0) to (30,40)
+win.add_group(lines(0,0, 30,40))
+
+# add two blue quadrilaterals inside a group
+win.add_group(group(color(0, 0, 1), 
+                    quads(50,0, 50,70, 60,70, 60,0),
+                    quads(65,0, 65,70, 75,70, 75,0)))
+
+# add a multi-colored quad, where each vertex has it own color
+win.add_group(quads(color(1,0,0), 100, 0,
+                    color(0,1,0), 100, 70,
+                    color(0,0,1), 140, 60,
+                    color(1,1,1), 140, 0))
+
+
+# add some text below everything else
+win.add_group(text("Hello, world!",     # text to appear
+                   0, -10, 140, -100,   # bounding box of text
+                   "center", "top"))    # justification of text in bounding box
+
+# center the "camera" so that all shapes are in view
+win.home()
+</pre>
+</div>
+
+<div class="figcaption">
+  <span class="figtitle">Figure:</span>
+  Source code for <tt>example/01_basics.py</tt>
+</div>
+</div>
+
+<p>
+All graphics are added and removed from the window in sets
+called <em>groups</em>.  Groups provide a way to organize graphical
+elements into a hierarchy.  The first graphical group added to the
+window is a line.  The line is created with the <tt>lines</tt>
+function, which takes a series of numbers specifying the end-point
+coordinates for the line.  The first two numbers specify the x and y
+coordinates of one end-point (0,0) and the last two specify the other
+end-point (30,40).  Next, the line is added to the window using the
+<tt>add_group</tt> function.
+</p>
+
+<p>
+The next part of the example adds two quadrilaterals to the window with the
+<tt>quads</tt> and <tt>group</tt> commands.  The arguments to
+the <tt>quads</tt> function are similar to the <tt>lines</tt> function,
+except four vertices (8 numbers) are specified.  In the example, two
+quadrilaterals are created and grouped together with the <tt>group</tt>
+function.
+</p>
+
+<p>
+Note, both the <tt>lines</tt> and <tt>quads</tt> functions can draw multiple lines
+and quadrilaterals (hence their plural names) by supplying more coordinates as
+arguments.
+</p>
+
+<p>
+The third group illustrates the use of color.  Color is stateful, as in OpenGL,
+and all vertices that appear after a color object in a group will be affected. 
+The <tt>color</tt> function creates a color object, which can appear
+within graphical elements such as <tt>lines</tt> and <tt>quads</tt> or directly
+inside a group.  Since each vertex in this example quad has a different color,
+OpenGL will draw a quadrilateral that blends these colors.
+</p>
+
+<p>
+Lastly, an example of text is shown.  Once again the text is added to the window
+using the <tt>add_group</tt> function.  The arguments to the <tt>text</tt> function
+specify the text to be displayed, a bounding box specified by two
+opposite  vertices, and then zero or more justifications ("left", "right",
+"center", "top", "bottom", "middle") that will affect how the text aligns 
+within its bounding box.  There are currently three types of text: <tt>text</tt>
+(bitmap), <tt>text_scale</tt> (stroke), <tt>text_clip</tt> (stroked text that
+clips).  The bitmap text will clip if it cannot fit within its bounding box. 
+This is very useful in cases where the user zooms out very far and no more space
+is available for the text to fit.  See the example <tt>10_text.py</tt> for a
+better illustration of the different text constructs.
+</p>
+
+<p>
+The final function in the script is <tt>win.home()</tt>, which causes
+the SUMMON window to scroll and zoom such that all graphics are visible.  This
+is a very useful command for making sure that what you have drawn is visible in
+the window.  The command can also be executed by pressing the 'h' key within a
+SUMMON window.  This key  comes in handy when you "lose sight" of the
+visualization.
+</p>
+
+<p>
+This is only a simple example.  See the remaining scripts in the 
+<tt>summon/examples/</tt> for examples of SUMMON's more powerful features.
+</p>
+
+
+<h3>Example visualizations: SUMMATRIX and SUMTREE</h3>
+
+<p>
+In the <tt>summon/bin/</tt> directory are two programs, <tt>summatrix</tt> and
+<tt>sumtree</tt> that use SUMMON to visualize large datasets.  They are simply 
+python scripts and so can be easily extended.  In my own work, I have 
+extended the tree visualization program to integrate more closely with
+biological data (executing CLUSTALW and MUSCLE on subtrees, displaying GO terms,
+etc.).  Since these visualization programs are simply python scripts,
+others can easily overlay and integrate their own data.  
+</p>
+
+<p>
+Also in both visualizations the underling data is accessible through global
+python variables.  That means if you have a very specific question like, "How
+many genes in my subtree have a particular GO term?", you can quickly write a
+few lines of python to walk the tree and answer the question yourself.  It would
+be very difficult to anticipate all such questions during the development of a
+non-scriptable visualization.
+</p>
+
+<p>
+Example input files for both programs can be found under the 
+<tt>summon/examples/summatrix/</tt> and <tt>summon/examples/sumtree/</tt>
+directories. Both programs will print their usage if run with no arguments. 
+View/execute the <tt>view_*.sh</tt> scripts for examples of how to call
+<tt>summatrix</tt> and  <tt>sumtree</tt>.
+<p>
+
+<!--
+%=============================================================================
+\section{SUMMON Features}
+
+\subsection{The SUMMON Window}
+    
+Each window opened by SUMMON is an instantiation of the <tt>summon.Window</tt>
+class. This class provides the interface to manipulate the window (title, size,
+position, etc.) as well as to manipulate the graphical elements it  displays
+(<tt>add_group</tt>, <tt>remove_group</tt>, etc.).  
+
+\subsection{Models}
+
+Each window is associated with two models (see <tt>Model</tt> class), called the
+<tt>world</tt> and <tt>screen</tt> which are accessible as <tt>Window.world</tt> and
+<tt>Window.screen</tt>.  A model contains drawing elements such as lines, and
+polygons.  The units of the world model's coordinate system  can
+be whatever the user wants, provided that the x- and y- axis increase to 
+the right and top, respectively.   The size and orientation of the world 
+model is dependent on scrolling and zooming. The world model is the
+default model that is  used when drawing (e.g. functions such as
+<tt>Window.add_group</tt> forward their arguments to 
+<tt>Window.world.add_group</tt>).
+
+In contrast, the screen model is always drawn with its origin at the 
+lower left corner of the window and with units in terms of pixels. The
+screen model is always drawn on top of the world model.  The screen model
+is often used to draw menus, toolbars, or other things that should always
+be in view, and should not be affected by scrolling and zooming.
+-->
+
+
+
+
+<h2>SUMMATRIX: large-scale sparse matrix visualizer</h2>
+
+<p>
+SUMMATRIX is a visualization for matrices built with SUMMON.  It can
+be executed either from the command-line with the supplied demo
+(<tt>summatrix</tt>) or instantiated as an object
+(<tt>summon.matrix.MatrixViewer</tt>) from within your own python
+program.  SUMMATRIX also includes support for visualizing data
+clustering and other matrix permutations.  To see all of SUMMATRIX's
+options run <tt>summatrix</tt> on the command-line with no options.
+Examples of using SUMMATRIX can be found in
+the <tt>summon/examples/summatrix/</tt> directory.
+</p>
+
+<a name="fig-summatrix"></a>
+<div class="figure">
+<img src="figures/summatrix.png" width="600">
+<img src="figures/summatrix-mammals.png">
+
+<div class="figcaption">
+  <span class="figtitle">Figure:</span>
+  Example screenshots of SUMMATRIX on both sparse and dense matrices
+</div>
+</div>
+
+
+<h3>Matrix file formats</h3>
+
+<p>
+<tt>summatrix</tt> visualizes dense and sparse matrices stored in a variety of 
+formats.
+</p>
+
+<ul>
+  <li><p><b>dense format.</b>  The <em>dense matrix format</em> is for
+    small matrices with many non-zero entries.  The first line of a
+    <em>dense matrix file</em> (<tt>*.mat</tt>) contains two white-space
+    delimited integers:
+    </p>
+    
+    <div class="code">
+    nrows ncols
+    </div>
+    
+   <p>
+     where <tt>nrows</tt> and <tt>ncols</tt> are the number of rows and columns in
+     the matrix.  The remaining <tt>nrows</tt> lines of
+     the file specify each row of the matrix with <tt>ncols</tt> white-space
+     delimited numbers (integer or float).  For example:
+   </p>
+
+   
+    <div class="code">
+      val1 val2 val3 ... valN
+    </div>
+
+    <p>
+    <tt>summatrix</tt> will load a {\em dense matrix} with the <tt>-d</tt>
+    and  <tt>--dense</tt> options.
+    </p>
+    
+    <p>
+    See <tt>examples/summatrix/clustering/data.mat</tt> for an example.
+    </p>
+    </li>
+    
+  <li><p><b>compressed row format (sparse).</b>  The <em>compressed row
+    format</em> is for large matrices with only a relatively few
+    non-zero entries.  The first line of a {\em compressed row matrix
+    file} (<tt>*.mat</tt>) contains three white-space delimited
+    integers:
+      </p>
+    
+    <div class="code">
+    nrows ncols nnz
+    </div>
+    
+    <p>
+    where <tt>nrows</tt> is the number of rows, <tt>ncols</tt> is the number of
+    columns, and <tt>nnz</tt> is the total number of non-zero entries in the
+    matrix.  The remaining <tt>nrows</tt> lines of the file specify each row of
+    the matrix in the following format:
+    </p>
+
+    <div class="code">
+    col1 val1 col2 val2 col3 val3 ...
+    </div>
+
+    <p>
+    which indicates that for this $row$ of the matrix we have
+    </p>
+    
+    <div class="code">
+        matrix[row][col1] = val1 <br>
+        matrix[row][col2] = val2 <br>
+        matrix[row][col3] = val3 <br>
+        ... 
+    </div>
+    
+    <p>
+    Note that <tt>colN</tt> is an integer and 1-based (1st column is
+    numbered 1, last column is numbered <tt>ncols</tt>)
+    and <tt>valN</tt> can be a float or integer.  Any entry of the
+    matrix not specified is assumed to be zero.
+    </p>
+
+    <p>
+    <tt>summatrix</tt> will load a <em>compressed row matrix</em> with
+    the <tt>-r</tt> and <tt>--rmat</tt> options.
+    </p>
+    
+    <p>
+    See <tt>examples/summatrix/dog_human.mat</tt> for an example.
+    </p>
+  </li>
+
+
+  <li><p><b>index format (sparse).</b>  The <em>index format</em> is
+    for large matrices with only a relatively few non-zero entries.
+    The first line of an <em>index matrix file</em> (<tt>*.imat</tt>)
+    contains three white-space delimited integers:
+    </p>
+
+    <div class="code">
+    nrows ncols nnz
+    </div>
+    
+    <p>
+    where <tt>nrows</tt> is the number of rows, <tt>ncols</tt> is the
+    number of columns, and <tt>nnz</tt> is the total number of
+    non-zero entries.  The remaining <tt>nnz</tt> lines of the file
+    specify each non-zero entry with the format:
+    </p>
+
+    <div class="code">
+    row col val
+    </div>
+
+    <p>
+    which indicates that <tt>matrix[row][col] = val</tt>.  Note that
+    <tt>row</tt> and <tt>col</tt> are integers and 0-based (1st row
+    and column are numbered 0, last row and column are numbered
+    <tt>nrows-1</tt> and <tt>ncols-1</tt>, respectively)
+    and <tt>val</tt> can be a float or integer.  Any entry of the
+    matrix not specified is assumed to be zero.
+    </p>
+
+    <p>
+    <tt>summatrix</tt> will load an {\em index matrix} with the <tt>-i</tt> and 
+    <tt>--imat</tt> options.
+    </p>
+    
+    <p>
+    See <tt>examples/summatrix/human_mouse.imat</tt> for an example.
+    </p>
+  </li>
+
+  <li><p><b>labeled format (sparse).</b>  This format is similar
+      to <em>index format</em> except instead of specifying row and
+      column by an integer, they are specified by a unique string
+      (<em>label</em>).  The total number of rows, columns, and non-zeros
+      does not need to be specified. Instead each line of the file has
+      the following format:
+      </p>
+
+      <div class="code">
+      rowlabel collabel val
+      </div>
+
+      <p>
+        which indicates that <tt>matrix[rowlabel][collabel] =
+        val</tt>.  Note that <tt>row</tt> and <tt>col</tt> are strings
+        and <tt>val</tt> can be a float or integer.  Rows and columns
+        are drawn in the order (left-to-right, top-to-bottom) that are
+        first mentioned in the file.  A different ordering can
+        specified with the <tt>--order</tt> option and a file
+        containing the labels in the desired order, one label per
+        line.  Any entry of the matrix not specified is assumed to be
+        zero.
+      </p>
+    
+      <p>
+        <tt>summatrix</tt> will load a <em>labeled matrix</em> with
+        the <tt>-l</tt> and <tt>--lmat</tt> options.
+      </p>
+    
+      <p>
+        See <tt>examples/summatrix/mammals_distances.lmat</tt> for an example.
+      </p>
+  </li>
+</ul>
+
+
+
+<h3>Row and column label formats</h3>
+
+<p>
+SUMMATRIX can display row and column labels.  They are specified with
+the <tt>--rlab=filename</tt> and <tt>--clab=filename</tt> command-line
+options.  If your matrix is square and the row and column labels are
+the same, you can specify them with only one option
+using <tt>--rclab=filename</tt>.  The label file format is simple a
+text file with one label per line in the order that the rows (or
+columns) appear in the matrix.
+</p>
+
+<p>
+Labels will be used when the user clicks on an entry in the matrix.
+Labels can also be displayed on the sides of the matrix with
+the <tt>--showlabels</tt> option or by pressing the "l" key during
+visualization.  The <tt>inline</tt> option will draw the labels in the
+same window as the matrix.  The <tt>panels</tt> option will draw the
+labels in neighboring windows, such that the labels are never out of
+view while zooming and scrolling.
+</p>
+
+
+<h3>Visualizing data clustering</h3>
+
+<p>
+SUMMATRIX allows easy visualization of clustering.  However, you must use
+another  third-party program to actually cluster your data.  If you are looking
+for ideas, I recommend taking a look at the CLUTO clustering toolkit at 
+<a href="http://glaros.dtc.umn.edu/gkhome/views/cluto">http://glaros.dtc.umn.edu/gkhome/views/cluto</a>.
+Many of the file formats used by SUMMON are compatiable with this
+software package.
+</p>
+
+<h3>Row and column permutation</h3>
+
+<p>
+Using such a clustering program you can visualize your clustering as a
+permutation of the rows (or columns) of your data matrix.  SUMMATRIX will
+permute your matrix if you specify any of the options 
+<tt>--rperm=filename</tt>, <tt>--cperm=filename</tt>, or
+<tt>--rcperm=filename</tt>.  Where $filename$ is a permutation file,
+which is a text file with <tt>nrows</tt> (or <tt>ncols</tt>) lines
+with one integer per line.  The integer indicates which row (or
+column) should appear in this position. The integer is 0-based (1st
+row is 0, last is <tt>nrows-1</tt>).
+</p>
+
+<p>
+See <tt>examples/summatrix/clustering/data.rperm</tt> for an example of a
+row permutation file.
+</p>
+
+<h3>Row and column partitioning</h3>
+
+<p>
+SUMMATRIX can also draw horizontal and vertical lines that divide the matrix
+into sub-divisions that represent your clusters.  This is done with the 
+<tt>--rpart=filename</tt>, <tt>--cpart=filename</tt>, and
+<tt>--rcpart=filename</tt> options.  The file <tt>filename</tt>
+should be in the {\em partition format}, which is a text file with
+<tt>nrows</tt> (or <tt>ncols</tt>) lines with one string per line.
+Each string indicates the cluster of the corresponding row (or
+column).  For example, if your matrix is clustered by rows into three
+clusters called "ClusterA", "ClusterB", and "ClusterC", then those
+three strings should used in the partition file.  Clusters can also be
+named with integers as in the supplied example.
+</p>
+
+<p>
+See <tt>examples/summatrix/clustering/data.rpart</tt> for an example of a
+row partition file.
+</p>
+
+<p>
+If a permutation file is specified the matrix will be permuted, and dividers
+will be drawn when ever two neighboring rows (or columns) are associated with
+different clusters.  If no permutation file is given, the rows (or columns) will
+be sorted automatically by their cluster label.
+</p>
+
+<h4>Row and column hierarchical trees</h4>
+
+<a name="fig-summatrix_trees"></a>
+<div class="figure">
+<img src="figures/summatrix-trees.png">
+<div class="figcaption">
+  <span class="figtitle">Figure:</span>
+  Example of row and column hierarchical trees in SUMMATRIX can 
+  be used to visualize a clustering.  Cluster partions (black horizontal and
+  vertical lines) are shown with <tt>--rpart,cpart</tt> and trees are 
+  specified with <tt>--rptree,--cptree</tt>. 
+  See  <tt>examples/summatrix/clustering/view_data_tree_clustered.sh</tt>
+</div>
+</div>
+
+
+<p>
+SUMMATRIX supports displaying hierarchical trees next to a matrix (see
+figure above), which is often useful for visualizaling a clustering.
+Trees are specified with the following options.
+</p>
+
+<div class="code"><pre>
+  --rptree=&lt;row parent tree file&gt;
+
+  --cptree &lt;column parent tree file&gt;
+
+  --rtree &lt;row tree newick file&gt;
+
+  --ctree &lt;column tree newick file&gt;  
+</pre></div>
+
+<p>
+When a tree is specified it will be displayed in a separate window aligned next
+to the matrix.  The rows (or columns) of the matrix will be permuted to match
+the order of the leaves in the tree.  If a permutation file is given
+(<tt>--rperm,--cperm</tt>) it is ignored.
+</p>
+
+<p>
+Two tree file formats are currently supported: ptree and newick.  See
+<a href="#sec-sumtree">sumtree</a> for a description of the formats.
+If you use the ptree format (<tt>--rptree,--cptree</tt>) the leaves
+should be numbered with the same index as its corresponding row (or
+column) in the matrix.  If you use the newick format
+(<tt>--rtree,--ctree</tt>) the leaves should either be integers
+corresponding to the rows (or columns) of the matrix, or be strings
+that match the row (column) labels of the matrix
+(<tt>--rlab,--clab</tt>).
+</p>    
+
+<p>
+See <tt>examples/summatrix/clustering/data.row.ptree</tt> for an example of a
+ptree for a clustered matrix.
+</p>
+
+
+<!-- ====================================================================== -->
+<a name="sec-sumtree"></a>
+<h2>SUMTREE: large-scale tree visualizer</h2>
+
+<p>
+SUMTREE is a visualization for trees built on top of the SUMMON
+library.  It can be executed either from the command-line with the
+supplied demo (<tt>sumtree</tt>) or instantiated as an object
+(<tt>summon.sumtree.SubTree</tt>) from within your own python program.
+SUMTREE is useful for visualizing trees from hierarchical clusterings
+or phylogenetic reconstructions.  To see all of SUMTREE's options
+run <tt>sumtree</tt> on the command-line with no options.  Examples of
+using SUMTREE can be found in the <tt>summon/examples/sumtree/</tt>
+directory.
+</p>
+
+<a name="fig-sumtree"></a>
+<div class="figure">
+<img src="figures/sumtree-mammals.png">
+<div class="figcaption">
+  <span class="figtitle">Figure:</span>
+  Example of a phylogenetic tree visualized with SUMTREE.
+  See  <tt>examples/sumtree/view_mammals.sh</tt>
+</div>
+</div>
+
+
+<h3>Tree file formats</h3>
+
+<p>
+SUMTREE currently supports two file formats:
+</p>
+
+<ul>
+  <li><p>
+      <b>ptree format.</b>  The <em>ptree</em> (parent tree) format is
+      a simple format that is also produced by the CLUTO clustering
+      package.  It specifies a binary tree of <tt>n</tt> leaves by
+      assigning each node in the tree an integer.  The leaves are
+      numbered $0$ to <tt>n-1</tt>, the internal nodes are numbered
+      <tt>n-2</tt> to <tt>2n-3</tt>, and the root is
+      numbered <tt>2n-2</tt>.  The ptree file contains a list of
+      <tt>2n-1</tt> integers, one integer per line.  The
+      line <tt>i</tt> (0-based) should contain the id-number of the
+      <em>parent</em> of node <tt>i</tt>.  The last line
+      (line <tt>2n-2</tt>) should contain the integer -1 to indicate
+      that the root of the tree has no parent.  See
+    <tt>examples/summatrix/clustering/data.row.ptree</tt> and
+    <tt>examples/sumtree/dog-human-genes.ptree</tt> for examples.
+    </p>
+    </li>
+    
+  <li><p><b>newick format.</b>
+    The <a href="http://en.wikipedia.org/wiki/Newick_format">newick
+    format</a> is a standard format commonly used for storing
+    phylogenetic.  The structure of the tree is specified with a
+    parenthesis notation.  For example a five leaf tree with leaves
+    named A, B, C, D, and E can be written in Newick as:
+    </p>
+
+    <div class="code">(((A,B),(C,D)),E);</div>
+
+    <p>
+    This states that A and B are sisters, C and D are sisters, A and C
+    are cousins, and E is a great uncle of A.
+    </p>
+
+    <p>
+    Branch lengths can also be specified by adding a
+    colon followed by a floating point number the end of any node in the tree.
+    </p>
+
+    <div class="code">(((A:1,B:2):1.5,(C:0.5,D:0.2):1.2):3,E:6);</div>
+
+    <p>
+    For example, the above states that the branch directly above A is
+    length 1 and the branch directly above C is 0.5.  Also note that
+    the internal node branch lengths are also given (e.g. the length
+    of the branch directly above the parent of A is 1.5).
+    </p>
+    </li>
+</ul>
+
+
+</body>
+</html>
