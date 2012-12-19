@@ -1331,7 +1331,6 @@ class Menu (object):
 
     def __init__(self):
         self.menuid = summon_core.new_menu()
-        #print "menu", self.menuid
         self.items = []
     
     # NOTE: I tried the __del__ function, but had trouble with destroyMenu on
@@ -1467,6 +1466,8 @@ class SummonMenu (Menu):
     
     def __init__(self, win):
         Menu.__init__(self)
+        self._win = win
+        self._ruler = None
         
         # window options
         self.window_menu = Menu()
@@ -1505,10 +1506,21 @@ class SummonMenu (Menu):
         self.misc.add_entry("toggle crosshair  (ctrl+x)", win.toggle_crosshair)
         self.misc.add_entry("toggle aliasing   (ctrl+l)", win.toggle_aliasing)
         self.misc.add_entry("inspect", lambda: inspector.inspect_window(win))
+        self.misc.add_entry("ruler", self.toggle_ruler)
         self.add_submenu("Misc", self.misc)
 
         self.add_entry("close   (q)", win.close)
 
+    def toggle_ruler(self):
+
+        from summon import hud
+        
+        if self._ruler is None:
+            self._ruler = hud.RulerHud(self._win)
+        else:
+            self._ruler.remove()
+            self._ruler = None
+        
 
 
 #=============================================================================

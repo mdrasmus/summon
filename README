@@ -10,7 +10,7 @@ Summary
     SUMMON is a python extension module that provides rapid prototyping of 2D
     visualizations. By heavily relying on the python scripting language, SUMMON
     allows the user to rapidly prototype a custom visualization for their data,
-    without the overhead of a designing a graphical user interface or
+    without the overhead of designing a graphical user interface or
     recompiling native code. By simplifying the task of designing a
     visualization, users can spend more time on understanding their data.
 
